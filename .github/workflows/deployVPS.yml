@@ -14,6 +14,8 @@ jobs:
       - uses: actions/checkout@v3
 
       # Runs a single command using the runners shell
+      - name: Set current date as env variable
+        run: echo "NOW::$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
       - name: Push to server
         uses: appleboy/ssh-action@master
         with:
@@ -29,6 +31,6 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             cd ${{ secrets.PROJECT_PATH }}
-            pkill python3
             python3 -m pip install -r requirements.txt
-            python3 t.py &
+            cd ..
+            echo \n$NOW >> deploy.log
