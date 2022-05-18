@@ -34,4 +34,4 @@ jobs:
             cd ${{ secrets.PROJECT_PATH }}
             python3 -m pip install -r requirements.txt
             cd ..
-            echo \n${{ steps.date.outputs.date }} >> deploy.log
+            echo ${{ steps.date.outputs.date }} >> deploy.log
