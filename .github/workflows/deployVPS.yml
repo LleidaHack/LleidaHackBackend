@@ -28,7 +28,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            pkill python3
             cd ${{ secrets.PROJECT_PATH }}
-            pip install -R requirements.txt
+            pkill python3
+            python3 -m pip install -r requirements.txt
             python t.py 
