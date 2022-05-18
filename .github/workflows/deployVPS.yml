@@ -14,8 +14,9 @@ jobs:
       - uses: actions/checkout@v3
 
       # Runs a single command using the runners shell
-      - name: Set current date as env variable
-        run: echo "NOW::$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
       - name: Push to server
         uses: appleboy/ssh-action@master
         with:
@@ -33,4 +34,4 @@ jobs:
             cd ${{ secrets.PROJECT_PATH }}
             python3 -m pip install -r requirements.txt
             cd ..
-            echo \n$NOW >> deploy.log
+            echo \n${{ steps.date.outputs.date }} >> deploy.log
