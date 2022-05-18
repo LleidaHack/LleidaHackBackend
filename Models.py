@@ -2,7 +2,7 @@ from datetime import date
 
 
 class Event:
-    def __init__(self,id:int,name:str,date:date,location:str,description:str,status:int,sponsors:list=[]):
+    def __init__(self,event_id:int,name:str,date:date,location:str,description:str,status:int,sponsors:list=[]):
         self.id=id
         self.name=name
         self.date=date
