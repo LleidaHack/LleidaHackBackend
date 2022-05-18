@@ -31,4 +31,4 @@ jobs:
             cd ${{ secrets.PROJECT_PATH }}
             pkill python3
             python3 -m pip install -r requirements.txt
-            python3 t.py &
+            python3 t.py > /dev/null &
