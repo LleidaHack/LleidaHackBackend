@@ -1,0 +1,4 @@
+# .gitignore
+.config
+database.ini
+__pycache__/**

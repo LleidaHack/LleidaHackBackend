@@ -1,2 +1,6 @@
 fastapi
 # postgresql
+'pyjwt[crypto]'
+jwt
+configparser
+pip install "uvicorn[standard]"
