@@ -1,7 +1,16 @@
 from datetime import date
+from pydantic import BaseModel
 
-
-class Event:
+class Event(BaseModel):
+    id: int
+    name: str
+    date: date
+    users: list
+    location: str
+    sponsors: list
+    archived: bool
+    description: str
+    status: int
     def __init__(self,event_id:int,name:str,date:date,location:str,description:str,status:int,sponsors:list=[]):
         self.id=id
         self.name=name
@@ -13,20 +22,38 @@ class Event:
         self.description=description
         self.status=status
 
-class User:
+class User(BaseModel):
+    id: int
+    name: str
+    nickname: str
+    password: str
+    birthdate: date
+    food_restrictions: str
+    email: str
+    telephone: str
+    address: str
+    shirtSize: str
+
     def __init__(self):
         self.id=0
         self.name=""
         self.nickname=""
         self.password=""
         self.birthdate=0
-        self.food_restrictions=[]
+        self.food_restrictions=""
         self.email=""
         self.telephone=""
         self.address=""
         self.shirtSize=""
 
 class LleidaHacker(User):
+    role: str
+    nif: str
+    student: bool
+    active: bool
+    image: str
+    groups: list
+    github: str
     def __init__(self):
         super().__init__()
         self.role=""
@@ -39,20 +66,43 @@ class LleidaHacker(User):
         self.github=""
 
 class Company(User):
+    logo: str
+    description: str
     def __init__(self):
         super().__init__()
         self.logo=""
         self.description=""
 
 class Hacker(User):
+    banned: bool
+    github: str
+    linkdin: str
     def __init__(self):
         super().__init__()
         self.banned=False
         self.github=""
         self.linkdin=""
 
-class Group:
+class Group(BaseModel):
+    id: int
+    name: str
+    description: str
+    members: list
+    leader: int
+    def __init__(self):
+        self.id=0
+        self.name=""
+        self.description=""
+        self.members=[]
+        self.leader=0
+
+class EventGroup(BaseModel):
+    id: int
+    name: str
+    leader: int
+    users: list
     def __init__(self) -> None:
+        self.name=""
         self.users=[]
         self.leader=0
         self.name=""
