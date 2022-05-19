@@ -1,6 +1,6 @@
-fastapi
 # postgresql
+"uvicorn[standard]"
 'pyjwt[crypto]'
+fastapi
 jwt
 configparser
-pip install "uvicorn[standard]"
