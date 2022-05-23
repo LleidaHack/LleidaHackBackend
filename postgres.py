@@ -1,4 +1,4 @@
-import postgresql
+import psycopg2
 from configparser import ConfigParser
 
 url="pq://user:password@host/name_of_database"

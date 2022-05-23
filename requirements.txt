@@ -1,6 +1,6 @@
-# postgresql
 uvicorn[standard]
 pyjwt[crypto]
 fastapi
 jwt
 configparser
+psycopg2
