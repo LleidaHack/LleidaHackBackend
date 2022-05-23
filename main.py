@@ -12,12 +12,56 @@ app = FastAPI()
 
 connector=database_connector()
 
+@app.post("/login")
+async def login(email: str, password: str):
+    """
+    Login a user and return the token.
+    """
+    # Verify that the user is in the database
+    if connector.get_user(email, password) is None:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+    else:
+        # Create a token
+        token = VerifyToken.create_token(email)
+        # Return the token
+        return {"token": token}
+
+@app.post("/register")
+async def register(user: User):
+    """
+    Register a user and return the token.
+    """
+    # Verify that the user is not in the database
+    if connector.get_user(user.username, user.password) is not None:
+        return Response(status_code=status.HTTP_409_CONFLICT)
+    else:
+        # Create a token
+        token = VerifyToken.create_token(user.username)
+        # Return the token
+        return {"token": token}
+
+@app.post("password_reset")
+async def password_reset(email: str):
+    """
+    Reset the password of a user.
+    """
+    # Verify that the user is in the database
+    if connector.get_user(email) is None:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+    else:
+        # Create a token
+        token = VerifyToken.create_token(email)
+        # send an email with an url to reset the password
+        #TODO
+        # Return the token
+        return {"token": token}
+
 @app.get("/users",response_model=User)
-def getUsers() -> User:
+async def getUsers() -> User:
     return connector.getUsers()
 
 @app.get("/user/{userId}")
-def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)) -> User:
+async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)) -> User:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -25,7 +69,7 @@ def getUser(userId: int, response: Response, token: str = Depends(token_auth_sch
     return connector.getUser(userId)
 
 @app.post("/user")
-def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -33,7 +77,7 @@ def addUser(payload:User, response: Response, token: str = Depends(token_auth_sc
     return connector.addUser(payload)
 
 @app.post("/user/{userId}/remove")
-def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -41,7 +85,7 @@ def removeUser(userId:int, response: Response, token: str = Depends(token_auth_s
     return connector.removeUser(userId)
 
 @app.post("/user/{userId}/ban")
-def banUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def banUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -53,15 +97,15 @@ def banUser(userId:int, response: Response, token: str = Depends(token_auth_sche
 
 
 @app.get("/events")
-def getEvents() -> list:
+async def getEvents() -> list:
     return connector.getEvents()
 
 @app.get("/event/{eventId}")
-def getEvent(eventId:int) -> Event:
+async def getEvent(eventId:int) -> Event:
     return connector.getEvent(eventId)
 
 @app.post("/event")
-def addEvent(payload:Event, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def addEvent(payload:Event, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -69,7 +113,7 @@ def addEvent(payload:Event, response: Response, token: str = Depends(token_auth_
     return connector.addEvent(payload)
 
 @app.get("/event/{eventId}/users")
-def getEventUsers(eventId:int, response: Response, token: str = Depends(token_auth_scheme)) -> list:
+async def getEventUsers(eventId:int, response: Response, token: str = Depends(token_auth_scheme)) -> list:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -77,7 +121,7 @@ def getEventUsers(eventId:int, response: Response, token: str = Depends(token_au
     return connector.getEventUsers(eventId)
 
 @app.post("/event/{eventId}/add/{userId}")
-def addUserEvent(eventId:int, userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def addUserEvent(eventId:int, userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -85,7 +129,7 @@ def addUserEvent(eventId:int, userId:int, response: Response, token: str = Depen
     return connector.addUserEvent(eventId, userId)
 
 @app.post("/event/{eventId}/remove")
-def removeEvent(eventId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def removeEvent(eventId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -93,7 +137,7 @@ def removeEvent(eventId:int, response: Response, token: str = Depends(token_auth
     return connector.removeEvent(eventId)
 
 @app.post("/event/{eventId}/approve/{userId}")
-def approveEventUser(eventId:int, userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def approveEventUser(eventId:int, userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -101,7 +145,7 @@ def approveEventUser(eventId:int, userId:int, response: Response, token: str = D
     return connector.removeEvent(eventId)
 
 @app.post("/event/{eventId}/reject/{userId}")
-def rejectEventUser(eventId:int, userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def rejectEventUser(eventId:int, userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -110,7 +154,7 @@ def rejectEventUser(eventId:int, userId:int, response: Response, token: str = De
 
 
 @app.get("/groups")
-def getGroups(response: Response, token: str = Depends(token_auth_scheme)) -> list:
+async def getGroups(response: Response, token: str = Depends(token_auth_scheme)) -> list:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -118,7 +162,7 @@ def getGroups(response: Response, token: str = Depends(token_auth_scheme)) -> li
     return connector.getGroups()
 
 @app.post("/group")
-def addGroup(payload:Group, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def addGroup(payload:Group, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -126,7 +170,7 @@ def addGroup(payload:Group, response: Response, token: str = Depends(token_auth_
     return connector.addGroup(payload)
 
 @app.get("/group/{groupId}")
-def getGroup(groupId:int, response: Response, token: str = Depends(token_auth_scheme)) -> Group:
+async def getGroup(groupId:int, response: Response, token: str = Depends(token_auth_scheme)) -> Group:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
@@ -134,7 +178,7 @@ def getGroup(groupId:int, response: Response, token: str = Depends(token_auth_sc
     return connector.getGroup(groupId)
 
 @app.post("/group/{groupId}/remove")
-def removeGroup(groupId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def removeGroup(groupId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
     result = VerifyToken(token.credentials).verify()
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST

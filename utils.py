@@ -56,3 +56,18 @@ class VerifyToken():
             return {"status": "error", "message": str(e)}
 
         return payload
+    def generate_token(self, user_id, user_name):
+        """Generates a token for the user"""
+        payload = {
+            "sub": user_id,
+            "name": user_name,
+            "iat": self.get_current_time(),
+            "exp": self.get_current_time() + 3600,
+        }
+        return jwt.encode(
+            payload,
+            self.signing_key,
+            algorithm=self.config["ALGORITHMS"],
+            audience=self.config["API_AUDIENCE"],
+            issuer=self.config["ISSUER"],
+        ).decode("utf-8")
