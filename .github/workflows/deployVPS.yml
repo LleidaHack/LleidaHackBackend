@@ -32,3 +32,4 @@ jobs:
             python3 -m pip install -r requirements.txt
             cd ..
             echo "${{ steps.date.outputs.date }}  ->  ${{ github.actor }}" >> deploy.log
+            sudo systemctl restart backend.service

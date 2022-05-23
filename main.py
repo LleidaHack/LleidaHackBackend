@@ -12,7 +12,7 @@ app = FastAPI()
 
 connector=database_connector()
 
-@app.post("/login")
+@app.post("/login/{email}")
 async def login(email: str, password: str):
     """
     Login a user and return the token.
