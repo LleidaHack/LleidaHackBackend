@@ -1,6 +1,8 @@
 from __future__ import annotations
+from DatabaseService import DatabaseService
 from Models import Event, Group, User
-from connector import database_connector
+from DBConnector import database_connector
+from PostgresConnector import PostgresConnector
 from fastapi import Depends, FastAPI, Response, status
 from fastapi.security import HTTPBearer
 from utils import VerifyToken
@@ -10,7 +12,8 @@ token_auth_scheme = HTTPBearer()
 
 app = FastAPI()
 
-connector=database_connector()
+service=DatabaseService()
+
 
 @app.post("/login/{email}")
 async def login(email: str, password: str):
@@ -58,7 +61,7 @@ async def password_reset(email: str):
 
 @app.get("/users",response_model=User)
 async def getUsers() -> User:
-    return connector.getUsers()
+    return service.getUsers()
 
 @app.get("/user/{userId}")
 async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)) -> User:
@@ -66,7 +69,7 @@ async def getUser(userId: int, response: Response, token: str = Depends(token_au
     if result.get("status"):
        response.status_code = status.HTTP_400_BAD_REQUEST
        return result
-    return connector.getUser(userId)
+    return service.getUser(userId)
 
 @app.post("/user")
 async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
