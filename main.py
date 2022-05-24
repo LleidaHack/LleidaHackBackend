@@ -1,8 +1,6 @@
 from __future__ import annotations
 from DatabaseService import DatabaseService
 from Models import Event, Group, User
-from DBConnector import database_connector
-from PostgresConnector import PostgresConnector
 from fastapi import Depends, FastAPI, Response, status
 from fastapi.security import HTTPBearer
 from utils import VerifyToken
