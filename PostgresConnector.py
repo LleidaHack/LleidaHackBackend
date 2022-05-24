@@ -4,8 +4,6 @@ from configparser import ConfigParser
 from DBConnector import DBConnector
 from PostgresTables import PostgresTable
 
-url="pq://user:password@host/name_of_database"
-db = postgresql.open(url)
 
 
 class PostgresConnector(DBConnector):
