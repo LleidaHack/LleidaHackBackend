@@ -10,7 +10,7 @@ class PostgresTable():
     def get_create(self):
         return "CREATE TABLE %s (%s);" % (self.name, self.desc)
     def get_drop(self):
-        return "DROP TABLE %s;" % self.name
+        return "DROP TABLE IF EXISTS %s CASCADE;" % self.name
 
 # USER_TABLE=PostgresTable("users", "user_id serial PRIMARY KEY, user_name text, user_password text, user_email text, user_phone text, user_role text, user_status int")
 # EVENT_TABLE="CREATE TABLE events (event_id serial PRIMARY KEY, event_name text, event_date date, event_time time, event_location text, event_description text, event_status int)"
