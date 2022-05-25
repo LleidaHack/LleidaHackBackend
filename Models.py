@@ -2,8 +2,8 @@ from datetime import date
 from pydantic import BaseModel
 from dataclasses import dataclass
 
-@dataclass
-class Event():
+# @dataclass
+class Event(BaseModel):
     id: int
     name: str
     date: date
@@ -24,8 +24,8 @@ class Event():
         self.description=description
         self.status=status
 
-@dataclass
-class User():
+# @dataclass
+class User(BaseModel):
     id: int
     name: str
     nickname: str
@@ -49,7 +49,7 @@ class User():
         self.address=address
         self.shirt_size=shirtSize
 
-@dataclass
+# @dataclass
 class LleidaHacker(User):
     role: str
     nif: str
@@ -69,7 +69,7 @@ class LleidaHacker(User):
         self.groups=groups
         self.github=github
 
-@dataclass
+# @dataclass
 class Company(User):
     logo: str
     description: str
@@ -78,7 +78,7 @@ class Company(User):
         self.logo=logo
         self.description=description
 
-@dataclass
+# @dataclass
 class Hacker(User):
     banned: bool
     github: str
@@ -89,8 +89,8 @@ class Hacker(User):
         self.github=github
         self.linkdin=linkdin
 
-@dataclass
-class Group():
+# @dataclass
+class Group(BaseModel):
     id: int
     name: str
     description: str
@@ -103,8 +103,8 @@ class Group():
         self.members=members
         self.leader=leader
 
-@dataclass
-class EventGroup():
+# @dataclass
+class EventGroup(BaseModel):
     id: int
     name: str
     leader: int
