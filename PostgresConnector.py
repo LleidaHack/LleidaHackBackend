@@ -39,7 +39,7 @@ class PostgresConnector(DBConnector):
         self.commit()
 
     def execute_query(self,query:str,params):
-        self.cursor.execute(query)
+        self.cursor.execute(query,params)
         return self.cursor.fetchall()
 
     def commit(self):
