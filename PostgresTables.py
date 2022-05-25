@@ -49,4 +49,4 @@ PostgresTable.add_table(PostgresTable("organizes", "user_id serial,event_id seri
 PostgresTable.add_table(PostgresTable("takes_part", "user_id serial,group_id serial,event_id serial,group_position varchar,devpost varchar(500),constraint pk_takes_part primary Key (user_id, group_id, event_id),constraint fk_hacker_takes_part foreign key(user_id) references llhk_user(id),constraint fk_event_takes_part foreign key(event_id) references llhk_Event(id),constraint fk_group_takes_part foreign key(group_id) references Hacker_group(id)"))
 PostgresTable.add_table(PostgresTable("sponsors", "company_id serial,event_id serial,description varchar(300),constraint pk_sponsors primary Key(company_id, event_id),constraint fk_sponsors_event foreign Key(event_id) references llhk_Event(id),constraint fk_company_event foreign Key(company_id) references company(id)"))
 
-print(PostgresTable.TABLES["llhk_user"].get_insert())
+# print(PostgresTable.TABLES["llhk_user"].get_insert())
