@@ -45,7 +45,7 @@ class User():
         self.email=email
         self.telephone=telephone
         self.address=address
-        self.shirtSize=shirtSize
+        self.shirt_size=shirtSize
 
 class LleidaHacker(User):
     role: str
