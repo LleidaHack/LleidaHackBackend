@@ -1,5 +1,6 @@
 from datetime import date
 from pydantic import BaseModel
+from dataclasses import dataclass
 
 class Event(BaseModel):
     id: int
@@ -21,8 +22,8 @@ class Event(BaseModel):
         self.archived=False
         self.description=description
         self.status=status
-
-class User(BaseModel):
+@dataclass
+class User():
     id: int
     name: str
     nickname: str
