@@ -22,7 +22,7 @@ class PostgresConnector(DBConnector):
         self.connect()
         if self.recreate_tables == 'True':
             self.dropTables()
-            self.cretaeTables()
+            # self.cretaeTables()
     
     def connect(self):
         self.conn = psycopg2.connect(database=self.db_name, user=self.user, password=self.password, host=self.host, port=self.port)
