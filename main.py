@@ -9,7 +9,12 @@ from utils import VerifyToken
 # Scheme for the Authorization header
 token_auth_scheme = HTTPBearer()
 
-app = FastAPI()
+app = FastAPI(title="API_NAME",
+              description="API_DESC",
+              version="0.2.0",
+              docs_url='/api/docs',
+              redoc_url='/api/redoc',
+              openapi_url='/api/openapi.json')
 
 service=DatabaseService()
 
