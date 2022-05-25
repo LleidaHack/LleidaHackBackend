@@ -38,8 +38,9 @@ class PostgresConnector(DBConnector):
             self.cursor.execute(t.get_drop())
         self.commit()
 
-    def execute_query(self,query:str):
+    def execute_query(self,query:str,params):
         self.cursor.execute(query)
+        return self.cursor.fetchall()
 
     def commit(self):
         self.conn.commit()
