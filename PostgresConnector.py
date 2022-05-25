@@ -29,7 +29,7 @@ class PostgresConnector(DBConnector):
         self.cursor = self.conn.cursor()
 
     def cretaeTables(self):
-        for t in PostgresTable.TABLES:
+        for t in PostgresTable.TABLES: 
             self.cursor.execute(t.get_create())
         self.commit()
 
@@ -37,8 +37,16 @@ class PostgresConnector(DBConnector):
         for t in PostgresTable.TABLES:
             self.cursor.execute(t.get_drop())
         self.commit()
+    
+    def insert(self,query:str,params):
+        self.cursor.execute(query,params)
+        self.commit()
+    
+    # def update(self,query:str,params):
+        # self.cursor.execute(query,params)
+        # self.commit()
 
-    def execute_query(self,query:str,params):
+    def select(self,query:str,params):
         self.cursor.execute(query,params)
         return self.cursor.fetchall()
 
