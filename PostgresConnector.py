@@ -21,7 +21,7 @@ class PostgresConnector(DBConnector):
         self.cursor = None
         self.connect()
         if self.recreate_tables == 'True':
-            #self.dropTables()
+            self.dropTables()
             self.cretaeTables()
     
     def connect(self):
@@ -38,8 +38,8 @@ class PostgresConnector(DBConnector):
             self.cursor.execute(t.get_drop())
         self.commit()
 
-    def execute_query(query:str):
-        db.execute(query)
+    def execute_query(self,query:str):
+        self.cursor.execute(query)
 
     def commit(self):
         self.conn.commit()
