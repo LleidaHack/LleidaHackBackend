@@ -2,7 +2,8 @@ from datetime import date
 from pydantic import BaseModel
 from dataclasses import dataclass
 
-class Event(BaseModel):
+@dataclass
+class Event():
     id: int
     name: str
     date: date
@@ -22,6 +23,7 @@ class Event(BaseModel):
         self.archived=False
         self.description=description
         self.status=status
+
 @dataclass
 class User():
     id: int
@@ -47,6 +49,7 @@ class User():
         self.address=address
         self.shirt_size=shirtSize
 
+@dataclass
 class LleidaHacker(User):
     role: str
     nif: str
@@ -55,54 +58,58 @@ class LleidaHacker(User):
     image: str
     groups: list
     github: str
-    def __init__(self):
-        super().__init__()
-        self.role=""
-        self.nif=""
-        self.student=True
-        self.active=True
-        self.image=""
+    def __init__(self,name:str,nickname:str,password:str,birthdate:date,food_restrictions:str,email:str,telephone:str,address:str,shirtSize:str,user_id:int=None,role:str="",nif:str="",student:bool=False,active:bool=False,image:str="",groups:list=[],github:str=""):
+        super().__init__(name,nickname,password,birthdate,food_restrictions,email,telephone,address,shirtSize,user_id)
+        self.role=role
+        self.nif=nif
+        self.student=student
+        self.active=active
+        self.image=image
         #principal group on the first position
-        self.groups=[]
-        self.github=""
+        self.groups=groups
+        self.github=github
 
+@dataclass
 class Company(User):
     logo: str
     description: str
-    def __init__(self):
-        super().__init__()
-        self.logo=""
-        self.description=""
+    def __init__(self, name: str, nickname: str, password: str, birthdate: date, food_restrictions: str, email: str, telephone: str, address: str, shirtSize: str, user_id: int = None, logo: str = "", description: str = ""):
+        super().__init__(name, nickname, password, birthdate, food_restrictions, email, telephone, address, shirtSize, user_id)
+        self.logo=logo
+        self.description=description
 
+@dataclass
 class Hacker(User):
     banned: bool
     github: str
     linkdin: str
-    def __init__(self):
-        super().__init__()
-        self.banned=False
-        self.github=""
-        self.linkdin=""
+    def __init__(self, name: str, nickname: str, password: str, birthdate: date, food_restrictions: str, email: str, telephone: str, address: str, shirtSize: str, user_id: int = None, banned: bool = False, github: str = "", linkdin: str = ""):
+        super().__init__(name, nickname, password, birthdate, food_restrictions, email, telephone, address, shirtSize, user_id)
+        self.banned=banned
+        self.github=github
+        self.linkdin=linkdin
 
-class Group(BaseModel):
+@dataclass
+class Group():
     id: int
     name: str
     description: str
     members: list
     leader: int
-    def __init__(self):
-        self.id=0
-        self.name=""
-        self.description=""
-        self.members=[]
-        self.leader=0
+    def __init__(self, name: str, description: str, members: list, leader: int, group_id: int = None):
+        self.id=group_id
+        self.name=name
+        self.description=description
+        self.members=members
+        self.leader=leader
 
-class EventGroup(BaseModel):
+@dataclass
+class EventGroup():
     id: int
     name: str
     leader: int
     users: list
-    def __init__(self) -> None:
+    def __init__(self, name:str, leader:int, users:list, id:int = None ) -> None:
         self.name=""
         self.users=[]
         self.leader=0
