@@ -34,17 +34,17 @@ class User(BaseModel):
     address: str
     shirtSize: str
 
-    def __init__(self):
-        self.id=0
-        self.name=""
-        self.nickname=""
-        self.password=""
-        self.birthdate=0
-        self.food_restrictions=""
-        self.email=""
-        self.telephone=""
-        self.address=""
-        self.shirtSize=""
+    def __init__(self,name:str,nickname:str,password:str,birthdate:date,food_restrictions:str,email:str,telephone:str,address:str,shirtSize:str,user_id:int=None):
+        self.id=user_id
+        self.name=name
+        self.nickname=nickname
+        self.password=password
+        self.birthdate=birthdate
+        self.food_restrictions=food_restrictions
+        self.email=email
+        self.telephone=telephone
+        self.address=address
+        self.shirtSize=shirtSize
 
 class LleidaHacker(User):
     role: str

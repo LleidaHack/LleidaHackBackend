@@ -12,9 +12,6 @@ class PostgresTable():
     def get_drop(self):
         return "DROP TABLE IF EXISTS %s CASCADE;" % self.name
 
-# USER_TABLE=PostgresTable("llhk_user", "user_id serial PRIMARY KEY, user_name text, user_password text, user_email text, user_phone text, user_role text, user_status int")
-# EVENT_TABLE="CREATE TABLE events (event_id serial PRIMARY KEY, event_name text, event_date date, event_time time, event_location text, event_description text, event_status int)"
-
 PostgresTable.TABLES.append(PostgresTable("llhk_user", "id serial,name varchar(30) NOT NULL,nickname varchar(20),email varchar(30),password varchar(50),birthday date NOT NULL,phone_number varchar(20),food_restrictions varchar(300),shirt_size varchar(6),constraint pk_llhk_user PRIMARY KEY (id)"))
 PostgresTable.TABLES.append(PostgresTable("Hacker", "id serial constraint pk_hacker Primary Key, github varchar(100),linkedIn varchar(100),banned boolean,constraint fk_hacker Foreign Key(id) references llhk_user(id)"))
 PostgresTable.TABLES.append(PostgresTable("lleida_hacker", "id serial constraint pk_lleida_hacker Primary Key,NIF varchar(9) unique not null,student boolean,active boolean,image bytea,constraint fk_lleida_hacker Foreign Key(id) References llhk_user(id)"))
