@@ -206,4 +206,4 @@ async def removeGroup(groupId:int, response: Response, token: str = Depends(toke
     return service.removeGroup(groupId)
 
 
-service.addUser(User("t","t","",datetime.datetime.now(),"","","","",""))
+# service.addUser(User("t","t","",datetime.datetime.now(),"","","","",""))
