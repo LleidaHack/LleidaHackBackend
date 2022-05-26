@@ -5,6 +5,7 @@ from Models import Event, Group, User
 from fastapi import Depends, FastAPI, Response, status
 from fastapi.security import HTTPBearer
 from utils import VerifyToken
+from typing import List
 
 # Scheme for the Authorization header
 token_auth_scheme = HTTPBearer()
@@ -63,7 +64,7 @@ async def password_reset(email: str):
         # Return the token
         return {"token": token}
 
-@app.get("/users",response_model=User)
+@app.get("/users",response_model=List[User])
 async def getUsers() -> User:
     return service.getUsers()
 
