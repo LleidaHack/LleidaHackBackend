@@ -1,5 +1,5 @@
 from datetime import date
-# from pydantic import BaseModel
+from pydantic import BaseModel
 from dataclasses import dataclass
 
 @dataclass
@@ -24,8 +24,8 @@ class Event():
         self.description=description
         self.status=status
 
-@dataclass
-class User():
+# @dataclass
+class User(BaseModel):
     id: int
     name: str
     nickname: str
@@ -49,45 +49,45 @@ class User():
         self.address=address
         self.shirt_size=shirtSize
 
-@dataclass
-class LleidaHacker(User):
-    role: str
-    nif: str
-    student: bool
-    active: bool
-    image: str
-    groups: list
-    github: str
-    def __init__(self,name:str,nickname:str,password:str,birthdate:date,food_restrictions:str,email:str,telephone:str,address:str,shirtSize:str,user_id:int=None,role:str="",nif:str="",student:bool=False,active:bool=False,image:str="",groups:list=[],github:str=""):
-        super().__init__(name,nickname,password,birthdate,food_restrictions,email,telephone,address,shirtSize,user_id)
-        self.role=role
-        self.nif=nif
-        self.student=student
-        self.active=active
-        self.image=image
-        #principal group on the first position
-        self.groups=groups
-        self.github=github
+# @dataclass
+# class LleidaHacker(User):
+#     role: str
+#     nif: str
+#     student: bool
+#     active: bool
+#     image: str
+#     groups: list
+#     github: str
+#     def __init__(self,name:str,nickname:str,password:str,birthdate:date,food_restrictions:str,email:str,telephone:str,address:str,shirtSize:str,user_id:int=None,role:str="",nif:str="",student:bool=False,active:bool=False,image:str="",groups:list=[],github:str=""):
+#         super().__init__(name,nickname,password,birthdate,food_restrictions,email,telephone,address,shirtSize,user_id)
+#         self.role=role
+#         self.nif=nif
+#         self.student=student
+#         self.active=active
+#         self.image=image
+#         #principal group on the first position
+#         self.groups=groups
+#         self.github=github
 
-@dataclass
-class Company(User):
-    logo: str
-    description: str
-    def __init__(self, name: str, nickname: str, password: str, birthdate: date, food_restrictions: str, email: str, telephone: str, address: str, shirtSize: str, user_id: int = None, logo: str = "", description: str = ""):
-        super().__init__(name, nickname, password, birthdate, food_restrictions, email, telephone, address, shirtSize, user_id)
-        self.logo=logo
-        self.description=description
+# @dataclass
+# class Company(User):
+#     logo: str
+#     description: str
+#     def __init__(self, name: str, nickname: str, password: str, birthdate: date, food_restrictions: str, email: str, telephone: str, address: str, shirtSize: str, user_id: int = None, logo: str = "", description: str = ""):
+#         super().__init__(name, nickname, password, birthdate, food_restrictions, email, telephone, address, shirtSize, user_id)
+#         self.logo=logo
+#         self.description=description
 
-@dataclass
-class Hacker(User):
-    banned: bool
-    github: str
-    linkdin: str
-    def __init__(self, name: str, nickname: str, password: str, birthdate: date, food_restrictions: str, email: str, telephone: str, address: str, shirtSize: str, user_id: int = None, banned: bool = False, github: str = "", linkdin: str = ""):
-        super().__init__(name, nickname, password, birthdate, food_restrictions, email, telephone, address, shirtSize, user_id)
-        self.banned=banned
-        self.github=github
-        self.linkdin=linkdin
+# @dataclass
+# class Hacker(User):
+#     banned: bool
+#     github: str
+#     linkdin: str
+#     def __init__(self, name: str, nickname: str, password: str, birthdate: date, food_restrictions: str, email: str, telephone: str, address: str, shirtSize: str, user_id: int = None, banned: bool = False, github: str = "", linkdin: str = ""):
+#         super().__init__(name, nickname, password, birthdate, food_restrictions, email, telephone, address, shirtSize, user_id)
+#         self.banned=banned
+#         self.github=github
+#         self.linkdin=linkdin
 
 @dataclass
 class Group():
