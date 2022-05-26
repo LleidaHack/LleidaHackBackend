@@ -4,8 +4,8 @@ from typing import List
 from pydantic import BaseModel
 from dataclasses import dataclass
 
-@dataclass
-class Event():
+# @dataclass
+class Event(BaseModel):
     id: int = None
     name: str = None
     date: date = None
@@ -15,7 +15,7 @@ class Event():
     archived: bool = False
     description: str = None
     status: int = 0
-    def __init__(self,event_id:int,name:str,date:date,location:str,description:str,status:int,sponsors:list=[]):
+    def __init__(self,event_id:int,name:str,date:date,location:str,description:str,status:int,sponsors:List[Company]=[]):
         e=Event()
         e.id=event_id
         e.name=name
