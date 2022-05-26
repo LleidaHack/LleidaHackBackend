@@ -62,7 +62,7 @@ class LleidaHacker(User):
     student: bool = True
     active: bool = False
     image: str = None
-    groups: list = []
+    groups: List[str] = []
     github: str = None
     def create(name:str,nickname:str,password:str,birthdate:date,food_restrictions:str,email:str,telephone:str,address:str,shirtSize:str,user_id:int=None,role:str="",nif:str="",student:bool=False,active:bool=False,image:str="",groups:list=[],github:str=""):
         ll=LleidaHacker()
@@ -129,11 +129,11 @@ class Hacker(User):
 
 
 class Group(BaseModel):
-    id: int
-    name: str
-    description: str
-    members: list
-    leader: int
+    id: int = None
+    name: str = None
+    description: str = None
+    members: List[User] = []
+    leader: int = None
     def create(name: str, description: str, members: list, leader: int, group_id: int = None):
         g=Group()
         g.id=group_id
@@ -148,7 +148,7 @@ class EventGroup(BaseModel):
     id: int = None
     name: str = None
     leader: int = None
-    users: list = []
+    users: List[User] = []
     def create(name:str, leader:int, users:list, id:int = None ) -> None:
         eg=EventGroup()
         eg.id=id
