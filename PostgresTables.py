@@ -53,5 +53,5 @@ PostgresTable.add_table(PostgresTable("takes_part", "user_id serial,group_id ser
 PostgresTable.add_table(PostgresTable("sponsors", "company_id serial,event_id serial,description varchar(300),constraint pk_sponsors primary Key(company_id, event_id),constraint fk_sponsors_event foreign Key(event_id) references llhk_Event(id),constraint fk_company_event foreign Key(company_id) references company(id)"))
 
 # print(PostgresTable.TABLES["llhk_user"].get_insert())
-user=User("t","t","",datetime.datetime.now(),"","","","","")
+# user=User("t","t","",datetime.datetime.now(),"","","","","")
 # user.__fields_set__
