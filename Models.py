@@ -15,7 +15,7 @@ class Event(BaseModel):
     archived: bool = False
     description: str = None
     status: int = 0
-    def __init__(self,event_id:int,name:str,date:date,location:str,description:str,status:int,sponsors:List[Company]=[]):
+    def create(event_id:int,name:str,date:date,location:str,description:str,status:int,sponsors:List[Company]=[]):
         e=Event()
         e.id=event_id
         e.name=name
