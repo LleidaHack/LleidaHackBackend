@@ -1,5 +1,6 @@
+from __future__ import annotations
 from datetime import date
-from typing import Optional
+from typing import List
 from pydantic import BaseModel
 from dataclasses import dataclass
 
@@ -8,9 +9,9 @@ class Event():
     id: int = None
     name: str = None
     date: date = None
-    users: list = []
+    users: List[User] = []
     location: str = None
-    sponsors: list = []
+    sponsors: List[Company] = []
     archived: bool = False
     description: str = None
     status: int = 0
