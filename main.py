@@ -75,7 +75,7 @@ async def password_reset(email: str):
         # Return the token
         return {"token": token}
 
-@app.get("/users",response_model=List[User])
+@app.get("/users")
 async def getUsers() -> User:
     return service.getUsers()
 
