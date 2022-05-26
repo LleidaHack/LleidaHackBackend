@@ -7,7 +7,6 @@ from typing import List
 from fastapi import Depends, FastAPI, Response, status, Request
 from fastapi.security import HTTPBearer
 from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 
@@ -24,11 +23,11 @@ app = FastAPI(title="API_NAME",
 service=DatabaseService()
 
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+@app.exception_handler(ValueError)
+async def value_error_exception_handler(request: Request, exc: ValueError):
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content=jsonable_encoder({"detail": exc.errors(), "Error": "Name field is missing"}),
+        status_code=400,
+        content={"message": str(exc)},
     )
 
 
