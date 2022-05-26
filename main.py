@@ -2,10 +2,14 @@ from __future__ import annotations
 import datetime
 from DatabaseService import DatabaseService
 from Models import Event, Group, User
-from fastapi import Depends, FastAPI, Response, status
-from fastapi.security import HTTPBearer
 from utils import VerifyToken
 from typing import List
+from fastapi import Depends, FastAPI, Response, status, Request
+from fastapi.security import HTTPBearer
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
 
 # Scheme for the Authorization header
 token_auth_scheme = HTTPBearer()
@@ -18,6 +22,14 @@ app = FastAPI(title="API_NAME",
               openapi_url='/api/openapi.json')
 
 service=DatabaseService()
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors(), "Error": "Name field is missing"}),
+    )
 
 
 @app.post("/login/{email}")
