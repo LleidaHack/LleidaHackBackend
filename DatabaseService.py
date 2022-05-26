@@ -7,7 +7,7 @@ class DatabaseService():
     def __init__(self):
         self.connector=PostgresConnector()
 
-    def getllhk_user(self) -> list:
+    def getUsers(self) -> list:
         return self.connector.select("SELECT * FROM llhk_user")
     def getUser(self, id: int) -> list:
         return self.connector.select("SELECT * FROM llhk_user WHERE user_id = %s" % id)
