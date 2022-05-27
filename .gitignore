@@ -2,3 +2,4 @@
 .config
 database.ini
 __pycache__/**
+.env
