@@ -83,7 +83,7 @@ async def value_error_exception_handler(request: Request, exc: ValueError):
 
 @app.get("/users")
 async def getUsers(db: Session = Depends(get_db)):
-    book = db.session.query(ModelUser).all()
+    book = db.query(ModelUser).all()
     return book
     # return service.getUsers()
 

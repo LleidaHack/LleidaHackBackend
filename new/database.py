@@ -8,7 +8,7 @@ SessionLocal = sessionmaker ( autocommit = False , autoflush = False , bind = en
 Base = declarative_base ( )
 
 def get_db() :
-    db = Session.Local ( )
+    db = SessionLocal ( )
     try :
         yield db
     except :
