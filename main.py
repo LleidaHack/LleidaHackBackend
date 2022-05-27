@@ -110,7 +110,7 @@ async def addUser(payload:SchemaUser, response: Response, db: Session = Depends(
                          food_restrictions=payload.food_restrictions,
                          telephone=payload.telephone,
                          address=payload.address,
-                         shirtSize=payload.shirtSize)
+                         shirt_size=payload.shirt_size)
     db.add(new_user)
     db.commit()
     # db.refresh(new_job)
