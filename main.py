@@ -1,12 +1,10 @@
-from __future__ import annotations
-import datetime
-import os
+# from __future__ import annotations
+# import datetime
+# import os
 # from DatabaseService import DatabaseService
-from utils import VerifyToken
-from typing import List
+# from utils import VerifyToken
 from Models import User as ModelUser
 from schema import User as SchemaUser
-from dotenv import load_dotenv
 from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, Response, status, Request
@@ -99,7 +97,7 @@ async def getUsers(db: Session = Depends(get_db)):
 
 @app.post("/user")
 # async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-async def addUser(payload:SchemaUser, response: Response, db: Session = Depends(get_db)) -> int:
+async def addUser(payload:SchemaUser, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
     # if result.get("status"):
     #    response.status_code = status.HTTP_400_BAD_REQUEST
