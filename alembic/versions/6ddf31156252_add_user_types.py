@@ -17,7 +17,10 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('llhk_user', sa.Column('type', sa.String(length=50), nullable=False, default='llhk_user'))
+   
+    op.add_column('llhk_user', sa.Column('type', sa.String(length=50), nullable=True))
+    op.execute("UPDATE llhk_users SET type = llhk_user")
+    op.alter_column('users', 'type', nullable=False)
     op.create_table('lleida_hacker',
                      sa.Column('user_id', sa.Integer(), sa.ForeignKey('llhk_user.id'), primary_key=True),
                      sa.Column('role', sa.String(length=50), nullable=False),
@@ -38,6 +41,7 @@ def upgrade():
                     sa.Column('github', sa.String(length=50), nullable=False),
                     sa.Column('linkedin', sa.String(length=50), nullable=True),
     )
+
 
 def downgrade():
     op.drop_column('llhk_user', 'type')
