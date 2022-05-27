@@ -13,9 +13,9 @@ from fastapi import Depends, FastAPI, Response, status, Request
 from fastapi.security import HTTPBearer
 from fastapi.responses import JSONResponse
 
-from dotenv import load_dotenv
 
-load_dotenv('.env')
+
+# load_dotenv('.env')
 
 # Scheme for the Authorization header
 token_auth_scheme = HTTPBearer()
