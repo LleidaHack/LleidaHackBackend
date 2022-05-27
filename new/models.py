@@ -3,7 +3,7 @@ from sqlalchemy.sql.schema import Column
 from .database import Base
 
 class Job(Base) :
-    _tablename__ = 'jobs'
+    __tablename__ = 'jobs'
     id = Column(Integer, primary_key = True)
     title = Column(String, nullable = False)
     description = Column(String, nullable = False)
