@@ -1,16 +1,19 @@
 from __future__ import annotations
 import datetime
 import os
-from DatabaseService import DatabaseService
+# from DatabaseService import DatabaseService
 from utils import VerifyToken
 from typing import List
 from Models import User as ModelUser
+from schema import User as SchemaUser
 from dotenv import load_dotenv
+from database import get_db
+from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, Response, status, Request
 from fastapi.security import HTTPBearer
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from fastapi_sqlalchemy import DBSessionMiddleware, db
+
+from dotenv import load_dotenv
 
 load_dotenv('.env')
 
@@ -26,7 +29,7 @@ app = FastAPI(title="API_NAME",
 
 # service=DatabaseService()
 
-app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
+# app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
 
 @app.exception_handler(ValueError)
 async def value_error_exception_handler(request: Request, exc: ValueError):
@@ -81,7 +84,7 @@ async def value_error_exception_handler(request: Request, exc: ValueError):
 #         return {"token": token}
 
 @app.get("/users")
-async def getUsers():
+async def getUsers(db: Session = Depends(get_db)):
     book = db.session.query(ModelUser).all()
     return book
     # return service.getUsers()
@@ -94,13 +97,27 @@ async def getUsers():
 #        return result
 #     return service.getUser(userId)
 
-# @app.post("/user")
+@app.post("/user")
 # async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-#     result = VerifyToken(token.credentials).verify()
-#     if result.get("status"):
-#        response.status_code = status.HTTP_400_BAD_REQUEST
-#        return result
-#     return service.addUser(payload)
+async def addUser(payload:SchemaUser, response: Response, db: Session = Depends(get_db)) -> int:
+    # result = VerifyToken(token.credentials).verify()
+    # if result.get("status"):
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return result
+    new_user = ModelUser(name=payload.name, 
+                         email=payload.email,
+                         password=payload.password,
+                         nickname=payload.nickname,
+                         birthdate = payload.birthdate,
+                         food_restrictions=payload.food_restrictions,
+                         telephone=payload.telephone,
+                         address=payload.address,
+                         shirtSize=payload.shirtSize)
+    db.add(new_user)
+    db.commit()
+    # db.refresh(new_job)
+    return {"success": True, "created_id": new_user.id}
+    # return service.addUser(payload)
 
 # @app.post("/user/{userId}/remove")
 # async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
