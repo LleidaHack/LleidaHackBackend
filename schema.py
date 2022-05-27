@@ -23,7 +23,7 @@ class User(BaseModel):
     email: str
     telephone: str
     address: str
-    shirtSize: str
+    shirt_size: str
 
     # class Config:
         # orm_mode = True
