@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends
-from .schemas import CreateJobRequest
+from schemas import CreateJobRequest
 from sqlalchemy.orm import Session
-from .database import get_db
-from .models import Job
+from database import get_db
+from models import Job
 
 app= FastAPI()
 @app.post("/")
