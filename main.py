@@ -25,12 +25,15 @@ from fastapi.responses import JSONResponse
 # Scheme for the Authorization header
 token_auth_scheme = HTTPBearer()
 
-app = FastAPI(title="API_NAME",
+app = FastAPI(title="Lleida Hacke API",
+              description="Lleida Hacker API",
               description="API_DESC",
-              version="0.2.0",
+              version="2.0",
               docs_url='/api/docs',
               redoc_url='/api/redoc',
-              openapi_url='/api/openapi.json')
+              openapi_url='/api/openapi.json',
+              debug=True,
+)
 
 # service=DatabaseService()
 
