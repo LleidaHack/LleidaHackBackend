@@ -124,7 +124,7 @@ async def add_user(payload:SchemaUser, response: Response, db: Session = Depends
     return {"success": True, "created_id": new_user.id}
     # return service.addUser(payload)
 
-@app.remove("/user/{userId}")
+@app.delete("/user/{userId}")
 # async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def remove_user(userId:int, response: Response, db: Session = Depends(get_db)):
 #     result = VerifyToken(token.credentials).verify()
