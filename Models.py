@@ -139,6 +139,7 @@ class Hacker(User):
 
 
 class Group(Base):
+    __tablename__ = 'group'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
     description: str = Column(String)
@@ -155,6 +156,7 @@ class Group(Base):
 
 
 class EventGroup(Base):
+    __tablename__ = 'event_group'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
     leader: int = Column(Integer)
