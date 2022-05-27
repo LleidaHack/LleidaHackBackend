@@ -36,6 +36,7 @@ jobs:
             echo "${{ steps.date.outputs.date }}  ->  ${{ github.actor }}" >> deploy.log
             echo > gunicorn_access.log
             echo > gunicorn_error.log
+            alembic upgrade head
             sudo systemctl restart backend.service
             sudo systemctl status backend.service
       - name: check server status

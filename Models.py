@@ -45,6 +45,7 @@ class User(Base):
     telephone: str = Column(String)
     address: str = Column(String)
     shirt_size: str = Column(String)
+    type: str = Column(String)
 
     __mapper_args__ = {
         "polymorphic_identity": "llhk_user",
