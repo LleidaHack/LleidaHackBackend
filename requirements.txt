@@ -4,3 +4,6 @@ fastapi
 jwt
 configparser
 psycopg2
+fastapi-sqlalchemy
+pydantic 
+alembic
