@@ -12,7 +12,4 @@ def create_job(job: CreateJobRequest, db: Session = Depends(get_db)):
     db.commit()
     # db.refresh(new_job)
     return {"success": True, "created_id": new_job.id}
-@app.get("/")
-def getUsers(db: Session = Depends(get_db)):
-    book = db.session.query(Job).all()
-    return book
+    
