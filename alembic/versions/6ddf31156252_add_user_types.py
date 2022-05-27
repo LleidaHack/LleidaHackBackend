@@ -22,8 +22,8 @@ def upgrade():
     op.execute("UPDATE llhk_users SET type = llhk_user")
     op.alter_column('users', 'type', nullable=False)
     op.create_table('lleida_hacker',
-                     sa.Column('user_id', sa.Integer(), sa.ForeignKey('llhk_user.id'), primary_key=True),
-                     sa.Column('role', sa.String(length=50), nullable=False),
+                    sa.Column('user_id', sa.Integer(), sa.ForeignKey('llhk_user.id'), primary_key=True),
+                    sa.Column('role', sa.String(length=50), nullable=False),
                     sa.Column('nif', sa.String(length=50), nullable=False),
                     sa.Column('student', sa.Integer(), nullable=False),
                     sa.Column('active', sa.Integer(), nullable=False),

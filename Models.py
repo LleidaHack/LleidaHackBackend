@@ -19,20 +19,8 @@ from database import Base
 #     archived: bool = Column(Integer, default=0)
 #     description: str = Column(String)
 #     status: int = Column(Integer, default=0)
-    # def create(event_id:int,name:str,date:date,location:str,description:str,status:int,sponsors:List[Company]=[]):
-    #     e=Event()
-    #     e.id=event_id
-    #     e.name=name
-    #     e.date=date
-    #     e.location=location
-    #     e.description=description
-    #     e.status=status
-    #     e.sponsors=sponsors
-    #     e.users=[]
-    #     e.archived=False
-    #     return e
 
-# @dataclass
+
 class User(Base):
     __tablename__ = 'llhk_user'
     id: int = Column(Integer, primary_key=True, index=True)
