@@ -27,7 +27,6 @@ token_auth_scheme = HTTPBearer()
 
 app = FastAPI(title="Lleida Hacke API",
               description="Lleida Hacker API",
-              description="API_DESC",
               version="2.0",
               docs_url='/api/docs',
               redoc_url='/api/redoc',
