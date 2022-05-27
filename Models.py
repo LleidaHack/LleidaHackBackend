@@ -46,45 +46,47 @@ class User(Base):
     address: str = Column(String)
     shirt_size: str = Column(String)
 
-    # def create(name:str,nickname:str,password:str,birthdate:date,food_restrictions:str,email:str,telephone:str,address:str,shirtSize:str,user_id:int=0):
-    #     u=User()
-    #     u.id=user_id
-    #     u.name=name
-    #     u.nickname=nickname
-    #     u.password=password
-    #     u.birthdate=birthdate
-    #     u.food_restrictions=food_restrictions
-    #     u.email=email
-    #     u.telephone=telephone
-    #     u.address=address
-    #     u.shirt_size=shirtSize
-    #     return u
+    __mapper_args__ = {
+        "polymorphic_identity": "llhk_user",
+        "polymorphic_on": type,
+    }
 
 
-# class LleidaHacker(User):
-#     __tablename__ = 'lleida_hacker'
-#     user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
-#     role: str = Column(String)
-#     nif: str = Column(String)
-#     student: bool = Column(Integer, default=0)
-#     active: bool = Column(Integer, default=0)
-#     image: str = Column(String)
-#     groups: List[Group] = relationship('Group', secondary='group_user')
-    # github: str = Column(String)
+class LleidaHacker(User):
+    __tablename__ = 'lleida_hacker'
+    user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
+    role: str = Column(String)
+    nif: str = Column(String)
+    student: bool = Column(Integer, default=0)
+    active: bool = Column(Integer, default=0)
+    image: str = Column(String)
+    # groups: List[Group] = relationship('Group', secondary='group_user')
+    github: str = Column(String)
     
+    __mapper_args__ = {
+        "polymorphic_identity": "lleida_hacker",
+    }
 
-# class Company(User):
-#     __tablename__ = 'company'
-#     user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
-#     logo: str = Column(String)
-#     description: str = Column(String)
+class Company(User):
+    __tablename__ = 'company'
+    user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
+    logo: str = Column(String)
+    description: str = Column(String)
 
-# class Hacker(User):
-#     __tablename__ = 'hacker'
-#     user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
-#     banned: bool = Column(Integer, default=0)
-#     github: str = Column(String)
-#     linkdin: str = Column(String)
+    __mapper_args__ = {
+        "polymorphic_identity": "company",
+    }
+
+class Hacker(User):
+    __tablename__ = 'hacker'
+    user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
+    banned: bool = Column(Integer, default=0)
+    github: str = Column(String)
+    linkdin: str = Column(String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "hacker",
+    }
 
 # class Group(Base):
 #     __tablename__ = 'group'
