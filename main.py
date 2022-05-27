@@ -4,7 +4,14 @@
 # from DatabaseService import DatabaseService
 # from utils import VerifyToken
 from Models import User as ModelUser
+from Models import Hacker as ModelHacker
+from Models import LleidaHacker as ModelLleidaHacker
+
 from schema import User as SchemaUser
+from schema import Hacker as SchemaHacker
+from schema import Company as SchemaCompany
+from schema import LleidaHacker as SchemaLleidaHacker
+
 from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, Response, status, Request
@@ -82,22 +89,22 @@ async def value_error_exception_handler(request: Request, exc: ValueError):
 #         return {"token": token}
 
 @app.get("/users")
-async def getUsers(db: Session = Depends(get_db)):
-    book = db.query(ModelUser).all()
-    return book
+async def get_users(db: Session = Depends(get_db)):
+    return db.query(ModelUser).all()
     # return service.getUsers()
 
-# @app.get("/user/{userId}")
-# async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)) -> User:
-#     result = VerifyToken(token.credentials).verify()
-#     if result.get("status"):
-#        response.status_code = status.HTTP_400_BAD_REQUEST
-#        return result
-#     return service.getUser(userId)
+@app.get("/user/{userId}")
+# async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)):
+async def get_user(userId: int, response: Response, db: Session = Depends(get_db)):
+    # result = VerifyToken(token.credentials).verify()
+    # if result.get("status"):
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return result
+    return db.query(ModelUser).filter(ModelUser.id == userId).first()
 
 @app.post("/user")
 # async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-async def addUser(payload:SchemaUser, response: Response, db: Session = Depends(get_db)):
+async def add_user(payload:SchemaUser, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
     # if result.get("status"):
     #    response.status_code = status.HTTP_400_BAD_REQUEST
@@ -117,21 +124,141 @@ async def addUser(payload:SchemaUser, response: Response, db: Session = Depends(
     return {"success": True, "created_id": new_user.id}
     # return service.addUser(payload)
 
-# @app.post("/user/{userId}/remove")
+@app.remove("/user/{userId}")
 # async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def remove_user(userId:int, response: Response, db: Session = Depends(get_db)):
 #     result = VerifyToken(token.credentials).verify()
 #     if result.get("status"):
 #        response.status_code = status.HTTP_400_BAD_REQUEST
 #        return result
-#     return service.removeUser(userId)
+    return db.query(ModelUser).filter(ModelUser.id == userId).delete()
 
-# @app.post("/user/{userId}/ban")
+@app.get("/hackers")
+async def get_hackers(db: Session = Depends(get_db)):
+    return db.query(ModelHacker).all()
+
+@app.get("/hacker/{hackerId}")
+async def get_hacker(hackerId: int, response: Response, db: Session = Depends(get_db)):
+    return db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+
+@app.post("/hacker")
+async def add_hacker(payload:SchemaHacker, response: Response, db: Session = Depends(get_db)):
+    new_hacker = ModelHacker(name=payload.name, 
+                         email=payload.email,
+                         password=payload.password,
+                         nickname=payload.nickname,
+                         birthdate = payload.birthdate,
+                         food_restrictions=payload.food_restrictions,
+                         telephone=payload.telephone,
+                         address=payload.address,
+                         shirt_size=payload.shirt_size)
+    db.add(new_hacker)
+    db.commit()
+    return {"success": True, "created_id": new_hacker.id}
+
+@app.post("/hacker/{userId}/ban")
 # async def banUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-#     result = VerifyToken(token.credentials).verify()
-#     if result.get("status"):
-#        response.status_code = status.HTTP_400_BAD_REQUEST
-#        return result
-#     return service.banUser(userId)
+async def ban_hacker(userId:int, db: Session = Depends(get_db)) -> int:
+    # result = VerifyToken(token.credentials).verify()
+    # if result.get("status"):
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return result
+    if db.query(ModelUser).filter(ModelUser.id == userId).first().type=="hacker":
+        return db.query(ModelUser).filter(ModelUser.id == userId).update({"banned":1})
+    else:
+        return {"success": False}
+
+
+@app.post("/hacker/{userId}/unban")
+# async def unbanUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def unban_hacker(userId:int, response: Response, db: Session = Depends(get_db)) -> int:
+    # result = VerifyToken(token.credentials).verify()
+    # if result.get("status"):
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return result
+    if db.query(ModelUser).filter(ModelUser.id == userId).first().type=="hacker":
+        return db.query(ModelUser).filter(ModelUser.id == userId).update({"banned":0})
+    else:
+        return {"success": False}
+
+@app.delete("/hacker/{userId}")
+# async def deleteUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def delete_hacker(userId:int, response: Response, db: Session = Depends(get_db)):
+    # result = VerifyToken(token.credentials).verify()
+    # if result.get("status"):
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return result
+    db.query(ModelHacker).filter(ModelHacker.id == userId).delete()
+    db.query(ModelUser).filter(ModelUser.id == userId).delete()
+    return {"success": True}
+
+@app.get("/companies")
+async def get_companies(db: Session = Depends(get_db)):
+    return db.query(ModelCompany).all()
+
+@app.get("/company/{companyId}")
+async def get_company(companyId: int, response: Response, db: Session = Depends(get_db)):
+    return db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
+
+@app.post("/company")
+async def add_company(payload:SchemaCompany, response: Response, db: Session = Depends(get_db)):
+    new_company = ModelCompany(name=payload.name, 
+                         email=payload.email,
+                         password=payload.password,
+                         nickname=payload.nickname,
+                         birthdate = payload.birthdate,
+                         food_restrictions=payload.food_restrictions,
+                         telephone=payload.telephone,
+                         address=payload.address,
+                         shirt_size=payload.shirt_size)
+    db.add(new_company)
+    db.commit()
+    return {"success": True, "created_id": new_company.id}
+
+@app.delete("/company/{userId}")
+# async def deleteUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def delete_company(userId:int, response: Response, db: Session = Depends(get_db)):
+    # result = VerifyToken(token.credentials).verify()
+    # if result.get("status"):
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return result
+    db.query(ModelCompany).filter(ModelCompany.id == userId).delete()
+    db.query(ModelUser).filter(ModelUser.id == userId).delete()
+    return {"success": True}
+
+@app.get("/lleidahacker")
+async def get_lleidahacker(db: Session = Depends(get_db)):
+    return db.query(ModelLleidaHacker).all()
+
+@app.get("/lleidahacker/{userId}")
+async def get_lleidahacker(userId: int, response: Response, db: Session = Depends(get_db)):
+    return db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
+
+@app.post("/lleidahacker")
+async def add_lleidahacker(payload:SchemaLleidaHacker, response: Response, db: Session = Depends(get_db)):
+    new_lleidahacker = ModelLleidaHacker(name=payload.name, 
+                         email=payload.email,
+                         password=payload.password,
+                         nickname=payload.nickname,
+                         birthdate = payload.birthdate,
+                         food_restrictions=payload.food_restrictions,
+                         telephone=payload.telephone,
+                         address=payload.address,
+                         shirt_size=payload.shirt_size)
+    db.add(new_lleidahacker)
+    db.commit()
+    return {"success": True, "created_id": new_lleidahacker.id}
+
+@app.delete("/lleidahacker/{userId}")
+# async def deleteUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+async def delete_lleidahacker(userId:int, response: Response, db: Session = Depends(get_db)):
+    # result = VerifyToken(token.credentials).verify()
+    # if result.get("status"):
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return result
+    db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).delete()
+    db.query(ModelUser).filter(ModelUser.id == userId).delete()
+    return {"success": True}
 
 
 
