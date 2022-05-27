@@ -1,0 +1,42 @@
+"""add user types
+
+Revision ID: 6ddf31156252
+Revises: 60146f40bc17
+Create Date: 2022-05-27 16:30:39.595984
+
+"""
+from alembic import op
+import sqlalchemy as sa
+
+
+# revision identifiers, used by Alembic.
+revision = '6ddf31156252'
+down_revision = '60146f40bc17'
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    op.create_table('lleida_hacker',
+                     sa.Column('user_id', sa.Integer(), sa.ForeignKey('llhk_user.id'), primary_key=True),
+                     sa.Column('role', sa.String(length=50), nullable=False),
+                    sa.Column('nif', sa.String(length=50), nullable=False),
+                    sa.Column('student', sa.Integer(), nullable=False),
+                    sa.Column('active', sa.Integer(), nullable=False),
+                    sa.Column('image', sa.String(), nullable=False),
+                    sa.Column('github', sa.String(length=50), nullable=False),
+    )
+    op.create_table('company',
+                    sa.Column('user_id', sa.Integer(), sa.ForeignKey('llhk_user.id'), primary_key=True),
+                    sa.Column('logo', sa.String(), nullable=False),
+                    sa.Column('description', sa.String(length=50), nullable=False),
+    )
+    op.create_table('hacker',
+                    sa.Column('user_id', sa.Integer(), sa.ForeignKey('llhk_user.id'), primary_key=True),
+                    sa.Column('banned', sa.Integer(), nullable=False),
+                    sa.Column('github', sa.String(length=50), nullable=False),
+                    sa.Column('linkedin', sa.String(length=50), nullable=True),
+    )
+
+def downgrade():
+    pass

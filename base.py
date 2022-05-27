@@ -1,1 +1,0 @@
-from fastapi_app.models import *
