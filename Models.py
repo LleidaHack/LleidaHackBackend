@@ -50,7 +50,7 @@ class LleidaHacker(User):
     active: bool = Column(Integer, default=0)
     image: str = Column(String)
     github: str = Column(String)
-    groups: List[LleidaHackerGroup] = relationship('LleidaHackerGroup', secondary='lleida_hacker_group')
+    groups: List[LleidaHackerGroup] = relationship('LleidaHackerGroup', secondary='group_lleida_hacker_user')
 
     __mapper_args__ = {
         "polymorphic_identity": "lleida_hacker",
