@@ -54,17 +54,19 @@ class Hacker(User):
     # class Config:
         # orm_mode = True
 
-class Group(BaseModel):
+class LleidaHackerGroup(BaseModel):
     name: str
     description: str
-    members: List[User]
+    members: List[LleidaHacker]
     leader: int
 
     # class Config:
         # orm_mode = True
 
-class EventGroup(BaseModel):
+class HackerGroup(BaseModel):
     name: str
+    description: str
+    members: List[Hacker]
     leader: int
 
     # class Config:
