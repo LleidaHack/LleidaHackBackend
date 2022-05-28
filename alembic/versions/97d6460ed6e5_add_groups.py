@@ -21,7 +21,7 @@ def upgrade():
                     sa.Column('id', sa.Integer(), primary_key=True, index=True),
                     sa.Column('name', sa.String(length=50), nullable=False),
                     sa.Column('description', sa.String(length=50), nullable=True),
-                    sa.column('leader_id', sa.Integer(), sa.ForeignKey('hacker.id'), nullable=False),
+                    sa.column('leader_id', sa.Integer(), sa.ForeignKey('hacker.id')),
     )
     op.create_table('hacker_group_users',
                     sa.Column('hacker_id', sa.Integer(), sa.ForeignKey('hacker.id'), primary_key=True),
@@ -31,7 +31,7 @@ def upgrade():
                     sa.Column('id', sa.Integer(), primary_key=True, index=True),
                     sa.Column('name', sa.String(length=50), nullable=False),
                     sa.Column('description', sa.String(length=50), nullable=True),
-                    sa.column('leader_id', sa.Integer(), sa.ForeignKey('lleida_hacker.id'), nullable=False),
+                    sa.column('leader_id', sa.Integer(), sa.ForeignKey('lleida_hacker.id')),
     )
     op.create_table('lleida_hacker_group_users',
                     sa.Column('lleida_hacker_id', sa.Integer(), sa.ForeignKey('lleida_hacker.id'), primary_key=True),
