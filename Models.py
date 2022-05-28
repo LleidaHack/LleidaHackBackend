@@ -87,6 +87,11 @@ class HackerGroup(Base):
     leader_id: int = Column(Integer, ForeignKey('hacker.id'), nullable=False)
     users: List[Hacker] = relationship('Hacker', secondary='hacker_group_user')
 
+class LleidaHackerGroupUser(Base):
+    __tablename__ = 'group_lleida_hacker_user'
+    group_id = Column(Integer, ForeignKey('lleida_hacker_group.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('lleida_hacker.id'), primary_key=True)
+
 class LleidaHackerGroup(Base):
     __tablename__ = 'lleida_hacker_group'
     id: int = Column(Integer, primary_key=True, index=True)
