@@ -89,7 +89,7 @@ class HackerGroup(Base):
 
 class HackerGroupUser(Base):
     __tablename__ = 'hacker_group_user'
-    hacker_id = Column(Integer, ForeignKey('hacker.id'), primary_key=True)
+    hacker_id = Column(Integer, ForeignKey('hacker.user_id'), primary_key=True)
     group_id = Column(Integer, ForeignKey('hacker_group.id'), primary_key=True)
 
 class LleidaHackerGroupUser(Base):
