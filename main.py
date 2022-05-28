@@ -27,6 +27,14 @@ from fastapi.responses import JSONResponse
 # Scheme for the Authorization header
 token_auth_scheme = HTTPBearer()
 
+tags_metadata = [
+    {"name": "User", "description": "One other way around"},
+    {"name": "Hacker", "description": "Keep doing this"},
+    {"name": "LleidaHacker", "description": "KILL 'EM ALL"},
+    {"name": "Company", "description": "Boring"},
+    {"name": "Company", "description": "Boring"},
+]
+
 app = FastAPI(title="Lleida Hacke API",
               description="Lleida Hacker API",
               version="2.0",
@@ -90,12 +98,12 @@ async def value_error_exception_handler(request: Request, exc: ValueError):
 #         # Return the token
 #         return {"token": token}
 
-@app.get("/users")
+@app.get("/users", tags=["User"])
 async def get_users(db: Session = Depends(get_db)):
     return db.query(ModelUser).all()
     # return service.getUsers()
 
-@app.get("/user/{userId}")
+@app.get("/user/{userId}", tags=["User"])
 # async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)):
 async def get_user(userId: int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
@@ -104,7 +112,7 @@ async def get_user(userId: int, response: Response, db: Session = Depends(get_db
     #    return result
     return db.query(ModelUser).filter(ModelUser.id == userId).first()
 
-@app.post("/user")
+@app.post("/user", tags=["User"])
 # async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def add_user(payload:SchemaUser, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
@@ -126,7 +134,7 @@ async def add_user(payload:SchemaUser, response: Response, db: Session = Depends
     return {"success": True, "created_id": new_user.id}
     # return service.addUser(payload)
 
-@app.delete("/user/{userId}")
+@app.delete("/user/{userId}", tags=["User"])
 # async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def remove_user(userId:int, response: Response, db: Session = Depends(get_db)):
 #     result = VerifyToken(token.credentials).verify()
@@ -135,15 +143,15 @@ async def remove_user(userId:int, response: Response, db: Session = Depends(get_
 #        return result
     return db.query(ModelUser).filter(ModelUser.id == userId).delete()
 
-@app.get("/hackers")
+@app.get("/hackers", tags=["Hacker"])
 async def get_hackers(db: Session = Depends(get_db)):
     return db.query(ModelHacker).all()
 
-@app.get("/hacker/{hackerId}")
+@app.get("/hacker/{hackerId}", tags=["Hacker"])
 async def get_hacker(hackerId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
 
-@app.post("/hacker")
+@app.post("/hacker", tags=["Hacker"])
 async def add_hacker(payload:SchemaHacker, response: Response, db: Session = Depends(get_db)):
     new_hacker = ModelHacker(name=payload.name, 
                          email=payload.email,
@@ -158,7 +166,7 @@ async def add_hacker(payload:SchemaHacker, response: Response, db: Session = Dep
     db.commit()
     return {"success": True, "created_id": new_hacker.id}
 
-@app.post("/hacker/{userId}/ban")
+@app.post("/hacker/{userId}/ban", tags=["Hacker"])
 # async def banUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def ban_hacker(userId:int, db: Session = Depends(get_db)) -> int:
     # result = VerifyToken(token.credentials).verify()
@@ -171,7 +179,7 @@ async def ban_hacker(userId:int, db: Session = Depends(get_db)) -> int:
         return {"success": False}
 
 
-@app.post("/hacker/{userId}/unban")
+@app.post("/hacker/{userId}/unban", tags=["Hacker"])
 # async def unbanUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def unban_hacker(userId:int, response: Response, db: Session = Depends(get_db)) -> int:
     # result = VerifyToken(token.credentials).verify()
@@ -183,7 +191,7 @@ async def unban_hacker(userId:int, response: Response, db: Session = Depends(get
     else:
         return {"success": False}
 
-@app.delete("/hacker/{userId}")
+@app.delete("/hacker/{userId}", tags=["Hacker"])
 # async def deleteUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def delete_hacker(userId:int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
@@ -194,15 +202,15 @@ async def delete_hacker(userId:int, response: Response, db: Session = Depends(ge
     db.query(ModelUser).filter(ModelUser.id == userId).delete()
     return {"success": True}
 
-@app.get("/hacker/groups")
+@app.get("/hacker/groups", tags=["Hacker"])
 async def get_hacker_groups(db: Session = Depends(get_db)):
     return db.query(ModelHackerGroup).all()
 
-@app.get("/hacker/group/{groupId}")
+@app.get("/hacker/group/{groupId}", tags=["Hacker"])
 async def get_hacker_group(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
 
-@app.post("/hacker/group")
+@app.post("/hacker/group", tags=["Hacker"])
 async def add_hacker_group(payload:SchemaHackerGroup, response: Response, db: Session = Depends(get_db)):
     new_hacker_group = ModelHackerGroup(name=payload.name, 
                          email=payload.email,
@@ -217,7 +225,7 @@ async def add_hacker_group(payload:SchemaHackerGroup, response: Response, db: Se
     db.commit()
     return {"success": True, "created_id": new_hacker_group.id}
 
-@app.delete("/hacker/group/{groupId}")
+@app.delete("/hacker/group/{groupId}", tags=["Hacker"])
 async def delete_hacker_group(groupId:int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
     # if result.get("status"):
@@ -226,19 +234,19 @@ async def delete_hacker_group(groupId:int, response: Response, db: Session = Dep
     db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).delete()
     return {"success": True}
 
-@app.get("/hacker/group/{groupId}/members")
+@app.get("/hacker/group/{groupId}/members", tags=["Hacker"])
 async def get_hacker_group_members(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).all().members
 
-@app.get("/companies")
+@app.get("/companies", tags=["Company"])
 async def get_companies(db: Session = Depends(get_db)):
     return db.query(ModelCompany).all()
 
-@app.get("/company/{companyId}")
+@app.get("/company/{companyId}", tags=["Company"])
 async def get_company(companyId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
 
-@app.post("/company")
+@app.post("/company", tags=["Company"])
 async def add_company(payload:SchemaCompany, response: Response, db: Session = Depends(get_db)):
     new_company = ModelCompany(name=payload.name, 
                          email=payload.email,
@@ -253,7 +261,7 @@ async def add_company(payload:SchemaCompany, response: Response, db: Session = D
     db.commit()
     return {"success": True, "created_id": new_company.id}
 
-@app.delete("/company/{userId}")
+@app.delete("/company/{userId}", tags=["Company"])
 # async def deleteUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def delete_company(userId:int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
@@ -264,15 +272,15 @@ async def delete_company(userId:int, response: Response, db: Session = Depends(g
     db.query(ModelUser).filter(ModelUser.id == userId).delete()
     return {"success": True}
 
-@app.get("/lleidahacker")
+@app.get("/lleidahacker", tags=["LleidaHacker"])
 async def get_lleidahacker(db: Session = Depends(get_db)):
     return db.query(ModelLleidaHacker).all()
 
-@app.get("/lleidahacker/{userId}")
+@app.get("/lleidahacker/{userId}", tags=["LleidaHacker"])
 async def get_lleidahacker(userId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
 
-@app.post("/lleidahacker")
+@app.post("/lleidahacker", tags=["LleidaHacker"])
 async def add_lleidahacker(payload:SchemaLleidaHacker, response: Response, db: Session = Depends(get_db)):
     new_lleidahacker = ModelLleidaHacker(name=payload.name, 
                          email=payload.email,
@@ -287,7 +295,7 @@ async def add_lleidahacker(payload:SchemaLleidaHacker, response: Response, db: S
     db.commit()
     return {"success": True, "created_id": new_lleidahacker.id}
 
-@app.delete("/lleidahacker/{userId}")
+@app.delete("/lleidahacker/{userId}", tags=["LleidaHacker"])
 # async def deleteUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def delete_lleidahacker(userId:int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
@@ -298,15 +306,15 @@ async def delete_lleidahacker(userId:int, response: Response, db: Session = Depe
     db.query(ModelUser).filter(ModelUser.id == userId).delete()
     return {"success": True}
 
-@app.get("/lleidahacker/groups")
+@app.get("/lleidahacker/groups", tags=["LleidaHacker"])
 async def get_lleidahacker_groups(db: Session = Depends(get_db)):
     return db.query(ModelLleidaHackerGroup).all()
 
-@app.get("/lleidahacker/group/{groupId}")
+@app.get("/lleidahacker/group/{groupId}", tags=["LleidaHacker"])
 async def get_lleidahacker_group(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelLleidaHackerGroup).filter(ModelLleidaHackerGroup.id == groupId).first()
 
-@app.post("/lleidahacker/group")
+@app.post("/lleidahacker/group", tags=["LleidaHacker"])
 async def add_lleidahacker_group(payload:SchemaLleidaHackerGroup, response: Response, db: Session = Depends(get_db)):
     new_lleidahacker_group = ModelLleidaHackerGroup(name=payload.name, 
                          email=payload.email,
@@ -321,7 +329,7 @@ async def add_lleidahacker_group(payload:SchemaLleidaHackerGroup, response: Resp
     db.commit()
     return {"success": True, "created_id": new_lleidahacker_group.id}
 
-@app.delete("/lleidahacker/group/{groupId}")
+@app.delete("/lleidahacker/group/{groupId}", tags=["LleidaHacker"])
 async def delete_lleidahacker_group(groupId:int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
     # if result.get("status"):
@@ -330,7 +338,7 @@ async def delete_lleidahacker_group(groupId:int, response: Response, db: Session
     db.query(ModelLleidaHackerGroup).filter(ModelLleidaHackerGroup.id == groupId).delete()
     return {"success": True}
 
-@app.get("/lleidahacker/group/{groupId}/members")
+@app.get("/lleidahacker/group/{groupId}/members", tags=["LleidaHacker"])
 async def get_lleidahacker_group_members(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelLleidaHackerGroup).filter(ModelLleidaHackerGroup.id == groupId).first().members
 
