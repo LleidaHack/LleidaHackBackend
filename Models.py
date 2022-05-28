@@ -49,8 +49,8 @@ class LleidaHacker(User):
     student: bool = Column(Integer, default=0)
     active: bool = Column(Integer, default=0)
     image: str = Column(String)
-    # groups: List[Group] = relationship('Group', secondary='group_user')
     github: str = Column(String)
+    groups: List[Group] = relationship('Group', secondary='group_lleida_hacker')
     
     __mapper_args__ = {
         "polymorphic_identity": "lleida_hacker",
@@ -72,23 +72,25 @@ class Hacker(User):
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
     linkdin: str = Column(String)
-
+    groups: List[Group] = relationship('Group', secondary='hacker_group')
+    # is_leader: bool = Column(Integer, default=0)
+    # events: List[Event] = relationship('Event', secondary='hacker_event')
     __mapper_args__ = {
         "polymorphic_identity": "hacker",
     }
 
-# class Group(Base):
-#     __tablename__ = 'group'
-#     id: int = Column(Integer, primary_key=True, index=True)
-#     name: str = Column(String)
-#     description: str = Column(String)
-#     members: List[User] = relationship('User', secondary='group_user')
-#     leader: int = Column(Integer)
+class HackerGroup(Base):
+    __tablename__ = 'hacker_group'
+    id: int = Column(Integer, primary_key=True, index=True)
+    name: str = Column(String)
+    description: str = Column(String)
+    leader_id: int = Column(Integer, ForeignKey('hacker.id'), nullable=False)
+    users: List[Hacker] = relationship('Hacker', secondary='hacker_group_user')
 
-
-# class EventGroup(Base):
-#     __tablename__ = 'event_group'
-#     id: int = Column(Integer, primary_key=True, index=True)
-#     name: str = Column(String)
-#     leader: int = Column(Integer)
-#     users: List[LleidaHacker] = relationship('LleidaHacker', secondary='event_group_user') 
+class LleidaHackGroup(Base):
+    __tablename__ = 'lleida_hacker_group'
+    id: int = Column(Integer, primary_key=True, index=True)
+    name: str = Column(String)
+    description: str = Column(String)
+    leader_id: int = Column(Integer, ForeignKey('lleida_hacker.id'), nullable=False)
+    members: List[LleidaHacker] = relationship('LleidaHacker', secondary='group_lleida_hacker_user')

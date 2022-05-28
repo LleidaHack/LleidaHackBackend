@@ -5,6 +5,7 @@
 # from utils import VerifyToken
 from Models import User as ModelUser
 from Models import Hacker as ModelHacker
+from Models import Company as ModelCompany
 from Models import LleidaHacker as ModelLleidaHacker
 
 from schema import User as SchemaUser
@@ -19,9 +20,6 @@ from fastapi.security import HTTPBearer
 from fastapi.responses import JSONResponse
 
 
-
-# load_dotenv('.env')
-
 # Scheme for the Authorization header
 token_auth_scheme = HTTPBearer()
 
@@ -33,8 +31,6 @@ app = FastAPI(title="Lleida Hacke API",
               openapi_url='/api/openapi.json',
               debug=True,
 )
-
-# service=DatabaseService()
 
 # app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
 
