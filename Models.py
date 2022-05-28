@@ -50,8 +50,8 @@ class LleidaHacker(User):
     active: bool = Column(Integer, default=0)
     image: str = Column(String)
     github: str = Column(String)
-    groups: List[Group] = relationship('Group', secondary='group_lleida_hacker')
-    
+    groups: List[LleidaHackerGroup] = relationship('LleidaHackerGroup', secondary='lleida_hacker_group')
+
     __mapper_args__ = {
         "polymorphic_identity": "lleida_hacker",
     }
@@ -72,7 +72,7 @@ class Hacker(User):
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
     linkdin: str = Column(String)
-    groups: List[Group] = relationship('Group', secondary='hacker_group')
+    groups: List[HackerGroup] = relationship('HackerGroup', secondary='hacker_group')
     # is_leader: bool = Column(Integer, default=0)
     # events: List[Event] = relationship('Event', secondary='hacker_event')
     __mapper_args__ = {
@@ -87,7 +87,7 @@ class HackerGroup(Base):
     leader_id: int = Column(Integer, ForeignKey('hacker.id'), nullable=False)
     users: List[Hacker] = relationship('Hacker', secondary='hacker_group_user')
 
-class LleidaHackGroup(Base):
+class LleidaHackerGroup(Base):
     __tablename__ = 'lleida_hacker_group'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
