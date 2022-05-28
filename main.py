@@ -28,11 +28,11 @@ from fastapi.responses import JSONResponse
 token_auth_scheme = HTTPBearer()
 
 tags_metadata = [
-    {"name": "User", "description": "One other way around"},
-    {"name": "Hacker", "description": "Keep doing this"},
-    {"name": "LleidaHacker", "description": "KILL 'EM ALL"},
-    {"name": "Company", "description": "Boring"},
-    {"name": "Company", "description": "Boring"},
+    {"name": "User", "description": "User related endpoints"},
+    {"name": "Hacker", "description": "Hacker related endpoints"},
+    {"name": "LleidaHacker", "description": "LleidaHacker related endpoints"},
+    {"name": "Company", "description": "Company related endpoints"},
+    {"name": "Event", "description": "Event related endpoints"},
 ]
 
 app = FastAPI(title="Lleida Hacke API",
