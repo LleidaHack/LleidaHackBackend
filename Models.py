@@ -72,7 +72,7 @@ class Hacker(User):
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
     linkdin: str = Column(String)
-    groups: List[HackerGroup] = relationship('HackerGroup', secondary='hacker_group')
+    groups: List[HackerGroup] = relationship('HackerGroup', secondary='hacker_group', backref='hacker')
     # is_leader: bool = Column(Integer, default=0)
     # events: List[Event] = relationship('Event', secondary='hacker_event')
     __mapper_args__ = {
@@ -85,7 +85,12 @@ class HackerGroup(Base):
     name: str = Column(String)
     description: str = Column(String)
     leader_id: int = Column(Integer, ForeignKey('hacker.id'), nullable=False)
-    users: List[Hacker] = relationship('Hacker', secondary='hacker_group_user')
+    users: List[Hacker] = relationship('Hacker', secondary='hacker_group_user', backref='hacker_group')
+
+class HackerGroupUser(Base):
+    __tablename__ = 'hacker_group_user'
+    hacker_id = Column(Integer, ForeignKey('hacker.id'), primary_key=True)
+    group_id = Column(Integer, ForeignKey('hacker_group.id'), primary_key=True)
 
 class LleidaHackerGroupUser(Base):
     __tablename__ = 'group_lleida_hacker_user'
