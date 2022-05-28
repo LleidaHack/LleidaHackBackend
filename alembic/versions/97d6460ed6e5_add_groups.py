@@ -24,7 +24,7 @@ def upgrade():
                     sa.column('leader_id', sa.Integer(), sa.ForeignKey('hacker.user_id')),
     )
     op.create_table('hacker_group_users',
-                    sa.Column('hacker_id', sa.Integer(), sa.ForeignKey('hacker._userid'), primary_key=True),
+                    sa.Column('hacker_id', sa.Integer(), sa.ForeignKey('hacker.user_id'), primary_key=True),
                     sa.Column('group_id', sa.Integer(), sa.ForeignKey('hacker_group.id'), primary_key=True),
     )
     op.create_table('lleida_hacker_group',
