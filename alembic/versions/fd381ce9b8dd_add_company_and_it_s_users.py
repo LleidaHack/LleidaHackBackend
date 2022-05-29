@@ -28,6 +28,7 @@ def upgrade():
                     sa.Column('address', sa.String(), nullable=False),
     )
     op.add_column('company_user', sa.Column('company_id', sa.Integer(), sa.ForeignKey('company.id'), primary_key=True))
+    op.add_column('company_user', sa.Column('role', sa.String(), nullable=False))
     op.drop_column('company_user', 'description')
     op.drop_column('company_user', 'logo')
 
