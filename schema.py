@@ -50,7 +50,7 @@ class Company(BaseModel):
     # class Config:
         # orm_mode = True
 
-class CompanyUser(User):
+class CompanyUser(BaseModel):
     pass
 
     # class Config:
