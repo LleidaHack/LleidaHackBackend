@@ -44,6 +44,8 @@ class Company(BaseModel):
     description: str
     website: str
     logo: str
+    address: str
+    telephone: str
     users: List[User]
     # events: List[Event]
 

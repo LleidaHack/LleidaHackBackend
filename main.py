@@ -1,24 +1,10 @@
 # from __future__ import annotations
-# import datetime
-# import os
-# from DatabaseService import DatabaseService
-# from utils import VerifyToken
-from Models import User as ModelUser
-
-from Models import Company as ModelCompany
-from Models import LleidaHacker as ModelLleidaHacker
-from Models import LleidaHackerGroup as ModelLleidaHackerGroup
-
-
-from schema import Company as SchemaCompany
-from schema import LleidaHacker as SchemaLleidaHacker
-from schema import LleidaHackerGroup as SchemaLleidaHackerGroup
 
 from routers import user
 from routers import hacker
 from routers import lleidahacker
+from routers import company
 
-from database import get_db
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, Response, status, Request
@@ -44,7 +30,7 @@ app = FastAPI(title="Lleida Hacke API",
               docs_url='/api/docs',
               redoc_url='/api/redoc',
               openapi_url='/api/openapi.json',
-              openapi_tags=tags_metadata
+              openapi_tags=tags_metadata,
               debug=True
 )
 
@@ -59,7 +45,8 @@ app.add_middleware(
 
 app.include_router(user.router)
 app.include_router(hacker.router)
-app.include_router(hacker.router)
+app.include_router(lleidahacker.router)
+app.include_router(company.router)
 
 # @app.post("/login/{email}")
 # async def login(email: str, password: str):
@@ -104,44 +91,6 @@ app.include_router(hacker.router)
 #         #TODO
 #         # Return the token
 #         return {"token": token}
-
-
-
-
-@app.get("/companies", tags=["Company"])
-async def get_companies(db: Session = Depends(get_db)):
-    return db.query(ModelCompany).all()
-
-@app.get("/company/{companyId}", tags=["Company"])
-async def get_company(companyId: int, response: Response, db: Session = Depends(get_db)):
-    return db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
-
-@app.post("/company", tags=["Company"])
-async def add_company(payload:SchemaCompany, response: Response, db: Session = Depends(get_db)):
-    new_company = ModelCompany(name=payload.name, 
-                         email=payload.email,
-                         password=payload.password,
-                         nickname=payload.nickname,
-                         birthdate = payload.birthdate,
-                         food_restrictions=payload.food_restrictions,
-                         telephone=payload.telephone,
-                         address=payload.address,
-                         shirt_size=payload.shirt_size)
-    db.add(new_company)
-    db.commit()
-    return {"success": True, "created_id": new_company.id}
-
-@app.delete("/company/{userId}", tags=["Company"])
-# async def deleteUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-async def delete_company(userId:int, response: Response, db: Session = Depends(get_db)):
-    # result = VerifyToken(token.credentials).verify()
-    # if result.get("status"):
-    #    response.status_code = status.HTTP_400_BAD_REQUEST
-    #    return result
-    db.query(ModelCompany).filter(ModelCompany.id == userId).delete()
-    db.query(ModelUser).filter(ModelUser.id == userId).delete()
-    return {"success": True}
-
 
 
 
@@ -235,6 +184,3 @@ async def delete_company(userId:int, response: Response, db: Session = Depends(g
 #        response.status_code = status.HTTP_400_BAD_REQUEST
 #        return result
 #     return service.removeGroup(groupId)
-
-
-# service.addUser(User("t","t","",datetime.datetime.now(),"","","","",""))
