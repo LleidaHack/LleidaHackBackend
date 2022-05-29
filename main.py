@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, Response, status, Request
 from fastapi.security import HTTPBearer
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # Scheme for the Authorization header
@@ -44,6 +45,17 @@ app = FastAPI(title="Lleida Hacke API",
               debug=True,
 )
 
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
 
 @app.exception_handler(ValueError)
