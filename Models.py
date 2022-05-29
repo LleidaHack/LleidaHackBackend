@@ -20,7 +20,14 @@ from database import Base
 #     description: str = Column(String)
 #     status: int = Column(Integer, default=0)
 
-
+class Company(Base):
+    __tablename__ = 'llhk_company'
+    id: int = Column(Integer, primary_key=True, index=True)
+    name: str = Column(String)
+    description: str = Column(String)
+    website: str = Column(String)
+    logo: str = Column(String)
+    # events: List[Event] = relationship('Event', secondary='sponsor')
 class User(Base):
     __tablename__ = 'llhk_user'
     id: int = Column(Integer, primary_key=True, index=True)
@@ -56,8 +63,8 @@ class LleidaHacker(User):
         "polymorphic_identity": "lleida_hacker",
     }
 
-class Company(User):
-    __tablename__ = 'company'
+class CompanyUser(User):
+    __tablename__ = 'company_user'
     user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
     logo: str = Column(String)
     description: str = Column(String)
