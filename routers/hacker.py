@@ -90,7 +90,7 @@ async def delete_hacker(userId:int, response: Response, db: Session = Depends(ge
     db.query(ModelUser).filter(ModelUser.id == userId).delete()
     return {"success": True}
 
-@router.get("/groups", tags=["Hacker group"])
+@router.get("/groups", tags=["Hacker Group"])
 async def get_hacker_groups(db: Session = Depends(get_db)):
     return db.query(ModelHackerGroup).all()
 
