@@ -7,7 +7,7 @@ from fastapi import Depends, Response, APIRouter
 
 router = APIRouter(
     prefix="/user",
-    tags=["items"],
+    tags=["User"],
     # dependencies=[Depends(get_db)],
     # dependencies=[Depends(get_token_header)],
     # responses={404: {"description": "Not found"}},
