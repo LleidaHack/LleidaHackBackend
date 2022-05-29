@@ -44,7 +44,7 @@ class Company(BaseModel):
     description: str
     website: str
     logo: str
-    users: List[CompanyUser]
+    users: List[User]
     # events: List[Event]
 
     # class Config:
