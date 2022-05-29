@@ -3,6 +3,7 @@ from Models import Company as ModelCompany
 from Models import CompanyUser as ModelCompanyUser
 
 from schema import Company as SchemaCompany
+from schema import CompanyUser as SchemaCompanyUser
 
 from database import get_db
 
@@ -61,8 +62,8 @@ async def get_company_users(companyId: int, response: Response, db: Session = De
     return db.query(ModelCompanyUser).filter(ModelCompanyUser.company_id == companyId).all()
 
 @router.post("/{companyId}/users/add", tags=["Company"])
-async def add_company_user(companyId: int, payload: ModelCompanyUser, response: Response, db: Session = Depends(get_db)):
-    new_company_user = ModelCompanyUser(company_id=companyId, user_id=payload.user_id)
+async def add_company_user(companyId: int, payload: SchemaCompanyUser, response: Response, db: Session = Depends(get_db)):
+    new_company_user = ModelCompanyUser(company_id=companyId, user_id=payload.user_id, role=payload.role)
     db.add(new_company_user)
     db.commit()
     return {"success": True, "created_id": new_company_user.id}
