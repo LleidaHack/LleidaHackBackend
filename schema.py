@@ -51,7 +51,7 @@ class Company(BaseModel):
         # orm_mode = True
 
 class CompanyUser(User):
-    company_id: int
+    pass
 
     # class Config:
         # orm_mode = True
