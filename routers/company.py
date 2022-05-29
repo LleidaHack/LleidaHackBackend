@@ -1,4 +1,3 @@
-from tkinter import W
 from Models import User as ModelUser
 from Models import Company as ModelCompany
 from Models import CompanyUser as ModelCompanyUser

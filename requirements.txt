@@ -7,3 +7,5 @@ psycopg2
 fastapi-sqlalchemy
 pydantic 
 alembic
+sqlalchemy
+sqlalchemy-utils
