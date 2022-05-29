@@ -39,9 +39,19 @@ class LleidaHacker(User):
     # class Config:
         # orm_mode = True
 
-class Company(User):
-    logo: str
+class Company(BaseModel):
+    name: str
     description: str
+    website: str
+    logo: str
+    users: List[CompanyUser]
+    # events: List[Event]
+
+    # class Config:
+        # orm_mode = True
+
+class CompanyUser(User):
+    company_id: int
 
     # class Config:
         # orm_mode = True

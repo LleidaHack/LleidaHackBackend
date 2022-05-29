@@ -17,15 +17,21 @@ depends_on = None
 
 
 def upgrade():
-    pass
-    # op.rename_table('company', 'company_user')
-    # op.create_table('company',
-    #                 sa.Column('id', sa.Integer(), primary_key=True, index=True),
-    #                 sa.Column('name', sa.String(), nullable=False),
-    #                 sa.Column('logo', sa.String(), nullable=False),
-    #                 sa.Column('description', sa.String(), nullable=False),
-    # )
-    # op.add_column('company_user', sa.Column('company_id', sa.Integer(), sa.ForeignKey('company.id'), nullable=False))
+    op.rename_table('company', 'company_user')
+    op.create_table('company',
+                    sa.Column('id', sa.Integer(), primary_key=True, index=True),
+                    sa.Column('name', sa.String(), nullable=False),
+                    sa.Column('logo', sa.String(), nullable=False),
+                    sa.Column('description', sa.String(), nullable=False),
+                    sa.Column('website', sa.String(), nullable=False),
+    )
+    op.add_column('company_user', sa.Column('company_id', sa.Integer(), sa.ForeignKey('company.id'), primary_key=True))
+    op.drop_column('company_user', 'description')
+    op.drop_column('company_user', 'logo')
 
 def downgrade():
-    pass
+    op.drop_column('company_user', 'company_id')
+    op.drop_table('company')
+    op.rename_table('company_user', 'company')
+    op.add_column('company', sa.Column('description', sa.String(), nullable=False))
+    op.add_column('company', sa.Column('logo', sa.String(), nullable=False))
