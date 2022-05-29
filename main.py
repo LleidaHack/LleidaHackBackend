@@ -19,6 +19,7 @@ token_auth_scheme = HTTPBearer()
 tags_metadata = [
     {"name": "User", "description": "User related endpoints"},
     {"name": "Hacker", "description": "Hacker related endpoints"},
+    {"name": "Hacker Group", "description": "Hacker Group related endpoints"},
     {"name": "LleidaHacker", "description": "LleidaHacker related endpoints"},
     {"name": "Company", "description": "Company related endpoints"},
     {"name": "Event", "description": "Event related endpoints"},
