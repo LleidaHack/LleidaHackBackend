@@ -21,13 +21,16 @@ from database import Base
 #     status: int = Column(Integer, default=0)
 
 class Company(Base):
-    __tablename__ = 'llhk_company'
+    __tablename__ = 'company'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
     description: str = Column(String)
     website: str = Column(String)
     logo: str = Column(String)
+    users: List[User] = relationship('User', secondary='company_user')
     # events: List[Event] = relationship('Event', secondary='sponsor')
+
+    
 class User(Base):
     __tablename__ = 'llhk_user'
     id: int = Column(Integer, primary_key=True, index=True)
@@ -66,8 +69,7 @@ class LleidaHacker(User):
 class CompanyUser(User):
     __tablename__ = 'company_user'
     user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
-    logo: str = Column(String)
-    description: str = Column(String)
+    company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "company",

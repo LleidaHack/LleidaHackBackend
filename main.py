@@ -45,26 +45,17 @@ app = FastAPI(title="Lleida Hacke API",
               debug=True,
 )
 
-origins = [
-    "*",
-]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# app.add_middleware(DBSessionMiddleware, db_url=os.environ['DATABASE_URL'])
 
-@app.exception_handler(ValueError)
-async def value_error_exception_handler(request: Request, exc: ValueError):
-    return JSONResponse(
-        status_code=400,
-        content={"message": str(exc)},
-    )
-
+from routers import user
+app.include_router(user.router)
 
 # @app.post("/login/{email}")
 # async def login(email: str, password: str):
@@ -110,50 +101,69 @@ async def value_error_exception_handler(request: Request, exc: ValueError):
 #         # Return the token
 #         return {"token": token}
 
-@app.get("/users", tags=["User"])
-async def get_users(db: Session = Depends(get_db)):
-    return db.query(ModelUser).all()
-    # return service.getUsers()
+# @app.get("/users", tags=["User"])
+# async def get_users(db: Session = Depends(get_db)):
+#     return db.query(ModelUser).all()
+#     # return service.getUsers()
 
-@app.get("/user/{userId}", tags=["User"])
-# async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)):
-async def get_user(userId: int, response: Response, db: Session = Depends(get_db)):
-    # result = VerifyToken(token.credentials).verify()
-    # if result.get("status"):
-    #    response.status_code = status.HTTP_400_BAD_REQUEST
-    #    return result
-    return db.query(ModelUser).filter(ModelUser.id == userId).first()
+# @app.get("/user/{userId}", tags=["User"])
+# # async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)):
+# async def get_user(userId: int, response: Response, db: Session = Depends(get_db)):
+#     # result = VerifyToken(token.credentials).verify()
+#     # if result.get("status"):
+#     #    response.status_code = status.HTTP_400_BAD_REQUEST
+#     #    return result
+#     return db.query(ModelUser).filter(ModelUser.id == userId).first()
 
-@app.post("/user", tags=["User"])
-# async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-async def add_user(payload:SchemaUser, response: Response, db: Session = Depends(get_db)):
-    # result = VerifyToken(token.credentials).verify()
-    # if result.get("status"):
-    #    response.status_code = status.HTTP_400_BAD_REQUEST
-    #    return result
-    new_user = ModelUser(name=payload.name, 
-                         email=payload.email,
-                         password=payload.password,
-                         nickname=payload.nickname,
-                         birthdate = payload.birthdate,
-                         food_restrictions=payload.food_restrictions,
-                         telephone=payload.telephone,
-                         address=payload.address,
-                         shirt_size=payload.shirt_size)
-    db.add(new_user)
-    db.commit()
-    # db.refresh(new_job)
-    return {"success": True, "created_id": new_user.id}
-    # return service.addUser(payload)
+# @app.post("/user", tags=["User"])
+# # async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+# async def add_user(payload:SchemaUser, response: Response, db: Session = Depends(get_db)):
+#     # result = VerifyToken(token.credentials).verify()
+#     # if result.get("status"):
+#     #    response.status_code = status.HTTP_400_BAD_REQUEST
+#     #    return result
+#     new_user = ModelUser(name=payload.name, 
+#                          email=payload.email,
+#                          password=payload.password,
+#                          nickname=payload.nickname,
+#                          birthdate = payload.birthdate,
+#                          food_restrictions=payload.food_restrictions,
+#                          telephone=payload.telephone,
+#                          address=payload.address,
+#                          shirt_size=payload.shirt_size)
+#     db.add(new_user)
+#     db.commit()
+#     # db.refresh(new_job)
+#     return {"success": True, "created_id": new_user.id}
+#     # return service.addUser(payload)
 
-@app.delete("/user/{userId}", tags=["User"])
-# async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-async def remove_user(userId:int, response: Response, db: Session = Depends(get_db)):
-#     result = VerifyToken(token.credentials).verify()
-#     if result.get("status"):
-#        response.status_code = status.HTTP_400_BAD_REQUEST
-#        return result
-    return db.query(ModelUser).filter(ModelUser.id == userId).delete()
+# @app.put("/user/{userId}", tags=["User"])
+# # async def updateUser(userId: int, payload: User, response: Response, token: str = Depends(token_auth_scheme)):
+# async def update_user(userId: int, payload: SchemaUser, response: Response, db: Session = Depends(get_db)):
+#     # result = VerifyToken(token.credentials).verify()
+#     # if result.get("status"):
+#     #    response.status_code = status.HTTP_400_BAD_REQUEST
+#     #    return result
+#     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
+#     user.name = payload.name
+#     user.email = payload.email
+#     user.password = payload.password
+#     user.nickname = payload.nickname
+#     user.birthdate = payload.birthdate
+#     user.food_restrictions = payload.food_restrictions
+#     user.telephone = payload.telephone
+#     user.address = payload.address
+#     user.shirt_size = payload.shirt_size
+#     db.commit()
+
+# @app.delete("/user/{userId}", tags=["User"])
+# # async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
+# async def remove_user(userId:int, response: Response, db: Session = Depends(get_db)):
+# #     result = VerifyToken(token.credentials).verify()
+# #     if result.get("status"):
+# #        response.status_code = status.HTTP_400_BAD_REQUEST
+# #        return result
+#     return db.query(ModelUser).filter(ModelUser.id == userId).delete()
 
 @app.get("/hackers", tags=["Hacker"])
 async def get_hackers(db: Session = Depends(get_db)):
@@ -177,6 +187,20 @@ async def add_hacker(payload:SchemaHacker, response: Response, db: Session = Dep
     db.add(new_hacker)
     db.commit()
     return {"success": True, "created_id": new_hacker.id}
+
+@app.put("/hacker/{hackerId}", tags=["Hacker"])
+async def update_hacker(hackerId: int, payload: SchemaHacker, response: Response, db: Session = Depends(get_db)):
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    hacker.name = payload.name
+    hacker.email = payload.email
+    hacker.password = payload.password
+    hacker.nickname = payload.nickname
+    hacker.birthdate = payload.birthdate
+    hacker.food_restrictions = payload.food_restrictions
+    hacker.telephone = payload.telephone
+    hacker.address = payload.address
+    hacker.shirt_size = payload.shirt_size
+    db.commit()
 
 @app.post("/hacker/{userId}/ban", tags=["Hacker"])
 # async def banUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
@@ -224,18 +248,20 @@ async def get_hacker_group(groupId: int, response: Response, db: Session = Depen
 
 @app.post("/hacker/group", tags=["Hacker"])
 async def add_hacker_group(payload:SchemaHackerGroup, response: Response, db: Session = Depends(get_db)):
-    new_hacker_group = ModelHackerGroup(name=payload.name, 
-                         email=payload.email,
-                         password=payload.password,
-                         nickname=payload.nickname,
-                         birthdate = payload.birthdate,
-                         food_restrictions=payload.food_restrictions,
-                         telephone=payload.telephone,
-                         address=payload.address,
-                         shirt_size=payload.shirt_size)
+    new_hacker_group = ModelHackerGroup(name=payload.name,
+                                        description=payload.description,
+    )
     db.add(new_hacker_group)
     db.commit()
     return {"success": True, "created_id": new_hacker_group.id}
+
+@app.put("/hacker/group/{groupId}", tags=["Hacker"])
+async def update_hacker_group(groupId: int, payload: SchemaHackerGroup, response: Response, db: Session = Depends(get_db)):
+    hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
+    hacker_group.name = payload.name
+    hacker_group.description = payload.description
+    db.commit()
+
 
 @app.delete("/hacker/group/{groupId}", tags=["Hacker"])
 async def delete_hacker_group(groupId:int, response: Response, db: Session = Depends(get_db)):
@@ -249,6 +275,14 @@ async def delete_hacker_group(groupId:int, response: Response, db: Session = Dep
 @app.get("/hacker/group/{groupId}/members", tags=["Hacker"])
 async def get_hacker_group_members(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).all().members
+
+@app.post("/hacker/group/{groupId}/add/{hackerId}", tags=["Hacker","HackerGroup"])
+async def add_hacker_to_group(groupId: int, hackerId: int, response: Response, db: Session = Depends(get_db)):
+    hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    hacker_group.members.append(hacker)
+    db.commit()
+
 
 @app.get("/companies", tags=["Company"])
 async def get_companies(db: Session = Depends(get_db)):
