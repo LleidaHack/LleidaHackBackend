@@ -91,15 +91,15 @@ async def delete_hacker(userId:int, response: Response, db: Session = Depends(ge
     db.query(ModelUser).filter(ModelUser.id == userId).delete()
     return {"success": True}
 
-@router.get("/groups", tags=["Hacker", "Hacker group"])
+@router.get("/groups", tags=["Hacker group"])
 async def get_hacker_groups(db: Session = Depends(get_db)):
     return db.query(ModelHackerGroup).all()
 
-@router.get("/group/{groupId}", tags=["Hacker", "Hacker Group"])
+@router.get("/group/{groupId}", tags=["Hacker Group"])
 async def get_hacker_group(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
 
-@router.post("/group", tags=["Hacker", "Hacker Group"])
+@router.post("/group", tags=["Hacker Group"])
 async def add_hacker_group(payload:SchemaHackerGroup, response: Response, db: Session = Depends(get_db)):
     new_hacker_group = ModelHackerGroup(name=payload.name,
                                         description=payload.description,
@@ -108,7 +108,7 @@ async def add_hacker_group(payload:SchemaHackerGroup, response: Response, db: Se
     db.commit()
     return {"success": True, "created_id": new_hacker_group.id}
 
-@router.put("/group/{groupId}", tags=["Hacker", "Hacker Group"])
+@router.put("/group/{groupId}", tags=["Hacker Group"])
 async def update_hacker_group(groupId: int, payload: SchemaHackerGroup, response: Response, db: Session = Depends(get_db)):
     hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
     hacker_group.name = payload.name
@@ -116,7 +116,7 @@ async def update_hacker_group(groupId: int, payload: SchemaHackerGroup, response
     db.commit()
 
 
-@router.delete("/group/{groupId}", tags=["Hacker","Hacker Group"])
+@router.delete("/group/{groupId}", tags=["Hacker Group"])
 async def delete_hacker_group(groupId:int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
     # if result.get("status"):
@@ -125,11 +125,11 @@ async def delete_hacker_group(groupId:int, response: Response, db: Session = Dep
     db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).delete()
     return {"success": True}
 
-@router.get("/group/{groupId}/members", tags=["Hacker", "Hacker Group"])
+@router.get("/group/{groupId}/members", tags=["Hacker Group"])
 async def get_hacker_group_members(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).all().members
 
-@router.post("/group/{groupId}/add/{hackerId}", tags=["Hacker","Hacker Group"])
+@router.post("/group/{groupId}/add/{hackerId}", tags=["Hacker Group"])
 async def add_hacker_to_group(groupId: int, hackerId: int, response: Response, db: Session = Depends(get_db)):
     hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
