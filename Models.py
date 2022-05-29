@@ -71,7 +71,7 @@ class Hacker(User):
     user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
-    linkdin: str = Column(String)
+    linkedin: str = Column(String)
     groups: List[HackerGroup] = relationship('HackerGroupUser', secondary='hacker_group', backref='hacker')
     # is_leader: bool = Column(Integer, default=0)
     # events: List[Event] = relationship('Event', secondary='hacker_event')
