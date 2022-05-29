@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", tags=["User"])
+@router.get("/all", tags=["User"])
 async def get_users(db: Session = Depends(get_db)):
     return db.query(ModelUser).all()
 
