@@ -51,10 +51,10 @@ app.add_middleware(
 )
 
 app.include_router(user.router)
-app.include_router(hacker.router)
-app.include_router(hackergroup.router)
-app.include_router(lleidahacker.router)
-app.include_router(company.router)
+# app.include_router(hacker.router)
+# app.include_router(hackergroup.router)
+# app.include_router(lleidahacker.router)
+# app.include_router(company.router)
 # app.include_router(Event.router)
 
 # @app.post("/login/{email}")
