@@ -59,7 +59,7 @@ class VerifyToken():
         return payload
     
     #creting a token for a new user
-    def create_token(self, email):
+    def create_token(self, email, password):
         """
         Create a token for a user.
         """
@@ -71,5 +71,5 @@ class VerifyToken():
             "exp": int(time.time()) + 3600,
         }
         return jwt.encode(
-            payload, algorithm=self.config["ALGORITHMS"]
+            payload, key=password, algorithm=self.config["ALGORITHMS"]
         ).decode("utf-8")
