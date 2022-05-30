@@ -72,4 +72,4 @@ class VerifyToken():
         }
         return jwt.encode(
             payload, key=password, algorithm=self.config["ALGORITHMS"]
-        ).decode("utf-8")
+        )
