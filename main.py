@@ -1,11 +1,11 @@
 # from __future__ import annotations
 
-from routers import User
-from routers import Hacker
-from routers import HackerGroup
-from routers import LleidaHacker
-from routers import Company
-from routers import Event
+from routers import user
+from routers import hacker
+from routers import hackergroup
+from routers import lleidahacker
+from routers import company
+from routers import event
 
 
 from sqlalchemy.orm import Session
@@ -50,11 +50,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(User.router)
-app.include_router(Hacker.router)
-app.include_router(HackerGroup.router)
-app.include_router(LleidaHacker.router)
-app.include_router(Company.router)
+app.include_router(user.router)
+app.include_router(hacker.router)
+app.include_router(hackergroup.router)
+app.include_router(lleidahacker.router)
+app.include_router(company.router)
 # app.include_router(Event.router)
 
 # @app.post("/login/{email}")
