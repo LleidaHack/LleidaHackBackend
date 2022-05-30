@@ -26,17 +26,13 @@ class VerifyToken():
     """Does all the token verification using PyJWT"""
 
     def __init__(self):
-        # self.token = token
+        # token = token
         self.config = set_up()
 
         # This gets the JWKS from a given URL and does processing so you can
         # use any of the keys available
         jwks_url = f'https://{self.config["DOMAIN"]}/.well-known/jwks.json'
         self.jwks_client = jwt.PyJWKClient(jwks_url)
-
-    def get_current_time(self):
-        """Returns the current time in seconds"""
-        return int(round(time.time()))
 
     def verify(self, token):
         # This gets the 'kid' from the passed token
@@ -61,18 +57,19 @@ class VerifyToken():
             return {"status": "error", "message": str(e)}
 
         return payload
-    def generate_token(self, user_id, user_name):
-        """Generates a token for the user"""
+    
+    #creting a token for a new user
+    def create_token(self, email):
+        """
+        Create a token for a user.
+        """
         payload = {
-            "sub": user_id,
-            "name": user_name,
-            "iat": self.get_current_time(),
-            "exp": self.get_current_time() + 3600,
+            "email": email,
+            "iss": self.config["ISSUER"],
+            "aud": self.config["API_AUDIENCE"],
+            "iat": int(time.time()),
+            "exp": int(time.time()) + 3600,
         }
         return jwt.encode(
-            payload,
-            self.signing_key,
-            algorithm=self.config["ALGORITHMS"],
-            audience=self.config["API_AUDIENCE"],
-            issuer=self.config["ISSUER"],
+            payload, algorithm=self.config["ALGORITHMS"]
         ).decode("utf-8")
