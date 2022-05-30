@@ -23,53 +23,34 @@ def set_up():
     return config
 
 class VerifyToken():
-    """Does all the token verification using PyJWT"""
+    """Verifies the token"""
+    def __init__(self, config):
+        self.config = config
 
-    def __init__(self):
-        # token = token
-        self.config = set_up()
-
-        # This gets the JWKS from a given URL and does processing so you can
-        # use any of the keys available
-        jwks_url = f'https://{self.config["DOMAIN"]}/.well-known/jwks.json'
-        self.jwks_client = jwt.PyJWKClient(jwks_url)
-
-    def verify(self, token):
-        # This gets the 'kid' from the passed token
+    def verify_token(self, token):
+        """Verifies the token"""
         try:
-            self.signing_key = self.jwks_client.get_signing_key_from_jwt(
-                token
-            ).key
-        except jwt.exceptions.PyJWKClientError as error:
-            return {"status": "error", "msg": error.__str__()}
-        except jwt.exceptions.DecodeError as error:
-            return {"status": "error", "msg": error.__str__()}
+            payload = jwt.decode(token, self.config["ALGORITHMS"],
+                                 audience=self.config["API_AUDIENCE"],
+                                 issuer=self.config["ISSUER"],
+                                 algorithms=[self.config["ALGORITHMS"]])
+        except jwt.ExpiredSignatureError:
+            return False, "token_expired"
+        except jwt.InvalidTokenError:
+            return False, "invalid_token"
+        return True, payload
 
+    def create_token(self, email):
+        """Creates a token"""
         try:
-            payload = jwt.decode(
-                token,
-                self.signing_key,
-                algorithms=self.config["ALGORITHMS"],
-                audience=self.config["API_AUDIENCE"],
-                issuer=self.config["ISSUER"],
-            )
+            payload = {
+                "sub": email,
+                "iat": time.time(),
+                "exp": time.time() + 3600
+            }
+            token = jwt.encode(payload, self.config["ALGORITHMS"],
+                               issuer=self.config["ISSUER"],
+                               audience=self.config["API_AUDIENCE"])
+            return token
         except Exception as e:
-            return {"status": "error", "message": str(e)}
-
-        return payload
-    
-    #creting a token for a new user
-    def create_token(self, email, password):
-        """
-        Create a token for a user.
-        """
-        payload = {
-            "email": email,
-            "iss": self.config["ISSUER"],
-            "aud": self.config["API_AUDIENCE"],
-            "iat": int(time.time()),
-            "exp": int(time.time()) + 3600,
-        }
-        return jwt.encode(
-            payload, key=password, algorithm=self.config["ALGORITHMS"]
-        )
+            return e
