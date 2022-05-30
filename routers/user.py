@@ -7,8 +7,9 @@ from fastapi import Depends, Response, APIRouter, status
 
 # from fastapi import Depends, FastAPI, Response Request
 from fastapi.security import HTTPBearer
+from utils import VerifyToken
 
-from main import jwt_handdler
+jwt_handdler=VerifyToken()
 
 router = APIRouter(
     prefix="/user",
