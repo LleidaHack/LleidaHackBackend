@@ -24,8 +24,8 @@ def set_up():
 
 class VerifyToken():
     """Verifies the token"""
-    def __init__(self, config):
-        self.config = config
+    def __init__(self):
+        self.config = set_up()
 
     def verify_token(self, token):
         """Verifies the token"""
