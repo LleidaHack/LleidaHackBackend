@@ -1,11 +1,11 @@
 # from __future__ import annotations
 
 from routers import user
-from routers import hacker
-from routers import hackergroup
-from routers import lleidahacker
-from routers import company
-from routers import event
+# from routers import hacker
+# from routers import hackergroup
+# from routers import lleidahacker
+# from routers import company
+# from routers import event
 
 
 from sqlalchemy.orm import Session
