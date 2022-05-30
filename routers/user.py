@@ -34,7 +34,7 @@ async def signup(payload: SchemaUser, response: Response, db: Session = Depends(
                         shirt_size=payload.shirt_size)
     db.add(new_user)
     db.commit()
-    token=jwt_handdler.create_token(new_user.email, new_user.password)
+    token=jwt_handdler.create_token(new_user.email)
     return {"success": True, "created_id": new_user.id, "token": token}
 
 
