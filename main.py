@@ -13,10 +13,14 @@ from fastapi import Depends, FastAPI, Response, status, Request
 from fastapi.security import HTTPBearer
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from utils import VerifyToken
 
 
 # Scheme for the Authorization header
 token_auth_scheme = HTTPBearer()
+
+jwt_handdler=VerifyToken()
+
 
 tags_metadata = [
     {"name": "User", "description": "User related endpoints"},

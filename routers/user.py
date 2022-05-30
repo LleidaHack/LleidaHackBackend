@@ -3,7 +3,12 @@ from schema import User as SchemaUser
 from database import get_db
 
 from sqlalchemy.orm import Session
-from fastapi import Depends, Response, APIRouter
+from fastapi import Depends, Response, APIRouter, status
+
+# from fastapi import Depends, FastAPI, Response Request
+from fastapi.security import HTTPBearer
+
+from main import jwt_handdler
 
 router = APIRouter(
     prefix="/user",
@@ -13,6 +18,24 @@ router = APIRouter(
     # responses={404: {"description": "Not found"}},
 )
 
+token_auth_scheme = HTTPBearer()
+
+@router.post("/signup")
+async def signup(payload: SchemaUser, response: Response, db: Session = Depends(get_db)):
+    new_user = ModelUser(name=payload.name, 
+                        email=payload.email,
+                        password=payload.password,
+                        nickname=payload.nickname,
+                        birthdate = payload.birthdate,
+                        food_restrictions=payload.food_restrictions,
+                        telephone=payload.telephone,
+                        address=payload.address,
+                        shirt_size=payload.shirt_size)
+    db.add(new_user)
+    db.commit()
+    token=jwt_handdler.generate_token(new_user.id, new_user.email)
+    return {"success": True, "created_id": new_user.id, "token": token}
+
 
 @router.get("/all", tags=["User"])
 async def get_users(db: Session = Depends(get_db)):
@@ -20,11 +43,11 @@ async def get_users(db: Session = Depends(get_db)):
 
 @router.get("/{userId}", tags=["User"])
 # async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)):
-async def get_user(userId: int, response: Response, db: Session = Depends(get_db)):
-    # result = VerifyToken(token.credentials).verify()
-    # if result.get("status"):
-    #    response.status_code = status.HTTP_400_BAD_REQUEST
-    #    return result
+async def get_user(userId: int, response: Response, db: Session = Depends(get_db), token: str = Depends(token_auth_scheme)):
+    result = VerifyToken(token.credentials).verify()
+    if result.get("status"):
+       response.status_code = status.HTTP_400_BAD_REQUEST
+       return result
     return db.query(ModelUser).filter(ModelUser.id == userId).first()
 
 @router.post("/", tags=["User"])
