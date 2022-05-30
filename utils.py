@@ -1,4 +1,5 @@
 import os
+import time
 import jwt
 from configparser import ConfigParser
 
@@ -32,6 +33,10 @@ class VerifyToken():
         # use any of the keys available
         jwks_url = f'https://{self.config["DOMAIN"]}/.well-known/jwks.json'
         self.jwks_client = jwt.PyJWKClient(jwks_url)
+
+    def get_current_time(self):
+        """Returns the current time in seconds"""
+        return int(round(time.time()))
 
     def verify(self, token):
         # This gets the 'kid' from the passed token
