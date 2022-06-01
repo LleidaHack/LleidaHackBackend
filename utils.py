@@ -39,6 +39,7 @@ class VerifyToken():
         except jwt.InvalidTokenError:
             return False, "invalid_token"
         return True, payload
+        
 
     def create_token(self, email):
         """Creates a token"""

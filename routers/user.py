@@ -38,11 +38,11 @@ async def signup(payload: SchemaUser, response: Response, db: Session = Depends(
     return {"success": True, "created_id": new_user.id, "token": token}
 
 
-@router.get("/all", tags=["User"])
+@router.get("/all")
 async def get_users(db: Session = Depends(get_db)):
     return db.query(ModelUser).all()
 
-@router.get("/{userId}", tags=["User"])
+@router.get("/{userId}")
 # async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)):
 async def get_user(userId: int, response: Response, db: Session = Depends(get_db), token: str = Depends(token_auth_scheme)):
     result = VerifyToken(token.credentials).verify()
@@ -51,7 +51,7 @@ async def get_user(userId: int, response: Response, db: Session = Depends(get_db
        return result
     return db.query(ModelUser).filter(ModelUser.id == userId).first()
 
-@router.post("/", tags=["User"])
+@router.post("/")
 # async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def add_user(payload:SchemaUser, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
@@ -73,7 +73,7 @@ async def add_user(payload:SchemaUser, response: Response, db: Session = Depends
     return {"success": True, "created_id": new_user.id}
     # return service.addUser(payload)
 
-@router.put("/{userId}", tags=["User"])
+@router.put("/{userId}")
 # async def updateUser(userId: int, payload: User, response: Response, token: str = Depends(token_auth_scheme)):
 async def update_user(userId: int, payload: SchemaUser, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
@@ -92,7 +92,7 @@ async def update_user(userId: int, payload: SchemaUser, response: Response, db: 
     user.shirt_size = payload.shirt_size
     db.commit()
 
-@router.delete("/{userId}", tags=["User"])
+@router.delete("/{userId}")
 # async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def remove_user(userId:int, response: Response, db: Session = Depends(get_db)):
 #     result = VerifyToken(token.credentials).verify()

@@ -19,15 +19,15 @@ router = APIRouter(
     # responses={404: {"description": "Not found"}},
 )
 
-@router.get("/all", tags=["LleidaHacker"])
+@router.get("/all")
 async def get_lleidahacker(db: Session = Depends(get_db)):
     return db.query(ModelLleidaHacker).all()
 
-@router.get("/{userId}", tags=["LleidaHacker"])
+@router.get("/{userId}")
 async def get_lleidahacker(userId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
 
-@router.post("", tags=["LleidaHacker"])
+@router.post("")
 async def add_lleidahacker(payload:SchemaLleidaHacker, response: Response, db: Session = Depends(get_db)):
     new_lleidahacker = ModelLleidaHacker(name=payload.name, 
                          email=payload.email,
@@ -42,7 +42,7 @@ async def add_lleidahacker(payload:SchemaLleidaHacker, response: Response, db: S
     db.commit()
     return {"success": True, "created_id": new_lleidahacker.id}
 
-@router.delete("/{userId}", tags=["LleidaHacker"])
+@router.delete("/{userId}")
 # async def deleteUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
 async def delete_lleidahacker(userId:int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
@@ -53,15 +53,15 @@ async def delete_lleidahacker(userId:int, response: Response, db: Session = Depe
     db.query(ModelUser).filter(ModelUser.id == userId).delete()
     return {"success": True}
 
-@router.get("/groups", tags=["LleidaHacker"])
+@router.get("/groups")
 async def get_lleidahacker_groups(db: Session = Depends(get_db)):
     return db.query(ModelLleidaHackerGroup).all()
 
-@router.get("/group/{groupId}", tags=["LleidaHacker"])
+@router.get("/group/{groupId}")
 async def get_lleidahacker_group(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelLleidaHackerGroup).filter(ModelLleidaHackerGroup.id == groupId).first()
 
-@router.post("/group", tags=["LleidaHacker"])
+@router.post("/group")
 async def add_lleidahacker_group(payload:SchemaLleidaHackerGroup, response: Response, db: Session = Depends(get_db)):
     new_lleidahacker_group = ModelLleidaHackerGroup(name=payload.name, 
                          email=payload.email,
@@ -76,7 +76,7 @@ async def add_lleidahacker_group(payload:SchemaLleidaHackerGroup, response: Resp
     db.commit()
     return {"success": True, "created_id": new_lleidahacker_group.id}
 
-@router.delete("/group/{groupId}", tags=["LleidaHacker"])
+@router.delete("/group/{groupId}")
 async def delete_lleidahacker_group(groupId:int, response: Response, db: Session = Depends(get_db)):
     # result = VerifyToken(token.credentials).verify()
     # if result.get("status"):
@@ -85,6 +85,6 @@ async def delete_lleidahacker_group(groupId:int, response: Response, db: Session
     db.query(ModelLleidaHackerGroup).filter(ModelLleidaHackerGroup.id == groupId).delete()
     return {"success": True}
 
-@router.get("/group/{groupId}/members", tags=["LleidaHacker"])
+@router.get("/group/{groupId}/members")
 async def get_lleidahacker_group_members(groupId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelLleidaHackerGroup).filter(ModelLleidaHackerGroup.id == groupId).first().members

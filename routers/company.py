@@ -18,15 +18,15 @@ router = APIRouter(
     # responses={404: {"description": "Not found"}},
 )
 
-@router.get("/all", tags=["Company"])
+@router.get("/all")
 async def get_companies(db: Session = Depends(get_db)):
     return db.query(ModelCompany).all()
 
-@router.get("/{companyId}", tags=["Company"])
+@router.get("/{companyId}")
 async def get_company(companyId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
 
-@router.post("/", tags=["Company"])
+@router.post("/")
 async def add_company(payload:SchemaCompany, response: Response, db: Session = Depends(get_db)):
     new_company = ModelCompany(name=payload.name, 
                                email=payload.email,
@@ -40,7 +40,7 @@ async def add_company(payload:SchemaCompany, response: Response, db: Session = D
     db.commit()
     return {"success": True, "created_id": new_company.id}
 
-@router.put("/{companyId}", tags=["Company"])
+@router.put("/{companyId}")
 async def update_company(companyId: int, payload: SchemaCompany, response: Response, db: Session = Depends(get_db)):
     company = db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
     company.name = payload.name
@@ -51,24 +51,24 @@ async def update_company(companyId: int, payload: SchemaCompany, response: Respo
     company.logo = payload.logo
     db.commit()
 
-@router.delete("/{companyId}", tags=["Company"])
+@router.delete("/{companyId}")
 async def delete_company(companyId: int, response: Response, db: Session = Depends(get_db)):
     company = db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
     db.delete(company)
     db.commit()
 
-@router.get("/{companyId}/users", tags=["Company"])
+@router.get("/{companyId}/users")
 async def get_company_users(companyId: int, response: Response, db: Session = Depends(get_db)):
     return db.query(ModelCompanyUser).filter(ModelCompanyUser.company_id == companyId).all()
 
-@router.post("/{companyId}/users/add", tags=["Company"])
+@router.post("/{companyId}/users/add")
 async def add_company_user(companyId: int, payload: SchemaCompanyUser, response: Response, db: Session = Depends(get_db)):
     new_company_user = ModelCompanyUser(company_id=companyId, user_id=payload.user_id, role=payload.role)
     db.add(new_company_user)
     db.commit()
     return {"success": True, "created_id": new_company_user.id}
 
-@router.delete("/{companyId}/users/{userId}", tags=["Company"])
+@router.delete("/{companyId}/users/{userId}")
 async def delete_company_user(companyId: int, userId: int, response: Response, db: Session = Depends(get_db)):
     company_user = db.query(ModelCompanyUser).filter(ModelCompanyUser.company_id == companyId, ModelCompanyUser.user_id == userId).first()
     db.delete(company_user)
