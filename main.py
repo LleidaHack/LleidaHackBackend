@@ -33,8 +33,8 @@ tags_metadata = [
     {"name": "Event", "description": "Event related endpoints"},
 ]
 
-app = FastAPI(title="Lleida Hacke API",
-              description="Lleida Hacker API",
+app = FastAPI(title="LleidaHack API",
+              description="LleidaHack API",
               version="2.0",
               docs_url='/api/docs',
               redoc_url='/api/redoc',
