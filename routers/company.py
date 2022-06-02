@@ -1,9 +1,9 @@
-from Models import User as ModelUser
-from Models import Company as ModelCompany
-from Models import CompanyUser as ModelCompanyUser
+from models.User import User as ModelUser
+from models.Company import Company as ModelCompany
+from models.CompanyUser import CompanyUser as ModelCompanyUser
 
-from schema import Company as SchemaCompany
-from schema import CompanyUser as SchemaCompanyUser
+from schemas.Company import Company as SchemaCompany
+from schemas.CompanyUser import CompanyUser as SchemaCompanyUser
 
 from database import get_db
 

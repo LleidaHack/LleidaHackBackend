@@ -27,6 +27,7 @@ tags_metadata = [
     {"name": "Hacker", "description": "Hacker related endpoints"},
     {"name": "Hacker Group", "description": "Hacker Group related endpoints"},
     {"name": "LleidaHacker", "description": "LleidaHacker related endpoints"},
+    {"name": "LleidaHacker Group", "description": "LleidaHacker Group related endpoints"},
     {"name": "Company", "description": "Company related endpoints"},
     {"name": "Event", "description": "Event related endpoints"},
 ]

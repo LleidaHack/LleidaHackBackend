@@ -1,7 +1,7 @@
-from Models import Hacker as ModelHacker
-from Models import HackerGroup as ModelHackerGroup
+from models.Hacker import Hacker as ModelHacker
+from models.Hacker import HackerGroup as ModelHackerGroup
 
-from schema import HackerGroup as SchemaHackerGroup
+from schemas.Hacker import HackerGroup as SchemaHackerGroup
 
 from database import get_db
 
@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
 router = APIRouter(
-    prefix="/hackergroup",
+    prefix="/hacker/group",
     tags=["Hacker Group"],
     # dependencies=[Depends(get_db)],
     # dependencies=[Depends(get_token_header)],

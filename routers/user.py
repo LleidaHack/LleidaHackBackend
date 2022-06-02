@@ -1,10 +1,11 @@
-from Models import User as ModelUser
-from schema import User as SchemaUser
-from database import get_db
+from models.User import User as ModelUser
+
+from schemas.User import User as SchemaUser
+
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter, status
-
+from database import get_db
 # from fastapi import Depends, FastAPI, Response Request
 from fastapi.security import HTTPBearer
 from utils import VerifyToken

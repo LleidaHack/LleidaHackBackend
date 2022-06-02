@@ -13,10 +13,10 @@ router = APIRouter(
     # responses={404: {"description": "Not found"}},
 )
 
+# @router.get("/all")
+# async def get_events(db: Session = Depends(get_db)):
+#     return db.query(ModelEvent).all()
 
-# @app.get("/events")
-# async def getEvents() -> list:
-#     return service.getEvents()
 
 # @app.get("/event/{eventId}")
 # async def getEvent(eventId:int) -> Event:
