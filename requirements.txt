@@ -9,3 +9,4 @@ pydantic
 alembic
 sqlalchemy
 sqlalchemy-utils
+gunicorn

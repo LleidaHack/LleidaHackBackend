@@ -55,7 +55,7 @@ app.include_router(hacker.router)
 app.include_router(hackergroup.router)
 app.include_router(lleidahacker.router)
 app.include_router(company.router)
-app.include_router(Event.router)
+app.include_router(event.router)
 
 # @app.post("/login/{email}")
 # async def login(email: str, password: str):
