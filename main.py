@@ -2,7 +2,7 @@
 
 from routers import user
 from routers import hacker
-from routers import hackergroup
+# from routers import hackergroup
 from routers import lleidahacker
 from routers import company
 from routers import event
@@ -52,7 +52,7 @@ app.add_middleware(
 
 app.include_router(user.router)
 app.include_router(hacker.router)
-app.include_router(hackergroup.router)
+# app.include_router(hackergroup.router)
 app.include_router(lleidahacker.router)
 app.include_router(company.router)
 app.include_router(event.router)
