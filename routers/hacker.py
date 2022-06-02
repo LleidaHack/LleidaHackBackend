@@ -1,7 +1,7 @@
-from Models import User as ModelUser
-from Models import Hacker as ModelHacker
+from models.User import User as ModelUser
+from models.Hacker import Hacker as ModelHacker
 
-from schema import Hacker as SchemaHacker
+from schemas.Hacker import Hacker as SchemaHacker
 
 from database import get_db
 
