@@ -1,5 +1,6 @@
+from __future__ import annotations
 from typing import List
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 from models.User import User
@@ -13,5 +14,16 @@ class Company(Base):
     telephone: str = Column(String)
     website: str = Column(String)
     logo: str = Column(String)
-    users: List[User] = relationship('User', secondary='company_user')
+    users: List[CompanyUser] = relationship('CompanyUser', back_populates='company')
     # events: List[Event] = relationship('Event', secondary='sponsor')
+
+class CompanyUser(User):
+    __tablename__ = 'company_user'
+    user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
+    company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
+    company: Company = relationship('Company', back_populates='users')
+    role: str = Column(String)
+    
+    __mapper_args__ = {
+        "polymorphic_identity": "company",
+    }

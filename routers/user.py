@@ -6,11 +6,8 @@ from schemas.User import User as SchemaUser
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter, status
 from database import get_db
-# from fastapi import Depends, FastAPI, Response Request
-from fastapi.security import HTTPBearer
-from utils import VerifyToken
+from security import create_access_token, get_password_hash, oauth2_scheme, oauth_schema
 
-jwt_handdler=VerifyToken()
 
 router = APIRouter(
     prefix="/user",
@@ -20,13 +17,12 @@ router = APIRouter(
     # responses={404: {"description": "Not found"}},
 )
 
-token_auth_scheme = HTTPBearer()
 
 @router.post("/signup")
 async def signup(payload: SchemaUser, response: Response, db: Session = Depends(get_db)):
     new_user = ModelUser(name=payload.name, 
                         email=payload.email,
-                        password=payload.password,
+                        password=get_password_hash(payload.password),
                         nickname=payload.nickname,
                         birthdate = payload.birthdate,
                         food_restrictions=payload.food_restrictions,
@@ -35,26 +31,26 @@ async def signup(payload: SchemaUser, response: Response, db: Session = Depends(
                         shirt_size=payload.shirt_size)
     db.add(new_user)
     db.commit()
-    token=jwt_handdler.create_token(new_user.email)
+    token=create_access_token(new_user)
     return {"success": True, "created_id": new_user.id, "token": token}
 
 
 @router.get("/all")
-async def get_users(db: Session = Depends(get_db)):
+async def get_users(db: Session = Depends(get_db), str = Depends(oauth_schema)):
     return db.query(ModelUser).all()
 
 @router.get("/{userId}")
 # async def getUser(userId: int, response: Response, token: str = Depends(token_auth_scheme)):
-async def get_user(userId: int, response: Response, db: Session = Depends(get_db), token: str = Depends(token_auth_scheme)):
-    result = VerifyToken(token.credentials).verify()
-    if result.get("status"):
-       response.status_code = status.HTTP_400_BAD_REQUEST
-       return result
+async def get_user(userId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
+    # result = VerifyToken(token.credentials).verify()
+    # if result.get("status"):
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return result
     return db.query(ModelUser).filter(ModelUser.id == userId).first()
 
 @router.post("/")
 # async def addUser(payload:User, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-async def add_user(payload:SchemaUser, response: Response, db: Session = Depends(get_db)):
+async def add_user(payload:SchemaUser, response: Response, db: Session = Depends(get_db),str = Depends(oauth_schema)):
     # result = VerifyToken(token.credentials).verify()
     # if result.get("status"):
     #    response.status_code = status.HTTP_400_BAD_REQUEST
@@ -76,7 +72,7 @@ async def add_user(payload:SchemaUser, response: Response, db: Session = Depends
 
 @router.put("/{userId}")
 # async def updateUser(userId: int, payload: User, response: Response, token: str = Depends(token_auth_scheme)):
-async def update_user(userId: int, payload: SchemaUser, response: Response, db: Session = Depends(get_db)):
+async def update_user(userId: int, payload: SchemaUser, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
     # result = VerifyToken(token.credentials).verify()
     # if result.get("status"):
     #    response.status_code = status.HTTP_400_BAD_REQUEST
@@ -95,7 +91,7 @@ async def update_user(userId: int, payload: SchemaUser, response: Response, db: 
 
 @router.delete("/{userId}")
 # async def removeUser(userId:int, response: Response, token: str = Depends(token_auth_scheme)) -> int:
-async def remove_user(userId:int, response: Response, db: Session = Depends(get_db)):
+async def remove_user(userId:int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
 #     result = VerifyToken(token.credentials).verify()
 #     if result.get("status"):
 #        response.status_code = status.HTTP_400_BAD_REQUEST

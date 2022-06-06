@@ -1,4 +1,5 @@
 from __future__ import annotations
+from asyncio import events
 from typing import List
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
@@ -11,7 +12,7 @@ class Hacker(User):
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
     linkedin: str = Column(String)
-    groups: List[HackerGroup] = relationship('HackerGroupUser', secondary='hacker_group', backref='hacker')
+    groups: List[HackerGroup] = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
     # events: List[Event] = relationship('Event', secondary='hacker_event')
     __mapper_args__ = {
@@ -29,4 +30,5 @@ class HackerGroup(Base):
     name: str = Column(String)
     description: str = Column(String)
     leader_id: int = Column(Integer, ForeignKey('hacker.user_id'), nullable=False)
-    users: List[Hacker] = relationship('HackerGroupUser', secondary='hacker_group_user', backref='hacker_group')
+    # event: Event = relationship('Event', secondary='hacker_event')
+    users: List[Hacker] = relationship('Hacker', secondary='hacker_group_user')

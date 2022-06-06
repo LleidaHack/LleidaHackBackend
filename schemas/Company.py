@@ -14,3 +14,10 @@ class Company(BaseModel):
 
     # class Config:
         # orm_mode = True
+    
+class CompanyUser(User):
+    role: str
+    company_id: int
+
+    # class Config:
+        # orm_mode = True

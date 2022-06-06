@@ -14,4 +14,4 @@ class LleidaHackerGroup(BaseModel):
     name: str
     description: str
     members: List[LleidaHacker]
-    leader: int
+    # leader: int
