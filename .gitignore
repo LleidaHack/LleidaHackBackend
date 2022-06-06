@@ -1,5 +1,5 @@
 # .gitignore
 .config
-database.ini
+config.ini
 **/__pycache__/
 .env

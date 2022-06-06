@@ -1,6 +1,7 @@
 from datetime import date
 from sqlalchemy import Column, DateTime, Integer, String
 from database import Base
+# from passlib import hash
 
 class User(Base):
     __tablename__ = 'llhk_user'
@@ -10,7 +11,7 @@ class User(Base):
     password: str = Column(String)
     birthdate: date = Column(DateTime)
     food_restrictions: str = Column(String)
-    email: str = Column(String)
+    email: str = Column(String, unique=True)
     telephone: str = Column(String)
     address: str = Column(String)
     shirt_size: str = Column(String)
@@ -20,3 +21,6 @@ class User(Base):
         "polymorphic_identity": "llhk_user",
         "polymorphic_on": type,
     }
+
+    # def verify_password(self, password):
+        # return hash.verify(password, self.password)

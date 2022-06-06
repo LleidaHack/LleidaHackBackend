@@ -6,15 +6,15 @@ from routers import hackergroup
 from routers import lleidahacker
 from routers import lleidahackergroup
 from routers import company
+from routers import companyuser
 from routers import event
+from routers import authentication
 
 
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, Response, status, Request
 from fastapi.security import HTTPBearer
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from utils import VerifyToken
 
 
 # Scheme for the Authorization header
@@ -31,14 +31,15 @@ tags_metadata = [
     {"name": "LleidaHacker Group", "description": "LleidaHacker Group related endpoints"},
     {"name": "Company", "description": "Company related endpoints"},
     {"name": "Event", "description": "Event related endpoints"},
+    {"name": "Authentication", "description": "Authentication related endpoints"},
 ]
 
 app = FastAPI(title="LleidaHack API",
               description="LleidaHack API",
               version="2.0",
-              docs_url='/api/docs',
-              redoc_url='/api/redoc',
-              openapi_url='/api/openapi.json',
+              docs_url='/docs',
+              redoc_url='/redoc',
+              openapi_url='/openapi.json',
               openapi_tags=tags_metadata,
               debug=True
 )
@@ -53,11 +54,13 @@ app.add_middleware(
 )
 
 app.include_router(user.router)
+app.include_router(authentication.router)
 app.include_router(hacker.router)
 app.include_router(hackergroup.router)
 app.include_router(lleidahacker.router)
 app.include_router(lleidahackergroup.router)
 app.include_router(company.router)
+app.include_router(companyuser.router)
 app.include_router(event.router)
 
 # @app.post("/login/{email}")
