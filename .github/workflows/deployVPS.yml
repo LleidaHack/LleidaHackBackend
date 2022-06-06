@@ -49,5 +49,5 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-          sudo -S systemctl status backend.service
-          echo ${{ secrets.SERVER_PASSWORD }}
+            sudo -S systemctl status backend.service
+            echo ${{ secrets.SERVER_PASSWORD }}
