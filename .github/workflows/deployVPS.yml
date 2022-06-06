@@ -39,7 +39,6 @@ jobs:
             echo > gunicorn_access.log
             echo > gunicorn_error.log
             sudo -S systemctl restart backend.service
-            echo ${{ secrets.SERVER_PASSWORD }}
             sudo -S systemctl status backend.service
       - name: check server status
         uses: appleboy/ssh-action@master
@@ -50,4 +49,3 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             sudo -S systemctl status backend.service
-            echo ${{ secrets.SERVER_PASSWORD }}
