@@ -38,8 +38,8 @@ jobs:
             echo "${{ steps.date.outputs.date }}  ->  ${{ github.actor }}" >> deploy.log
             echo > gunicorn_access.log
             echo > gunicorn_error.log
-            sudo systemctl restart backend.service
-            sudo systemctl status backend.service
+            sudo /bin/systemctl restart backend.service
+            sudo /bin/systemctl status backend.service
       - name: check server status
         uses: appleboy/ssh-action@master
         with:
