@@ -8,7 +8,7 @@ from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from security import create_access_token, oauth_schema
+from security import create_access_token, get_password_hash, oauth_schema
 
 router = APIRouter(
     prefix="/hacker",
@@ -22,12 +22,14 @@ router = APIRouter(
 async def signup(payload: SchemaHacker, response: Response, db: Session = Depends(get_db)):
     new_hacker = ModelHacker(name=payload.name, 
                              email=payload.email,
-                             password=payload.password,
+                             password=get_password_hash(payload.password),
                              nickname=payload.nickname,
                              birthdate = payload.birthdate,
                              food_restrictions=payload.food_restrictions,
                              telephone=payload.telephone,
                              address=payload.address,
+                             github=payload.github,
+                             linkedin=payload.linkedin,
                              shirt_size=payload.shirt_size)
     db.add(new_hacker)
     db.commit()
