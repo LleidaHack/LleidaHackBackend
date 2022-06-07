@@ -39,7 +39,7 @@ jobs:
             echo > gunicorn_access.log
             echo > gunicorn_error.log
             sudo /bin/systemctl restart backend.service
-            sudo /bin/systemctl status backend.service
+            /bin/systemctl status backend.service
       - name: check server status
         uses: appleboy/ssh-action@master
         with:
