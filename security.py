@@ -57,7 +57,7 @@ def authenticate_user(username: str, password: str):
     return user
 
 def create_access_token(user:ModelUser , expires_delta: timedelta = None):
-    to_encode = {'user_id': user.id, 'email': user.email}
+    to_encode = {'user_id': user.id, 'email': user.email, 'type': user.type}
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
