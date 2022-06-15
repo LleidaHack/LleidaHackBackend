@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 from database import db_get, get_db
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer
 from fastapi import Depends, HTTPException, status, Request
@@ -99,3 +100,12 @@ async def get_current_active_user(current_user: ModelUser = Depends(get_current_
     # if current_user.disabled:
         # raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+async def check_permissions(token:str, permission: List):
+    jwt_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    if jwt_token["type"] not in permission:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
+            headers={"WWW-Authenticate": "Bearer"},
+        )

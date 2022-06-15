@@ -54,7 +54,6 @@ app.add_middleware(
 )
 
 app.include_router(user.router)
-app.include_router(authentication.router)
 app.include_router(hacker.router)
 app.include_router(hackergroup.router)
 app.include_router(lleidahacker.router)
@@ -62,47 +61,4 @@ app.include_router(lleidahackergroup.router)
 app.include_router(company.router)
 app.include_router(companyuser.router)
 app.include_router(event.router)
-
-# @app.post("/login/{email}")
-# async def login(email: str, password: str):
-#     """
-#     Login a user and return the token.
-#     """
-#     # Verify that the user is in the database
-#     if service.get_user(email, password) is None:
-#         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-#     else:
-#         # Create a token
-#         token = VerifyToken.create_token(email)
-#         # Return the token
-#         return {"token": token}
-
-# @app.post("/register")
-# async def register(user: User):
-#     """
-#     Register a user and return the token.
-#     """
-#     # Verify that the user is not in the database
-#     if service.get_user(user.username, user.password) is not None:
-#         return Response(status_code=status.HTTP_409_CONFLICT)
-#     else:
-#         # Create a token
-#         token = VerifyToken.create_token(user.username)
-#         # Return the token
-#         return {"token": token}
-
-# @app.post("password_reset")
-# async def password_reset(email: str):
-#     """
-#     Reset the password of a user.
-#     """
-#     # Verify that the user is in the database
-#     if service.get_user(email) is None:
-#         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-#     else:
-#         # Create a token
-#         token = VerifyToken.create_token(email)
-#         # send an email with an url to reset the password
-#         #TODO
-#         # Return the token
-#         return {"token": token}
+app.include_router(authentication.router)
