@@ -8,7 +8,8 @@ class Event(BaseModel):
     location: str
     archived: bool
     description: str
-    status: int
+    max_participants: int
+    max_sponsors: int
     
     # class Config:
         # orm_mode = True

@@ -5,7 +5,7 @@ from typing import List
 class Hacker(User):
     banned: bool
     github: str
-    linkdin: str
+    linkedin: str
 
 class HackerGroup(BaseModel):
     name: str
