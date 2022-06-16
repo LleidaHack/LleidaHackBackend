@@ -47,8 +47,8 @@ class Event(Base):
     max_participants: int = Column(Integer)
     max_sponsors: int = Column(Integer)
     
-    participants: List[ModelHacker] = relationship('Hacker', secondary='hacker_event_participation')
-    organizers: List[ModelLleidaHacker] = relationship("ModelHacker", secondary='lleida_hacker_event_participation')
-    sponsors: List[ModelCompany] = relationship('Company', secondary='company_event_participation')
-    groups: List[ModelHackerGroup] = relationship('HackerGroup', secondary='hacker_group_event_participation')
+    participants: List[ModelHacker] = relationship('Hacker', secondary='hacker_event_participation', back_populates='llhk_event')
+    organizers: List[ModelLleidaHacker] = relationship("ModelHacker", secondary='lleida_hacker_event_participation', back_populates='llhk_event')
+    sponsors: List[ModelCompany] = relationship('Company', secondary='company_event_participation', back_populates='llhk_event')
+    groups: List[ModelHackerGroup] = relationship('HackerGroup', secondary='hacker_group_event_participation', back_populates='llhk_event')
     # status: int = Column(Integer, default=0)
