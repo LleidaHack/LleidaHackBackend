@@ -27,7 +27,7 @@ def upgrade():
                     sa.Column('nif', sa.String(length=50), nullable=False),
                     sa.Column('student', sa.Boolean(), nullable=False),
                     sa.Column('active', sa.Boolean(), nullable=False),
-                    sa.Column('image', sa.String(), nullable=False),
+                    sa.Column('image_id', sa.String(), nullable=False),
                     sa.Column('github', sa.String(length=50), nullable=False),
     )
     op.create_table('company',
