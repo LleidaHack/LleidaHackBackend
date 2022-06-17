@@ -12,3 +12,4 @@ passlib[bcrypt]
 python-multipart
 uuid
 aiofiles
+glob2

@@ -1,3 +1,6 @@
+import glob
+from fastapi import HTTPException
+
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
 
 from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
@@ -6,6 +9,9 @@ from security import get_password_hash
 
 from sqlalchemy.orm import Session
 
+def checkImage(imageId:str):
+    return glob.glob("static/"+imageId+".*")
+
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
@@ -13,6 +19,8 @@ async def get_lleidahacker(userId: int, db: Session):
     return db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
 
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
+    if not checkImage(payload.image_id):
+        raise HTTPException(status_code=400, detail="Image not found")
     new_lleidahacker = ModelLleidaHacker(name=payload.name, 
                                          email=payload.email,
                                          password=get_password_hash(payload.password),
@@ -36,6 +44,7 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     return new_lleidahacker
 
 async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker, db: Session):
+    checkImage(lleidahacker.image_id)
     lleidahacker = db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
     lleidahacker.name = payload.name
     lleidahacker.email = payload.email
