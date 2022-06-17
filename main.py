@@ -10,6 +10,7 @@ from routers import authentication
 from routers import utils
 
 from fastapi import Depends, FastAPI, Response, status, Request
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -57,3 +58,7 @@ app.include_router(companyuser.router)
 app.include_router(event.router)
 app.include_router(authentication.router)
 app.include_router(utils.router)
+
+@app.get("/")
+def root():
+    return RedirectResponse(url='/docs')
