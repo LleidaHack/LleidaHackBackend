@@ -1,7 +1,4 @@
 uvicorn[standard]
-# pyjwt[crypto]
-fastapi
-# PyJWT
 configparser
 psycopg2
 fastapi-sqlalchemy
@@ -13,3 +10,5 @@ gunicorn
 python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
+uuid
+aiofiles

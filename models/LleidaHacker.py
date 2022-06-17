@@ -14,7 +14,7 @@ class LleidaHacker(User):
     nif: str = Column(String, unique=True)
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
-    image: str = Column(String)
+    image_id: str = Column(String)
     github: str = Column(String)
     groups = relationship('LleidaHackerGroup', secondary='lleida_hacker_group_user')
 

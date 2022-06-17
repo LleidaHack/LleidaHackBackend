@@ -27,7 +27,7 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
                                          role=payload.role,
                                          #   group=payload.group,
                                          active=payload.active,
-                                         image=payload.image,
+                                         image_id=payload.image_id,
                                          github=payload.github
     )
     db.add(new_lleidahacker)
@@ -51,7 +51,7 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker, db: Sess
     lleidahacker.role = payload.role
     lleidahacker.group = payload.group
     lleidahacker.active = payload.active
-    lleidahacker.image = payload.image
+    lleidahacker.image_id = payload.image_id
     lleidahacker.github = payload.github
     db.commit()
     db.refresh(lleidahacker)

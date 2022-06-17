@@ -1,9 +1,11 @@
 from datetime import date
 from typing import List
+
+# from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from database import Base
 
 from models.Hacker import Hacker as ModelHacker

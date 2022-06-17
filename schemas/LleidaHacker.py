@@ -7,7 +7,7 @@ class LleidaHacker(User):
     nif: str
     student: bool 
     active: bool 
-    image: str 
+    image_id: str 
     github: str 
 
 class LleidaHackerGroup(BaseModel):

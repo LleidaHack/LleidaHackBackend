@@ -1,5 +1,3 @@
-# from __future__ import annotations
-
 from routers import user
 from routers import hacker
 from routers import hackergroup
@@ -9,18 +7,12 @@ from routers import company
 from routers import companyuser
 from routers import event
 from routers import authentication
+from routers import utils
 
-
-# from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, Response, status, Request
 from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
-
-
-# Scheme for the Authorization header
-token_auth_scheme = HTTPBearer()
-
-
+from fastapi.staticfiles import StaticFiles
 
 
 tags_metadata = [
@@ -32,6 +24,7 @@ tags_metadata = [
     {"name": "Company", "description": "Company related endpoints"},
     {"name": "Event", "description": "Event related endpoints"},
     {"name": "Authentication", "description": "Authentication related endpoints"},
+    {"name": "Utils", "description": "Utils related endpoints"},
 ]
 
 app = FastAPI(title="LleidaHack API",
@@ -44,7 +37,6 @@ app = FastAPI(title="LleidaHack API",
               debug=True
 )
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -52,6 +44,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount('/static', StaticFiles(directory='static'), name='static')
 
 app.include_router(user.router)
 app.include_router(hacker.router)
@@ -62,3 +56,4 @@ app.include_router(company.router)
 app.include_router(companyuser.router)
 app.include_router(event.router)
 app.include_router(authentication.router)
+app.include_router(utils.router)
