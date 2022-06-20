@@ -18,5 +18,5 @@ async def uploadFile(image:UploadFile = File(...), token:str = Depends(oauth_sch
     id = utils_service.writeFile(image)
     return {"success": True, "id": id}
 
-async def send_email(to:str, backgroundTask:BackgroundTask):
-    backgroundTask.add_task(email_service.send_email, to)
+# async def send_email(to:str, backgroundTask:BackgroundTask):
+#     backgroundTask.add_task(email_service.send_email, to)
