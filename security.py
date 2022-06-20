@@ -15,6 +15,8 @@ SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
 ALGORITHM = Configuration.get("SECURITY", "ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY", "ACCESS_TOKEN_EXPIRE_MINUTES")
 
+SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 oauth_schema = HTTPBearer()
@@ -28,15 +30,17 @@ def get_password_hash(password):
     # return password
 
 def verify_token(req: Request):
-        token = req.headers["Authorization"]
-        dict=jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        # Here your code for verifying the token or whatever you use
-        if dict["exp"] < datetime.utcnow():
-            raise HTTPException(
-                status_code=401,
-                detail="Unauthorized"
-            )
+    token = req.headers["Authorization"]
+    if token is SERVICE_TOKEN:
         return True
+    dict=jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    # Here your code for verifying the token or whatever you use
+    if dict["exp"] < datetime.utcnow():
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized"
+        )
+    return True
 
 def authenticate_user(username: str, password: str):
     user_dict = db_get().query(ModelUser).filter(ModelUser.email == username).first()
