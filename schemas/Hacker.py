@@ -6,6 +6,7 @@ class Hacker(User):
     banned: bool
     github: str
     linkedin: str
+    image_id: str
 
 class HackerGroup(BaseModel):
     name: str

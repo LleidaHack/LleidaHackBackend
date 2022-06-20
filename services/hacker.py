@@ -22,7 +22,9 @@ async def add_hacker(payload:SchemaHacker, db: Session):
                              food_restrictions=payload.food_restrictions,
                              telephone=payload.telephone,
                              address=payload.address,
-                             shirt_size=payload.shirt_size)
+                             shirt_size=payload.shirt_size,
+                             image_id=payload.image_id,
+                             )
     db.add(new_hacker)
     db.commit()
     db.refresh(new_hacker)
@@ -45,6 +47,8 @@ async def update_hacker(hackerId: int, payload:SchemaHacker, db: Session):
     hacker.telephone = payload.telephone
     hacker.address = payload.address
     hacker.shirt_size = payload.shirt_size
+    hacker.image_id=payload.image_id,
+
     db.commit()
     return hacker
 

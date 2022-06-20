@@ -37,6 +37,7 @@ def upgrade():
     )
     op.create_table('hacker',
                     sa.Column('user_id', sa.Integer(), sa.ForeignKey('llhk_user.id'), primary_key=True),
+                    sa.Column('image_id', sa.String(), nullable=False),
                     sa.Column('banned', sa.Integer(), nullable=False),
                     sa.Column('github', sa.String(length=50), nullable=False),
                     sa.Column('linkedin', sa.String(length=50), nullable=True),
