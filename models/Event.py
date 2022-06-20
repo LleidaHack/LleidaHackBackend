@@ -12,6 +12,7 @@ from models.Hacker import Hacker as ModelHacker
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
 from models.Company import Company as ModelCompany
 from models.Hacker import HackerGroup as ModelHackerGroup
+from models.Meal import Meal as ModelMeal
 
 
 class HackerParticipation(Base):
@@ -54,3 +55,4 @@ class Event(Base):
     sponsors: List[ModelCompany] = relationship('Company', secondary='company_event_participation', back_populates='llhk_event')
     groups: List[ModelHackerGroup] = relationship('HackerGroup', secondary='hacker_group_event_participation', back_populates='llhk_event')
     # status: int = Column(Integer, default=0)
+    meals: List[ModelMeal] = relationship('Meal', back_populates='event')
