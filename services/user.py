@@ -7,8 +7,8 @@ from schemas.User import User as SchemaUser
 
 
 
-async def get_all(db: Session):
-    return await db.query(ModelUser).all()
+def get_all(db: Session):
+    return db.query(ModelUser).all()
 
 async def get_user(db: Session, userId: int):
     return await db.query(ModelUser).filter(ModelUser.id == userId).first()

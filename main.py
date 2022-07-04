@@ -15,6 +15,14 @@ from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from logging.config import dictConfig
+import logging
+from LogConfig import LogConfig
+
+dictConfig(LogConfig().dict())
+logger = logging.getLogger("mycoolapp")
+
+
 
 tags_metadata = [
     {"name": "User", "description": "User related endpoints"},

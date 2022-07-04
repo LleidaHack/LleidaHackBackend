@@ -5,6 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from database import Base
 from models.User import User
+from schemas.Event import Event
 
 class Hacker(User):
     __tablename__ = 'hacker'
@@ -15,7 +16,7 @@ class Hacker(User):
     image_id: str = Column(String)
     groups: List[HackerGroup] = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
-    # events: List[Event] = relationship('Event', secondary='hacker_event')
+    events:List[Event] = relationship('Event', secondary='hacker_event_participation')
     __mapper_args__ = {
         "polymorphic_identity": "hacker",
     }

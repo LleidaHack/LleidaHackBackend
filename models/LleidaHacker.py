@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 from models.User import User
-# from models.LleidaHackerGroup import LleidaHackerGroup
+from schemas.LleidaHacker import LleidaHackerGroup
 
 class LleidaHacker(User):
     __tablename__ = 'lleida_hacker'
@@ -16,8 +16,8 @@ class LleidaHacker(User):
     active: bool = Column(Boolean, default=True)
     image_id: str = Column(String)
     github: str = Column(String)
-    groups = relationship('LleidaHackerGroup', secondary='lleida_hacker_group_user')
-
+    groups:List[LleidaHackerGroup] = relationship('LleidaHackerGroup', secondary='lleida_hacker_group_user')
+    events:List[Event] = relationship('Event', secondary='lleida_hacker_event_participation')
     __mapper_args__ = {
         "polymorphic_identity": "lleida_hacker",
     }

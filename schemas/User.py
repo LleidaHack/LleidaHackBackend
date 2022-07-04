@@ -13,5 +13,5 @@ class User(BaseModel):
     address: str
     shirt_size: str
 
-    # class Config:
-        # orm_mode = True
+    class Config:
+        orm_mode = True

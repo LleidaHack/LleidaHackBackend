@@ -11,5 +11,5 @@ class Event(BaseModel):
     max_participants: int
     max_sponsors: int
     
-    # class Config:
-        # orm_mode = True
+    class Config:
+        orm_mode = True
