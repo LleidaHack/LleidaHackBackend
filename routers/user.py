@@ -22,7 +22,7 @@ async def signup(payload: SchemaUser, response: Response, db: Session = Depends(
 
 @router.get("/all")
 async def get_users(db: Session = Depends(get_db), token:str = Depends(oauth_schema)):
-    check_permissions(token, ["lleida_hacker", "admin"])
+    await check_permissions(token, ["lleida_hacker", "admin"])
     return user_service.get_all(db)
 
 @router.get("/{userId}")

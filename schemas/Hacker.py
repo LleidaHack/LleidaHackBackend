@@ -8,8 +8,14 @@ class Hacker(User):
     linkedin: str
     image_id: str
 
+    class Config:
+        orm_mode = True
+
 class HackerGroup(BaseModel):
     name: str
     description: str
     members: List[Hacker]
     leader: int
+    
+    class Config:
+        orm_mode = True

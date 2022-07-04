@@ -106,6 +106,8 @@ async def get_current_active_user(current_user: ModelUser = Depends(get_current_
     return current_user
 
 async def check_permissions(token:str, permission: List):
+    if token.credentials == SERVICE_TOKEN:
+        return True
     jwt_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     if jwt_token["type"] not in permission:
         raise HTTPException(

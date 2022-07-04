@@ -10,8 +10,14 @@ class LleidaHacker(User):
     image_id: str 
     github: str 
 
+    class Config:
+        orm_mode = True
+
 class LleidaHackerGroup(BaseModel):
     name: str
     description: str
     members: List[LleidaHacker]
     # leader: int
+
+    class Config:
+        orm_mode = True

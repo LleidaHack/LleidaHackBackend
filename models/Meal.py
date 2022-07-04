@@ -14,7 +14,7 @@ class HackerMeal(Base):
 class Meal(Base):
     __tablename__ = 'meal'
     id: int = Column(Integer, primary_key=True, index=True)
-    event_id: int = Column(Integer, ForeignKey('event.id'), index=True)
+    event_id: int = Column(Integer, ForeignKey('llhk_event.id'), index=True)
     name: str = Column(String)
     description: str = Column(String)
-    users: List[ModelHacker] = relationship('Hacker', secondary='hacker_meal', back_populates='meals')
+    users: List[ModelHacker] = relationship('Hacker', secondary='hacker_meal')

@@ -13,11 +13,11 @@ class Company(BaseModel):
     # events: List[Event]
 
     # class Config:
-        # orm_mode = True
+    #     orm_mode = True
     
 class CompanyUser(User):
     role: str
     company_id: int
 
     # class Config:
-        # orm_mode = True
+    #     orm_mode = True
