@@ -20,6 +20,11 @@ class HackerParticipation(Base):
     user_id = Column(Integer, ForeignKey("hacker.user_id"), primary_key=True, index=True)
     event_id = Column(Integer, ForeignKey("llhk_event.id"), primary_key=True, index=True)
 
+class HackerRegistration(Base):
+    __tablename__ = "hacker_event_registration"
+    user_id = Column(Integer, ForeignKey("hacker.user_id"), primary_key=True, index=True)
+    event_id = Column(Integer, ForeignKey("llhk_event.id"), primary_key=True, index=True)
+
 class HackerGroupParticipation(Base):
     __tablename__ = "hacker_group_event_participation"
     user_id = Column(Integer, ForeignKey("hacker_group.id"), primary_key=True, index=True)
@@ -49,7 +54,11 @@ class Event(Base):
     price: int = Column(Integer, default=0)
     max_participants: int = Column(Integer)
     max_sponsors: int = Column(Integer)
+    is_open: bool = Column(Boolean, default=True)
     
+    participants: List[ModelHacker] = relationship('Hacker', secondary='hacker_event_participation')
+    #TODO add registered_hackers
+    registered_hackers: List[ModelHacker] = relationship('Hacker', secondary='hacker_event_registration')
     participants: List[ModelHacker] = relationship('Hacker', secondary='hacker_event_participation')
     organizers: List[ModelLleidaHacker] = relationship("LleidaHacker", secondary='lleida_hacker_event_participation')
     sponsors: List[ModelCompany] = relationship('Company', secondary='company_event_participation')
