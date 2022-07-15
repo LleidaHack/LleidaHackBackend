@@ -15,7 +15,7 @@ router = APIRouter(
 
 @router.post("/uploadImage")
 async def uploadFile(image:UploadFile = File(...), token:str = Depends(oauth_schema)):
-    id = utils_service.writeFile(image)
+    id = utils_service.uploadFile(image)
     return {"success": True, "id": id}
 
 # async def send_email(to:str, backgroundTask:BackgroundTask):
