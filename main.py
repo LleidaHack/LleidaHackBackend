@@ -6,6 +6,7 @@ from routers import lleidahackergroup
 from routers import company
 from routers import companyuser
 from routers import event
+from routers import eventmanagment
 from routers import authentication
 from routers import utils
 
@@ -65,6 +66,7 @@ app.include_router(lleidahackergroup.router)
 app.include_router(company.router)
 app.include_router(companyuser.router)
 app.include_router(event.router)
+app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(utils.router)
 
