@@ -14,7 +14,7 @@ from models.Company import Company as ModelCompany
 from models.Hacker import Hacker as ModelHacker
 from models.Hacker import HackerGroup as ModelHackerGroup
 
-from routers import eventmanagment
+
 
 import services.event as event_service
 
@@ -25,8 +25,6 @@ router = APIRouter(
     # dependencies=[Depends(get_token_header)],
     # responses={404: {"description": "Not found"}},
 )
-
-router.include_router(eventmanagment.router, tags=["EventManagment"])
 
 @router.get("/")
 def get_events(db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
