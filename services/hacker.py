@@ -14,8 +14,10 @@ async def get_hacker(hackerId: int, db: Session):
     return db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
 
 async def add_hacker(payload:SchemaHacker, db: Session):
-    new_hacker = ModelHacker(name=payload.name, 
+    new_hacker = ModelHacker(name=payload.name,
                              email=payload.email,
+                             linkedin=payload.linkedin,
+                             github=payload.github,
                              password=get_password_hash(payload.password),
                              nickname=payload.nickname,
                              birthdate = payload.birthdate,
