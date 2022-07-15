@@ -7,7 +7,7 @@ from schemas.User import User as SchemaUser
 
 
 
-def get_all(db: Session):
+async def get_all(db: Session):
     return db.query(ModelUser).all()
 
 async def get_user(db: Session, userId: int):
