@@ -36,7 +36,8 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
                                          #   group=payload.group,
                                          active=payload.active,
                                          image_id=payload.image_id,
-                                         github=payload.github
+                                         github=payload.github,
+                                         linkedin=payload.linkedin
     )
     db.add(new_lleidahacker)
     db.commit()
