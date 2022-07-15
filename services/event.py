@@ -1,9 +1,3 @@
-
-
-from ast import List
-from database import get_db
-from security import oauth_schema
-
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 

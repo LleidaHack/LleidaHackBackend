@@ -24,6 +24,8 @@ router = APIRouter(
     # responses={404: {"description": "Not found"}},
 )
 
+router.include_router()
+
 @router.get("/")
 def get_events(db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
     return event_service.get_all(db)
@@ -91,3 +93,5 @@ def add_event_group(id: int, group_id: int, db: Session = Depends(get_db), tokem
 def remove_event_group(id: int, group_id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
     event = event_service.remove_group(id, group_id, db)
     return {'success': True, 'event_id': event.id}
+
+

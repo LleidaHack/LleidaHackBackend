@@ -13,3 +13,4 @@ python-multipart
 uuid
 aiofiles
 glob2
+fastapi

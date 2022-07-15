@@ -34,6 +34,7 @@ tags_metadata = [
     {"name": "Event", "description": "Event related endpoints"},
     {"name": "Authentication", "description": "Authentication related endpoints"},
     {"name": "Utils", "description": "Utils related endpoints"},
+    {"name": "EventManagment", "description": "Event Managment related endpoints"},
 ]
 
 app = FastAPI(title="LleidaHack API",
