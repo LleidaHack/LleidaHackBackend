@@ -8,7 +8,8 @@ class LleidaHacker(User):
     student: bool 
     active: bool 
     image_id: str 
-    github: str 
+    github: str
+    linkedin: str
 
     class Config:
         orm_mode = True
