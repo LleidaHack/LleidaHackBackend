@@ -29,7 +29,7 @@ async def get_hackers(db: Session = Depends(get_db), str = Depends(oauth_schema)
 
 @router.get("/{hackerId}")
 async def get_hacker(hackerId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    return await hacker_service.get_hacker(hackerId, db)
+    return hacker_service.get_hacker(hackerId, db)
 
 @router.post("/")
 async def add_hacker(payload:SchemaHacker, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):

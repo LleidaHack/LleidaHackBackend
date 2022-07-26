@@ -16,8 +16,8 @@ router = APIRouter(
 
 @router.post("/signup")
 async def signup(payload: SchemaLleidaHacker, response: Response, db: Session = Depends(get_db)):
-    new_lleidahacker = lleidahacker_service.add_lleidahacker(db, payload)
-    token=create_access_token(new_lleidahacker)
+    new_lleidahacker = await lleidahacker_service.add_lleidahacker(db, payload)
+    token = create_access_token(new_lleidahacker)
     return {"success": True, "created_id": new_lleidahacker.id, "token": token}
 
 @router.get("/all")
@@ -30,15 +30,15 @@ async def get_lleidahacker(userId: int, response: Response, db: Session = Depend
 
 @router.post("/")
 async def add_lleidahacker(payload:SchemaLleidaHacker, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    new_lleidahacker = lleidahacker_service.add_lleidahacker(db, payload)
+    new_lleidahacker = await lleidahacker_service.add_lleidahacker(db, payload)
     return {"success": True, "created_id": new_lleidahacker.id}
 
 @router.delete("/{userId}")
 async def delete_lleidahacker(userId:int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    lleidahacker = lleidahacker_service.delete_lleidahacker(userId, db)
+    lleidahacker = await lleidahacker_service.delete_lleidahacker(userId, db)
     return {"success": True, "deleted_id": userId}
 
 @router.put("/{userId}")
 async def update_lleidahacker(userId:int, payload: SchemaLleidaHacker, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    lleidahacker = lleidahacker_service.update_lleidahacker(userId, db, payload)
+    lleidahacker = await lleidahacker_service.update_lleidahacker(userId, db, payload)
     return {"success": True, "updated_id": userId}

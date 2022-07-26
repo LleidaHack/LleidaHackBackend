@@ -19,5 +19,5 @@ async def get_notifications(userId: int, response: Response, db: Session = Depen
 
 @router.post("/")
 async def add_notification(payload:SchemaNotification, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    new_notification = notifications_service.add_notification(payload, db)
+    new_notification = await notifications_service.add_notification(payload, db)
     return {"success": True, "created_id": new_notification.id}
