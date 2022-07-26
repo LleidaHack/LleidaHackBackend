@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from security import get_password_hash
 
-async def get_all_hackers(db: Session):
+async def get_all(db: Session):
     return db.query(ModelHacker).all()
 
 async def get_hacker(hackerId: int, db: Session):
