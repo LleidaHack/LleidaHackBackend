@@ -24,17 +24,17 @@ async def get_company(companyId: int, response: Response, db: Session = Depends(
 
 @router.post("/")
 async def add_company(payload:SchemaCompany, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    new_company = company_service.add_company(db, payload)
+    new_company = await company_service.add_company(db, payload)
     return {"success": True, "created_id": new_company.id}
 
 @router.put("/{companyId}")
 async def update_company(companyId: int, payload: SchemaCompany, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    company = company_service.update_company(db, companyId, payload)
+    company = await company_service.update_company(db, companyId, payload)
     return {"success": True, "updated_id": company.id}
 
 @router.delete("/{companyId}")
 async def delete_company(companyId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    company = company_service.delete_company(db, companyId)
+    company = await company_service.delete_company(db, companyId)
     return {"success": True, "deleted_id": company.id}
 
 @router.get("/{companyId}/users")
@@ -43,10 +43,10 @@ async def get_company_users(companyId: int, response: Response, db: Session = De
 
 @router.post("/{companyId}/users/add")
 async def add_company_user(companyId: int, payload: SchemaCompanyUser, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    company = company_service.add_company_user(db, companyId, payload)
+    company = await company_service.add_company_user(db, companyId, payload)
     return {"success": True, "updated_id": company.id}
 
 @router.delete("/{companyId}/users/{userId}")
 async def delete_company_user(companyId: int, userId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    company = company_service.delete_company_user(db, companyId, userId)
+    company = await company_service.delete_company_user(db, companyId, userId)
     return {"success": True, "deleted_id": company.id}

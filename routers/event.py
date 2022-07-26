@@ -36,17 +36,17 @@ def get_event(id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth
 
 @router.post("/")
 def create_event(event: SchemaEvent, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    new_event = event_service.add_event(event, db)
+    new_event = await event_service.add_event(event, db)
     return {'success': True, 'event_id': new_event.id}
 
 @router.put("/{id}")
 def update_event(id: int, event: SchemaEvent, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    new_event = event_service.update_event(id, event, db)
+    new_event = await event_service.update_event(id, event, db)
     return {'success': True, 'event_id': new_event.id}
 
 @router.delete("/{id}")
 def delete_event(id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    event= event_service.delete_event(id, db)
+    event = await event_service.delete_event(id, db)
     return {'success': True, 'event_id': event.id}
 
 @router.get("/{id}/participants")
@@ -66,32 +66,32 @@ def get_event_groups(id: int, db: Session = Depends(get_db), tokem: str = Depend
 
 @router.put("/{id}/participants/{hacker_id}")
 def add_event_participant(id: int, hacker_id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    event = event_service.add_hacker(id, hacker_id, db)
+    event = await event_service.add_hacker(id, hacker_id, db)
     return {'success': True, 'event_id': event.id}
 
 @router.delete("/{id}/participants/{hacker_id}")
 def remove_event_participant(id: int, hacker_id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    event = event_service.remove_hacker(id, hacker_id, db)
+    event = await event_service.remove_hacker(id, hacker_id, db)
     return {'success': True, 'event_id': event.id}
 
 @router.put("/{id}/sponsors/{company_id}")
 def add_event_sponsor(id: int, company_id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    event = event_service.add_company(id, company_id, db)
+    event = await event_service.add_company(id, company_id, db)
     return {'success': True, 'event_id': event.id}
 
 @router.delete("/{id}/sponsors/{company_id}")
 def remove_event_sponsor(id: int, company_id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    event = event_service.remove_company(id, company_id, db)
+    event = await event_service.remove_company(id, company_id, db)
     return {'success': True, 'event_id': event.id}
 
 @router.put("/{id}/group/{group_id}")
 def add_event_group(id: int, group_id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    event = event_service.add_group(id, group_id, db)
+    event = await event_service.add_group(id, group_id, db)
     return {'success': True, 'event_id': event.id}
 
 @router.delete("/{id}/group/{group_id}")
 def remove_event_group(id: int, group_id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    event = event_service.remove_group(id, group_id, db)
+    event = await event_service.remove_group(id, group_id, db)
     return {'success': True, 'event_id': event.id}
 
 
