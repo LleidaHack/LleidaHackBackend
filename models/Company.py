@@ -24,7 +24,6 @@ class CompanyUser(User):
     company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
     company: Company = relationship('Company', back_populates='users')
     role: str = Column(String)
-    image_id: str = Column(String)
     
     __mapper_args__ = {
         "polymorphic_identity": "company",

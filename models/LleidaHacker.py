@@ -14,7 +14,6 @@ class LleidaHacker(User):
     nif: str = Column(String, unique=True)
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
-    image_id: str = Column(String)
     github: str = Column(String)
     groups:List[LleidaHackerGroup] = relationship('LleidaHackerGroup', secondary='lleida_hacker_group_user')
     events:List[Event] = relationship('Event', secondary='lleida_hacker_event_participation')
