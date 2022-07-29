@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.create_unique_constraint('uq_email', 'user', ['email'])
+    op.create_unique_constraint('uq_email', 'llhk_user', ['email'])
 
 
 def downgrade():
-    op.drop_constraint('uq_email', 'user', type_='unique')
+    op.drop_constraint('uq_email', 'llhk_user', type_='unique')
