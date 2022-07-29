@@ -22,7 +22,8 @@ async def add_user(db: Session, payload: SchemaUser):
                          food_restrictions=payload.food_restrictions,
                          telephone=payload.telephone,
                          address=payload.address,
-                         shirt_size=payload.shirt_size)
+                         shirt_size=payload.shirt_size,
+                         image_id=payload.image_id)
     db.add(new_user)
     db.commit()
     return new_user
@@ -41,6 +42,7 @@ async def update_user(db: Session, userId: int, payload: SchemaUser):
     user.telephone = payload.telephone
     user.address = payload.address
     user.shirt_size = payload.shirt_size
+    user.image_id=payload.image_id
     db.commit()
     db.refresh(user)
     return user

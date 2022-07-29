@@ -13,7 +13,6 @@ class Hacker(User):
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
     linkedin: str = Column(String)
-    image_id: str = Column(String)
     groups: List[HackerGroup] = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
     events:List[Event] = relationship('Event', secondary='hacker_event_participation')

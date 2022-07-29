@@ -12,6 +12,7 @@ class User(BaseModel):
     telephone: str
     address: str
     shirt_size: str
+    image_id: str
 
     class Config:
         orm_mode = True

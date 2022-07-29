@@ -23,7 +23,7 @@ async def add_company_user(payload:SchemaCompanyUser, db: Session):
                                         telephone=payload.telephone,
                                         shirt_size=payload.shirt_size,
                                         food_restrictions=payload.food_restrictions,
-
+                                        image_id=payload.image_id,
                                         company_id=payload.company_id,
                                         role=payload.role,
     )
@@ -43,6 +43,7 @@ async def update_company_user(payload:SchemaCompanyUser, companyUserId: int, db:
     company_user.telephone = payload.telephone
     company_user.shirt_size = payload.shirt_size
     company_user.food_restrictions = payload.food_restrictions
+    company_user.image_id = payload.image_id
 
     company_user.company_id = payload.company_id
     company_user.role = payload.role
