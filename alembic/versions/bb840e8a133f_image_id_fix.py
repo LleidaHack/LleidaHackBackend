@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.create_column('llhk_user', sa.Column('image_id', sa.String(), nullable=True))
+    op.add_column('llhk_user', sa.Column('image_id', sa.String(), nullable=False))
 
 
 def downgrade():
-    pass
+    op.drop_column('llhk_user', 'image_id')
