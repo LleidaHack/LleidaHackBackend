@@ -6,8 +6,7 @@ class LleidaHacker(User):
     role: str
     nif: str
     student: bool 
-    active: bool 
-    image_id: str 
+    active: bool
     github: str
     linkedin: str
 
