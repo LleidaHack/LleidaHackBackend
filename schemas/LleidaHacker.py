@@ -8,7 +8,7 @@ class LleidaHacker(User):
     student: bool 
     active: bool
     github: str
-    linkedin: str
+    # linkedin: str
 
     class Config:
         orm_mode = True

@@ -19,9 +19,9 @@ async def get_lleidahacker(userId: int, db: Session):
     return db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
 
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
-    if not checkImage(payload.image_id):
-        raise HTTPException(status_code=400, detail="Image not found")
-    new_lleidahacker = ModelLleidaHacker(name=payload.name, 
+    # if not checkImage(payload.image_id):
+        # raise HTTPException(status_code=400, detail="Image not found")
+    new_lleidahacker = ModelLleidaHacker(name=payload.name,
                                          email=payload.email,
                                          password=get_password_hash(payload.password),
                                          nickname=payload.nickname,
@@ -37,7 +37,7 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
                                          active=payload.active,
                                          image_id=payload.image_id,
                                          github=payload.github,
-                                         linkedin=payload.linkedin,
+                                        #  linkdin=payload.linkdin,
     )
     db.add(new_lleidahacker)
     db.commit()

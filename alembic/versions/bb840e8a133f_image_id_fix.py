@@ -21,11 +21,9 @@ def upgrade():
     op.execute("UPDATE llhk_user SET image_id = 'none'")
     op.alter_column('llhk_user', 'image_id', nullable=False)
     op.drop_column('lleida_hacker', 'image_id')
-    op.drop_column('company_user', 'image_id')
     op.drop_column('hacker', 'image_id')
 
 def downgrade():
     op.drop_column('llhk_user', 'image_id')
     op.add_column('lleida_hacker', sa.Column('image_id', sa.String(), nullable=False))
-    op.add_column('company_user', sa.Column('image_id', sa.String(), nullable=False))
     op.add_column('hacker', sa.Column('image_id', sa.String(), nullable=False))

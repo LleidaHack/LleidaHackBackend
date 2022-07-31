@@ -8,8 +8,8 @@ from fastapi import Depends, APIRouter
 from database import get_db
 from fastapi import Depends, Request, HTTPException, status
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordRequestForm
-from security import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token, oauth2_scheme, get_current_active_user
+from fastapi.security import HTTPBasicCredentials
+from security import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token, get_current_active_user, sec
 
 
 router = APIRouter(
@@ -20,9 +20,12 @@ router = APIRouter(
     # responses={404: {"description": "Not found"}},
 )
 
-@router.post("/token")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = authenticate_user(form_data.username, form_data.password)
+
+@router.get("/login")
+async def login(credentials:HTTPBasicCredentials = Depends(sec), db: Session = Depends(get_db)):
+    username = credentials.username
+    password = credentials.password
+    user = authenticate_user(username, password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -35,6 +38,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.get("/me")
-async def read_users_me(current_user: ModelUser = Depends(get_current_active_user)):
-    return current_user
+# @router.get("/me")
+# async def read_users_me(current_user: ModelUser = Depends(get_current_active_user)):
+#     return current_user
