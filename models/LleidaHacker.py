@@ -6,6 +6,7 @@ from database import Base
 
 from models.User import User
 from schemas.LleidaHacker import LleidaHackerGroup
+from schemas.Event import Event
 
 class LleidaHacker(User):
     __tablename__ = 'lleida_hacker'
