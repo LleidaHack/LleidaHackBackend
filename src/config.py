@@ -11,7 +11,7 @@ class Configuration:
     @staticmethod
     def __instanciate__():
         Configuration.CONFIG = configparser.ConfigParser()
-        Configuration.CONFIG.read('config.ini')
+        Configuration.CONFIG.read('../config.ini')
     # config = ConfigParser.ConfigParser()
     @staticmethod
     def get(section, option):
