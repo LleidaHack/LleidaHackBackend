@@ -17,11 +17,12 @@ class User(Base):
     shirt_size: str = Column(String)
     type: str = Column(String)
     image_id: str = Column(String)
-
+    
     __mapper_args__ = {
         "polymorphic_identity": "llhk_user",
         "polymorphic_on": type,
     }
+
 
     # def verify_password(self, password):
         # return hash.verify(password, self.password)

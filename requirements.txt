@@ -14,3 +14,4 @@ uuid
 aiofiles
 glob2
 fastapi
+fastapi-mail

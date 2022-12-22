@@ -18,6 +18,7 @@ class LleidaHacker(User):
     github: str = Column(String)
     groups:List[LleidaHackerGroup] = relationship('LleidaHackerGroup', secondary='lleida_hacker_group_user')
     events:List[Event] = relationship('Event', secondary='lleida_hacker_event_participation')
+    
     __mapper_args__ = {
         "polymorphic_identity": "lleida_hacker",
     }
