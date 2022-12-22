@@ -32,4 +32,4 @@ class HackerGroup(Base):
     description: str = Column(String)
     leader_id: int = Column(Integer, ForeignKey('hacker.user_id'), nullable=False)
     # event: Event = relationship('Event', secondary='hacker_event')
-    users: List[Hacker] = relationship('Hacker', secondary='hacker_group_user')
+    members: List[Hacker] = relationship('Hacker', secondary='hacker_group_user')

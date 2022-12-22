@@ -71,7 +71,11 @@ def create_access_token(user:ModelUser , expires_delta: timedelta = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-    
+
+def create_confirmation_token(email: str):
+    serialized_jwt = jwt.encode({"email": email}, SECRET_KEY, algorithm=ALGORITHM)
+    return serialized_jwt
+
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

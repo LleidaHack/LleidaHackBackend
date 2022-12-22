@@ -41,3 +41,12 @@ async def login(credentials:HTTPBasicCredentials = Depends(sec), db: Session = D
 # @router.get("/me")
 # async def read_users_me(current_user: ModelUser = Depends(get_current_active_user)):
 #     return current_user
+
+@router.post("/confirm-email")
+async def confirm_email(email: str, db: Session = Depends(get_db)):
+    user = db.query(ModelUser).filter(ModelUser.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.active = True
+    db.commit()
+    return {"message": "User email confirmed"}

@@ -1,11 +1,14 @@
 
 
 from ast import List
+from tabnanny import check
 from database import get_db
 from security import oauth_schema
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
+
+from security import check_permissions
 
 from schemas.Event import Event as SchemaEvent
 
@@ -28,14 +31,15 @@ router = APIRouter(
 
 @router.get("/")
 async def get_events(db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    return event_service.get_all(db)
+    return await event_service.get_all(db)
 
 @router.get("/{id}")
 async def get_event(id: int, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
-    return event_service.get_event(id, db)
+    return await event_service.get_event(id, db)
 
 @router.post("/")
 async def create_event(event: SchemaEvent, db: Session = Depends(get_db), tokem: str = Depends(oauth_schema)):
+    await check_permissions(tokem, ["admin"])
     new_event = await event_service.add_event(event, db)
     return {'success': True, 'event_id': new_event.id}
 

@@ -15,11 +15,11 @@ router = APIRouter(
 
 @router.get("/all")
 async def get_hacker_groups(db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    return hackergroup_service.get_all(db)
+    return await hackergroup_service.get_all(db)
 
 @router.get("/{groupId}")
 async def get_hacker_group(groupId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    return hackergroup_service.get_hacker_group(groupId, db)
+    return await hackergroup_service.get_hacker_group(groupId, db)
 
 @router.post("/")
 async def add_hacker_group(payload:SchemaHackerGroup, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
