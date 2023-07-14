@@ -36,8 +36,8 @@ jobs:
             python3 -m pip install -r requirements.txt
             cd ..
             echo "${{ steps.date.outputs.date }}  ->  ${{ github.actor }}" >> deploy.log
-            echo > gunicorn_access.log
-            echo > gunicorn_error.log
+            echo > logs/gunicorn_access.log
+            echo > logs/gunicorn_error.log
             sudo systemctl restart Backend
             systemctl status Backend.service
       - name: check server status
