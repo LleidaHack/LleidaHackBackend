@@ -72,6 +72,11 @@ def create_access_token(user:ModelUser , expires_delta: timedelta = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+def create_refresh_token(user:ModelUser , expires_delta: timedelta = None):
+    to_encode = {'user_id': user.id, 'email': user.email, 'type': user.type}
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
 def create_confirmation_token(email: str):
     serialized_jwt = jwt.encode({"email": email}, SECRET_KEY, algorithm=ALGORITHM)
     return serialized_jwt
