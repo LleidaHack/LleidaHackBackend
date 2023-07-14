@@ -8,7 +8,7 @@ from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from security import create_access_token, get_password_hash, oauth_schema
+from security import create_access_token, get_password_hash, oauth_schema, create_refresh_token
 
 import services.hacker as hacker_service
 
@@ -21,7 +21,8 @@ router = APIRouter(
 async def signup(payload: SchemaHacker, response: Response, db: Session = Depends(get_db)):
     new_hacker = await hacker_service.add_hacker(payload, db)
     token=create_access_token(new_hacker)
-    return {"success": True, "created_id": new_hacker.id, "token": token}
+    refresh_token=create_refresh_token(new_hacker)
+    return {"success": True, "created_id": new_hacker.id, "token": token, "refresh_token": refresh_token}
 
 @router.get("/all")
 async def get_hackers(db: Session = Depends(get_db), str = Depends(oauth_schema)):

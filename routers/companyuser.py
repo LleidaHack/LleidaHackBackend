@@ -1,7 +1,7 @@
 from schemas.Company import CompanyUser as SchemaCompanyUser
 
 from database import get_db
-from security import create_access_token, oauth_schema
+from security import create_access_token, oauth_schema, create_refresh_token
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
@@ -17,7 +17,8 @@ router = APIRouter(
 async def signup(payload: SchemaCompanyUser, response: Response, db: Session = Depends(get_db)):
     new_companyuser = await companyuser_service.add_companyuser(db, payload)
     token = create_access_token(new_companyuser)
-    return {"success": True, "token": token}
+    refresh_token=create_refresh_token(new_companyuser)
+    return {"success": True, "created_id": new_companyuser.id, "token": token, "refresh_token": refresh_token}
 
 @router.get("/all")
 async def get_company_users(db: Session = Depends(get_db), str = Depends(oauth_schema)):
