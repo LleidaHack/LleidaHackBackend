@@ -56,14 +56,14 @@ async def update_hacker(hackerId: int, payload:SchemaHacker, db: Session):
 
 async def ban_hacker(hackerId: int, db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
-    hacker.banned = True
+    hacker.banned = 1
     db.commit()
     db.refresh(hacker)
     return hacker
 
 async def unban_hacker(hackerId: int, db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
-    hacker.banned = False
+    hacker.banned = 0
     db.commit()
     db.refresh(hacker)
     return hacker
