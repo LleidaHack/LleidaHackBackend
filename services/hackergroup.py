@@ -23,6 +23,7 @@ async def update_hacker_group(id: int, payload: SchemaHackerGroup, db: Session):
     hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == id).first()
     hacker_group.name = payload.name
     hacker_group.description = payload.description
+    hacker_group.leader = payload.leader
     db.commit()
     return hacker_group
 
