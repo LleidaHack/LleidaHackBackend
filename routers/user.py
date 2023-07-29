@@ -43,6 +43,6 @@ async def update_user(userId: int, payload: SchemaUser, response: Response, db: 
     return await user_service.update_user(db, userId, payload)
 
 @router.delete("/{userId}")
-async def remove_user(userId:int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
+async def delete_user(userId:int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
     check_permissions(str, ["lleida_hacker", "admin"])
-    return await user_service.remove_user(db, userId)
+    return await user_service.delete_user(db, userId)
