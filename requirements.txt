@@ -3,7 +3,7 @@ configparser
 psycopg2
 fastapi-sqlalchemy
 starlette==0.19.1
-pydantic==1.9.1
+pydantic==1.10.11
 alembic
 sqlalchemy
 sqlalchemy-utils
@@ -16,3 +16,4 @@ aiofiles
 glob2
 fastapi==0.79.0
 fastapi-mail==1.1.4
+dateutil

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from dateutil import parser
 from typing import List
 from database import db_get, get_db
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPBasic
@@ -36,7 +37,7 @@ def verify_token(req: Request):
         return True
     dict=jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     # Here your code for verifying the token or whatever you use
-    if dict["exp"] < datetime.utcnow():
+    if parser.parse(dict["expt"]) < datetime.utcnow():
         raise HTTPException(
             status_code=401,
             detail="Unauthorized"
@@ -68,7 +69,7 @@ def create_access_token(user:ModelUser , expires_delta: timedelta = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
+    to_encode.update({"expt": expire.isoformat()})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -119,7 +120,7 @@ async def check_permissions(token:str, permission: List):
     if token.credentials == SERVICE_TOKEN:
         return True
     jwt_token = jwt.decode(token.encode('utf-8'), SECRET_KEY, algorithms=[ALGORITHM])
-    if jwt_token["type"] not in permission and jwt_token['exp'] < datetime.utcnow():
+    if jwt_token["type"] not in permission and parser.parse(jwt_token['expt']) < datetime.utcnow():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions",
