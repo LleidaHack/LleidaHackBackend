@@ -104,7 +104,8 @@ async def get_current_active_user(current_user: ModelUser = Depends(get_current_
     # if current_user.disabled:
         # raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
-
+async def decode_token(token):
+    return jwt.decode(token.credentials.encode('utf-8'), SECRET_KEY, algorithms=[ALGORITHM])
 async def check_permissions(token:str, permission: List):
     if token.credentials == SERVICE_TOKEN:
         return True

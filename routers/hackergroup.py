@@ -1,7 +1,7 @@
 from schemas.Hacker import HackerGroup as SchemaHackerGroup
 
 from database import get_db
-from security import oauth_schema
+from security import oauth_schema, decode_token
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
@@ -23,7 +23,10 @@ async def get_hacker_group(groupId: int, response: Response, db: Session = Depen
 
 @router.post("/")
 async def add_hacker_group(payload:SchemaHackerGroup, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
+    token=decode_token(str)
+    payload["leader"]=token["user_id"]
     new_hacker_group = await hackergroup_service.add_hacker_group(payload, db)
+    await hackergroup_service.add_hacker_to_group(new_hacker_group.id, token["user_id"], db)
     return {"success": True, "created_id": new_hacker_group.id}
 
 @router.put("/{groupId}")
