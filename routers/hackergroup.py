@@ -23,7 +23,7 @@ async def get_hacker_group(groupId: int, response: Response, db: Session = Depen
 
 @router.post("/")
 async def add_hacker_group(payload:SchemaHackerGroup, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    token=decode_token(str)
+    token= await decode_token(str)
     payload["leader"]=token["user_id"]
     new_hacker_group = await hackergroup_service.add_hacker_group(payload, db)
     await hackergroup_service.add_hacker_to_group(new_hacker_group.id, token["user_id"], db)
