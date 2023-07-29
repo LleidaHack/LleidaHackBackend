@@ -11,8 +11,7 @@ async def get_all(db: Session):
     return db.query(ModelUser).all()
 
 async def get_user(db: Session, userId: int):
-    usr = await db.query(ModelUser).filter(ModelUser.id == userId).first()
-    return usr
+    return db.query(ModelUser).filter(ModelUser.id == userId).first()
 
 async def add_user(db: Session, payload: SchemaUser):
     new_user = ModelUser(name=payload.name, 
