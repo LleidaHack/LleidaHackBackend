@@ -2,7 +2,7 @@ uvicorn[standard]
 configparser
 psycopg2
 fastapi-sqlalchemy
-starlette==0.19.1
+starlette==0.27.0
 pydantic==1.10.11
 alembic
 sqlalchemy
