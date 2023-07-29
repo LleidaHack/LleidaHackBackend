@@ -16,11 +16,11 @@ router = APIRouter(
 
 @router.get("/all")
 async def get_companies(db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    return company_service.get_all(db)
+    return await company_service.get_all(db)
 
 @router.get("/{companyId}")
 async def get_company(companyId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    return company_service.get_company(db, companyId)
+    return await company_service.get_company(db, companyId)
 
 @router.post("/")
 async def add_company(payload:SchemaCompany, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
