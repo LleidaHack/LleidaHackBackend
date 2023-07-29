@@ -7,6 +7,7 @@ from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+from passlib.hash import pbkdf2_sha256
 
 from models.User import User as ModelUser
 from schemas.Token import TokenData
@@ -18,17 +19,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY", "ACCESS_TOKEN_EXPIRE
 
 SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 oauth_schema = HTTPBearer()
 sec = HTTPBasic()
 
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    return pbkdf2_sha256.verify(plain_password, hashed_password)
     # return True
 
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    return pbkdf2_sha256.hash(password)
     # return password
 
 def verify_token(req: Request):
