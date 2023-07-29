@@ -119,7 +119,7 @@ async def get_current_active_user(current_user: ModelUser = Depends(get_current_
 async def check_permissions(token:str, permission: List):
     if token.credentials == SERVICE_TOKEN:
         return True
-    jwt_token = jwt.decode(token.encode('utf-8'), SECRET_KEY, algorithms=[ALGORITHM])
+    jwt_token = jwt.decode(token.credentials.encode('utf-8'), SECRET_KEY, algorithms=[ALGORITHM])
     if jwt_token["type"] not in permission and parser.parse(jwt_token['expt']) < datetime.utcnow():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
