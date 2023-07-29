@@ -26,17 +26,18 @@ async def login(credentials:HTTPBasicCredentials = Depends(sec), db: Session = D
     username = credentials.username
     password = credentials.password
     user = authenticate_user(username, password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
-    access_token = create_access_token(
-        user, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return user
+    # if not user:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_401_UNAUTHORIZED,
+    #         detail="Incorrect username or password",
+    #         headers={"WWW-Authenticate": "Bearer"},
+    #     )
+    # access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    # access_token = create_access_token(
+    #     user, expires_delta=access_token_expires
+    # )
+    # return {"access_token": access_token, "token_type": "bearer"}
 
 # @router.get("/me")
 # async def read_users_me(current_user: ModelUser = Depends(get_current_active_user)):
