@@ -46,22 +46,11 @@ def verify_token(req: Request):
 
 def authenticate_user(username: str, password: str):
     user_dict = db_get().query(ModelUser).filter(ModelUser.email == username).first()
-    user = ModelUser(name=user_dict.name, 
-                     email=user_dict.email,
-                     password=user_dict.password,
-                     nickname=user_dict.nickname,
-                     birthdate = user_dict.birthdate,
-                     food_restrictions=user_dict.food_restrictions,
-                     telephone=user_dict.telephone,
-                     address=user_dict.address,
-                     shirt_size=user_dict.shirt_size
-    )
-
-    if not user:
+    if not user_dict:
         return False
-    if not verify_password(password, user.password):
+    if not verify_password(password, user_dict.password):
         return False
-    return user
+    return user_dict
 
 def create_access_token(user:ModelUser , expires_delta: timedelta = None):
     to_encode = {'user_id': user.id, 'email': user.email, 'type': user.type}
