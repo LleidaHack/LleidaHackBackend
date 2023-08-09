@@ -35,7 +35,6 @@ async def add_company_user(payload:SchemaCompanyUser, db: Session):
 async def update_company_user(payload:SchemaCompanyUser, companyUserId: int, db: Session):
     company_user = db.query(ModelCompanyUser).filter(ModelCompanyUser.id == companyUserId).first()
     company_user.name = payload.name
-    company_user.email = payload.email
     company_user.password = payload.password
     company_user.nickname = payload.nickname
     company_user.birthdate = payload.birthdate

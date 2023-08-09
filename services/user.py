@@ -34,7 +34,6 @@ async def delete_user(db: Session, userId: int):
 async def update_user(db: Session, userId: int, payload: SchemaUser):
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
     user.name = payload.name
-    user.email = payload.email
     user.password = payload.password
     user.nickname = payload.nickname
     user.birthdate = payload.birthdate
