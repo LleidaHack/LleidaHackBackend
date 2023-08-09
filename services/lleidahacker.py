@@ -31,7 +31,6 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker, db: Sess
     checkImage(lleidahacker.image_id)
     lleidahacker = db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
     lleidahacker.name = payload.name
-    lleidahacker.email = payload.email
     lleidahacker.password = payload.password
     lleidahacker.nickname = payload.nickname
     lleidahacker.birthdate = payload.birthdate

@@ -41,7 +41,6 @@ async def remove_hacker(hackerId: int, db: Session):
 async def update_hacker(hackerId: int, payload:SchemaHacker, db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     hacker.name = payload.name
-    hacker.email = payload.email
     hacker.password = payload.password
     hacker.nickname = payload.nickname
     hacker.birthdate = payload.birthdate
