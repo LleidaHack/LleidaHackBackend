@@ -2,8 +2,7 @@ name: Pylint
 
 on: 
   push:
-    branches: 
-      - main
+    branches:
       - integration
   workflow_dispatch:
 
