@@ -1,0 +1,2 @@
+- name: python-autoyapf
+  uses: bdaiinstitute/python-autoyapf@v2.0.1-beta
