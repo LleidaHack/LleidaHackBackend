@@ -13,6 +13,7 @@ class Event(BaseModel):
     price: int
     max_participants: int
     max_sponsors: int
+    status: int
 
     # start_time: Time = Column(Time, default=func.now())
     
