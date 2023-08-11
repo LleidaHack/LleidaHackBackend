@@ -18,7 +18,7 @@ from fastapi.staticfiles import StaticFiles
 
 from logging.config import dictConfig
 import logging
-from LogConfig import LogConfig
+from log_config import LogConfig
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
