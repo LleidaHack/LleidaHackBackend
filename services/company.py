@@ -28,7 +28,7 @@ async def update_company(db: Session, companyId: int, payload: SchemaCompany):
     company = db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
     company.name = payload.name
     company.description = payload.description
-    company.website = payload.Website
+    company.website = payload.website
     company.telephone = payload.telephone
     company.address = payload.address
     company.logo = payload.logo
