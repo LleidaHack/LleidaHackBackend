@@ -17,6 +17,7 @@ async def get_event(id: int, db:Session):
 async def add_event(event: SchemaEvent, db:Session):
     db_event = ModelEvent(name=event.name,
                           description=event.description,
+                          status=event.status,
                           start_date=event.start_date,
                           end_date=event.end_date,
                           location=event.location,
