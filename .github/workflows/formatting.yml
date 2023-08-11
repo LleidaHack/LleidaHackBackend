@@ -1,9 +1,10 @@
 name: Formatting python code
 on:
     push:
-      branches: [integration]
+      branches: 
+        - integration
       paths:
-      - '**.py'
+        - '**.py'
 jobs:
     autoyapf:
         runs-on: ubuntu-latest
