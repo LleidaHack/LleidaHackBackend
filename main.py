@@ -1,3 +1,12 @@
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+from logging.config import dictConfig
+import logging
+from log_config import LogConfig
+
 from routers import user
 from routers import hacker
 from routers import hackergroup
@@ -9,16 +18,6 @@ from routers import event
 from routers import eventmanagment
 from routers import authentication
 from routers import utils
-
-from fastapi import Depends, FastAPI, Response, status, Request
-from fastapi.responses import RedirectResponse
-from fastapi.security import HTTPBearer
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-
-from logging.config import dictConfig
-import logging
-from log_config import LogConfig
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
