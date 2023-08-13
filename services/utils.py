@@ -1,6 +1,7 @@
 from fastapi import UploadFile, File
 import uuid
 import aiofiles
+import os
 
 async def uploadFile(in_file:UploadFile=File(...)):
     rand=uuid.uuid4()
