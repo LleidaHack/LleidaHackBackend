@@ -1,4 +1,5 @@
 from models.Hacker import HackerGroup as ModelHackerGroup
+from models.Hacker import HackerGroupUser as ModelHackerGroupUser
 from models.Hacker import Hacker as ModelHacker
 
 from schemas.Hacker import HackerGroup as SchemaHackerGroup
@@ -31,9 +32,10 @@ async def update_hacker_group(id: int, payload: SchemaHackerGroup, db: Session):
     return hacker_group
 
 async def delete_hacker_group(id: int, db: Session):
+    hacker_group_users = db.query(ModelHackerGroupUser).filter(ModelHackerGroupUser.group_id == groupId).delete()
     hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == id).delete()
     db.commit()
-    return hacker_group
+    return {'removed':True}
 
 async def add_hacker_to_group(groupId: int, hackerId: int, db: Session):
     hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
