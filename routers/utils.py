@@ -20,7 +20,7 @@ async def uploadFile(image:UploadFile = File(...), token:str = Depends(oauth_sch
     
 @router.get("image/{image_id}")
 async def get_image(image_id:str):
-    return await getFile(image_id)
+    return await utils_service.getFile(image_id)
     
 @router.post("/sendMail/{to}")
 async def send_mail(to:str):
