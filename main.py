@@ -22,19 +22,47 @@ from routers import utils
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
-
-
 tags_metadata = [
-    {"name": "User", "description": "User related endpoints"},
-    {"name": "Hacker", "description": "Hacker related endpoints"},
-    {"name": "Hacker Group", "description": "Hacker Group related endpoints"},
-    {"name": "LleidaHacker", "description": "LleidaHacker related endpoints"},
-    {"name": "LleidaHacker Group", "description": "LleidaHacker Group related endpoints"},
-    {"name": "Company", "description": "Company related endpoints"},
-    {"name": "Event", "description": "Event related endpoints"},
-    {"name": "Authentication", "description": "Authentication related endpoints"},
-    {"name": "Utils", "description": "Utils related endpoints"},
-    {"name": "EventManagment", "description": "Event Managment related endpoints"},
+    {
+        "name": "User",
+        "description": "User related endpoints"
+    },
+    {
+        "name": "Hacker",
+        "description": "Hacker related endpoints"
+    },
+    {
+        "name": "Hacker Group",
+        "description": "Hacker Group related endpoints"
+    },
+    {
+        "name": "LleidaHacker",
+        "description": "LleidaHacker related endpoints"
+    },
+    {
+        "name": "LleidaHacker Group",
+        "description": "LleidaHacker Group related endpoints"
+    },
+    {
+        "name": "Company",
+        "description": "Company related endpoints"
+    },
+    {
+        "name": "Event",
+        "description": "Event related endpoints"
+    },
+    {
+        "name": "Authentication",
+        "description": "Authentication related endpoints"
+    },
+    {
+        "name": "Utils",
+        "description": "Utils related endpoints"
+    },
+    {
+        "name": "EventManagment",
+        "description": "Event Managment related endpoints"
+    },
 ]
 
 app = FastAPI(title="LleidaHack API",
@@ -44,8 +72,7 @@ app = FastAPI(title="LleidaHack API",
               redoc_url='/redoc',
               openapi_url='/openapi.json',
               openapi_tags=tags_metadata,
-              debug=True
-)
+              debug=True)
 
 app.add_middleware(
     CORSMiddleware,
@@ -69,6 +96,7 @@ app.include_router(event.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(utils.router)
+
 
 @app.get("/")
 def root():
