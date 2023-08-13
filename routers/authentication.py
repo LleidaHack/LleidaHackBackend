@@ -36,7 +36,7 @@ async def login(credentials:HTTPBasicCredentials = Depends(sec), db: Session = D
     access_token = create_access_token(
         user, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"user_id": user.id, "access_token": access_token, "token_type": "bearer"}
 
 # @router.get("/me")
 # async def read_users_me(current_user: ModelUser = Depends(get_current_active_user)):
