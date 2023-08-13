@@ -1,4 +1,5 @@
-from fastapi import UploadFile, File, FileResponse
+from fastapi import UploadFile, File
+from fastapi.responses import FileResponse
 import uuid
 import aiofiles
 import os
