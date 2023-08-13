@@ -13,11 +13,20 @@ router = APIRouter(
     tags=["Notification"],
 )
 
+
 @router.get("/{userId}")
-async def get_notifications(userId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
+async def get_notifications(userId: int,
+                            response: Response,
+                            db: Session = Depends(get_db),
+                            str=Depends(oauth_schema)):
     return notifications_service.get_notifications(userId, db)
 
+
 @router.post("/")
-async def add_notification(payload:SchemaNotification, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    new_notification = await notifications_service.add_notification(payload, db)
+async def add_notification(payload: SchemaNotification,
+                           response: Response,
+                           db: Session = Depends(get_db),
+                           str=Depends(oauth_schema)):
+    new_notification = await notifications_service.add_notification(
+        payload, db)
     return {"success": True, "created_id": new_notification.id}

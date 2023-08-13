@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List
 from schemas.User import User
 
+
 class Company(BaseModel):
     name: str
     description: str
@@ -14,7 +15,8 @@ class Company(BaseModel):
 
     # class Config:
     #     orm_mode = True
-    
+
+
 class CompanyUser(User):
     role: str
     company_id: int
