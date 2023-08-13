@@ -44,7 +44,8 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session):
 
 async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session):
     hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
-    hacker_group.members.remove(hackerId)
+    hacker = [h for h in hacker_group.members if h.id == hackerId]
+    hacker_group.members.remove(hacker[0])
     db.commit()
     db.refresh(hacker_group)
     return hacker_group
