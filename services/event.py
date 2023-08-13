@@ -8,13 +8,16 @@ from models.Company import Company as ModelCompany
 from models.Hacker import Hacker as ModelHacker
 from models.Hacker import HackerGroup as ModelHackerGroup
 
-async def get_all(db:Session):
+
+async def get_all(db: Session):
     return db.query(ModelEvent).all()
 
-async def get_event(id: int, db:Session):
+
+async def get_event(id: int, db: Session):
     return db.query(ModelEvent).filter(ModelEvent.id == id).first()
 
-async def add_event(event: SchemaEvent, db:Session):
+
+async def add_event(event: SchemaEvent, db: Session):
     db_event = ModelEvent(name=event.name,
                           description=event.description,
                           start_date=event.start_date,
@@ -24,14 +27,14 @@ async def add_event(event: SchemaEvent, db:Session):
                           status=event.status,
                           price=event.price,
                           max_participants=event.max_participants,
-                          max_sponsors=event.max_sponsors
-    )
+                          max_sponsors=event.max_sponsors)
     db.add(db_event)
     db.commit()
     db.refresh(db_event)
     return db_event
 
-async def update_event(id: int, event: SchemaEvent, db:Session):
+
+async def update_event(id: int, event: SchemaEvent, db: Session):
     db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     db_event.name = event.name
     db_event.description = event.description
@@ -41,21 +44,25 @@ async def update_event(id: int, event: SchemaEvent, db:Session):
     db.commit()
     return db_event
 
-async def delete_event(id: int, db:Session):
+
+async def delete_event(id: int, db: Session):
     db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     db.delete(db_event)
     db.commit()
     return db_event
 
-async def add_company(id: int, company_id: int, db:Session):
+
+async def add_company(id: int, company_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    company = db.query(ModelCompany).filter(ModelCompany.id == company_id).first()
+    company = db.query(ModelCompany).filter(
+        ModelCompany.id == company_id).first()
     event.companies.append(company)
     db.commit()
     db.refresh(event)
     return event
 
-async def add_hacker(id: int, hacker_id: int, db:Session):
+
+async def add_hacker(id: int, hacker_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
     event.hackers.append(hacker)
@@ -63,23 +70,28 @@ async def add_hacker(id: int, hacker_id: int, db:Session):
     db.refresh(event)
     return event
 
-async def add_hacker_group(id: int, hacker_group_id: int, db:Session):
+
+async def add_hacker_group(id: int, hacker_group_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == hacker_group_id).first()
+    hacker_group = db.query(ModelHackerGroup).filter(
+        ModelHackerGroup.id == hacker_group_id).first()
     event.hacker_groups.append(hacker_group)
     db.commit()
     db.refresh(event)
     return event
 
-async def remove_company(id: int, company_id: int, db:Session):
+
+async def remove_company(id: int, company_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    company = db.query(ModelCompany).filter(ModelCompany.id == company_id).first()
+    company = db.query(ModelCompany).filter(
+        ModelCompany.id == company_id).first()
     event.companies.remove(company)
     db.commit()
     db.refresh(event)
     return event
 
-async def remove_hacker(id: int, hacker_id: int, db:Session):
+
+async def remove_hacker(id: int, hacker_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
     event.hackers.remove(hacker)
@@ -87,9 +99,11 @@ async def remove_hacker(id: int, hacker_id: int, db:Session):
     db.refresh(event)
     return event
 
-async def remove_hacker_group(id: int, hacker_group_id: int, db:Session):
+
+async def remove_hacker_group(id: int, hacker_group_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == hacker_group_id).first()
+    hacker_group = db.query(ModelHackerGroup).filter(
+        ModelHackerGroup.id == hacker_group_id).first()
     event.hacker_groups.remove(hacker_group)
     db.commit()
     db.refresh(event)
