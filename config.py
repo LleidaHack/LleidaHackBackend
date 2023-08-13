@@ -1,10 +1,11 @@
 import configparser
-
 '''Module used to parse the config on the config.ini file'''
+
 
 class Configuration:
     '''Used to parse tphe actual configuration'''
     CONFIG = None
+
     @staticmethod
     def set_up():
         '''loads the config and returs if already loaded'''
@@ -17,6 +18,7 @@ class Configuration:
         '''actually loads the config file'''
         Configuration.CONFIG = configparser.ConfigParser()
         Configuration.CONFIG.read('config.ini')
+
     # config = ConfigParser.ConfigParser()
     @staticmethod
     def get(section, option):

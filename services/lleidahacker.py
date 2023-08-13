@@ -9,27 +9,35 @@ from security import get_password_hash
 
 from sqlalchemy.orm import Session
 
-def checkImage(imageId:str):
-    return glob.glob("static/"+imageId+".*")
+
+def checkImage(imageId: str):
+    return glob.glob("static/" + imageId + ".*")
+
 
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
+
 async def get_lleidahacker(userId: int, db: Session):
-    return db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
+    return db.query(ModelLleidaHacker).filter(
+        ModelLleidaHacker.id == userId).first()
+
 
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     # if not checkImage(payload.image_id):
-        # raise HTTPException(status_code=400, detail="Image not found")
+    # raise HTTPException(status_code=400, detail="Image not found")
     new_lleidahacker = ModelLleidaHacker(**payload)
     db.add(new_lleidahacker)
     db.commit()
     db.refresh(new_lleidahacker)
     return new_lleidahacker
 
-async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker, db: Session):
+
+async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker,
+                              db: Session):
     checkImage(lleidahacker.image_id)
-    lleidahacker = db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
+    lleidahacker = db.query(ModelLleidaHacker).filter(
+        ModelLleidaHacker.id == userId).first()
     lleidahacker.name = payload.name
     lleidahacker.password = payload.password
     lleidahacker.nickname = payload.nickname
@@ -49,8 +57,10 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker, db: Sess
     db.refresh(lleidahacker)
     return lleidahacker
 
+
 async def delete_lleidahacker(userId: int, db: Session):
-    lleidahacker = db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
+    lleidahacker = db.query(ModelLleidaHacker).filter(
+        ModelLleidaHacker.id == userId).first()
     db.delete(lleidahacker)
     db.commit()
     return lleidahacker
