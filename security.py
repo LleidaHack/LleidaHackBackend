@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from dateutil import parser
 from typing import List
-from database import db_get, get_db
+from database import get_db
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPBasic
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
@@ -45,7 +45,7 @@ def verify_token(req: Request):
     return True
 
 def authenticate_user(username: str, password: str):
-    user_dict = db_get().query(ModelUser).filter(ModelUser.email == username).first()
+    user_dict = get_db().query(ModelUser).filter(ModelUser.email == username).first()
     if not user_dict:
         return False
     if not verify_password(password, user_dict.password):

@@ -16,4 +16,4 @@ aiofiles
 glob2
 fastapi==0.79.0
 fastapi-mail==1.1.4
-dateutil
+python-dateutil
