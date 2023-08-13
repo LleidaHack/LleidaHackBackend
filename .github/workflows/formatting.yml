@@ -1,9 +1,6 @@
 name: Formatting python code
 on:
     push:
-      branches: 
-        - integration
-        - main
       paths:
         - '**.py'
 jobs:
