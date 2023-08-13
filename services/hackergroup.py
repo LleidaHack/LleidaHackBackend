@@ -11,9 +11,12 @@ async def get_all(db: Session):
 async def get_hacker_group(id: int, db: Session):
     return db.query(ModelHackerGroup).filter(ModelHackerGroup.id == id).first()
 
-async def add_hacker_group(payload: SchemaHackerGroup, db: Session):
+async def add_hacker_group(payload: SchemaHackerGroup, hackerId:int, db: Session):
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     new_hacker_group = ModelHackerGroup(name=payload.name,
                                         description=payload.description,
+                                        leader_id=hackerId,
+                                        members=[hacker]
     )
     db.add(new_hacker_group)
     db.commit()
