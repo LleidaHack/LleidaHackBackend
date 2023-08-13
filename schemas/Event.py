@@ -3,6 +3,7 @@
 from datetime import date
 from pydantic import BaseModel
 
+
 class Event(BaseModel):
     name: str
     description: str
@@ -16,6 +17,6 @@ class Event(BaseModel):
     status: int
 
     # start_time: Time = Column(Time, default=func.now())
-    
+
     class Config:
         orm_mode = True
