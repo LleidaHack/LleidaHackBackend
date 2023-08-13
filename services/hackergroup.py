@@ -46,3 +46,7 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session):
     db.commit()
     db.refresh(hacker_group)
     return hacker_group
+
+async def set_hacker_group_leader(groupId:int, hackerId:int, db: Session):
+    hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
+    hacker_group.leader_id = hackerId
