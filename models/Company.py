@@ -6,6 +6,7 @@ from database import Base
 from models.User import User
 from schemas.Event import Event
 
+
 class Company(Base):
     __tablename__ = 'company'
     id: int = Column(Integer, primary_key=True, index=True)
@@ -15,8 +16,11 @@ class Company(Base):
     telephone: str = Column(String)
     website: str = Column(String)
     logo: str = Column(String)
-    users: List[CompanyUser] = relationship('CompanyUser', back_populates='company')
-    events: List[Event] = relationship('Event', secondary='company_event_participation')
+    users: List[CompanyUser] = relationship('CompanyUser',
+                                            back_populates='company')
+    events: List[Event] = relationship('Event',
+                                       secondary='company_event_participation')
+
 
 class CompanyUser(User):
     __tablename__ = 'company_user'
@@ -24,7 +28,7 @@ class CompanyUser(User):
     company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
     company: Company = relationship('Company', back_populates='users')
     role: str = Column(String)
-    
+
     __mapper_args__ = {
         "polymorphic_identity": "company",
     }

@@ -13,33 +13,61 @@ router = APIRouter(
     tags=["Company User"],
 )
 
+
 @router.post("/signup")
-async def signup(payload: SchemaCompanyUser, response: Response, db: Session = Depends(get_db)):
+async def signup(payload: SchemaCompanyUser,
+                 response: Response,
+                 db: Session = Depends(get_db)):
     new_companyuser = await companyuser_service.add_companyuser(db, payload)
     token = create_access_token(new_companyuser)
-    refresh_token=create_refresh_token(new_companyuser)
-    return {"success": True, "created_id": new_companyuser.id, "token": token, "refresh_token": refresh_token}
+    refresh_token = create_refresh_token(new_companyuser)
+    return {
+        "success": True,
+        "created_id": new_companyuser.id,
+        "token": token,
+        "refresh_token": refresh_token
+    }
+
 
 @router.get("/all")
-async def get_company_users(db: Session = Depends(get_db), str = Depends(oauth_schema)):
+async def get_company_users(db: Session = Depends(get_db),
+                            str=Depends(oauth_schema)):
     return companyuser_service.get_companyusers(db)
 
+
 @router.get("/{companyUserId}")
-async def get_company_user(companyUserId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
+async def get_company_user(companyUserId: int,
+                           response: Response,
+                           db: Session = Depends(get_db),
+                           str=Depends(oauth_schema)):
     return companyuser_service.get_companyuser(db, companyUserId)
 
+
 @router.post("/")
-async def add_company_user(payload:SchemaCompanyUser, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
+async def add_company_user(payload: SchemaCompanyUser,
+                           response: Response,
+                           db: Session = Depends(get_db),
+                           str=Depends(oauth_schema)):
     new_companyuser = await companyuser_service.add_companyuser(db, payload)
     return {"success": True, "created_id": new_companyuser.id}
 
 
 @router.put("/{companyUserId}")
-async def update_company_user(companyUserId: int, payload: SchemaCompanyUser, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    companyuser = await companyuser_service.update_companyuser(db, companyUserId, payload)
+async def update_company_user(companyUserId: int,
+                              payload: SchemaCompanyUser,
+                              response: Response,
+                              db: Session = Depends(get_db),
+                              str=Depends(oauth_schema)):
+    companyuser = await companyuser_service.update_companyuser(
+        db, companyUserId, payload)
     return {"success": True, "updated_id": companyuser.id}
 
+
 @router.delete("/{companyUserId}")
-async def delete_company_user(companyUserId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    companyuser = await companyuser_service.delete_companyuser(db, companyUserId)
+async def delete_company_user(companyUserId: int,
+                              response: Response,
+                              db: Session = Depends(get_db),
+                              str=Depends(oauth_schema)):
+    companyuser = await companyuser_service.delete_companyuser(
+        db, companyUserId)
     return {"success": True, "deleted_id": companyuser.id}
