@@ -35,6 +35,8 @@ async def delete_hacker_group(id: int, db: Session):
 async def add_hacker_to_group(groupId: int, hackerId: int, db: Session):
     hacker_group = db.query(ModelHackerGroup).filter(ModelHackerGroup.id == groupId).first()
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    if hacker_group.members is None:
+        hacker_group.members = []
     hacker_group.members.append(hacker)
     db.commit()
     db.refresh(hacker_group)
