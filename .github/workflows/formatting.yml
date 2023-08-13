@@ -3,6 +3,7 @@ on:
     push:
       branches: 
         - integration
+        - main
       paths:
         - '**.py'
 jobs:
