@@ -89,20 +89,19 @@ class Event(Base):
     price: int = Column(Integer, default=0)
     max_participants: int = Column(Integer)
     max_sponsors: int = Column(Integer)
+    logo_id: str = Column(String)
     # is_open: bool = Column(Boolean, default=True)
 
     #TODO add registered_hackers
-    registered_hackers: List[ModelHacker] = relationship(
-        'Hacker', secondary='hacker_event_registration')
-    participants: List[ModelHacker] = relationship(
-        'Hacker', secondary='hacker_event_participation')
-    organizers: List[ModelLleidaHacker] = relationship(
-        "LleidaHacker", secondary='lleida_hacker_event_participation')
-    sponsors: List[ModelCompany] = relationship(
-        'Company', secondary='company_event_participation')
-    groups: List[ModelHackerGroup] = relationship(
-        'HackerGroup',
-        secondary='hacker_group_event_participation',
-        backref='event')
+    registered_hackers = relationship('Hacker',
+                                      secondary='hacker_event_registration')
+    participants = relationship('Hacker',
+                                secondary='hacker_event_participation')
+    organizers = relationship("LleidaHacker",
+                              secondary='lleida_hacker_event_participation')
+    sponsors = relationship('Company', secondary='company_event_participation')
+    groups = relationship('HackerGroup',
+                          secondary='hacker_group_event_participation',
+                          backref='event')
     # status: int = Column(Integer, default=0)
-    meals: List[ModelMeal] = relationship('Meal', backref='event')
+    meals = relationship('Meal', backref='event')

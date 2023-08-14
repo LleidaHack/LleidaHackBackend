@@ -48,6 +48,15 @@ async def create_event(event: SchemaEvent,
     return {'success': True, 'event_id': new_event.id}
 
 
+@router.post("/{id}/logo/{logo_id}")
+async def set_event_logo(id: int,
+                         logo_id: str,
+                         db: Session = Depends(get_db),
+                         tokem: str = Depends(oauth_schema)):
+    event = await event_service.set_event_logo(id, logo_id, db)
+    return {'success': True, 'event_id': event.id}
+
+
 @router.put("/{id}")
 async def update_event(id: int,
                        event: SchemaEvent,
