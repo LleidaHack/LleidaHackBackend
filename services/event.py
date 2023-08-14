@@ -63,7 +63,7 @@ async def add_company(id: int, company_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     company = db.query(ModelCompany).filter(
         ModelCompany.id == company_id).first()
-    event.companies.append(company)
+    event.sponsors.append(company)
     db.commit()
     db.refresh(event)
     return event
