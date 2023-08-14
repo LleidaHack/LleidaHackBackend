@@ -12,7 +12,7 @@ class Company(BaseModel):
     address: str
     linkdin: str
     telephone: str
-    #users: List[User]
+    users: List[User]
     events: List[Event]
 
     # class Config:
