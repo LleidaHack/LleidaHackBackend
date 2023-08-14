@@ -93,17 +93,15 @@ class Event(Base):
     # is_open: bool = Column(Boolean, default=True)
 
     #TODO add registered_hackers
-    registered_hackers = relationship(
-        'Hacker', secondary='hacker_event_registration')
-    participants = relationship(
-        'Hacker', secondary='hacker_event_participation')
-    organizers = relationship(
-        "LleidaHacker", secondary='lleida_hacker_event_participation')
-    sponsors = relationship(
-        'Company', secondary='company_event_participation')
-    groups = relationship(
-        'HackerGroup',
-        secondary='hacker_group_event_participation',
-        backref='event')
+    registered_hackers = relationship('Hacker',
+                                      secondary='hacker_event_registration')
+    participants = relationship('Hacker',
+                                secondary='hacker_event_participation')
+    organizers = relationship("LleidaHacker",
+                              secondary='lleida_hacker_event_participation')
+    sponsors = relationship('Company', secondary='company_event_participation')
+    groups = relationship('HackerGroup',
+                          secondary='hacker_group_event_participation',
+                          backref='event')
     # status: int = Column(Integer, default=0)
     meals = relationship('Meal', backref='event')

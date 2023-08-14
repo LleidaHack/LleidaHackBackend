@@ -14,11 +14,9 @@ class Hacker(User):
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
     linkedin: str = Column(String)
-    groups = relationship('HackerGroup',
-                                             secondary='hacker_group_user')
+    groups = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
-    events = relationship('Event',
-                                       secondary='hacker_event_participation')
+    events = relationship('Event', secondary='hacker_event_participation')
     __mapper_args__ = {
         "polymorphic_identity": "hacker",
     }
@@ -39,5 +37,4 @@ class HackerGroup(Base):
                             ForeignKey('hacker.user_id'),
                             nullable=False)
     # event: Event = relationship('Event', secondary='hacker_event')
-    members = relationship('Hacker',
-                                         secondary='hacker_group_user')
+    members = relationship('Hacker', secondary='hacker_group_user')

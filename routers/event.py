@@ -47,6 +47,7 @@ async def create_event(event: SchemaEvent,
     new_event = await event_service.add_event(event, db)
     return {'success': True, 'event_id': new_event.id}
 
+
 @router.post("/{id}/logo/{logo_id}")
 async def set_event_logo(id: int,
                          logo_id: str,
@@ -54,6 +55,7 @@ async def set_event_logo(id: int,
                          tokem: str = Depends(oauth_schema)):
     event = await event_service.set_event_logo(id, logo_id, db)
     return {'success': True, 'event_id': event.id}
+
 
 @router.put("/{id}")
 async def update_event(id: int,
