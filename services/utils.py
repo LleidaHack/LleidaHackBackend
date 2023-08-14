@@ -11,7 +11,6 @@ async def uploadFile(in_file: UploadFile = File(...)):
         await f.write(in_file.file.read())
     return rand
 
-
 async def getFile(uuid: str):
     file_path = f"static/{uuid}.jpg"
     if not os.path.isfile(file_path):
