@@ -16,6 +16,7 @@ from models.Company import Company as ModelCompany
 from models.Hacker import HackerGroup as ModelHackerGroup
 from models.Meal import Meal as ModelMeal
 
+
 class HackerParticipation(Base):
     __tablename__ = "hacker_event_participation"
     user_id = Column(Integer,
