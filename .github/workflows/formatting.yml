@@ -1,6 +1,9 @@
 name: Formatting python code
 on:
-    push:
+    pull_request:
+      branches: 
+        - main
+        - integration
       paths:
         - '**.py'
     workflow_dispatch:
