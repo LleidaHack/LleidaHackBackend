@@ -51,6 +51,11 @@ async def delete_event(id: int, db: Session):
     db.commit()
     return db_event
 
+async def set_event_logo(id: int, logo_id: str, db: Session):
+    db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    db_event.logo_id = logo_id
+    db.commit()
+    return db_event
 
 async def add_company(id: int, company_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
