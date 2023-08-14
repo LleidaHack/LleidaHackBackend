@@ -10,15 +10,13 @@ from schemas.Event import Event
 
 class Hacker(User):
     __tablename__ = 'hacker'
-    user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
     linkedin: str = Column(String)
-    groups: List[HackerGroup] = relationship('HackerGroup',
-                                             secondary='hacker_group_user')
+    groups = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
-    events: List[Event] = relationship('Event',
-                                       secondary='hacker_event_participation')
+    events = relationship('Event', secondary='hacker_event_participation')
     __mapper_args__ = {
         "polymorphic_identity": "hacker",
     }
@@ -39,5 +37,4 @@ class HackerGroup(Base):
                             ForeignKey('hacker.user_id'),
                             nullable=False)
     # event: Event = relationship('Event', secondary='hacker_event')
-    members: List[Hacker] = relationship('Hacker',
-                                         secondary='hacker_group_user')
+    members = relationship('Hacker', secondary='hacker_group_user')

@@ -52,13 +52,21 @@ async def delete_event(id: int, db: Session):
     return db_event
 
 
+async def set_event_logo(id: int, logo_id: str, db: Session):
+    db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    db_event.logo_id = logo_id
+    db.commit()
+    return db_event
+
+
 async def add_company(id: int, company_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     company = db.query(ModelCompany).filter(
         ModelCompany.id == company_id).first()
-    event.companies.append(company)
+    event.sponsors.append(company)
     db.commit()
     db.refresh(event)
+    db.refresh(company)
     return event
 
 
@@ -68,6 +76,7 @@ async def add_hacker(id: int, hacker_id: int, db: Session):
     event.hackers.append(hacker)
     db.commit()
     db.refresh(event)
+    db.refresh(hacker)
     return event
 
 
@@ -88,6 +97,7 @@ async def remove_company(id: int, company_id: int, db: Session):
     event.companies.remove(company)
     db.commit()
     db.refresh(event)
+    db.refresh(company)
     return event
 
 
@@ -97,6 +107,7 @@ async def remove_hacker(id: int, hacker_id: int, db: Session):
     event.hackers.remove(hacker)
     db.commit()
     db.refresh(event)
+    db.refresh(hacker)
     return event
 
 

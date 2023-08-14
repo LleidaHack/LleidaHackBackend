@@ -76,3 +76,8 @@ async def delete_company_user(db: Session, companyId: int, userId: int):
     db.commit()
     db.refresh(company)
     return company
+
+async def get_company_events(db: Session, companyId: int):
+    company = db.query(ModelCompany).filter(
+        ModelCompany.id == companyId).first()
+    return company.events

@@ -40,10 +40,10 @@ jobs:
           script: |
             cd ${{ secrets.PROJECT_PATH }}
             python3 -m pip install -r requirements.txt
-            cd ..
             echo "${{ steps.date.outputs.date }}  ->  ${{ github.actor }}" >> deploy.log
             echo > logs/gunicorn_access.log
             echo > logs/gunicorn_error.log
+            alembic upgrade head
             sudo systemctl restart Backend.${{ steps.extract_branch.outputs.branch }}
       - name: check server status
         uses: appleboy/ssh-action@master

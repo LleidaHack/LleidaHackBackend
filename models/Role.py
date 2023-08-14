@@ -19,4 +19,4 @@ class Role(Base):
     id: int = Column(Integer, primary_key=True, index=True)
     name = Column(Enum(RoleEnum), index=True)
     # description: str = Column(String)
-    users: List[ModelUser] = relationship('User', back_populates='roles')
+    users = relationship('User', back_populates='roles')
