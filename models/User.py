@@ -5,7 +5,7 @@ from database import Base
 
 
 class User(Base):
-    __tablename__ = 'llhk_user'
+    __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
     nickname: str = Column(String)
@@ -20,7 +20,7 @@ class User(Base):
     image_id: str = Column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": "llhk_user",
+        "polymorphic_identity": "user",
         "polymorphic_on": type,
     }
 
