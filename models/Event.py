@@ -78,7 +78,6 @@ class CompanyParticipation(Base):
 
 class Event(Base):
     __tablename__ = 'event'
-    __tablename__ = 'event'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
     description: str = Column(String)
