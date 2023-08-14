@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from database import Base
 
+
 class Notification(Base):
     __tablename__ = 'notification'
     id: int = Column(Integer, primary_key=True, index=True)

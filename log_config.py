@@ -1,6 +1,8 @@
 from pydantic import BaseModel
+'''The configuration for the Backend logging system'''
 
-class LogConfig(BaseModel):
+
+class LogConfig(BaseModel):  # pylint: disable=too-few-public-methods
     """Logging configuration to be set for the server"""
 
     LOGGER_NAME: str = "mycoolapp"
@@ -25,5 +27,8 @@ class LogConfig(BaseModel):
         },
     }
     loggers = {
-        "mycoolapp": {"handlers": ["default"], "level": LOG_LEVEL},
+        "mycoolapp": {
+            "handlers": ["default"],
+            "level": LOG_LEVEL
+        },
     }

@@ -1,3 +1,12 @@
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+from logging.config import dictConfig
+import logging
+from log_config import LogConfig
+
 from routers import user
 from routers import hacker
 from routers import hackergroup
@@ -10,32 +19,50 @@ from routers import eventmanagment
 from routers import authentication
 from routers import utils
 
-from fastapi import Depends, FastAPI, Response, status, Request
-from fastapi.responses import RedirectResponse
-from fastapi.security import HTTPBearer
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-
-from logging.config import dictConfig
-import logging
-from LogConfig import LogConfig
-
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
-
-
 tags_metadata = [
-    {"name": "User", "description": "User related endpoints"},
-    {"name": "Hacker", "description": "Hacker related endpoints"},
-    {"name": "Hacker Group", "description": "Hacker Group related endpoints"},
-    {"name": "LleidaHacker", "description": "LleidaHacker related endpoints"},
-    {"name": "LleidaHacker Group", "description": "LleidaHacker Group related endpoints"},
-    {"name": "Company", "description": "Company related endpoints"},
-    {"name": "Event", "description": "Event related endpoints"},
-    {"name": "Authentication", "description": "Authentication related endpoints"},
-    {"name": "Utils", "description": "Utils related endpoints"},
-    {"name": "EventManagment", "description": "Event Managment related endpoints"},
+    {
+        "name": "User",
+        "description": "User related endpoints"
+    },
+    {
+        "name": "Hacker",
+        "description": "Hacker related endpoints"
+    },
+    {
+        "name": "Hacker Group",
+        "description": "Hacker Group related endpoints"
+    },
+    {
+        "name": "LleidaHacker",
+        "description": "LleidaHacker related endpoints"
+    },
+    {
+        "name": "LleidaHacker Group",
+        "description": "LleidaHacker Group related endpoints"
+    },
+    {
+        "name": "Company",
+        "description": "Company related endpoints"
+    },
+    {
+        "name": "Event",
+        "description": "Event related endpoints"
+    },
+    {
+        "name": "Authentication",
+        "description": "Authentication related endpoints"
+    },
+    {
+        "name": "Utils",
+        "description": "Utils related endpoints"
+    },
+    {
+        "name": "EventManagment",
+        "description": "Event Managment related endpoints"
+    },
 ]
 
 app = FastAPI(title="LleidaHack API",
@@ -45,8 +72,7 @@ app = FastAPI(title="LleidaHack API",
               redoc_url='/redoc',
               openapi_url='/openapi.json',
               openapi_tags=tags_metadata,
-              debug=True
-)
+              debug=True)
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,6 +80,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 app.mount('/static', StaticFiles(directory='static'), name='static')
@@ -69,6 +96,7 @@ app.include_router(event.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(utils.router)
+
 
 @app.get("/")
 def root():
