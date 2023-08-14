@@ -18,7 +18,7 @@ ALGORITHM = Configuration.get("SECURITY", "ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY",
                                                 "ACCESS_TOKEN_EXPIRE_MINUTES")
 
-SERVICE_TOKEN = 'Bearer '+Configuration.get("SECURITY", "SERVICE_TOKEN")
+SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 oauth_schema = HTTPBearer()

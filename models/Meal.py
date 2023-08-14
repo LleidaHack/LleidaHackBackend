@@ -2,7 +2,7 @@ from typing import List
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-import models
+from models.Hacker import Hacker as ModelHacker
 
 from database import Base
 
