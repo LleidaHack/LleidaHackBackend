@@ -1,3 +1,5 @@
+import models
+
 from datetime import date
 from typing import List
 
@@ -8,11 +10,6 @@ from sqlalchemy.sql import func
 
 from database import Base
 
-from models.Hacker import Hacker as ModelHacker
-from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
-from models.Company import Company as ModelCompany
-from models.Hacker import HackerGroup as ModelHackerGroup
-from models.Meal import Meal as ModelMeal
 
 
 class HackerParticipation(Base):
@@ -76,6 +73,7 @@ class CompanyParticipation(Base):
 
 
 class Event(Base):
+    __tablename__ = 'event'
     __tablename__ = 'event'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
