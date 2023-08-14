@@ -1,15 +1,19 @@
 name: deploy on VPS
 on:
   push:
-    branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches: 
+      - main
+      - integration
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
+        id: extract_branch
       - uses: actions/checkout@v3
       - name: Get current date
         id: date
@@ -22,7 +26,9 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            cd ${{ secrets.PROJECT_PATH }}
+            cd ${{ secrets.PROJECT_PATH }}/${{ steps.extract_branch.outputs.branch }}
+            git fetch
+            git checkout ${{ steps.extract_branch.outputs.branch }}
             git pull
       - name: start server
         uses: appleboy/ssh-action@master
@@ -38,8 +44,7 @@ jobs:
             echo "${{ steps.date.outputs.date }}  ->  ${{ github.actor }}" >> deploy.log
             echo > logs/gunicorn_access.log
             echo > logs/gunicorn_error.log
-            sudo systemctl restart Backend
-            systemctl status Backend.service
+            sudo systemctl restart Backend.${{ steps.extract_branch.outputs.branch }}
       - name: check server status
         uses: appleboy/ssh-action@master
         with:
@@ -48,4 +53,4 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            systemctl status Backend.service
+            systemctl status Backend.${{ steps.extract_branch.outputs.branch }}.service
