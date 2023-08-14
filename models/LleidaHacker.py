@@ -17,10 +17,10 @@ class LleidaHacker(User):
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
     github: str = Column(String)
-    groups = relationship(
-        'LleidaHackerGroup', secondary='lleida_hacker_group_user')
-    events = relationship(
-        'Event', secondary='lleida_hacker_event_participation')
+    groups = relationship('LleidaHackerGroup',
+                          secondary='lleida_hacker_group_user')
+    events = relationship('Event',
+                          secondary='lleida_hacker_event_participation')
 
     __mapper_args__ = {
         "polymorphic_identity": "lleida_hacker",
