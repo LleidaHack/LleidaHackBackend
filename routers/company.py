@@ -83,3 +83,10 @@ async def delete_company_user(companyId: int,
                               str=Depends(oauth_schema)):
     company = await company_service.delete_company_user(db, companyId, userId)
     return {"success": True, "deleted_id": company.id}
+
+@router.get("/{companyId}/events")
+async def get_company_events(companyId: int,
+                            response: Response,
+                            db: Session = Depends(get_db),
+                            str=Depends(oauth_schema)):
+    return await company_service.get_company_events(db, companyId)

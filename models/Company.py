@@ -16,17 +16,16 @@ class Company(Base):
     telephone: str = Column(String)
     website: str = Column(String)
     logo: str = Column(String)
-    users: List[CompanyUser] = relationship('CompanyUser',
-                                            back_populates='company')
-    events: List[Event] = relationship('Event',
-                                       secondary='company_event_participation')
+    linkdin: str = Column(String)
+    users = relationship('CompanyUser', back_populates='company')
+    events = relationship('Event', secondary='company_event_participation')
 
 
 class CompanyUser(User):
     __tablename__ = 'company_user'
-    user_id = Column(Integer, ForeignKey('llhk_user.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
     company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
-    company: Company = relationship('Company', back_populates='users')
+    company = relationship('Company', back_populates='users')
     role: str = Column(String)
 
     __mapper_args__ = {

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 from schemas.User import User
+from schemas.Event import Event
 
 
 class Company(BaseModel):
@@ -9,9 +10,10 @@ class Company(BaseModel):
     website: str
     logo: str
     address: str
+    linkdin: str
     telephone: str
     users: List[User]
-    # events: List[Event]
+    events: List[Event]
 
     # class Config:
     #     orm_mode = True
