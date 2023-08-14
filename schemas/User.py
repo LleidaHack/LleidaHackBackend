@@ -1,13 +1,14 @@
 # from __future__ import annotations
 
 from pydantic import BaseModel
+from datetime import date
 
 
 class User(BaseModel):
     name: str
     nickname: str
     password: str
-    birthdate: str
+    birthdate: date
     food_restrictions: str
     email: str
     telephone: str
