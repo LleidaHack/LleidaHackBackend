@@ -64,6 +64,7 @@ async def add_company(id: int, company_id: int, db: Session):
     company = db.query(ModelCompany).filter(
         ModelCompany.id == company_id).first()
     event.sponsors.append(company)
+    company.events.append(event)
     db.commit()
     db.refresh(event)
     return event
@@ -73,6 +74,7 @@ async def add_hacker(id: int, hacker_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
     event.hackers.append(hacker)
+    hacker.events.append(event)
     db.commit()
     db.refresh(event)
     return event
@@ -93,6 +95,7 @@ async def remove_company(id: int, company_id: int, db: Session):
     company = db.query(ModelCompany).filter(
         ModelCompany.id == company_id).first()
     event.companies.remove(company)
+    company.events.remove(event)
     db.commit()
     db.refresh(event)
     return event
@@ -102,6 +105,7 @@ async def remove_hacker(id: int, hacker_id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
     event.hackers.remove(hacker)
+    hacker.events.remove(event)
     db.commit()
     db.refresh(event)
     return event
