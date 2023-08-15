@@ -35,8 +35,10 @@ def get_password_hash(password):
     return pbkdf2_sha256.hash(password)
     # return password
 
+
 def is_service_token(token: str):
     return token == SERVICE_TOKEN
+
 
 def verify_token(req: Request):
     token = req.headers["Authorization"]
@@ -49,9 +51,8 @@ def verify_token(req: Request):
     return True
 
 
-def authenticate_user(username: str, password: str, db:Session):
-    user_dict = db.query(ModelUser).filter(
-        ModelUser.email == username).first()
+def authenticate_user(username: str, password: str, db: Session):
+    user_dict = db.query(ModelUser).filter(ModelUser.email == username).first()
     if not user_dict:
         return False
     if not verify_password(password, user_dict.password):
@@ -88,7 +89,7 @@ def create_confirmation_token(email: str):
                                 algorithm=ALGORITHM)
     return serialized_jwt
 
-async def get_data_from_token(token: str = Depends(oauth2_scheme)):
+def get_data_from_token(token: str = Depends(oauth2_scheme)):
     data = decode_token(token)
     d = TokenData()
     if is_service_token(token):
@@ -106,7 +107,7 @@ async def get_data_from_token(token: str = Depends(oauth2_scheme)):
         d.available = data.get("active")
     return d
 
-async def decode_token(token):
+def decode_token(token):
     return jwt.decode(token.credentials.encode('utf-8'),
                       SECRET_KEY,
                       algorithms=[ALGORITHM])

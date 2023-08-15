@@ -69,7 +69,7 @@ async def update_company_user(companyUserId: int,
 async def delete_company_user(companyUserId: int,
                               response: Response,
                               db: Session = Depends(get_db),
-                              token:str = Depends(oauth_schema)):
+                              token: str = Depends(oauth_schema)):
     companyuser = await companyuser_service.delete_companyuser(
         db, companyUserId, get_data_from_token(token))
     return {"success": True, "deleted_id": companyuser.id}

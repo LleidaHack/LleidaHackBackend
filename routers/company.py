@@ -34,7 +34,8 @@ async def add_company(payload: SchemaCompany,
                       response: Response,
                       db: Session = Depends(get_db),
                       token: str = Depends(oauth_schema)):
-    new_company = await company_service.add_company(db, payload, get_data_from_token(token))
+    new_company = await company_service.add_company(db, payload,
+                                                    get_data_from_token(token))
     return {"success": True, "created_id": new_company.id}
 
 
@@ -44,7 +45,8 @@ async def update_company(companyId: int,
                          response: Response,
                          db: Session = Depends(get_db),
                          token: str = Depends(oauth_schema)):
-    company = await company_service.update_company(db, companyId, payload, get_data_from_token(token))
+    company = await company_service.update_company(db, companyId, payload,
+                                                   get_data_from_token(token))
     return {"success": True, "updated_id": company.id}
 
 
@@ -53,7 +55,8 @@ async def delete_company(companyId: int,
                          response: Response,
                          db: Session = Depends(get_db),
                          token: str = Depends(oauth_schema)):
-    company = await company_service.delete_company(db, companyId, get_data_from_token(token))
+    company = await company_service.delete_company(db, companyId,
+                                                   get_data_from_token(token))
     return {"success": True, "deleted_id": company.id}
 
 
@@ -62,7 +65,8 @@ async def get_company_users(companyId: int,
                             response: Response,
                             db: Session = Depends(get_db),
                             str=Depends(oauth_schema)):
-    return await company_service.get_company_users(db, companyId, get_data_from_token(str))
+    return await company_service.get_company_users(db, companyId,
+                                                   get_data_from_token(str))
 
 
 @router.post("/{companyId}/users/{userId}")
@@ -71,7 +75,8 @@ async def add_company_user(companyId: int,
                            response: Response,
                            db: Session = Depends(get_db),
                            token: str = Depends(oauth_schema)):
-    company = await company_service.add_company_user(db, companyId, userId, get_data_from_token(token))
+    company = await company_service.add_company_user(
+        db, companyId, userId, get_data_from_token(token))
     return {"success": True, "updated_id": company.id}
 
 
@@ -81,12 +86,14 @@ async def delete_company_user(companyId: int,
                               response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(oauth_schema)):
-    company = await company_service.delete_company_user(db, companyId, userId, get_data_from_token(token))
+    company = await company_service.delete_company_user(
+        db, companyId, userId, get_data_from_token(token))
     return {"success": True, "deleted_id": company.id}
+
 
 @router.get("/{companyId}/events")
 async def get_company_events(companyId: int,
-                            response: Response,
-                            db: Session = Depends(get_db),
-                            str=Depends(oauth_schema)):
+                             response: Response,
+                             db: Session = Depends(get_db),
+                             str=Depends(oauth_schema)):
     return await company_service.get_company_events(db, companyId)
