@@ -18,7 +18,7 @@ router = APIRouter(
 async def signup(payload: SchemaLleidaHacker,
                  response: Response,
                  db: Session = Depends(get_db)):
-    new_lleidahacker = await lleidahacker_service.add_lleidahacker(db, payload)
+    new_lleidahacker = await lleidahacker_service.add_lleidahacker(payload, db)
     token = create_access_token(new_lleidahacker)
     refresh_token = create_refresh_token(new_lleidahacker)
     return {
