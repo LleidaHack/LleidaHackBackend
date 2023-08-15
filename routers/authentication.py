@@ -24,7 +24,7 @@ async def login(credentials: HTTPBasicCredentials = Depends(sec),
                 db: Session = Depends(get_db)):
     username = credentials.username
     password = credentials.password
-    user = authenticate_user(username, password)
+    user = authenticate_user(username, password, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
