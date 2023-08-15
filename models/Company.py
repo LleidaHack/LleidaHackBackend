@@ -17,7 +17,8 @@ class Company(Base):
     website: str = Column(String)
     logo: str = Column(String)
     linkdin: str = Column(String)
-    users = relationship('CompanyUser', back_populates='company')
+    leader_id: int = Column(Integer, ForeignKey('user.id'))
+    users = relationship('CompanyUser')
     events = relationship('Event', secondary='company_event_participation')
 
 
@@ -25,7 +26,7 @@ class CompanyUser(User):
     __tablename__ = 'company_user'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
     company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
-    company = relationship('Company', back_populates='users')
+    company = relationship('Company', back_populates='company')
     active: bool = Column(Integer)
     role: str = Column(String)
 
