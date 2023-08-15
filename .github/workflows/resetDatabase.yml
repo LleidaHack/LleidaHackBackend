@@ -21,9 +21,9 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            sudo systemctl stop backend.${{ steps.extract_branch.outputs.branch }}.service 
+            sudo systemctl stop backend.${{ steps.extract_branch.outputs.branch }}
             cd ${{ secrets.PROJECT_PATH }}/${{ steps.extract_branch.outputs.branch }}
             psql -d test -c "DROP DATABASE backend_${{ steps.extract_branch.outputs.branch }};"
             psql -d test -c "CREATE DATABASE backend_${{ steps.extract_branch.outputs.branch }};"
-            psql -d echo backend_${{ steps.extract_branch.outputs.branch }} -c "GRANT ALL PRIVILEGES ON DATABASE backend_${{ steps.extract_branch.outputs.branch }} TO backend;"
             alembic upgrade head
+            sudo systemctl start backend.${{ steps.extract_branch.outputs.branch }}
