@@ -1,7 +1,6 @@
-from ast import List
-from tabnanny import check
+
 from database import get_db
-from security import oauth_schema
+from security import oauth_schema, get_data_from_token
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
@@ -44,7 +43,7 @@ async def create_event(event: SchemaEvent,
                        db: Session = Depends(get_db),
                        tokem: str = Depends(oauth_schema)):
     await check_permissions(tokem, ["admin"])
-    new_event = await event_service.add_event(event, db)
+    new_event = await event_service.add_event(event, db, get_data_from_token(tokem))
     return {'success': True, 'event_id': new_event.id}
 
 
@@ -53,7 +52,7 @@ async def set_event_logo(id: int,
                          logo_id: str,
                          db: Session = Depends(get_db),
                          tokem: str = Depends(oauth_schema)):
-    event = await event_service.set_event_logo(id, logo_id, db)
+    event = await event_service.set_event_logo(id, logo_id, db, get_data_from_token(tokem))
     return {'success': True, 'event_id': event.id}
 
 
@@ -62,7 +61,7 @@ async def update_event(id: int,
                        event: SchemaEvent,
                        db: Session = Depends(get_db),
                        tokem: str = Depends(oauth_schema)):
-    new_event = await event_service.update_event(id, event, db)
+    new_event = await event_service.update_event(id, event, db, get_data_from_token(tokem))
     return {'success': True, 'event_id': new_event.id}
 
 
@@ -70,7 +69,7 @@ async def update_event(id: int,
 async def delete_event(id: int,
                        db: Session = Depends(get_db),
                        tokem: str = Depends(oauth_schema)):
-    event = await event_service.delete_event(id, db)
+    event = await event_service.delete_event(id, db, get_data_from_token(tokem))
     return {'success': True, 'event_id': event.id}
 
 
@@ -78,23 +77,20 @@ async def delete_event(id: int,
 async def get_event_participants(id: int,
                                  db: Session = Depends(get_db),
                                  tokem: str = Depends(oauth_schema)):
-    event = event_service.get_event(id, db)
-    return event.participants
-
+    return await event_service.get_event_participants(id, db, get_data_from_token(tokem))
 
 @router.get("/{id}/sponsors")
 async def get_event_sponsors(id: int,
                              db: Session = Depends(get_db),
                              tokem: str = Depends(oauth_schema)):
-    event = event_service.get_event(id, db)
-    return event.sponsors
+    return await event_service.get_event_sponsors(id, db, get_data_from_token(tokem))
 
 
 @router.get("/{id}/groups")
 async def get_event_groups(id: int,
                            db: Session = Depends(get_db),
                            tokem: str = Depends(oauth_schema)):
-    event = event_service.get_event(id, db)
+    event = event_service.get_event_groups(id, db, get_data_from_token(tokem))
     return {'success': True, 'groups': event.groups}
 
 
@@ -103,7 +99,7 @@ async def add_event_participant(id: int,
                                 hacker_id: int,
                                 db: Session = Depends(get_db),
                                 tokem: str = Depends(oauth_schema)):
-    event = await event_service.add_hacker(id, hacker_id, db)
+    event = await event_service.add_hacker(id, hacker_id, db, get_data_from_token(tokem))
     return {'success': True, 'event_id': event.id}
 
 
@@ -112,7 +108,7 @@ async def remove_event_participant(id: int,
                                    hacker_id: int,
                                    db: Session = Depends(get_db),
                                    tokem: str = Depends(oauth_schema)):
-    event = await event_service.remove_hacker(id, hacker_id, db)
+    event = await event_service.remove_hacker(id, hacker_id, db, get_data_from_token(tokem))
     return {'success': True, 'event_id': event.id}
 
 
@@ -121,7 +117,7 @@ async def add_event_sponsor(id: int,
                             company_id: int,
                             db: Session = Depends(get_db),
                             tokem: str = Depends(oauth_schema)):
-    event = await event_service.add_company(id, company_id, db)
+    event = await event_service.add_company(id, company_id, db, get_data_from_token(tokem))
     return {'success': True, 'event_id': event.id}
 
 
