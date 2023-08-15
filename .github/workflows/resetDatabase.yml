@@ -21,9 +21,9 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            sudo systemctl stop backend.${{ steps.extract_branch.outputs.branch }}
+            sudo systemctl stop Backend.${{ steps.extract_branch.outputs.branch }}
             cd ${{ secrets.PROJECT_PATH }}/${{ steps.extract_branch.outputs.branch }}
             psql -d test -c "DROP DATABASE backend_${{ steps.extract_branch.outputs.branch }};"
             psql -d test -c "CREATE DATABASE backend_${{ steps.extract_branch.outputs.branch }};"
             alembic upgrade head
-            sudo systemctl start backend.${{ steps.extract_branch.outputs.branch }}
+            sudo systemctl start Backend.${{ steps.extract_branch.outputs.branch }}
