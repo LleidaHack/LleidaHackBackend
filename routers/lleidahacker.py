@@ -1,7 +1,7 @@
 from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
 
 from database import get_db
-from security import create_access_token, oauth_schema, create_refresh_token
+from security import create_access_token, oauth_schema, create_refresh_token, get_data_from_token
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
@@ -19,7 +19,6 @@ async def signup(payload: SchemaLleidaHacker,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_lleidahacker = await lleidahacker_service.add_lleidahacker(db, payload)
-    return new_lleidahacker
     token = create_access_token(new_lleidahacker)
     refresh_token = create_refresh_token(new_lleidahacker)
     return {
@@ -57,8 +56,8 @@ async def add_lleidahacker(payload: SchemaLleidaHacker,
 async def delete_lleidahacker(userId: int,
                               response: Response,
                               db: Session = Depends(get_db),
-                              str=Depends(oauth_schema)):
-    lleidahacker = await lleidahacker_service.delete_lleidahacker(userId, db)
+                              token: str = Depends(oauth_schema)):
+    lleidahacker = await lleidahacker_service.delete_lleidahacker(userId, db, get_data_from_token(token))
     return {"success": True, "deleted_id": userId}
 
 
@@ -67,7 +66,7 @@ async def update_lleidahacker(userId: int,
                               payload: SchemaLleidaHacker,
                               response: Response,
                               db: Session = Depends(get_db),
-                              str=Depends(oauth_schema)):
+                              token: str = Depends(oauth_schema)):
     lleidahacker = await lleidahacker_service.update_lleidahacker(
-        userId, db, payload)
+        userId, db, payload, get_data_from_token(token))
     return {"success": True, "updated_id": userId}

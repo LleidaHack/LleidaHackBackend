@@ -8,6 +8,8 @@ from fastapi import Depends, Response, APIRouter
 
 import services.companyuser as companyuser_service
 
+from security import get_data_from_token
+
 router = APIRouter(
     prefix="/company/user",
     tags=["Company User"],
@@ -47,7 +49,7 @@ async def get_company_user(companyUserId: int,
 async def add_company_user(payload: SchemaCompanyUser,
                            response: Response,
                            db: Session = Depends(get_db),
-                           str=Depends(oauth_schema)):
+                           token: str = Depends(oauth_schema)):
     new_companyuser = await companyuser_service.add_companyuser(db, payload)
     return {"success": True, "created_id": new_companyuser.id}
 
@@ -57,9 +59,9 @@ async def update_company_user(companyUserId: int,
                               payload: SchemaCompanyUser,
                               response: Response,
                               db: Session = Depends(get_db),
-                              str=Depends(oauth_schema)):
+                              token: str = Depends(oauth_schema)):
     companyuser = await companyuser_service.update_companyuser(
-        db, companyUserId, payload)
+        db, companyUserId, payload, get_data_from_token(token))
     return {"success": True, "updated_id": companyuser.id}
 
 
@@ -67,7 +69,7 @@ async def update_company_user(companyUserId: int,
 async def delete_company_user(companyUserId: int,
                               response: Response,
                               db: Session = Depends(get_db),
-                              str=Depends(oauth_schema)):
+                              token:str = Depends(oauth_schema)):
     companyuser = await companyuser_service.delete_companyuser(
-        db, companyUserId)
+        db, companyUserId, get_data_from_token(token))
     return {"success": True, "deleted_id": companyuser.id}
