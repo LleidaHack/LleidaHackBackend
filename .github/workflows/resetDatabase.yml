@@ -1,6 +1,17 @@
 name: resetDatabse
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch name'
+        required: true
+        default: 'integration'
+      alembic:
+        description: 'Use Alembic to upgrade database'
+        required: true
+        default: true
+        type: boolean
+
 
 jobs:
   deploy:
@@ -14,15 +25,25 @@ jobs:
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%H:%M_%d-%m-%Y')"
+      - name: Check user for team affiliation
+        uses: tspascoal/get-user-teams-membership@v2
+        id: teamAffiliation
+        with:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          username: ${{ github.actor }}
+          team: admin
       - name: Push to server
+        if: ${{ steps.teamAffiliation.outputs.isTeamMember == true }}
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            sudo systemctl stop backend.${{ steps.extract_branch.outputs.branch }} 
             cd ${{ secrets.PROJECT_PATH }}/${{ steps.extract_branch.outputs.branch }}
             psql -d test -c "DROP DATABASE backend_${{ steps.extract_branch.outputs.branch }};"
             psql -d test -c "CREATE DATABASE backend_${{ steps.extract_branch.outputs.branch }};"
             psql -d echo backend_${{ steps.extract_branch.outputs.branch }} -c "GRANT ALL PRIVILEGES ON DATABASE backend_${{ steps.extract_branch.outputs.branch }} TO backend;"
             alembic upgrade head
+            sudo systemctl start backend.${{ steps.extract_branch.outputs.branch }}

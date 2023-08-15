@@ -8,7 +8,7 @@ from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from security import create_access_token, get_password_hash, oauth_schema, create_refresh_token
+from security import create_access_token, oauth_schema, create_refresh_token, get_data_from_token
 
 import services.hacker as hacker_service
 
@@ -35,15 +35,15 @@ async def signup(payload: SchemaHacker,
 
 @router.get("/all")
 async def get_hackers(db: Session = Depends(get_db),
-                      str=Depends(oauth_schema)):
-    return await hacker_service.get_all(db)
+                      token: str = Depends(oauth_schema)):
+    return await hacker_service.get_all(db, get_data_from_token(token))
 
 
 @router.get("/{hackerId}")
 async def get_hacker(hackerId: int,
                      response: Response,
                      db: Session = Depends(get_db),
-                     str=Depends(oauth_schema)):
+                     token: str = Depends(oauth_schema)):
     return await hacker_service.get_hacker(hackerId, db)
 
 
@@ -51,8 +51,8 @@ async def get_hacker(hackerId: int,
 async def add_hacker(payload: SchemaHacker,
                      response: Response,
                      db: Session = Depends(get_db),
-                     str=Depends(oauth_schema)):
-    new_hacker = await hacker_service.add_hacker(payload, db)
+                     token: str = Depends(oauth_schema)):
+    new_hacker = await hacker_service.add_hacker(payload, db, get_data_from_token(token))
     return {"success": True, "created_id": new_hacker.id}
 
 
@@ -61,16 +61,16 @@ async def update_hacker(hackerId: int,
                         payload: SchemaHacker,
                         response: Response,
                         db: Session = Depends(get_db),
-                        str=Depends(oauth_schema)):
-    hacker = await hacker_service.update_hacker(hackerId, payload, db)
+                        token:str = Depends(oauth_schema)):
+    hacker = await hacker_service.update_hacker(hackerId, payload, db, get_data_from_token(token))
     return {"success": True, "updated_id": hacker.id}
 
 
 @router.post("/{userId}/ban")
 async def ban_hacker(
     userId: int, db: Session = Depends(get_db),
-    str=Depends(oauth_schema)) -> int:
-    hacker = await hacker_service.ban_hacker(userId, db)
+    token: str = Depends(oauth_schema)):
+    hacker = await hacker_service.ban_hacker(userId, db, get_data_from_token(token))
     return {"success": True, "banned_id": hacker.id}
 
 
@@ -78,8 +78,8 @@ async def ban_hacker(
 async def unban_hacker(userId: int,
                        response: Response,
                        db: Session = Depends(get_db),
-                       str=Depends(oauth_schema)):
-    hacker = await hacker_service.unban_hacker(userId, db)
+                       token: str = Depends(oauth_schema)):
+    hacker = await hacker_service.unban_hacker(userId, db, get_data_from_token(token))
     return {"success": True, "unbanned_id": hacker.id}
 
 
@@ -87,6 +87,6 @@ async def unban_hacker(userId: int,
 async def delete_hacker(userId: int,
                         response: Response,
                         db: Session = Depends(get_db),
-                        str=Depends(oauth_schema)):
-    hacker = await hacker_service.remove_hacker(userId, db)
+                        token: str = Depends(oauth_schema)):
+    hacker = await hacker_service.remove_hacker(userId, db, get_data_from_token(token))
     return {"success": True, "deleted_id": hacker.id}
