@@ -49,8 +49,8 @@ def verify_token(req: Request):
     return True
 
 
-def authenticate_user(username: str, password: str):
-    user_dict = get_db().query(ModelUser).filter(
+def authenticate_user(username: str, password: str, db:Session):
+    user_dict = db.query(ModelUser).filter(
         ModelUser.email == username).first()
     if not user_dict:
         return False
