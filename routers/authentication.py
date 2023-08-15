@@ -8,7 +8,7 @@ from database import get_db
 from fastapi import Depends, Request, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import HTTPBasicCredentials
-from security import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token
+from security import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token, sec
 
 router = APIRouter(
     prefix="",
