@@ -91,7 +91,7 @@ def create_confirmation_token(email: str):
 
 
 def get_data_from_token(token: str = Depends(oauth2_scheme)):
-    d = TokenData(user_id=0, type='')
+    d = TokenData(user_id=0, type='', is_admin=False, is_service=False)
     if is_service_token(token):
         d.is_admin = True
         d.is_service = True
