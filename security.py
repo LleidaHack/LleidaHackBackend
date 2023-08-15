@@ -12,7 +12,7 @@ import os
 
 from models.User import User as ModelUser
 from schemas.Token import TokenData
-from models import TokenData as TD
+from models.TokenData import TokenData as TD
 from config import Configuration
 
 SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
