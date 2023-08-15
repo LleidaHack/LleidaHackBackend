@@ -42,7 +42,9 @@ async def add_hacker(payload: SchemaHacker, db: Session):
 
 async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or not (data.type == "lleida_hacker" or (data.type == "hacker" and data.user_id != hackerId)):
+        if not data.available or not (data.type == "lleida_hacker" or
+                                      (data.type == "hacker"
+                                       and data.user_id != hackerId)):
             raise Exception("Not authorized")
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if not hacker:
@@ -52,9 +54,12 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     return hacker
 
 
-async def update_hacker(hackerId: int, payload: SchemaHacker, db: Session, data: TokenData):
+async def update_hacker(hackerId: int, payload: SchemaHacker, db: Session,
+                        data: TokenData):
     if not data.is_admin:
-        if not data.available or not (data.type == "lleida_hacker" or (data.type == "hacker" and data.user_id != hackerId)):
+        if not data.available or not (data.type == "lleida_hacker" or
+                                      (data.type == "hacker"
+                                       and data.user_id != hackerId)):
             raise Exception("Not authorized")
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
