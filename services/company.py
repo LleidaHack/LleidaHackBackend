@@ -20,6 +20,7 @@ async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
     if not data.is_admin:
         if not data.available and not data.user_type == "company_user":
             raise Exception("Not authorized")
+    return payload
     user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
     new_company = ModelCompany(
         name=payload.name,
