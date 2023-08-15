@@ -1,5 +1,5 @@
 from models.Company import CompanyUser as ModelCompanyUser
-
+from models import TokenData
 from schemas.Company import CompanyUser as SchemaCompanyUser
 
 from sqlalchemy.orm import Session
@@ -38,11 +38,16 @@ async def add_company_user(payload: SchemaCompanyUser, db: Session):
 
 
 async def update_company_user(payload: SchemaCompanyUser, companyUserId: int,
-                              db: Session):
+                              db: Session, data: TokenData):
+    if not data.is_admin:
+        if not data.available or not (data.type == "lleida_hacker" or (data.type == "company_user" and data.user_id != cpompanyUserId)):
+            raise Exception("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
         ModelCompanyUser.id == companyUserId).first()
+    if not company_user:
+        raise Exception("Company user not found")
+    
     company_user.name = payload.name
-    company_user.password = payload.password
     company_user.nickname = payload.nickname
     company_user.birthdate = payload.birthdate
     company_user.address = payload.address
@@ -50,15 +55,17 @@ async def update_company_user(payload: SchemaCompanyUser, companyUserId: int,
     company_user.shirt_size = payload.shirt_size
     company_user.food_restrictions = payload.food_restrictions
     company_user.image_id = payload.image_id
-
-    company_user.company_id = payload.company_id
+    # company_user.company_id = payload.company_id
     company_user.role = payload.role
     db.commit()
     db.refresh(company_user)
     return company_user
 
 
-async def delete_company_user(companyUserId: int, db: Session):
+async def delete_company_user(companyUserId: int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not data.available or not (data.type == "lleida_hacker" or (data.type == "company_user" and data.user_id != companyUserId)):
+            raise Exception("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
         ModelCompanyUser.id == companyUserId).first()
     db.delete(company_user)

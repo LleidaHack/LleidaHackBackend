@@ -26,6 +26,7 @@ class CompanyUser(User):
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
     company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
     company = relationship('Company', back_populates='users')
+    active: bool = Column(Integer)
     role: str = Column(String)
 
     __mapper_args__ = {

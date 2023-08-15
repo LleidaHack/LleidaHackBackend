@@ -1,6 +1,17 @@
 name: resetDatabse
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch name'
+        required: true
+        default: 'integration'
+      alembic:
+        description: 'Use Alembic to upgrade database'
+        required: true
+        default: true
+        type: boolean
+
 
 jobs:
   deploy:
@@ -14,7 +25,15 @@ jobs:
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%H:%M_%d-%m-%Y')"
+      - name: Check user for team affiliation
+        uses: tspascoal/get-user-teams-membership@v2
+        id: teamAffiliation
+        with:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          username: ${{ github.actor }}
+          team: admin
       - name: Push to server
+        if: ${{ steps.teamAffiliation.outputs.isTeamMember == true }}
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
