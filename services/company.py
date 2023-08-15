@@ -30,8 +30,7 @@ async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
         address=payload.address,
         logo=payload.logo,
     )
-    return new_company
-    new_company.users.append(user)
+    #new_company.users.append(user)
     db.add(new_company)
     db.commit()
     db.refresh(new_company)
