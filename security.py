@@ -12,6 +12,7 @@ import os
 
 from models.User import User as ModelUser
 from schemas.Token import TokenData
+from models import TokenData as TD
 from config import Configuration
 
 SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
@@ -91,7 +92,7 @@ def create_confirmation_token(email: str):
 
 
 def get_data_from_token(token: str = Depends(oauth2_scheme)):
-    d = TokenData(user_id=0, type='', is_admin=False, is_service=False)
+    d = TD(user_id=0, type='', is_admin=False, is_service=False)
     if is_service_token(token):
         d.is_admin = True
         d.is_service = True
