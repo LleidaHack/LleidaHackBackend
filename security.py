@@ -90,13 +90,13 @@ def create_confirmation_token(email: str):
     return serialized_jwt
 
 def get_data_from_token(token: str = Depends(oauth2_scheme)):
-    data = decode_token(token)
     d = TokenData()
     if is_service_token(token):
         d.is_admin = True
         d.is_service = True
         d.user_id = 0
         return d
+    data = decode_token(token)
     d.user_id = data.get("user_id")
     d.type = data.get("type")
     if d.type == "hacker":
