@@ -34,7 +34,6 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
         nif=payload.nif,
         student=payload.student,
         role=payload.role,
-        group=payload.group,
         active=payload.active,
         image_id=payload.image_id,
         github=payload.github)
@@ -64,7 +63,6 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker,
     lleidahacker.nif = payload.nif
     lleidahacker.student = payload.student
     lleidahacker.role = payload.role
-    lleidahacker.group = payload.group
     lleidahacker.active = payload.active
     lleidahacker.image_id = payload.image_id
     lleidahacker.github = payload.github
