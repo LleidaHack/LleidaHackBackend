@@ -88,7 +88,7 @@ def create_confirmation_token(email: str):
                                 algorithm=ALGORITHM)
     return serialized_jwt
 
-async def get_data_from_token(token: str = Depends(oauth2_scheme)):
+def get_data_from_token(token: str = Depends(oauth2_scheme)):
     data = decode_token(token)
     d = TokenData()
     if is_service_token(token):
@@ -106,7 +106,7 @@ async def get_data_from_token(token: str = Depends(oauth2_scheme)):
         d.available = data.get("active")
     return d
 
-async def decode_token(token):
+def decode_token(token):
     return jwt.decode(token.credentials.encode('utf-8'),
                       SECRET_KEY,
                       algorithms=[ALGORITHM])
