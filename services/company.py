@@ -11,8 +11,10 @@ from sqlalchemy.orm import Session
 async def get_all(db: Session):
     return db.query(ModelCompany).all()
 
+
 async def get_company(db: Session, companyId: int):
     return db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
+
 
 async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
     if not data.is_admin:
@@ -34,7 +36,9 @@ async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
     db.refresh(new_company)
     return new_company
 
-async def update_company(db: Session, companyId: int, payload: SchemaCompany, data: TokenData):
+
+async def update_company(db: Session, companyId: int, payload: SchemaCompany,
+                         data: TokenData):
     if not data.is_admin:
         if not data.available or not data.user_type == "company_user":
             raise Exception("Not authorized")
@@ -85,8 +89,9 @@ async def get_company_users(db: Session, companyId: int, data: TokenData):
             raise Exception("Not authorized")
     return company.users
 
-async def add_company_user(db: Session, companyId: int,
-                           userId: int , data: TokenData):
+
+async def add_company_user(db: Session, companyId: int, userId: int,
+                           data: TokenData):
     if not data.is_admin:
         if not data.available or not data.user_type == "company_user":
             raise Exception("Not authorized")
@@ -107,7 +112,8 @@ async def add_company_user(db: Session, companyId: int,
     return company
 
 
-async def delete_company_user(db: Session, companyId: int, userId: int, data: TokenData):
+async def delete_company_user(db: Session, companyId: int, userId: int,
+                              data: TokenData):
     if not data.is_admin:
         if not data.available or not data.user_type == "company_user":
             raise Exception("Not authorized")
@@ -124,6 +130,7 @@ async def delete_company_user(db: Session, companyId: int, userId: int, data: To
     db.commit()
     db.refresh(company)
     return company
+
 
 async def get_company_events(db: Session, companyId: int):
     company = db.query(ModelCompany).filter(

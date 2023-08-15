@@ -35,8 +35,10 @@ def get_password_hash(password):
     return pbkdf2_sha256.hash(password)
     # return password
 
+
 def is_service_token(token: str):
     return token == SERVICE_TOKEN
+
 
 def verify_token(req: Request):
     token = req.headers["Authorization"]
@@ -49,9 +51,8 @@ def verify_token(req: Request):
     return True
 
 
-def authenticate_user(username: str, password: str):
-    user_dict = get_db().query(ModelUser).filter(
-        ModelUser.email == username).first()
+def authenticate_user(username: str, password: str, db: Session):
+    user_dict = db.query(ModelUser).filter(ModelUser.email == username).first()
     if not user_dict:
         return False
     if not verify_password(password, user_dict.password):

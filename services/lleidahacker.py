@@ -23,20 +23,21 @@ async def get_lleidahacker(userId: int, db: Session):
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     # if not checkImage(payload.image_id):
     # raise HTTPException(status_code=400, detail="Image not found")
-    new_lleidahacker = ModelLleidaHacker(name = payload.name,
-                                         nickname = payload.nickname,
-                                         birthdate = payload.birthdate,
-                                         food_restrictions = payload.food_restrictions,
-                                         telephone = payload.telephone,
-                                         address = payload.address,
-                                         shirt_size = payload.shirt_size,
-                                         nif = payload.nif,
-                                         student = payload.student,
-                                         role = payload.role,
-                                         group = payload.group,
-                                         active = payload.active,
-                                         image_id = payload.image_id,
-                                         github = payload.github)
+    new_lleidahacker = ModelLleidaHacker(
+        name=payload.name,
+        nickname=payload.nickname,
+        birthdate=payload.birthdate,
+        food_restrictions=payload.food_restrictions,
+        telephone=payload.telephone,
+        address=payload.address,
+        shirt_size=payload.shirt_size,
+        nif=payload.nif,
+        student=payload.student,
+        role=payload.role,
+        group=payload.group,
+        active=payload.active,
+        image_id=payload.image_id,
+        github=payload.github)
     db.add(new_lleidahacker)
     db.commit()
     db.refresh(new_lleidahacker)
@@ -83,6 +84,7 @@ async def delete_lleidahacker(userId: int, db: Session, data: TokenData):
     db.delete(lleidahacker)
     db.commit()
     return lleidahacker
+
 
 async def set_image(userId: int, image_id: str, db: Session, data: TokenData):
     if not data.is_admin:
