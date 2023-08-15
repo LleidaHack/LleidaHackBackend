@@ -52,7 +52,8 @@ async def add_hacker(payload: SchemaHacker,
                      response: Response,
                      db: Session = Depends(get_db),
                      token: str = Depends(oauth_schema)):
-    new_hacker = await hacker_service.add_hacker(payload, db, get_data_from_token(token))
+    new_hacker = await hacker_service.add_hacker(payload, db,
+                                                 get_data_from_token(token))
     return {"success": True, "created_id": new_hacker.id}
 
 
@@ -61,16 +62,18 @@ async def update_hacker(hackerId: int,
                         payload: SchemaHacker,
                         response: Response,
                         db: Session = Depends(get_db),
-                        token:str = Depends(oauth_schema)):
-    hacker = await hacker_service.update_hacker(hackerId, payload, db, get_data_from_token(token))
+                        token: str = Depends(oauth_schema)):
+    hacker = await hacker_service.update_hacker(hackerId, payload, db,
+                                                get_data_from_token(token))
     return {"success": True, "updated_id": hacker.id}
 
 
 @router.post("/{userId}/ban")
-async def ban_hacker(
-    userId: int, db: Session = Depends(get_db),
-    token: str = Depends(oauth_schema)):
-    hacker = await hacker_service.ban_hacker(userId, db, get_data_from_token(token))
+async def ban_hacker(userId: int,
+                     db: Session = Depends(get_db),
+                     token: str = Depends(oauth_schema)):
+    hacker = await hacker_service.ban_hacker(userId, db,
+                                             get_data_from_token(token))
     return {"success": True, "banned_id": hacker.id}
 
 
@@ -79,7 +82,8 @@ async def unban_hacker(userId: int,
                        response: Response,
                        db: Session = Depends(get_db),
                        token: str = Depends(oauth_schema)):
-    hacker = await hacker_service.unban_hacker(userId, db, get_data_from_token(token))
+    hacker = await hacker_service.unban_hacker(userId, db,
+                                               get_data_from_token(token))
     return {"success": True, "unbanned_id": hacker.id}
 
 
@@ -88,5 +92,6 @@ async def delete_hacker(userId: int,
                         response: Response,
                         db: Session = Depends(get_db),
                         token: str = Depends(oauth_schema)):
-    hacker = await hacker_service.remove_hacker(userId, db, get_data_from_token(token))
+    hacker = await hacker_service.remove_hacker(userId, db,
+                                                get_data_from_token(token))
     return {"success": True, "deleted_id": hacker.id}

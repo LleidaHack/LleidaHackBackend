@@ -40,13 +40,15 @@ async def add_company_user(payload: SchemaCompanyUser, db: Session):
 async def update_company_user(payload: SchemaCompanyUser, companyUserId: int,
                               db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or not (data.type == "lleida_hacker" or (data.type == "company_user" and data.user_id != cpompanyUserId)):
+        if not data.available or not (data.type == "lleida_hacker" or
+                                      (data.type == "company_user"
+                                       and data.user_id != cpompanyUserId)):
             raise Exception("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
         ModelCompanyUser.id == companyUserId).first()
     if not company_user:
         raise Exception("Company user not found")
-    
+
     company_user.name = payload.name
     company_user.nickname = payload.nickname
     company_user.birthdate = payload.birthdate
@@ -62,9 +64,12 @@ async def update_company_user(payload: SchemaCompanyUser, companyUserId: int,
     return company_user
 
 
-async def delete_company_user(companyUserId: int, db: Session, data: TokenData):
+async def delete_company_user(companyUserId: int, db: Session,
+                              data: TokenData):
     if not data.is_admin:
-        if not data.available or not (data.type == "lleida_hacker" or (data.type == "company_user" and data.user_id != companyUserId)):
+        if not data.available or not (data.type == "lleida_hacker" or
+                                      (data.type == "company_user"
+                                       and data.user_id != companyUserId)):
             raise Exception("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
         ModelCompanyUser.id == companyUserId).first()

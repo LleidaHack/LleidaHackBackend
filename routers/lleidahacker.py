@@ -57,7 +57,8 @@ async def delete_lleidahacker(userId: int,
                               response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(oauth_schema)):
-    lleidahacker = await lleidahacker_service.delete_lleidahacker(userId, db, get_data_from_token(token))
+    lleidahacker = await lleidahacker_service.delete_lleidahacker(
+        userId, db, get_data_from_token(token))
     return {"success": True, "deleted_id": userId}
 
 
