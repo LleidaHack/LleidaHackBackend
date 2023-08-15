@@ -1,6 +1,6 @@
 class TokenData:
-    user_id: int = None
-    user_type: str = None
+    user_id: int = 0
+    user_type: str = ''
     available: bool = True
     is_admin: bool = False
     is_service: bool = False
