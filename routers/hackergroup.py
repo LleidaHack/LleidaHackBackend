@@ -38,7 +38,7 @@ async def add_hacker_group(payload: SchemaHackerGroup,
         payload, token['user_id'], db)
     #await hackergroup_service.add_hacker_to_group(new_hacker_group.id, token["user_id"], db)
     #await hackergroup_service.set_hacker_group_leader(new_hacker_group.id, token['user_id'], db)
-    return {"success": True, "created_id": new_hacker_group.id}
+    return {"success": True, "created_id": new_hacker_group.id, "code": new_hacker_group.code}
 
 
 @router.put("/{groupId}")

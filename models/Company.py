@@ -18,7 +18,7 @@ class Company(Base):
     logo: str = Column(String)
     linkdin: str = Column(String)
     leader_id: int = Column(Integer, ForeignKey('user.id'))
-    users = relationship('CompanyUser')
+    users = relationship('User', secondary='company_user')
     events = relationship('Event', secondary='company_event_participation')
 
 

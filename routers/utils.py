@@ -19,7 +19,7 @@ async def uploadFile(image: UploadFile = File(...),
     return {"success": True, "id": id}
 
 
-@router.get("image/{image_id}")
+@router.get("/getImage/{image_id}")
 async def get_image(image_id: str):
     return await utils_service.getFile(image_id)
 

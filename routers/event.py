@@ -24,7 +24,7 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("/all")
 async def get_events(db: Session = Depends(get_db),
                      tokem: str = Depends(oauth_schema)):
     return await event_service.get_all(db)

@@ -40,7 +40,7 @@ async def get_lleidahacker(userId: int,
                            response: Response,
                            db: Session = Depends(get_db),
                            str=Depends(oauth_schema)):
-    return lleidahacker_service.get_lleidahacker(userId, db)
+    return await lleidahacker_service.get_lleidahacker(userId, db)
 
 
 @router.post("/")
@@ -69,5 +69,5 @@ async def update_lleidahacker(userId: int,
                               db: Session = Depends(get_db),
                               token: str = Depends(oauth_schema)):
     lleidahacker = await lleidahacker_service.update_lleidahacker(
-        userId, db, payload, get_data_from_token(token))
+        userId, payload, db, get_data_from_token(token))
     return {"success": True, "updated_id": userId}

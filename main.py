@@ -52,16 +52,16 @@ tags_metadata = [
         "description": "Event related endpoints"
     },
     {
+        "name": "EventManagment",
+        "description": "Event Managment related endpoints"
+    },
+    {
         "name": "Authentication",
         "description": "Authentication related endpoints"
     },
     {
         "name": "Utils",
         "description": "Utils related endpoints"
-    },
-    {
-        "name": "EventManagment",
-        "description": "Event Managment related endpoints"
     },
 ]
 

@@ -10,7 +10,7 @@ from security import get_password_hash
 
 async def get_all(db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker":
+        if not data.available or data.type != "lleida_hacker" or data.type != "hacker":
             raise Exception("Not authorized")
     return db.query(ModelHacker).all()
 
