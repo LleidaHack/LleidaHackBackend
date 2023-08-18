@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 import string
 import random
 
+
 async def get_all(db: Session):
     return db.query(ModelHackerGroup).all()
 
@@ -23,8 +24,10 @@ async def add_hacker_group(payload: SchemaHackerGroup, hackerId: int,
     # generate a random 10 letter code
     code = ''
     while True:
-        code = ''.join(random.choice(string.ascii_uppercase) for _ in range(10))
-        code_exists = db.query(ModelHackerGroup).filter(ModelHackerGroup.code == code).first()
+        code = ''.join(
+            random.choice(string.ascii_uppercase) for _ in range(10))
+        code_exists = db.query(ModelHackerGroup).filter(
+            ModelHackerGroup.code == code).first()
         if code_exists is None:
             break
     new_hacker_group = ModelHackerGroup(name=payload.name,
