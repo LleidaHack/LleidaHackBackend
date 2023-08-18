@@ -20,7 +20,7 @@ router = APIRouter(
 async def signup(payload: SchemaCompanyUser,
                  response: Response,
                  db: Session = Depends(get_db)):
-    new_companyuser = await companyuser_service.add_companyuser(db, payload)
+    new_companyuser = await companyuser_service.add_company_user(db, payload)
     token = create_access_token(new_companyuser)
     refresh_token = create_refresh_token(new_companyuser)
     return {
@@ -50,7 +50,7 @@ async def add_company_user(payload: SchemaCompanyUser,
                            response: Response,
                            db: Session = Depends(get_db),
                            token: str = Depends(oauth_schema)):
-    new_companyuser = await companyuser_service.add_companyuser(db, payload)
+    new_companyuser = await companyuser_service.add_company_user(db, payload)
     return {"success": True, "created_id": new_companyuser.id}
 
 

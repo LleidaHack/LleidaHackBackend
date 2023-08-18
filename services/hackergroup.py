@@ -6,6 +6,8 @@ from schemas.Hacker import HackerGroup as SchemaHackerGroup
 
 from sqlalchemy.orm import Session
 
+import string
+import random
 
 async def get_all(db: Session):
     return db.query(ModelHackerGroup).all()
@@ -18,9 +20,17 @@ async def get_hacker_group(id: int, db: Session):
 async def add_hacker_group(payload: SchemaHackerGroup, hackerId: int,
                            db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    # generate a random 10 letter code
+    code = ''
+    while True:
+        code = ''.join(random.choice(string.ascii_uppercase) for _ in range(10))
+        code_exists = db.query(ModelHackerGroup).filter(ModelHackerGroup.code == code).first()
+        if code_exists is None:
+            break
     new_hacker_group = ModelHackerGroup(name=payload.name,
                                         description=payload.description,
                                         leader_id=hackerId,
+                                        code=code,
                                         members=[hacker])
     db.add(new_hacker_group)
     db.commit()

@@ -42,7 +42,7 @@ async def update_company_user(payload: SchemaCompanyUser, companyUserId: int,
     if not data.is_admin:
         if not data.available or not (data.type == "lleida_hacker" or
                                       (data.type == "company_user"
-                                       and data.user_id != cpompanyUserId)):
+                                       and data.user_id != companyUserId)):
             raise Exception("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
         ModelCompanyUser.id == companyUserId).first()
