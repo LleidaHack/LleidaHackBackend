@@ -30,6 +30,8 @@ async def add_company_user(payload: SchemaCompanyUser, db: Session):
         image_id=payload.image_id,
         company_id=payload.company_id,
         role=payload.role,
+        accepted=payload.accepted,
+        rejected=payload.rejected,
     )
     db.add(new_company_user)
     db.commit()

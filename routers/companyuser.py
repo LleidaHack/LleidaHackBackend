@@ -20,7 +20,7 @@ router = APIRouter(
 async def signup(payload: SchemaCompanyUser,
                  response: Response,
                  db: Session = Depends(get_db)):
-    new_companyuser = await companyuser_service.add_company_user(db, payload)
+    new_companyuser = await companyuser_service.add_company_user(payload, db)
     token = create_access_token(new_companyuser)
     refresh_token = create_refresh_token(new_companyuser)
     return {
@@ -33,7 +33,7 @@ async def signup(payload: SchemaCompanyUser,
 
 @router.get("/all")
 async def get_company_users(db: Session = Depends(get_db),
-                            str=Depends(oauth_schema)):
+                            token: str = Depends(oauth_schema)):
     return companyuser_service.get_companyusers(db)
 
 
@@ -41,7 +41,7 @@ async def get_company_users(db: Session = Depends(get_db),
 async def get_company_user(companyUserId: int,
                            response: Response,
                            db: Session = Depends(get_db),
-                           str=Depends(oauth_schema)):
+                           token: str = Depends(oauth_schema)):
     return companyuser_service.get_companyuser(db, companyUserId)
 
 

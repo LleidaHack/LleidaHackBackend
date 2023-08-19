@@ -70,7 +70,7 @@ def create_access_token(user: ModelUser, expires_delta: timedelta = None):
     if user.type == "hacker":
         to_encode.update({"banned": user.banned})
     elif user.type == "lleida_hacker":
-        to_encode.update({"active": user.active})
+        to_encode.update({"active": user.active and user.accepted and not user.rejected})
     elif user.type == "company":
         to_encode.update({"active": user.active})
     to_encode.update({"expt": expire.isoformat()})
@@ -102,11 +102,11 @@ def get_data_from_token(token: str = Depends(oauth2_scheme)):
     d.user_id = data.get("user_id")
     d.type = data.get("type")
     if d.type == "hacker":
-        d.available = data.get("banned")
+        d.available = not data.get("banned")
     elif d.type == "lleida_hacker":
-        d.available = data.get("active")
+        d.available = bool(data.get("active"))
     elif d.type == "company":
-        d.available = data.get("active")
+        d.available = bool(data.get("active"))
     return d
 
 

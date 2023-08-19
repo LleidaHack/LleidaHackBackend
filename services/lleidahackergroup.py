@@ -16,10 +16,7 @@ async def get_lleidahackergroup(groupId: int, db: Session):
 
 
 async def add_lleidahackergroup(payload: SchemaLleidaHackerGroup, db: Session):
-    new_lleidahacker_group = ModelLleidaHackerGroup(
-        name=payload.name,
-        description=payload.description,
-    )
+    new_lleidahacker_group = ModelLleidaHackerGroup(**payload.dict())
     db.add(new_lleidahacker_group)
     db.commit()
     db.refresh(new_lleidahacker_group)

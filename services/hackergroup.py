@@ -27,11 +27,7 @@ async def add_hacker_group(payload: SchemaHackerGroup, hackerId: int,
         code_exists = db.query(ModelHackerGroup).filter(ModelHackerGroup.code == code).first()
         if code_exists is None:
             break
-    new_hacker_group = ModelHackerGroup(name=payload.name,
-                                        description=payload.description,
-                                        leader_id=hackerId,
-                                        code=code,
-                                        members=[hacker])
+    new_hacker_group = ModelHackerGroup(**payload.dict(), code=code, members=[hacker])
     db.add(new_hacker_group)
     db.commit()
     return new_hacker_group

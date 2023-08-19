@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Optional
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
@@ -17,6 +17,8 @@ class LleidaHacker(User):
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
     github: str = Column(String)
+    accepted: bool = Column(Boolean, default=True)
+    rejected: bool = Column(Boolean, default=False)
     groups = relationship('LleidaHackerGroup',
                           secondary='lleida_hacker_group_user')
     events = relationship('Event',
