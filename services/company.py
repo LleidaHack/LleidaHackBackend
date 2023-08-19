@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from utils.service_utils import set_existing_data
 
+
 async def get_all(db: Session):
     return db.query(ModelCompany).all()
 

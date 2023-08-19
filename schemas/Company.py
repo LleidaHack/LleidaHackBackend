@@ -16,6 +16,7 @@ class Company(BaseModel):
     # class Config:
     #     orm_mode = True
 
+
 class CompanyUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
@@ -32,6 +33,7 @@ class CompanyUser(User):
 
     # class Config:
     #     orm_mode = True
+
 
 class CompanyUserUpdate(UserUpdate):
     role: Optional[str]

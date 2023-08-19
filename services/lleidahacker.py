@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from utils.service_utils import set_existing_data
 
+
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
@@ -34,7 +35,8 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
 async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker,
                               db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.type == "lleida_hacker" and data.user_id == userId)):
+        if not (data.available and
+                (data.type == "lleida_hacker" and data.user_id == userId)):
             raise Exception("Not authorized")
     # if check_image_exists(lleidahacker.image_id)
     lleidahacker = db.query(ModelLleidaHacker).filter(
@@ -44,7 +46,7 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker,
     updated = set_existing_data(lleidahacker, payload)
     db.commit()
     db.refresh(lleidahacker)
-    return lleidahacker, updated 
+    return lleidahacker, updated
 
 
 async def delete_lleidahacker(userId: int, db: Session, data: TokenData):
@@ -75,6 +77,7 @@ async def set_image(userId: int, image_id: str, db: Session, data: TokenData):
     db.refresh(lleidahacker)
     return lleidahacker
 
+
 async def accept_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == "lleida_hacker"):
@@ -89,6 +92,7 @@ async def accept_lleidahacker(userId: int, db: Session, data: TokenData):
     db.commit()
     db.refresh(lleidahacker)
     return lleidahacker
+
 
 async def reject_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
@@ -105,6 +109,7 @@ async def reject_lleidahacker(userId: int, db: Session, data: TokenData):
     db.refresh(lleidahacker)
     return lleidahacker
 
+
 async def activate_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == "lleida_hacker"):
@@ -117,6 +122,7 @@ async def activate_lleidahacker(userId: int, db: Session, data: TokenData):
     db.commit()
     db.refresh(lleidahacker)
     return lleidahacker
+
 
 async def deactivate_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
