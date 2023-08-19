@@ -19,7 +19,8 @@ async def get_company(db: Session, companyId: int):
 
 async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
     if not data.is_admin:
-        if not data.available or not (data.user_type == "company_user" or data.user_type == "lleida_hacker"):
+        if not data.available or not (data.user_type == "company_user"
+                                      or data.user_type == "lleida_hacker"):
             raise Exception("Not authorized")
     if data.user_type == "company_user":
         user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
@@ -35,7 +36,8 @@ async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
 async def update_company(db: Session, companyId: int, payload: SchemaCompany,
                          data: TokenData):
     if not data.is_admin:
-        if not data.available or not (data.user_type == "company_user" or data.user_type == "lleida_hacker"):
+        if not data.available or not (data.user_type == "company_user"
+                                      or data.user_type == "lleida_hacker"):
             raise Exception("Not authorized")
     company = db.query(ModelCompany).filter(
         ModelCompany.id == companyId).first()
