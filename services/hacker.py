@@ -20,6 +20,7 @@ async def get_hacker(hackerId: int, db: Session):
 
 
 async def add_hacker(payload: SchemaHacker, db: Session):
+    payload.password = get_password_hash(payload.password)
     new_hacker = ModelHacker(**payload.dict())
     db.add(new_hacker)
     db.commit()

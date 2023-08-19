@@ -1,4 +1,5 @@
 from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
+from schemas.LleidaHacker import LleidaHackerUpdate as SchemaLleidaHackerUpdate
 
 from database import get_db
 from security import create_access_token, oauth_schema, create_refresh_token, get_data_from_token
@@ -64,7 +65,7 @@ async def delete_lleidahacker(userId: int,
 
 @router.put("/{userId}")
 async def update_lleidahacker(userId: int,
-                              payload: SchemaLleidaHacker,
+                              payload: SchemaLleidaHackerUpdate,
                               response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(oauth_schema)):

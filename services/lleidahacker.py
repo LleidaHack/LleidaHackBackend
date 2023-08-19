@@ -24,6 +24,7 @@ async def get_lleidahacker(userId: int, db: Session):
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     # if not checkImage(payload.image_id):
     # raise HTTPException(status_code=400, detail="Image not found")
+    payload.password = get_password_hash(payload.password)
     new_lleidahacker = ModelLleidaHacker(**payload.dict())
     db.add(new_lleidahacker)
     db.commit()
