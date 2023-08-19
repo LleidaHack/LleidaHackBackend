@@ -22,6 +22,7 @@ class Event(BaseModel):
     class Config:
         orm_mode = True
 
+
 class EventUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]

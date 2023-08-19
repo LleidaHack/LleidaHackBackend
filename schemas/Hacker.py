@@ -10,9 +10,11 @@ class Hacker(User):
     class Config:
         orm_mode = True
 
+
 class HackerUpdate(UserUpdate):
     github: Optional[str]
     linkedin: Optional[str]
+
 
 class HackerGroup(BaseModel):
     name: str
@@ -22,6 +24,7 @@ class HackerGroup(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class HackerGroupUpdate(BaseModel):
     name: Optional[str]
