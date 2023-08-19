@@ -17,22 +17,8 @@ async def get_company_user(companyUserId: int, db: Session):
 
 
 async def add_company_user(payload: SchemaCompanyUser, db: Session):
-    new_company_user = ModelCompanyUser(
-        name=payload.name,
-        email=payload.email,
-        password=get_password_hash(payload.password),
-        nickname=payload.nickname,
-        birthdate=payload.birthdate,
-        address=payload.address,
-        telephone=payload.telephone,
-        shirt_size=payload.shirt_size,
-        food_restrictions=payload.food_restrictions,
-        image_id=payload.image_id,
-        company_id=payload.company_id,
-        role=payload.role,
-        accepted=payload.accepted,
-        rejected=payload.rejected,
-    )
+    payload.password = get_password_hash(payload.password)
+    new_company_user = ModelCompanyUser(**payload.dict())
     db.add(new_company_user)
     db.commit()
     db.refresh(new_company_user)

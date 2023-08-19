@@ -2,6 +2,7 @@ from models.User import User as ModelUser
 from models.Hacker import Hacker as ModelHacker
 
 from schemas.Hacker import Hacker as SchemaHacker
+from schemas.Hacker import HackerUpdate as SchemaHackerUpdate
 
 from database import get_db
 
@@ -59,7 +60,7 @@ async def add_hacker(payload: SchemaHacker,
 
 @router.put("/{hackerId}")
 async def update_hacker(hackerId: int,
-                        payload: SchemaHacker,
+                        payload: SchemaHackerUpdate,
                         response: Response,
                         db: Session = Depends(get_db),
                         token: str = Depends(oauth_schema)):
