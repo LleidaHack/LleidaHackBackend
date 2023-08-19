@@ -70,7 +70,8 @@ def create_access_token(user: ModelUser, expires_delta: timedelta = None):
     if user.type == "hacker":
         to_encode.update({"banned": user.banned})
     elif user.type == "lleida_hacker":
-        to_encode.update({"active": user.active and user.accepted and not user.rejected})
+        to_encode.update(
+            {"active": user.active and user.accepted and not user.rejected})
     elif user.type == "company":
         to_encode.update({"active": user.active})
     to_encode.update({"expt": expire.isoformat()})

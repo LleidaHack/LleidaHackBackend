@@ -20,6 +20,7 @@ class User(BaseModel):
     class Config:
         orm_mode = True
 
+
 class UserUpdate(BaseModel):
     name: Optional[str]
     nickname: Optional[str]

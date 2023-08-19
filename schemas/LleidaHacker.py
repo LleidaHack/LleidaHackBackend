@@ -15,6 +15,7 @@ class LleidaHacker(User):
     class Config:
         orm_mode = True
 
+
 class LleidaHackerUpdate(UserUpdate):
     role: Optional[str]
     nif: Optional[str]
@@ -32,6 +33,7 @@ class LleidaHackerGroup(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class LleidaHackerGroupUpdate(BaseModel):
     name: Optional[str]
