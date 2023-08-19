@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 from models.User import User
@@ -26,9 +26,11 @@ class CompanyUser(User):
     __tablename__ = 'company_user'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
     company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
-    company = relationship('Company', back_populates='company')
+    company = relationship('Company', back_populates='users')
     active: bool = Column(Integer)
     role: str = Column(String)
+    accepted: bool = Column(Boolean, default=False)
+    rejected: bool = Column(Boolean, default=False)
 
     __mapper_args__ = {
         "polymorphic_identity": "company",

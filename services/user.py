@@ -15,16 +15,7 @@ async def get_user(db: Session, userId: int):
 
 
 async def add_user(db: Session, payload: SchemaUser):
-    new_user = ModelUser(name=payload.name,
-                         email=payload.email,
-                         password=get_password_hash(payload.password),
-                         nickname=payload.nickname,
-                         birthdate=payload.birthdate,
-                         food_restrictions=payload.food_restrictions,
-                         telephone=payload.telephone,
-                         address=payload.address,
-                         shirt_size=payload.shirt_size,
-                         image_id=payload.image_id)
+    new_user = ModelUser(**payload.dict())
     db.add(new_user)
     db.commit()
     return new_user

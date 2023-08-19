@@ -24,16 +24,7 @@ async def add_event(event: SchemaEvent, db: Session, data: TokenData):
     if not data.is_admin:
         if not data.available or data.type != "lleida_hacker":
             raise Exception("Not authorized")
-    db_event = ModelEvent(name=event.name,
-                          description=event.description,
-                          start_date=event.start_date,
-                          end_date=event.end_date,
-                          location=event.location,
-                          archived=event.archived,
-                          status=event.status,
-                          price=event.price,
-                          max_participants=event.max_participants,
-                          max_sponsors=event.max_sponsors)
+    db_event = ModelEvent(**event.dict())
     db.add(db_event)
     db.commit()
     db.refresh(db_event)

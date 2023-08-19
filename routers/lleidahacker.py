@@ -68,6 +68,42 @@ async def update_lleidahacker(userId: int,
                               response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(oauth_schema)):
-    lleidahacker = await lleidahacker_service.update_lleidahacker(
+    lleidahacker, updated = await lleidahacker_service.update_lleidahacker(
         userId, payload, db, get_data_from_token(token))
-    return {"success": True, "updated_id": userId}
+    return {"success": True, "updated_id": userId, 'updated': updated}
+
+@router.post("/{userId}/accept")
+async def accept_lleidahacker(userId: int,
+                                response: Response,
+                                db: Session = Depends(get_db),
+                                token: str = Depends(oauth_schema)):
+        lleidahacker = await lleidahacker_service.accept_lleidahacker(
+            userId, db, get_data_from_token(token))
+        return {"success": True, "updated_id": userId}
+
+@router.post("/{userId}/reject")
+async def reject_lleidahacker(userId: int,
+                                response: Response,
+                                db: Session = Depends(get_db),
+                                token: str = Depends(oauth_schema)):
+        lleidahacker = await lleidahacker_service.reject_lleidahacker(
+            userId, db, get_data_from_token(token))
+        return {"success": True, "updated_id": userId}
+
+@router.post("/{userId}/activate")
+async def activate_lleidahacker(userId: int,
+                                response: Response,
+                                db: Session = Depends(get_db),
+                                token: str = Depends(oauth_schema)):
+        lleidahacker = await lleidahacker_service.activate_lleidahacker(
+            userId, db, get_data_from_token(token))
+        return {"success": True, "updated_id": userId}
+
+@router.post("/{userId}/deactivate")
+async def deactivate_lleidahacker(userId: int,
+                                response: Response,
+                                db: Session = Depends(get_db),
+                                token: str = Depends(oauth_schema)):
+        lleidahacker = await lleidahacker_service.deactivate_lleidahacker(
+            userId, db, get_data_from_token(token))
+        return {"success": True, "updated_id": userId}
