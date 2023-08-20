@@ -38,7 +38,7 @@ def get_password_hash(password):
 
 
 def is_service_token(token: str):
-    return token == SERVICE_TOKEN
+    return token.credentials == SERVICE_TOKEN
 
 
 def verify_token(req: Request):
