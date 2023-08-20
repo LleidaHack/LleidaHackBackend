@@ -17,7 +17,9 @@ async def get_company_user(companyUserId: int, db: Session):
 
 
 async def add_company_user(payload: SchemaCompanyUser, db: Session):
-    new_company_user = ModelCompanyUser(**payload.dict(), password_hash=get_password_hash(payload.password))
+    new_company_user = ModelCompanyUser(**payload.dict(),
+                                        password_hash=get_password_hash(
+                                            payload.password))
     db.add(new_company_user)
     db.commit()
     db.refresh(new_company_user)
