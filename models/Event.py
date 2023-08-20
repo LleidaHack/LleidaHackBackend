@@ -37,18 +37,19 @@ class HackerRegistration(Base):
                       ForeignKey("event.id"),
                       primary_key=True,
                       index=True)
+    # accepted: bool = Column(Boolean, default=False)
 
-
-class HackerGroupParticipation(Base):
-    __tablename__ = "hacker_group_event_participation"
+class HackerAccepted(Base):
+    __tablename__ = "hacker_event_accepted"
     user_id = Column(Integer,
-                     ForeignKey("hacker_group.id"),
+                     ForeignKey("hacker.user_id"),
                      primary_key=True,
                      index=True)
     event_id = Column(Integer,
                       ForeignKey("event.id"),
                       primary_key=True,
                       index=True)
+    # accepted: bool = Column(Boolean, default=False)
 
 
 class LleidaHackerParticipation(Base):
@@ -95,13 +96,14 @@ class Event(Base):
     #TODO add registered_hackers
     registered_hackers = relationship('Hacker',
                                       secondary='hacker_event_registration')
+    accepted_hackers = relationship('Hacker',
+                                    secondary='hacker_event_accepted')
     participants = relationship('Hacker',
                                 secondary='hacker_event_participation')
     organizers = relationship("LleidaHacker",
                               secondary='lleida_hacker_event_participation')
     sponsors = relationship('Company', secondary='company_event_participation')
     groups = relationship('HackerGroup',
-                          secondary='hacker_group_event_participation',
                           backref='event')
     # status: int = Column(Integer, default=0)
     meals = relationship('Meal', backref='event')
