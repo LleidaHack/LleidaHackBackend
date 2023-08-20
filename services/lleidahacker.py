@@ -6,7 +6,7 @@ from models import TokenData
 
 from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
 
-from security import check_image_exists, is_service_token
+from security import check_image_exists, is_service_token, get_password_hash
 
 from sqlalchemy.orm import Session
 
@@ -25,8 +25,8 @@ async def get_lleidahacker(userId: int, db: Session):
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     # if not checkImage(payload.image_id):
     # raise HTTPException(status_code=400, detail="Image not found")
-    payload.password = get_password_hash(payload.password)
     new_lleidahacker = ModelLleidaHacker(**payload.dict())
+    new_lleidahacker.password = get_password_hash(payload.password)
     db.add(new_lleidahacker)
     db.commit()
     db.refresh(new_lleidahacker)

@@ -37,5 +37,6 @@ class HackerGroup(Base):
     leader_id: int = Column(Integer,
                             ForeignKey('hacker.user_id'),
                             nullable=False)
+    event_id = Column(Integer, ForeignKey('event.id'), nullable=False)
     # event: Event = relationship('Event', secondary='hacker_event')
     members = relationship('Hacker', secondary='hacker_group_user')
