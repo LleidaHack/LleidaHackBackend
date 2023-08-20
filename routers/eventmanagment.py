@@ -38,6 +38,7 @@ def unregister_hacker_from_event(event_id: int,
     eventmanagment_service.unregister_hacker_from_event(event, hacker, db)
     return Response(status_code=200)
 
+
 @router.put("/{event_id}/participate/{hacker_id}")
 def participate_hacker_to_event(event_id: int,
                                 hacker_id: int,
@@ -49,6 +50,7 @@ def participate_hacker_to_event(event_id: int,
     hacker = hacker_service.get_hacker(hacker_id, db)
     eventmanagment_service.participate_hacker_to_event(event, hacker, db)
     return Response(status_code=200)
+
 
 @router.put("/{event_id}/unparticipate/{hacker_id}")
 def unparticipate_hacker_from_event(event_id: int,
@@ -65,27 +67,29 @@ def unparticipate_hacker_from_event(event_id: int,
 
 @router.put("/{event_id}/accept/{hacker_id}")
 def accept_hacker_to_event(event_id: int,
-                                hacker_id: int,
-                                db: Session = Depends(get_db)):
-        """
+                           hacker_id: int,
+                           db: Session = Depends(get_db)):
+    """
         Accept a hacker to an event
         """
-        event = event_service.get_event(event_id, db)
-        hacker = hacker_service.get_hacker(hacker_id, db)
-        eventmanagment_service.accept_hacker_to_event(event, hacker, db)
-        return Response(status_code=200)
+    event = event_service.get_event(event_id, db)
+    hacker = hacker_service.get_hacker(hacker_id, db)
+    eventmanagment_service.accept_hacker_to_event(event, hacker, db)
+    return Response(status_code=200)
+
 
 @router.put("/{event_id}/reject/{hacker_id}")
 def reject_hacker_from_event(event_id: int,
-                                    hacker_id: int,
-                                    db: Session = Depends(get_db)):
-        """
+                             hacker_id: int,
+                             db: Session = Depends(get_db)):
+    """
         Reject a hacker from an event
         """
-        event = event_service.get_event(event_id, db)
-        hacker = hacker_service.get_hacker(hacker_id, db)
-        eventmanagment_service.reject_hacker_from_event(event, hacker, db)
-        return Response(status_code=200)
+    event = event_service.get_event(event_id, db)
+    hacker = hacker_service.get_hacker(hacker_id, db)
+    eventmanagment_service.reject_hacker_from_event(event, hacker, db)
+    return Response(status_code=200)
+
 
 @router.get("/{event_id}/status")
 def get_event_status(event_id: int, db: Session = Depends(get_db)):

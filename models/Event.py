@@ -39,6 +39,7 @@ class HackerRegistration(Base):
                       index=True)
     # accepted: bool = Column(Boolean, default=False)
 
+
 class HackerAccepted(Base):
     __tablename__ = "hacker_event_accepted"
     user_id = Column(Integer,
@@ -103,7 +104,6 @@ class Event(Base):
     organizers = relationship("LleidaHacker",
                               secondary='lleida_hacker_event_participation')
     sponsors = relationship('Company', secondary='company_event_participation')
-    groups = relationship('HackerGroup',
-                          backref='event')
+    groups = relationship('HackerGroup', backref='event')
     # status: int = Column(Integer, default=0)
     meals = relationship('Meal', backref='event')
