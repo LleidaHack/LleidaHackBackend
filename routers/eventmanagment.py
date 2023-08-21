@@ -63,7 +63,14 @@ async def participate_hacker_to_event(event_id: int,
         raise NotFoundException("Hacker not found")
     await eventmanagment_service.participate_hacker_to_event(
         event, hacker, db, get_data_from_token(token))
-    return {'success': True, 'event_id': event.id, 'hacker_id': hacker.id, 'hacker_name': hacker.name, 'hacker_shirt_size': hacker.shirt_size}
+    return {
+        'success': True,
+        'event_id': event.id,
+        'hacker_id': hacker.id,
+        'hacker_name': hacker.name,
+        'hacker_shirt_size': hacker.shirt_size
+    }
+
 
 @router.put("/{event_id}/unparticipate/{hacker_id}")
 async def unparticipate_hacker_from_event(event_id: int,
@@ -118,6 +125,7 @@ async def reject_hacker_from_event(event_id: int,
     return await eventmanagment_service.reject_hacker_from_event(
         event, hacker, db, get_data_from_token(token))
 
+
 @router.get("/{event_id}/pending")
 async def get_pending_hackers(event_id: int,
                               db: Session = Depends(get_db),
@@ -128,7 +136,11 @@ async def get_pending_hackers(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    return {'size': len(event.registered_hackers), 'hackers': event.registered_hackers}
+    return {
+        'size': len(event.registered_hackers),
+        'hackers': event.registered_hackers
+    }
+
 
 @router.get("/{event_id}/status")
 async def get_event_status(event_id: int,
