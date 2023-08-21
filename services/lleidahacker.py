@@ -1,3 +1,4 @@
+from datetime import date
 from sqlalchemy.orm import Session
 
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
@@ -50,6 +51,8 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
         raise NotFoundException("LleidaHacker not found")
     payload = check_image(payload)
     updated = set_existing_data(lleidahacker, payload)
+    lleidahacker.updated_at = date.now()
+    updated.append("updated_at")
     if payload.password is not None:
         lleidahacker.password = get_password_hash(payload.password)
     db.commit()

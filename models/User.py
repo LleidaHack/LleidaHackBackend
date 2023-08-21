@@ -17,6 +17,8 @@ class User(Base):
     address: str = Column(String)
     shirt_size: str = Column(String)
     type: str = Column(String)
+    created_at: date = Column(DateTime, default=date.now())
+    updated_at: date = Column(DateTime, default=date.now())
     image: str = Column(String, default="")
     is_image_url: bool = Column(Boolean, default=False)
 

@@ -1,3 +1,4 @@
+from datetime import date
 from models.Company import CompanyUser as ModelCompanyUser
 from models import TokenData
 from models.UserType import UserType
@@ -51,6 +52,8 @@ async def update_company_user(payload: SchemaCompanyUserUpdate,
         raise NotFoundException("Company user not found")
     payload = check_image(payload)
     updated = set_existing_data(company_user, payload)
+    company_user.updated_at = date.today()
+    updated.append("updated_at")
     if payload.password is not None:
         company_user.password = get_password_hash(payload.password)
     db.commit()

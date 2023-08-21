@@ -18,7 +18,6 @@ class LleidaHacker(User):
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
     github: str = Column(String)
-    logo: str = Column(String)
     accepted: bool = Column(Boolean, default=True)
     rejected: bool = Column(Boolean, default=False)
     groups = relationship('LleidaHackerGroup',
