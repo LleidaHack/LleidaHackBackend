@@ -29,4 +29,4 @@ async def add_notification(payload: SchemaNotification,
                            str=Depends(oauth_schema)):
     new_notification = await notifications_service.add_notification(
         payload, db)
-    return {"success": True, "created_id": new_notification.id}
+    return {"success": True, "user_id": new_notification.id}

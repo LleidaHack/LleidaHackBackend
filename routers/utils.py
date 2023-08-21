@@ -12,16 +12,16 @@ router = APIRouter(
 )
 
 
-@router.post("/uploadImage")
-async def uploadFile(image: UploadFile = File(...),
-                     token: str = Depends(oauth_schema)):
-    id = await utils_service.uploadFile(image)
-    return {"success": True, "id": id}
+# @router.post("/uploadImage")
+# async def uploadFile(image: UploadFile = File(...),
+#                      token: str = Depends(oauth_schema)):
+#     id = await utils_service.uploadFile(image)
+#     return {"success": True, "id": id}
 
 
-@router.get("/getImage/{image_id}")
-async def get_image(image_id: str):
-    return await utils_service.getFile(image_id)
+# @router.get("/getImage/{image_id}")
+# async def get_image(image_id: str):
+#     return await utils_service.getFile(image_id)
 
 
 @router.post("/sendMail/{to}")

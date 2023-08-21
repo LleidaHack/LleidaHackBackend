@@ -90,7 +90,8 @@ class Event(Base):
     price: int = Column(Integer, default=0)
     max_participants: int = Column(Integer)
     max_sponsors: int = Column(Integer)
-    logo_id: str = Column(String)
+    image: str = Column(String)
+    is_image_url: bool = Column(Integer, default=False)
     # is_open: bool = Column(Boolean, default=True)
 
     #TODO add registered_hackers
@@ -103,7 +104,6 @@ class Event(Base):
     organizers = relationship("LleidaHacker",
                               secondary='lleida_hacker_event_participation')
     sponsors = relationship('Company', secondary='company_event_participation')
-    groups = relationship('HackerGroup',
-                          backref='event')
+    groups = relationship('HackerGroup',backref='event')
     # status: int = Column(Integer, default=0)
     meals = relationship('Meal', backref='event')

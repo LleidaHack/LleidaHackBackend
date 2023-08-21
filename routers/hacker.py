@@ -28,8 +28,8 @@ async def signup(payload: SchemaHacker,
     refresh_token = create_refresh_token(new_hacker)
     return {
         "success": True,
-        "created_id": new_hacker.id,
-        "token": token,
+        "user_id": new_hacker.id,
+        "access_token": token,
         "refresh_token": refresh_token
     }
 
@@ -55,7 +55,7 @@ async def add_hacker(payload: SchemaHacker,
                      token: str = Depends(oauth_schema)):
     new_hacker = await hacker_service.add_hacker(payload, db,
                                                  get_data_from_token(token))
-    return {"success": True, "created_id": new_hacker.id}
+    return {"success": True, "user_id": new_hacker.id}
 
 
 @router.put("/{hackerId}")
@@ -96,3 +96,18 @@ async def delete_hacker(userId: int,
     hacker = await hacker_service.remove_hacker(userId, db,
                                                 get_data_from_token(token))
     return {"success": True, "deleted_id": hacker.id}
+
+
+@router.get("/{userId}/events")
+async def get_hacker_events(userId: int,
+                            response: Response,
+                            db: Session = Depends(get_db),
+                            token: str = Depends(oauth_schema)):
+    return await hacker_service.get_hacker_events(userId, db)
+
+@router.get("/{userId}/groups")
+async def get_hacker_groups(userId: int,
+                            response: Response,
+                            db: Session = Depends(get_db),
+                            token: str = Depends(oauth_schema)):
+    return await hacker_service.get_hacker_groups(userId, db)

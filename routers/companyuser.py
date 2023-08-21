@@ -26,8 +26,8 @@ async def signup(payload: SchemaCompanyUser,
     refresh_token = create_refresh_token(new_companyuser)
     return {
         "success": True,
-        "created_id": new_companyuser.id,
-        "token": token,
+        "user_id": new_companyuser.id,
+        "access_token": token,
         "refresh_token": refresh_token
     }
 
@@ -52,7 +52,7 @@ async def get_company_user(companyUserId: int,
 #                            db: Session = Depends(get_db),
 #                            token: str = Depends(oauth_schema)):
 #     new_companyuser = await companyuser_service.add_company_user(db, payload)
-#     return {"success": True, "created_id": new_companyuser.id}
+#     return {"success": True, "user_id": new_companyuser.id}
 
 
 @router.put("/{companyUserId}")

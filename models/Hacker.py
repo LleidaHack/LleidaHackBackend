@@ -5,6 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from database import Base
 from models.User import User
+from models.UserType import UserType
 from schemas.Event import Event
 
 
@@ -18,7 +19,7 @@ class Hacker(User):
     # is_leader: bool = Column(Integer, default=0)
     events = relationship('Event', secondary='hacker_event_participation')
     __mapper_args__ = {
-        "polymorphic_identity": "hacker",
+        "polymorphic_identity": UserType.HACKER.value,
     }
 
 

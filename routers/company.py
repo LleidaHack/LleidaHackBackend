@@ -36,7 +36,7 @@ async def add_company(payload: SchemaCompany,
                       token: str = Depends(oauth_schema)):
     new_company = await company_service.add_company(db, payload,
                                                     get_data_from_token(token))
-    return {"success": True, "created_id": new_company.id}
+    return {"success": True, "user_id": new_company.id}
 
 
 @router.put("/{companyId}")

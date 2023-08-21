@@ -24,8 +24,8 @@ async def signup(payload: SchemaLleidaHacker,
     refresh_token = create_refresh_token(new_lleidahacker)
     return {
         "success": True,
-        "created_id": new_lleidahacker.id,
-        "token": token,
+        "user_id": new_lleidahacker.id,
+        "access_token": token,
         "refresh_token": refresh_token
     }
 
@@ -50,7 +50,7 @@ async def add_lleidahacker(payload: SchemaLleidaHacker,
                            db: Session = Depends(get_db),
                            str=Depends(oauth_schema)):
     new_lleidahacker = await lleidahacker_service.add_lleidahacker(payload, db)
-    return {"success": True, "created_id": new_lleidahacker.id}
+    return {"success": True, "user_id": new_lleidahacker.id}
 
 
 @router.delete("/{userId}")
@@ -58,6 +58,7 @@ async def delete_lleidahacker(userId: int,
                               response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(oauth_schema)):
+    return get_data_from_token(token)
     lleidahacker = await lleidahacker_service.delete_lleidahacker(
         userId, db, get_data_from_token(token))
     return {"success": True, "deleted_id": userId}

@@ -1,30 +1,33 @@
-import glob
-from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
 from models import TokenData
+from models.UserType import UserType
 
 from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
+from schemas.LleidaHacker import LleidaHackerUpdate as SchemaLleidaHackerUpdate
 
-from security import check_image_exists, is_service_token, get_password_hash
+from security import check_image_exists, get_password_hash
 
-from sqlalchemy.orm import Session
+from utils.service_utils import set_existing_data, check_image
 
-from utils.service_utils import set_existing_data
-
+from errors.AuthenticationException import AuthenticationException
+from errors.NotFoundException import NotFoundException
+from errors.InvalidDataException import InvalidDataException
 
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
 
 async def get_lleidahacker(userId: int, db: Session):
-    return db.query(ModelLleidaHacker).filter(
-        ModelLleidaHacker.id == userId).first()
+    user = db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
+    if user is None:
+        raise NotFoundException("LleidaHacker not found")
+    return user
 
 
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
-    # if not checkImage(payload.image_id):
-    # raise HTTPException(status_code=400, detail="Image not found")
+    payload = check_image(payload)
     new_lleidahacker = ModelLleidaHacker(**payload.dict())
     new_lleidahacker.password = get_password_hash(payload.password)
     db.add(new_lleidahacker)
@@ -33,18 +36,19 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     return new_lleidahacker
 
 
-async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker,
+async def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
                               db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and
-                (data.type == "lleida_hacker" and data.user_id == userId)):
-            raise Exception("Not authorized")
-    # if check_image_exists(lleidahacker.image_id)
-    lleidahacker = db.query(ModelLleidaHacker).filter(
-        ModelLleidaHacker.id == userId).first()
+                (data.type == UserType.LLEIDAHACKER.value and data.user_id == userId)):
+            raise AuthenticationException("Not authorized")
+    lleidahacker = db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
     if lleidahacker is None:
-        raise Exception("LleidaHacker not found")
+        raise NotFoundException("LleidaHacker not found")
+    payload = check_image(payload)
     updated = set_existing_data(lleidahacker, payload)
+    if payload.password is not None:
+        lleidahacker.password = get_password_hash(payload.password)
     db.commit()
     db.refresh(lleidahacker)
     return lleidahacker, updated
@@ -52,28 +56,13 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHacker,
 
 async def delete_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker" or data.user_id != userId:
-            raise Exception("Not authorized")
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value and data.user_id == userId)):
+            raise AuthenticationException("Not authorized")
     lleidahacker = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
     if lleidahacker is None:
-        raise Exception("LleidaHacker not found")
+        raise NotFoundException("LleidaHacker not found")
     db.delete(lleidahacker)
-    db.commit()
-    return lleidahacker
-
-
-async def set_image(userId: int, image_id: str, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker" or data.user_id != userId:
-            raise Exception("Not authorized")
-    lleidahacker = db.query(ModelLleidaHacker).filter(
-        ModelLleidaHacker.id == userId).first()
-    if lleidahacker is None:
-        raise Exception("LleidaHacker not found")
-    if not check_image_exists(image_id):
-        raise Exception("Image not found")
-    lleidahacker.image_id = image_id
     db.commit()
     db.refresh(lleidahacker)
     return lleidahacker
@@ -81,12 +70,12 @@ async def set_image(userId: int, image_id: str, db: Session, data: TokenData):
 
 async def accept_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and data.type == "lleida_hacker"):
-            raise Exception("Not authorized")
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
     lleidahacker = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
     if lleidahacker is None:
-        raise Exception("LleidaHacker not found")
+        raise NotFoundException("LleidaHacker not found")
     lleidahacker.active = 1
     lleidahacker.accepted = 1
     lleidahacker.rejected = 0
@@ -97,12 +86,12 @@ async def accept_lleidahacker(userId: int, db: Session, data: TokenData):
 
 async def reject_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and data.type == "lleida_hacker"):
-            raise Exception("Not authorized")
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
     lleidahacker = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
     if lleidahacker is None:
-        raise Exception("LleidaHacker not found")
+        raise NotFoundException("LleidaHacker not found")
     lleidahacker.active = 0
     lleidahacker.accepted = 0
     lleidahacker.rejected = 1
@@ -113,12 +102,12 @@ async def reject_lleidahacker(userId: int, db: Session, data: TokenData):
 
 async def activate_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and data.type == "lleida_hacker"):
-            raise Exception("Not authorized")
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
     lleidahacker = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
     if lleidahacker is None:
-        raise Exception("LleidaHacker not found")
+        raise NotFoundException("LleidaHacker not found")
     lleidahacker.active = 1
     db.commit()
     db.refresh(lleidahacker)
@@ -127,12 +116,12 @@ async def activate_lleidahacker(userId: int, db: Session, data: TokenData):
 
 async def deactivate_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and data.type == "lleida_hacker"):
-            raise Exception("Not authorized")
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
     lleidahacker = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
     if lleidahacker is None:
-        raise Exception("LleidaHacker not found")
+        raise NotFoundException("LleidaHacker not found")
     lleidahacker.active = 0
     db.commit()
     db.refresh(lleidahacker)

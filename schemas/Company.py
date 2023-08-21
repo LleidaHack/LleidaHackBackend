@@ -8,7 +8,7 @@ class Company(BaseModel):
     name: str
     description: str
     website: str
-    logo: str
+    image: str
     address: str
     linkdin: str
     telephone: str
@@ -21,7 +21,8 @@ class CompanyUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
     website: Optional[str]
-    logo: Optional[str]
+    image: Optional[str]
+    is_image_url: Optional[bool]
     address: Optional[str]
     linkdin: Optional[str]
     telephone: Optional[str]
