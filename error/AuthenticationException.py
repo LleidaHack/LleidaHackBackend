@@ -1,4 +1,4 @@
-from errors.BaseException import BaseException
+from error.BaseException import BaseException
 
 
 class AuthenticationException(BaseException):

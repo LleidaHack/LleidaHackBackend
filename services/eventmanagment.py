@@ -10,9 +10,9 @@ from models.Hacker import Hacker as ModelHacker
 from models.TokenData import TokenData
 from models.UserType import UserType
 
-from errors.AuthenticationException import AuthenticationException
-from errors.NotFoundException import NotFoundException
-from errors.InvalidDataException import InvalidDataException
+from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
+from error.InvalidDataException import InvalidDataException
 
 
 def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,

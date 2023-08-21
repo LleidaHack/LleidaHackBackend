@@ -2,7 +2,7 @@ import string
 import random
 import base64
 
-from errors.ValidationException import ValidationException
+from error.ValidationException import ValidationException
 
 
 def set_existing_data(db_obj, req_obj):

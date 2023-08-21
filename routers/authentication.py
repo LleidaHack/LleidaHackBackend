@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from fastapi.security import HTTPBasicCredentials
 from security import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token, sec
 
-from errors.AuthenticationException import AuthenticationException
+from error.AuthenticationException import AuthenticationException
 
 router = APIRouter(
     prefix="",

@@ -19,12 +19,12 @@ from routers import eventmanagment
 from routers import authentication
 from routers import utils
 
-from errors import error_handler as eh
-from errors.AuthenticationException import AuthenticationException
-from errors.NotFoundException import NotFoundException
-from errors.ValidationException import ValidationException
-from errors.InvalidDataException import InvalidDataException
-from errors.InputException import InputException
+from error import error_handler as eh
+from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
+from error.ValidationException import ValidationException
+from error.InvalidDataException import InvalidDataException
+from error.InputException import InputException
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
