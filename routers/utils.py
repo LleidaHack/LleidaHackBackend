@@ -11,13 +11,11 @@ router = APIRouter(
     tags=["Utils"],
 )
 
-
 # @router.post("/uploadImage")
 # async def uploadFile(image: UploadFile = File(...),
 #                      token: str = Depends(oauth_schema)):
 #     id = await utils_service.uploadFile(image)
 #     return {"success": True, "id": id}
-
 
 # @router.get("/getImage/{image_id}")
 # async def get_image(image_id: str):

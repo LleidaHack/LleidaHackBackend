@@ -90,10 +90,12 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-app.add_exception_handler(AuthenticationException, eh.authentication_exception_handler)
+app.add_exception_handler(AuthenticationException,
+                          eh.authentication_exception_handler)
 app.add_exception_handler(NotFoundException, eh.not_found_exception_handler)
 app.add_exception_handler(ValidationException, eh.validation_exception_handler)
-app.add_exception_handler(InvalidDataException, eh.invalid_data_exception_handler)
+app.add_exception_handler(InvalidDataException,
+                          eh.invalid_data_exception_handler)
 app.add_exception_handler(InputException, eh.input_exception_handler)
 
 app.mount('/static', StaticFiles(directory='static'), name='static')
