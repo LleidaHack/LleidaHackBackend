@@ -16,7 +16,7 @@ from error.InvalidDataException import InvalidDataException
 
 
 async def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
-                             db: Session, data: TokenData):
+                                   db: Session, data: TokenData):
     if not data.available:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -33,7 +33,7 @@ async def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
 
 
 async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                                 db: Session, data: TokenData):
+                                       db: Session, data: TokenData):
     if not data.available:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -54,7 +54,7 @@ async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 
 
 async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
-                                db: Session, data: TokenData):
+                                      db: Session, data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -69,8 +69,9 @@ async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-async def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                                    db: Session, data: TokenData):
+async def unparticipate_hacker_from_event(event: ModelEvent,
+                                          hacker: ModelHacker, db: Session,
+                                          data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -83,8 +84,8 @@ async def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker
     return event
 
 
-async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker, db: Session,
-                           data: TokenData):
+async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
+                                 db: Session, data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -101,7 +102,7 @@ async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker, db: Ses
 
 
 async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                             db: Session, data: TokenData):
+                                   db: Session, data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -130,8 +131,8 @@ async def get_event_status(event: ModelEvent, db: Session):
         data[meal.name] = len(meal.users)
 
 
-async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker, db: Session,
-        data: TokenData):
+async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
+              db: Session, data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
