@@ -134,7 +134,8 @@ async def remove_event_sponsor(id: int,
                                company_id: int,
                                db: Session = Depends(get_db),
                                token: str = Depends(oauth_schema)):
-    event = await event_service.remove_company(id, company_id, db, get_data_from_token(token))
+    event = await event_service.remove_company(id, company_id, db,
+                                               get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
 
@@ -145,7 +146,6 @@ async def remove_event_sponsor(id: int,
 #                           token: str = Depends(oauth_schema)):
 #     event = await event_service.add_group(id, group_id, db)
 #     return {'success': True, 'event_id': event.id}
-
 
 # @router.delete("/{id}/group/{group_id}")
 # async def remove_event_group(id: int,
