@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, Integer, String, Boolean
 from database import Base
 # from passlib import hash
 
@@ -17,8 +17,8 @@ class User(Base):
     address: str = Column(String)
     shirt_size: str = Column(String)
     type: str = Column(String)
-    image: str = Column(String)
-    is_image_url: bool = Column(Integer, default=False)
+    image: str = Column(String, default="")
+    is_image_url: bool = Column(Boolean, default=False)
 
     __mapper_args__ = {
         "polymorphic_identity": "user",

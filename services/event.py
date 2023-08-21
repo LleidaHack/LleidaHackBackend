@@ -14,9 +14,9 @@ from models.UserType import UserType
 from security import check_image_exists
 from utils.service_utils import set_existing_data, check_image
 
-from errors.AuthenticationException import AuthenticationException
-from errors.ValidationException import ValidationException
-from errors.NotFoundException import NotFoundException
+from error.AuthenticationException import AuthenticationException
+from error.ValidationException import ValidationException
+from error.NotFoundException import NotFoundException
 
 
 async def get_all(db: Session):

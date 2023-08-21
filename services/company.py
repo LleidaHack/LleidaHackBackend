@@ -11,9 +11,9 @@ from sqlalchemy.orm import Session
 
 from utils.service_utils import set_existing_data, check_image
 
-from errors.AuthenticationException import AuthenticationException
-from errors.NotFoundException import NotFoundException
-from errors.ValidationException import ValidationException
+from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
+from error.ValidationException import ValidationException
 
 
 async def get_all(db: Session):

@@ -1,11 +1,11 @@
 # from main import app
 from fastapi.responses import JSONResponse
 
-from errors.AuthenticationException import AuthenticationException
-from errors.NotFoundException import NotFoundException
-from errors.ValidationException import ValidationException
-from errors.InvalidDataException import InvalidDataException
-from errors.InputException import InputException
+from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
+from error.ValidationException import ValidationException
+from error.InvalidDataException import InvalidDataException
+from error.InputException import InputException
 
 
 # @app.exception_handler(AuthenticationException)

@@ -15,8 +15,8 @@ class User(BaseModel):
     telephone: str
     address: str
     shirt_size: str
-    image: str
-    is_image_url: bool
+    image: Optional[str]
+    is_image_url: Optional[bool]
 
     class Config:
         orm_mode = True

@@ -10,9 +10,9 @@ from utils.service_utils import set_existing_data
 
 from sqlalchemy.orm import Session
 
-from errors.AuthenticationException import AuthenticationException
-from errors.NotFoundException import NotFoundException
-from errors.InvalidDataException import InvalidDataException
+from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
+from error.InvalidDataException import InvalidDataException
 
 
 async def get_all(db: Session):
