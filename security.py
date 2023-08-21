@@ -94,7 +94,6 @@ def create_confirmation_token(email: str):
 
 def get_data_from_token(token: str = Depends(oauth2_scheme)):
     d = TD()
-    return is_service_token(token)
     if is_service_token(token):
         d.is_admin = True
         d.is_service = True
@@ -102,15 +101,15 @@ def get_data_from_token(token: str = Depends(oauth2_scheme)):
         d.available = True
         d.type = "service"
         return d
-    # data = decode_token(token)
-    # d.user_id = data.get("user_id")
-    # d.type = data.get("type")
-    # if d.type == UserType.HACKER.value:
-    #     d.available = not data.get("banned")
-    # elif d.type == UserType.LLEIDAHACKER.value:
-    #     d.available = bool(data.get("active"))
-    # elif d.type == "company":
-    #     d.available = bool(data.get("active"))
+    data = decode_token(token)
+    d.user_id = data.get("user_id")
+    d.type = data.get("type")
+    if d.type == UserType.HACKER.value:
+        d.available = not data.get("banned")
+    elif d.type == UserType.LLEIDAHACKER.value:
+        d.available = bool(data.get("active"))
+    elif d.type == "company":
+        d.available = bool(data.get("active"))
     return d
 
 

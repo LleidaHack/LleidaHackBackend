@@ -92,7 +92,7 @@ class Event(Base):
     max_participants: int = Column(Integer)
     max_sponsors: int = Column(Integer)
     image: str = Column(String)
-    is_image_url: bool = Column(Integer, default=False)
+    is_image_url: bool = Column(Boolean, default=False)
     # is_open: bool = Column(Boolean, default=True)
 
     #TODO add registered_hackers

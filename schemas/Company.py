@@ -8,7 +8,8 @@ class Company(BaseModel):
     name: str
     description: str
     website: str
-    image: str
+    image: Optional[str]
+    is_image_url: Optional[bool]
     address: str
     linkdin: str
     telephone: str
