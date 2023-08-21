@@ -41,6 +41,7 @@ def unregister_hacker_from_event(event_id: int,
     eventmanagment_service.unregister_hacker_from_event(event, hacker, db, get_data_from_token(token))
     return Response(status_code=200)
 
+
 @router.put("/{event_id}/participate/{hacker_id}")
 def participate_hacker_to_event(event_id: int,
                                 hacker_id: int,
@@ -53,6 +54,7 @@ def participate_hacker_to_event(event_id: int,
     hacker = hacker_service.get_hacker(hacker_id, db)
     eventmanagment_service.participate_hacker_to_event(event, hacker, db, get_data_from_token(token))
     return Response(status_code=200)
+
 
 @router.put("/{event_id}/unparticipate/{hacker_id}")
 def unparticipate_hacker_from_event(event_id: int,
@@ -81,6 +83,7 @@ def accept_hacker_to_event(event_id: int,
         eventmanagment_service.accept_hacker_to_event(event, hacker, db, get_data_from_token(token))
         return Response(status_code=200)
 
+
 @router.put("/{event_id}/reject/{hacker_id}")
 def reject_hacker_from_event(event_id: int,
                                     hacker_id: int,
@@ -93,6 +96,7 @@ def reject_hacker_from_event(event_id: int,
         hacker = hacker_service.get_hacker(hacker_id, db)
         eventmanagment_service.reject_hacker_from_event(event, hacker, db, get_data_from_token(token))
         return Response(status_code=200)
+
 
 @router.get("/{event_id}/status")
 def get_event_status(event_id: int, db: Session = Depends(get_db), token: str = Depends(oauth_schema)):
