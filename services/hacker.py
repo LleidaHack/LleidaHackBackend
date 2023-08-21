@@ -1,3 +1,4 @@
+from datetime import date
 from models.Hacker import Hacker as ModelHacker
 from models.Event import HackerRegistration as ModelHackerRegistration
 from models.Event import HackerParticipation as ModelHackerParticipation
@@ -76,6 +77,8 @@ async def update_hacker(hackerId: int, payload: SchemaHackerUpdate,
         raise NotFoundException("Hacker not found")
     payload = check_image(payload)
     updated = set_existing_data(hacker, payload)
+    hacker.updated_at = date.now()
+    updated.append("updated_at")
     if payload.password is not None:
         hacker.password = get_password_hash(payload.password)
     db.commit()
