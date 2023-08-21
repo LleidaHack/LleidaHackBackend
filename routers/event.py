@@ -65,6 +65,11 @@ async def delete_event(id: int,
                                              get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
+@router.get("/{id}/meals")
+async def get_event_meals(id: int,
+                          db: Session = Depends(get_db),
+                            token: str = Depends(oauth_schema)):
+    return await event_service.get_event_meals(id, db, get_data_from_token(token))
 
 @router.get("/{id}/participants")
 async def get_event_participants(id: int,
@@ -129,13 +134,13 @@ async def remove_event_sponsor(id: int,
     return {'success': True, 'event_id': event.id}
 
 
-@router.put("/{id}/group/{group_id}")
-async def add_event_group(id: int,
-                          group_id: int,
-                          db: Session = Depends(get_db),
-                          token: str = Depends(oauth_schema)):
-    event = await event_service.add_group(id, group_id, db)
-    return {'success': True, 'event_id': event.id}
+# @router.put("/{id}/group/{group_id}")
+# async def add_event_group(id: int,
+#                           group_id: int,
+#                           db: Session = Depends(get_db),
+#                           token: str = Depends(oauth_schema)):
+#     event = await event_service.add_group(id, group_id, db)
+#     return {'success': True, 'event_id': event.id}
 
 
 @router.delete("/{id}/group/{group_id}")

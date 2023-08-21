@@ -15,7 +15,7 @@ from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
 
-def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
+async def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                              db: Session, data: TokenData):
     if not data.available:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -32,7 +32,7 @@ def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
+async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                                  db: Session, data: TokenData):
     if not data.available:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -42,6 +42,8 @@ def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     if not (hacker in event.registered_hackers
             or hacker in event.accepted_hackers):
         raise InvalidDataException("Hacker not registered")
+    if hacker in event.participants:
+        raise InvalidDataException("Hacker already participating")
     if hacker in event.accepted_hackers:
         event.accepted_hackers.remove(hacker)
     else:
@@ -51,7 +53,7 @@ def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
+async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                 db: Session, data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -67,7 +69,7 @@ def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
+async def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                                     db: Session, data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -81,7 +83,7 @@ def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker, db: Session,
+async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker, db: Session,
                            data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -98,7 +100,7 @@ def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker, db: Session,
     return event
 
 
-def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
+async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                              db: Session, data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -115,7 +117,7 @@ def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-def get_event_status(event: ModelEvent, db: Session):
+async def get_event_status(event: ModelEvent, db: Session):
     data = {
         'registratedUsers':
         len(event.registered_hackers) + len(event.accepted_hackers),
@@ -128,7 +130,7 @@ def get_event_status(event: ModelEvent, db: Session):
         data[meal.name] = len(meal.users)
 
 
-def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker, db: Session,
+async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker, db: Session,
         data: TokenData):
     if not data.available:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):

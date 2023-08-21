@@ -64,6 +64,11 @@ async def delete_event(id: int, db: Session, data: TokenData):
     db.commit()
     return db_event
 
+async def get_event_meals(id: int, db: Session, data: TokenData):
+    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    if event is None:
+        raise NotFoundException("Event not found")
+    return event.meals
 
 async def get_event_participants(id: int, db: Session, data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
