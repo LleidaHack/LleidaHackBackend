@@ -17,15 +17,17 @@ from errors.AuthenticationException import AuthenticationException
 from errors.NotFoundException import NotFoundException
 from errors.InvalidDataException import InvalidDataException
 
+
 async def get_all(db: Session):
     return db.query(ModelHacker).all()
 
 
 async def get_hacker(hackerId: int, db: Session):
-    user =db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    user = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if user is None:
         raise NotFoundException("Hacker not found")
     return user
+
 
 async def add_hacker(payload: SchemaHacker, db: Session):
     payload = check_image(payload)
@@ -46,25 +48,28 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if not hacker:
         raise NotFoundException("Hacker not found")
-    event_regs = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId).all()
+    event_regs = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == hackerId).all()
     for event_reg in event_regs:
         db.delete(event_reg)
-    event_parts = db.query().filter(ModelHackerParticipation.user_id == hackerId).all()
+    event_parts = db.query().filter(
+        ModelHackerParticipation.user_id == hackerId).all()
     for event_part in event_parts:
         db.delete(event_part)
-    event_accs = db.query().filter(ModelHackerAccepted.user_id == hackerId).all()
+    event_accs = db.query().filter(
+        ModelHackerAccepted.user_id == hackerId).all()
     for event_acc in event_accs:
         db.delete(event_acc)
     db.commit()
     return hacker
 
 
-async def update_hacker(hackerId: int, payload: SchemaHackerUpdate, db: Session,
-                        data: TokenData):
+async def update_hacker(hackerId: int, payload: SchemaHackerUpdate,
+                        db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and
-                (data.type == UserType.LLEIDAHACKER.value or
-                 (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
             raise AuthenticationException("Not authorized")
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
@@ -107,24 +112,26 @@ async def unban_hacker(hackerId: int, db: Session, data: TokenData):
     db.refresh(hacker)
     return hacker
 
+
 #TODO: #34 Check if token validation is correct
 async def get_hacker_events(hackerId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and
-                (data.type == UserType.LLEIDAHACKER.value or
-                 (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
             raise AuthenticationException("Not authorized")
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return hacker.events
 
+
 #TODO: #34 Check if token validation is correct
 def get_hacker_groups(hackerId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and
-                (data.type == UserType.LLEIDAHACKER.value or
-                 (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
             raise AuthenticationException("Not authorized")
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:

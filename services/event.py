@@ -18,6 +18,7 @@ from errors.AuthenticationException import AuthenticationException
 from errors.ValidationException import ValidationException
 from errors.NotFoundException import NotFoundException
 
+
 async def get_all(db: Session):
     return db.query(ModelEvent).all()
 
@@ -120,9 +121,9 @@ async def add_company(id: int, company_id: int, db: Session, data: TokenData):
 
 async def add_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and (
-                data.type == UserType.LLEIDAHACKER.value
-                or (data.type == UserType.HACKER.value and hacker_id != data.user_id))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and hacker_id != data.user_id))):
             raise Exception("Not authorized")
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if event is None:
@@ -144,7 +145,7 @@ async def add_hacker_group(id: int, hacker_group_id: int, db: Session,
                            data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                      or data.type == UserType.HACKER.value)):
+                                    or data.type == UserType.HACKER.value)):
             raise Exception("Not authorized")
     hacker_group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id == hacker_group_id).first()
@@ -195,9 +196,9 @@ async def remove_company(id: int, company_id: int, db: Session,
 
 async def remove_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and (
-                data.type == UserType.LLEIDAHACKER.value
-                or (data.type == UserType.HACKER.value and hacker_id != data.user_id))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and hacker_id != data.user_id))):
             raise Exception("Not authorized")
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if event is None:
@@ -223,7 +224,7 @@ async def remove_hacker_group(id: int, hacker_group_id: int, db: Session,
                               data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                      or data.type == UserType.HACKER.value)):
+                                    or data.type == UserType.HACKER.value)):
             raise Exception("Not authorized")
     hacker_group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id == hacker_group_id).first()

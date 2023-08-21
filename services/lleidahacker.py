@@ -15,12 +15,14 @@ from errors.AuthenticationException import AuthenticationException
 from errors.NotFoundException import NotFoundException
 from errors.InvalidDataException import InvalidDataException
 
+
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
 
 async def get_lleidahacker(userId: int, db: Session):
-    user = db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
+    user = db.query(ModelLleidaHacker).filter(
+        ModelLleidaHacker.id == userId).first()
     if user is None:
         raise NotFoundException("LleidaHacker not found")
     return user
@@ -39,10 +41,11 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
 async def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
                               db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and
-                (data.type == UserType.LLEIDAHACKER.value and data.user_id == userId)):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value
+                                    and data.user_id == userId)):
             raise AuthenticationException("Not authorized")
-    lleidahacker = db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == userId).first()
+    lleidahacker = db.query(ModelLleidaHacker).filter(
+        ModelLleidaHacker.id == userId).first()
     if lleidahacker is None:
         raise NotFoundException("LleidaHacker not found")
     payload = check_image(payload)
@@ -56,7 +59,8 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
 
 async def delete_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value and data.user_id == userId)):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value
+                                    and data.user_id == userId)):
             raise AuthenticationException("Not authorized")
     lleidahacker = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
