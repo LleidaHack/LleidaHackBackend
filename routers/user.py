@@ -22,8 +22,8 @@ async def signup(payload: SchemaUser,
     refresh_token = create_refresh_token(new_user)
     return {
         "success": True,
-        "created_id": new_user.id,
-        "token": token,
+        "user_id": new_user.id,
+        "acces_token": token,
         "refresh_token": refresh_token
     }
 
@@ -31,7 +31,6 @@ async def signup(payload: SchemaUser,
 @router.get("/all")
 async def get_users(db: Session = Depends(get_db),
                     token: str = Depends(oauth_schema)):
-    await check_permissions(token, ["lleida_hacker", "admin"])
     return await user_service.get_all(db)
 
 
@@ -40,7 +39,6 @@ async def get_user(userId: int,
                    response: Response,
                    db: Session = Depends(get_db),
                    str=Depends(oauth_schema)):
-    check_permissions(str, ["lleida_hacker", "admin"])
     return await user_service.get_user(db, userId)
 
 
@@ -49,9 +47,8 @@ async def add_user(payload: SchemaUser,
                    response: Response,
                    db: Session = Depends(get_db),
                    str=Depends(oauth_schema)):
-    check_permissions(str, ["lleida_hacker", "admin"])
     new_user = await user_service.add_user(db, payload)
-    return {"success": True, "created_id": new_user.id}
+    return {"success": True, "user_id": new_user.id}
 
 
 @router.put("/{userId}")
@@ -60,7 +57,6 @@ async def update_user(userId: int,
                       response: Response,
                       db: Session = Depends(get_db),
                       str=Depends(oauth_schema)):
-    check_permissions(str, ["lleida_hacker", "admin"])
     return await user_service.update_user(db, userId, payload)
 
 
@@ -69,5 +65,4 @@ async def delete_user(userId: int,
                       response: Response,
                       db: Session = Depends(get_db),
                       str=Depends(oauth_schema)):
-    check_permissions(str, ["lleida_hacker", "admin"])
     return await user_service.delete_user(db, userId)

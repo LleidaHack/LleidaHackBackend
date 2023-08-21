@@ -16,6 +16,8 @@ class Event(BaseModel):
     max_participants: int
     max_sponsors: int
     status: int
+    image: str
+    is_image_url: bool
 
     # start_time: Time = Column(Time, default=func.now())
 
@@ -34,5 +36,7 @@ class EventUpdate(BaseModel):
     max_participants: Optional[int]
     max_sponsors: Optional[int]
     status: Optional[int]
+    image: Optional[str]
+    is_image_url: Optional[bool]
 
     # start_time: Time = Column(Time, default=func.now())

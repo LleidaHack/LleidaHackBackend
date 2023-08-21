@@ -7,10 +7,24 @@ from schemas.Event import Event as SchemaEvent
 from models.Event import Event as ModelEvent
 from models.Meal import Meal as ModelMeal
 from models.Hacker import Hacker as ModelHacker
+from models.TokenData import TokenData
+from models.UserType import UserType
 
+from errors.AuthenticationException import AuthenticationException
+from errors.NotFoundException import NotFoundException
+from errors.InvalidDataException import InvalidDataException
 
 def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
-                             db: Session):
+                             db: Session, data: TokenData):
+    if not data.available:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                      (data.type == UserType.HACKER.value
+                                       and data.user_id != hacker.id))):
+            raise AuthenticationException("Not authorized")
+    if hacker in event.registered_hackers or hacker in event.accepted_hackers:
+        raise InvalidDataException("Hacker already registered")
+    if len(event.registered_hackers) >= event.max_participants:
+        raise InvalidDataException("Event full")
     event.registered_hackers.append(hacker)
     db.commit()
     db.refresh(event)
@@ -18,14 +32,31 @@ def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
 
 
 def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                                 db: Session):
-    event.registered_hackers.remove(hacker)
+                                 db: Session, data: TokenData):
+    if not data.available:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                      (data.type == UserType.HACKER.value
+                                       and data.user_id != hacker.id))):
+            raise AuthenticationException("Not authorized")
+    if not (hacker in event.registered_hackers or hacker in event.accepted_hackers):
+        raise InvalidDataException("Hacker not registered")
+    if hacker in event.accepted_hackers:
+        event.accepted_hackers.remove(hacker)
+    else:
+        event.registered_hackers.remove(hacker)
     db.commit()
     db.refresh(event)
     return event
 
 def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
-                                db: Session):
+                                db: Session, data: TokenData):
+    if not data.available:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    if hacker in event.participants:
+        raise InvalidDataException("Hacker already participating")
+    if not hacker in event.accepted_hackers:
+        raise InvalidDataException("Hacker not accepted")
     event.participants.append(hacker)
     db.commit()
     db.refresh(event)
@@ -33,7 +64,12 @@ def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                                    db: Session):
+                                    db: Session, data: TokenData):
+    if not data.available:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    if not hacker in event.participants:
+        raise InvalidDataException("Hacker not participating")
     event.participants.remove(hacker)
     db.commit()
     db.refresh(event)
@@ -41,7 +77,14 @@ def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
-                                    db: Session):
+                                    db: Session, data: TokenData):
+    if not data.available:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    if not hacker in event.registered_hackers:
+        raise InvalidDataException("Hacker not registered")
+    if hacker in event.accepted_hackers:
+        raise InvalidDataException("Hacker already accepted")
     event.accepted_hackers.append(hacker)
     event.registered_hackers.remove(hacker)
     db.commit()
@@ -50,7 +93,14 @@ def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                                    db: Session):
+                                    db: Session, data: TokenData):
+    if not data.available:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    if not hacker in event.registered_hackers:
+        raise InvalidDataException("Hacker not registered")
+    if hacker in event.accepted_hackers:
+        raise InvalidDataException("Hacker already accepted")
     event.registered_hackers.append(hacker)
     event.accepted_hackers.remove(hacker)
     db.commit()
@@ -58,18 +108,23 @@ def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(hacker)
     return event
 def get_event_status(event: ModelEvent, db: Session):
-    return {
+    data ={
         'registratedUsers': len(event.registered_hackers) + len(event.accepted_hackers),
         'acceptedUsers': len(event.accepted_hackers),
         'participatingUsers': len(event.participants),
-        'friDinner': len(event.meals[0].users),
-        'satLunch': len(event.meal[1].users),
-        'satDin': len(event.meal[2].users),
-        'sunLunch': len(event.meal[3].users)
     }
+    for meal in event.meals:
+        data[meal.name] = len(meal.users)
 
 
-def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker, db: Session):
+def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker, db: Session, data: TokenData):
+    if not data.available:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    if not hacker in event.participants:
+        raise InvalidDataException("Hacker not participating")
+    if hacker in meal.users:
+        raise InvalidDataException("Hacker already eating")
     meal.users.append(hacker)
     db.commit()
     db.refresh(event)

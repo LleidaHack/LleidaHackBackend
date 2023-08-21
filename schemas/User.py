@@ -15,7 +15,8 @@ class User(BaseModel):
     telephone: str
     address: str
     shirt_size: str
-    image_id: str
+    image: str
+    is_image_url: bool
 
     class Config:
         orm_mode = True
@@ -31,4 +32,5 @@ class UserUpdate(BaseModel):
     telephone: Optional[str]
     address: Optional[str]
     shirt_size: Optional[str]
-    image_id: Optional[str]
+    image: Optional[str]
+    is_image_url: Optional[bool]

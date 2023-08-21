@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from models.Notification import Notification as ModelNotification
-
+from models.UserType import UserType
 
 async def get_notifications(userId: int, db: Session):
     return db.query(ModelNotification).filter(

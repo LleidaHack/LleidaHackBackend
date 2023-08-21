@@ -17,7 +17,8 @@ class User(Base):
     address: str = Column(String)
     shirt_size: str = Column(String)
     type: str = Column(String)
-    image_id: str = Column(String)
+    image: str = Column(String)
+    is_image_url: bool = Column(Integer, default=False)
 
     __mapper_args__ = {
         "polymorphic_identity": "user",

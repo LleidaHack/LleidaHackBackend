@@ -19,14 +19,21 @@ from routers import eventmanagment
 from routers import authentication
 from routers import utils
 
+from errors import error_handler as eh
+from errors.AuthenticationException import AuthenticationException
+from errors.NotFoundException import NotFoundException
+from errors.ValidationException import ValidationException
+from errors.InvalidDataException import InvalidDataException
+from errors.InputException import InputException
+
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
 tags_metadata = [
-    {
-        "name": "User",
-        "description": "User related endpoints"
-    },
+    # {
+    #     "name": "User",
+    #     "description": "User related endpoints"
+    # },
     {
         "name": "Hacker",
         "description": "Hacker related endpoints"
@@ -83,9 +90,15 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+app.add_exception_handler(AuthenticationException, eh.authentication_exception_handler)
+app.add_exception_handler(NotFoundException, eh.not_found_exception_handler)
+app.add_exception_handler(ValidationException, eh.validation_exception_handler)
+app.add_exception_handler(InvalidDataException, eh.invalid_data_exception_handler)
+app.add_exception_handler(InputException, eh.input_exception_handler)
+
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
-app.include_router(user.router)
+# app.include_router(user.router)
 app.include_router(hacker.router)
 app.include_router(hackergroup.router)
 app.include_router(lleidahacker.router)
