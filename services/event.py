@@ -87,10 +87,10 @@ async def get_event_sponsors(id: int, db: Session, data: TokenData):
 
 
 async def get_event_groups(id: int, db: Session, data: TokenData):
-    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    event = db.query(ModelHackerGroup).filter(ModelHackerGroup.event_id == id)
     if event is None:
         raise NotFoundException("Event not found")
-    return event.hacker_groups
+    return event
 
 
 async def set_event_logo(id: int, logo_id: str, db: Session, data: TokenData):

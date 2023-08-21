@@ -94,8 +94,8 @@ async def get_event_sponsors(id: int,
 async def get_event_groups(id: int,
                            db: Session = Depends(get_db),
                            token: str = Depends(oauth_schema)):
-    event = event_service.get_event_groups(id, db, get_data_from_token(token))
-    return {'success': True, 'groups': event.groups}
+    event = await event_service.get_event_groups(id, db, get_data_from_token(token))
+    return {'success': True, 'groups': event}
 
 
 @router.put("/{id}/participants/{hacker_id}")
