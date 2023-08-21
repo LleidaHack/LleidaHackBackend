@@ -94,7 +94,8 @@ async def get_event_sponsors(id: int,
 async def get_event_groups(id: int,
                            db: Session = Depends(get_db),
                            token: str = Depends(oauth_schema)):
-    event = await event_service.get_event_groups(id, db, get_data_from_token(token))
+    event = await event_service.get_event_groups(id, db,
+                                                 get_data_from_token(token))
     return {'success': True, 'groups': event}
 
 
