@@ -65,11 +65,14 @@ async def delete_event(id: int,
                                              get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
+
 @router.get("/{id}/meals")
 async def get_event_meals(id: int,
                           db: Session = Depends(get_db),
-                            token: str = Depends(oauth_schema)):
-    return await event_service.get_event_meals(id, db, get_data_from_token(token))
+                          token: str = Depends(oauth_schema)):
+    return await event_service.get_event_meals(id, db,
+                                               get_data_from_token(token))
+
 
 @router.get("/{id}/participants")
 async def get_event_participants(id: int,
