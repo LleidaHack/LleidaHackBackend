@@ -10,7 +10,6 @@ class Notification(Base):
     __tablename__ = 'notification'
     id: int = Column(Integer, primary_key=True, index=True)
     user_id: int = Column(Integer, ForeignKey('user.id'))
-    user: "User" = relationship("User", back_populates="notifications")
     message: str = Column(String)
     read: bool = Column(Boolean, default=False)
     created_at: str = Column(String)
@@ -29,7 +28,6 @@ class HackerAcceptedNotification(Notification):
     __tablename__ = 'hacker_accepted_notification'
     id: int = Column(Integer, ForeignKey('notification.id'), primary_key=True, index=True)
     event_id: int = Column(Integer, ForeignKey('event.id'))
-    event: "Event" = relationship("Event", back_populates="notifications")
     __mapper_args__ = {
         "polymorphic_identity": "hacker_accepted_notification",
     }
@@ -37,7 +35,6 @@ class HackerRejectedNotification(Notification):
     __tablename__ = 'hacker_rejected_notification'
     id: int = Column(Integer, ForeignKey('notification.id'), primary_key=True, index=True)
     event_id: int = Column(Integer, ForeignKey('event.id'))
-    event: "Event" = relationship("Event", back_populates="notifications")
     __mapper_args__ = {
         "polymorphic_identity": "hacker_rejected_notification",
     }
