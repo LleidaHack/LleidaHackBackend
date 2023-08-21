@@ -48,6 +48,7 @@ def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(event)
     return event
 
+
 def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                 db: Session, data: TokenData):
     if not data.available:
@@ -63,6 +64,7 @@ def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(hacker)
     return event
 
+
 def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                                     db: Session, data: TokenData):
     if not data.available:
@@ -75,6 +77,7 @@ def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(event)
     db.refresh(hacker)
     return event
+
 
 def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                     db: Session, data: TokenData):
@@ -92,6 +95,7 @@ def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(hacker)
     return event
 
+
 def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                                     db: Session, data: TokenData):
     if not data.available:
@@ -107,6 +111,8 @@ def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(event)
     db.refresh(hacker)
     return event
+
+
 def get_event_status(event: ModelEvent, db: Session):
     data ={
         'registratedUsers': len(event.registered_hackers) + len(event.accepted_hackers),
