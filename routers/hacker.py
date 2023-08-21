@@ -105,6 +105,7 @@ async def get_hacker_events(userId: int,
                             token: str = Depends(oauth_schema)):
     return await hacker_service.get_hacker_events(userId, db)
 
+
 @router.get("/{userId}/groups")
 async def get_hacker_groups(userId: int,
                             response: Response,
