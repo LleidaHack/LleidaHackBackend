@@ -15,6 +15,7 @@ from errors.AuthenticationException import AuthenticationException
 from errors.NotFoundException import NotFoundException
 from errors.ValidationException import ValidationException
 
+
 async def get_all(db: Session):
     return db.query(ModelCompany).all()
 
@@ -25,7 +26,8 @@ async def get_company(db: Session, companyId: int):
 
 async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
     if not data.is_admin:
-        if not (data.available and data.user_type == UserType.LLEIDAHACKER.value):
+        if not (data.available
+                and data.user_type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
     if data.user_type == "company_user":
         user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
@@ -41,11 +43,12 @@ async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
     return new_company
 
 
-async def update_company(db: Session, companyId: int, payload: SchemaCompanyUpdate,
-                         data: TokenData):
+async def update_company(db: Session, companyId: int,
+                         payload: SchemaCompanyUpdate, data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.user_type == "company_user"
-                                      or data.user_type == UserType.LLEIDAHACKER.value)):
+        if not (data.available and
+                (data.user_type == "company_user"
+                 or data.user_type == UserType.LLEIDAHACKER.value)):
             raise AuthenticationException("Not authorized")
     company = db.query(ModelCompany).filter(
         ModelCompany.id == companyId).first()
@@ -113,7 +116,9 @@ async def add_company_user(db: Session, companyId: int, userId: int,
 async def delete_company_user(db: Session, companyId: int, userId: int,
                               data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.user_type == "company_user" or data.user_type == UserType.LLEIDAHACKER.value)):
+        if not (data.available and
+                (data.user_type == "company_user"
+                 or data.user_type == UserType.LLEIDAHACKER.value)):
             raise AuthenticationException("Not authorized")
     company = db.query(ModelCompany).filter(
         ModelCompany.id == companyId).first()
