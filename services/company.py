@@ -29,7 +29,7 @@ async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
-    if data.user_type == UserType.COMPANY.value:
+    if data.user_type == UserType.COMPANYUSER.value:
         user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
         if user is None:
             raise NotFoundException("User not found")
@@ -45,14 +45,14 @@ async def update_company(db: Session, companyId: int,
                          payload: SchemaCompanyUpdate, data: TokenData):
     if not data.is_admin:
         if not (data.available and
-                (data.user_type == UserType.COMPANY.value
+                (data.user_type == UserType.COMPANYUSER.value
                  or data.user_type == UserType.LLEIDAHACKER.value)):
             raise AuthenticationException("Not authorized")
     company = db.query(ModelCompany).filter(
         ModelCompany.id == companyId).first()
     if company is None:
         raise NotFoundException("Company not found")
-    if data.user_type == UserType.COMPANY.value:
+    if data.user_type == UserType.COMPANYUSER.value:
         user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
         users = [user.id for user in company.users]
         if not (data.user_id in users and company.leader_id == user.id):
@@ -69,7 +69,7 @@ async def delete_company(db: Session, companyId: int, data: TokenData):
     if not data.is_admin:
         if not (data.available and
                 (data.user_type == UserType.LLEIDAHACKER.value
-                 or data.user_type == UserType.COMPANY.value)):
+                 or data.user_type == UserType.COMPANYUSER.value)):
             raise AuthenticationException("Not authorized")
     company = db.query(ModelCompany).filter(
         ModelCompany.id == companyId).first()
@@ -97,7 +97,7 @@ async def add_company_user(db: Session, companyId: int, userId: int,
     if not data.is_admin:
         if not (data.available and
                 (data.user_type == UserType.LLEIDAHACKER.value
-                 or data.user_type == UserType.COMPANY.value)):
+                 or data.user_type == UserType.COMPANYUSER.value)):
             raise AuthenticationException("Not authorized")
     company = db.query(ModelCompany).filter(
         ModelCompany.id == companyId).first()
@@ -106,7 +106,7 @@ async def add_company_user(db: Session, companyId: int, userId: int,
     users = [user.id for user in company.users]
     if not data.is_admin:
         if not (data.user_type == UserType.LLEIDAHACKER.value or
-                (data.user_type == UserType.COMPANY.value
+                (data.user_type == UserType.COMPANYUSER.value
                  and data.user_id in users)):
             raise AuthenticationException("Not authorized")
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
@@ -122,7 +122,7 @@ async def delete_company_user(db: Session, companyId: int, userId: int,
                               data: TokenData):
     if not data.is_admin:
         if not (data.available and
-                (data.user_type == UserType.COMPANY.value
+                (data.user_type == UserType.COMPANYUSER.value
                  or data.user_type == UserType.LLEIDAHACKER.value)):
             raise AuthenticationException("Not authorized")
     company = db.query(ModelCompany).filter(
