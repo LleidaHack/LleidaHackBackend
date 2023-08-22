@@ -6,24 +6,19 @@ from security import oauth_schema
 import services.utils as utils_service
 import services.mail as email_service
 
+from sqlalchemy.orm import Session
+from fastapi import Depends, Response, APIRouter
+
+from database import get_db
 router = APIRouter(
     prefix="/utils",
     tags=["Utils"],
 )
 
-# @router.post("/uploadImage")
-# async def uploadFile(image: UploadFile = File(...),
-#                      token: str = Depends(oauth_schema)):
-#     id = await utils_service.uploadFile(image)
-#     return {"success": True, "id": id}
-
-# @router.get("/getImage/{image_id}")
-# async def get_image(image_id: str):
-#     return await utils_service.getFile(image_id)
-
-
-@router.post("/sendMail/{to}")
-async def send_mail(to: str):
-    # async def send_mail(to:str, backgroundTask:BackgroundTask):
-    # backgroundTask.add_task(email_service.send_mail, to)
-    email_service.send_mail(to)
+@router.post("/send-email")
+async def send_email(email: str, template: str, db: Session = Depends(get_db)):
+    try:
+        email_service.send_email(email, template)
+        return {"success": True, "message": "Email sent successfully"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}

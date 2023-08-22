@@ -31,7 +31,8 @@ async def add_event(payload: SchemaEvent, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
-    payload = check_image(payload)
+    if payload.image is not None:
+        payload = check_image(payload)
     db_event = ModelEvent(**payload.dict())
     db.add(db_event)
     db.commit()
@@ -47,7 +48,8 @@ async def update_event(id: int, event: SchemaEventUpdate, db: Session,
     db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if db_event is None:
         raise NotFoundException("Event not found")
-    event = check_image(event)
+    if event.image is not None:
+        event = check_image(event)
     updated = set_existing_data(db_event, event)
     db.commit()
     return db_event, updated
@@ -91,21 +93,6 @@ async def get_event_groups(id: int, db: Session, data: TokenData):
     if event is None:
         raise NotFoundException("Event not found")
     return event
-
-
-async def set_event_logo(id: int, logo_id: str, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
-            raise AuthenticationException("Not authorized")
-    db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    if db_event is None:
-        raise NotFoundException("Event not found")
-    if check_image_exists(logo_id):
-        raise NotFoundException("Logo not found")
-    db_event.logo_id = logo_id
-    db.commit()
-    db.refresh(db_event)
-    return db_event
 
 
 async def add_company(id: int, company_id: int, db: Session, data: TokenData):

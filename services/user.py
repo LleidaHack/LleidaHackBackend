@@ -6,6 +6,8 @@ from models.UserType import UserType
 
 from schemas.User import User as SchemaUser
 
+from utils.service_utils import check_image
+
 
 async def get_all(db: Session):
     return db.query(ModelUser).all()
@@ -17,6 +19,9 @@ async def get_user(db: Session, userId: int):
 
 async def add_user(db: Session, payload: SchemaUser):
     new_user = ModelUser(**payload.dict())
+    if payload.image is not None:
+        payload = check_image(payload)
+    new_user.password = get_password_hash(payload.password)
     db.add(new_user)
     db.commit()
     return new_user
