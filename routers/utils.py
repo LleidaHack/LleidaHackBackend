@@ -10,10 +10,12 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
 from database import get_db
+
 router = APIRouter(
     prefix="/utils",
     tags=["Utils"],
 )
+
 
 @router.post("/send-email")
 async def send_email(email: str, template: str, db: Session = Depends(get_db)):
