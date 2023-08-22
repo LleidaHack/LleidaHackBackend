@@ -43,7 +43,7 @@ async def update_company_user(payload: SchemaCompanyUserUpdate,
                               data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.COMPANY.value
+                                    (data.type == UserType.COMPANYUSER.value
                                      and data.user_id != companyUserId))):
             raise AuthenticationException("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
@@ -67,7 +67,7 @@ async def delete_company_user(companyUserId: int, db: Session,
                               data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.COMPANY.value
+                                    (data.type == UserType.COMPANYUSER.value
                                      and data.user_id != companyUserId))):
             raise AuthenticationException("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
