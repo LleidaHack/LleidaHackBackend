@@ -1,9 +1,14 @@
 from config import Configuration
 from fastapi import FastAPI
 from starlette.responses import JSONResponse
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import EmailStr, BaseModel
 from typing import List
+from models.UserType import UserType
+from fastapi import FastAPI
+from fastapi.exceptions import HTTPException
+from pydantic import BaseModel
+from smtplib import SMTP_SSL
+from email.mime.text import MIMEText
 
 
 class EmailSchema(BaseModel):
@@ -28,15 +33,5 @@ app = FastAPI()
 html = """<p>Hi this test mail, thanks for using Fastapi-mail</p> """
 
 
-async def simple_send(email: EmailSchema) -> JSONResponse:
+async def simple_send(email: EmailSchema):
     pass
-    # message = MessageSchema(
-    #     subject="Fastapi-Mail module",
-    #     recipients=email.dict().get("email"),  # List of recipients, as many as you can pass
-    #     body=html,
-    #     subtype="html"
-    # )
-
-    # fm = FastMail(conf)
-    # await fm.send_message(message)
-    # return JSONResponse(status_code=200, content={"message": "email has been sent"})

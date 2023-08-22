@@ -1,10 +1,11 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Optional
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
 from models.User import User
+from models.UserType import UserType
 from schemas.LleidaHacker import LleidaHackerGroup
 from schemas.Event import Event
 
@@ -17,13 +18,15 @@ class LleidaHacker(User):
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
     github: str = Column(String)
+    accepted: bool = Column(Boolean, default=True)
+    rejected: bool = Column(Boolean, default=False)
     groups = relationship('LleidaHackerGroup',
                           secondary='lleida_hacker_group_user')
     events = relationship('Event',
                           secondary='lleida_hacker_event_participation')
 
     __mapper_args__ = {
-        "polymorphic_identity": "lleida_hacker",
+        "polymorphic_identity": UserType.LLEIDAHACKER.value,
     }
 
 

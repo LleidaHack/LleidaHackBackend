@@ -5,12 +5,12 @@ from database import get_db
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPBasic
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
 from jose import JWTError, jwt
 from passlib.hash import pbkdf2_sha256
 import os
 
 from models.User import User as ModelUser
+from models.UserType import UserType
 from schemas.Token import TokenData
 from models.TokenData import TokenData as TD
 from config import Configuration
@@ -67,11 +67,12 @@ def create_access_token(user: ModelUser, expires_delta: timedelta = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
-    if user.type == "hacker":
+    if user.type == UserType.HACKER.value:
         to_encode.update({"banned": user.banned})
-    elif user.type == "lleida_hacker":
-        to_encode.update({"active": user.active})
-    elif user.type == "company":
+    elif user.type == UserType.LLEIDAHACKER.value:
+        to_encode.update(
+            {"active": user.active and user.accepted and not user.rejected})
+    elif user.type == UserType.COMPANY.value:
         to_encode.update({"active": user.active})
     to_encode.update({"expt": expire.isoformat()})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -97,16 +98,18 @@ def get_data_from_token(token: str = Depends(oauth2_scheme)):
         d.is_admin = True
         d.is_service = True
         d.user_id = 0
+        d.available = True
+        d.type = "service"
         return d
     data = decode_token(token)
     d.user_id = data.get("user_id")
     d.type = data.get("type")
-    if d.type == "hacker":
-        d.available = data.get("banned")
-    elif d.type == "lleida_hacker":
-        d.available = data.get("active")
-    elif d.type == "company":
-        d.available = data.get("active")
+    if d.type == UserType.HACKER.value:
+        d.available = not data.get("banned")
+    elif d.type == UserType.LLEIDAHACKER.value:
+        d.available = bool(data.get("active"))
+    elif d.type == UserType.COMPANY.value:
+        d.available = bool(data.get("active"))
     return d
 
 

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from models.Notification import Notification as ModelNotification
+from models.UserType import UserType
 
 
 async def get_notifications(userId: int, db: Session):
@@ -9,12 +10,7 @@ async def get_notifications(userId: int, db: Session):
 
 
 async def add_notification(payload: ModelNotification, db: Session):
-    new_notification = ModelNotification(
-        user_id=payload.user_id,
-        message=payload.message,
-        type=payload.type,
-        link=payload.link,
-    )
+    new_notification = ModelNotification(**payload.dict())
     db.add(new_notification)
     db.commit()
     db.refresh(new_notification)

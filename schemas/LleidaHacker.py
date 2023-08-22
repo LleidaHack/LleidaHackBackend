@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import List
-from schemas.User import User
+from typing import List, Optional
+from schemas.User import User, UserUpdate
 
 
 class LleidaHacker(User):
@@ -16,6 +16,14 @@ class LleidaHacker(User):
         orm_mode = True
 
 
+class LleidaHackerUpdate(UserUpdate):
+    role: Optional[str]
+    nif: Optional[str]
+    student: Optional[bool]
+    active: Optional[bool]
+    github: Optional[str]
+
+
 class LleidaHackerGroup(BaseModel):
     name: str
     description: str
@@ -25,3 +33,11 @@ class LleidaHackerGroup(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class LleidaHackerGroupUpdate(BaseModel):
+    name: Optional[str]
+    description: Optional[str]
+    members: Optional[List[LleidaHacker]]
+
+    # leader: Optional[int]

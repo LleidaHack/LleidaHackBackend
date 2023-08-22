@@ -2,14 +2,21 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
 from schemas.Event import Event as SchemaEvent
+from schemas.Event import EventUpdate as SchemaEventUpdate
 
 from models.Event import Event as ModelEvent
 from models.Company import Company as ModelCompany
 from models.Hacker import Hacker as ModelHacker
 from models.Hacker import HackerGroup as ModelHackerGroup
 from models.TokenData import TokenData
+from models.UserType import UserType
 
 from security import check_image_exists
+from utils.service_utils import set_existing_data, check_image
+
+from error.AuthenticationException import AuthenticationException
+from error.ValidationException import ValidationException
+from error.NotFoundException import NotFoundException
 
 
 async def get_all(db: Session):
@@ -20,105 +27,77 @@ async def get_event(id: int, db: Session):
     return db.query(ModelEvent).filter(ModelEvent.id == id).first()
 
 
-async def add_event(event: SchemaEvent, db: Session, data: TokenData):
+async def add_event(payload: SchemaEvent, db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker":
-            raise Exception("Not authorized")
-    db_event = ModelEvent(name=event.name,
-                          description=event.description,
-                          start_date=event.start_date,
-                          end_date=event.end_date,
-                          location=event.location,
-                          archived=event.archived,
-                          status=event.status,
-                          price=event.price,
-                          max_participants=event.max_participants,
-                          max_sponsors=event.max_sponsors)
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    if payload.image is not None:
+        payload = check_image(payload)
+    db_event = ModelEvent(**payload.dict())
     db.add(db_event)
     db.commit()
     db.refresh(db_event)
     return db_event
 
 
-async def update_event(id: int, event: SchemaEvent, db: Session,
+async def update_event(id: int, event: SchemaEventUpdate, db: Session,
                        data: TokenData):
     if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker":
-            raise Exception("Not authorized")
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
     db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if db_event is None:
-        raise Exception("Event not found")
-    db_event.name = event.name
-    db_event.description = event.description
-    db_event.start_date = event.start_date
-    db_event.end_date = event.end_date
-    db_event.location = event.location
+        raise NotFoundException("Event not found")
+    if event.image is not None:
+        event = check_image(event)
+    updated = set_existing_data(db_event, event)
     db.commit()
-    return db_event
+    return db_event, updated
 
 
 async def delete_event(id: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker":
-            raise Exception("Not authorized")
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
     db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if db_event is None:
-        raise Exception("Event not found")
+        raise NotFoundException("Event not found")
     db.delete(db_event)
     db.commit()
     return db_event
 
 
-async def get_event_participants(id: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not data.available or not (data.type == "lleida_hacker"
-                                      or data.type == "company"):
-            raise Exception("Not authorized")
+async def get_event_meals(id: int, db: Session, data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if event is None:
-        raise Exception("Event not found")
+        raise NotFoundException("Event not found")
+    return event.meals
+
+
+async def get_event_participants(id: int, db: Session, data: TokenData):
+    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    if event is None:
+        raise NotFoundException("Event not found")
     return event.hackers
 
 
 async def get_event_sponsors(id: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not data.available:
-            raise Exception("Not authorized")
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if event is None:
-        raise Exception("Event not found")
+        raise NotFoundException("Event not found")
     return event.sponsors
 
 
 async def get_event_groups(id: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not data.available or not (data.type == "lleida_hacker"
-                                      or data.type == "company"):
-            raise Exception("Not authorized")
-    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    event = db.query(ModelHackerGroup).filter(ModelHackerGroup.event_id == id)
     if event is None:
-        raise Exception("Event not found")
-    return event.hacker_groups
-
-
-async def set_event_logo(id: int, logo_id: str, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker":
-            raise Exception("Not authorized")
-    db_event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    if db_event is None:
-        raise Exception("Event not found")
-    if check_image_exists(logo_id):
-        raise Exception("Logo not found")
-    db_event.logo_id = logo_id
-    db.commit()
-    db.refresh(db_event)
-    return db_event
+        raise NotFoundException("Event not found")
+    return event
 
 
 async def add_company(id: int, company_id: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker":
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise Exception("Not authorized")
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if event is None:
@@ -136,9 +115,9 @@ async def add_company(id: int, company_id: int, db: Session, data: TokenData):
 
 async def add_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or not (
-                data.type == "lleida_hacker"
-                or data.type == "hacker") or hacker_id != data.user_id:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and hacker_id != data.user_id))):
             raise Exception("Not authorized")
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if event is None:
@@ -159,8 +138,8 @@ async def add_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
 async def add_hacker_group(id: int, hacker_group_id: int, db: Session,
                            data: TokenData):
     if not data.is_admin:
-        if not data.available or not (data.type == "lleida_hacker"
-                                      or data.type == "hacker"):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value
+                                    or data.type == UserType.HACKER.value)):
             raise Exception("Not authorized")
     hacker_group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id == hacker_group_id).first()
@@ -187,7 +166,7 @@ async def add_hacker_group(id: int, hacker_group_id: int, db: Session,
 async def remove_company(id: int, company_id: int, db: Session,
                          data: TokenData):
     if not data.is_admin:
-        if not data.available or data.type != "lleida_hacker":
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise Exception("Not authorized")
     company = db.query(ModelCompany).filter(
         ModelCompany.id == company_id).first()
@@ -211,9 +190,9 @@ async def remove_company(id: int, company_id: int, db: Session,
 
 async def remove_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.available or not (
-                data.type == "lleida_hacker"
-                or data.type == "hacker") or hacker_id != data.user_id:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and hacker_id != data.user_id))):
             raise Exception("Not authorized")
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if event is None:
@@ -238,8 +217,8 @@ async def remove_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
 async def remove_hacker_group(id: int, hacker_group_id: int, db: Session,
                               data: TokenData):
     if not data.is_admin:
-        if not data.available or not (data.type == "lleida_hacker"
-                                      or data.type == "hacker"):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value
+                                    or data.type == UserType.HACKER.value)):
             raise Exception("Not authorized")
     hacker_group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id == hacker_group_id).first()

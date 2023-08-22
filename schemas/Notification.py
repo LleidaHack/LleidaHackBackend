@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class Notification(BaseModel):
@@ -6,3 +7,7 @@ class Notification(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class NotificationUpdate(BaseModel):
+    message: Optional[str]

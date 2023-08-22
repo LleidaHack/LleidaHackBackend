@@ -2,10 +2,6 @@ name: resetDatabse
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Branch name'
-        required: true
-        default: 'integration'
       alembic:
         description: 'Use Alembic to upgrade database'
         required: true

@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel
 from datetime import date
+from typing import Optional
 
 
 class User(BaseModel):
@@ -14,7 +15,22 @@ class User(BaseModel):
     telephone: str
     address: str
     shirt_size: str
-    image_id: str
+    image: Optional[str]
+    is_image_url: Optional[bool]
 
     class Config:
         orm_mode = True
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str]
+    nickname: Optional[str]
+    password: Optional[str]
+    birthdate: Optional[date]
+    food_restrictions: Optional[str]
+    email: Optional[str]
+    telephone: Optional[str]
+    address: Optional[str]
+    shirt_size: Optional[str]
+    image: Optional[str]
+    is_image_url: Optional[bool]
