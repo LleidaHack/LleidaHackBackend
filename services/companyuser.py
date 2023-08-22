@@ -30,7 +30,8 @@ async def get_company_user(companyUserId: int, db: Session):
 async def add_company_user(payload: SchemaCompanyUser, db: Session):
     new_company_user = ModelCompanyUser(**payload.dict())
     new_company_user.password = get_password_hash(payload.password)
-    payload = check_image(payload)
+    if payload.image is not None:
+        payload = check_image(payload)
     db.add(new_company_user)
     db.commit()
     db.refresh(new_company_user)
@@ -44,18 +45,20 @@ async def update_company_user(payload: SchemaCompanyUserUpdate,
         if not (
                 data.available and
             (data.type == UserType.LLEIDAHACKER.value or
-             (data.type == "company_user" and data.user_id != companyUserId))):
+             (data.type == UserType.COMPANY.value and data.user_id != companyUserId))):
             raise AuthenticationException("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
         ModelCompanyUser.id == companyUserId).first()
     if not company_user:
         raise NotFoundException("Company user not found")
-    payload = check_image(payload)
+    if payload.image is not None:
+        payload = check_image(payload)
     updated = set_existing_data(company_user, payload)
     company_user.updated_at = date.today()
     updated.append("updated_at")
     if payload.password is not None:
         company_user.password = get_password_hash(payload.password)
+        updated.append("password")
     db.commit()
     db.refresh(company_user)
     return company_user, updated
@@ -67,7 +70,7 @@ async def delete_company_user(companyUserId: int, db: Session,
         if not (
                 data.available and
             (data.type == UserType.LLEIDAHACKER.value or
-             (data.type == "company_user" and data.user_id != companyUserId))):
+             (data.type == UserType.COMPANY.value and data.user_id != companyUserId))):
             raise AuthenticationException("Not authorized")
     company_user = db.query(ModelCompanyUser).filter(
         ModelCompanyUser.id == companyUserId).first()

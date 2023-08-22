@@ -31,8 +31,9 @@ async def get_hacker(hackerId: int, db: Session):
 
 
 async def add_hacker(payload: SchemaHacker, db: Session):
-    payload = check_image(payload)
     new_hacker = ModelHacker(**payload.dict())
+    if payload.image is not None:
+        payload = check_image(payload)
     new_hacker.password = get_password_hash(payload.password)
     db.add(new_hacker)
     db.commit()
@@ -75,7 +76,8 @@ async def update_hacker(hackerId: int, payload: SchemaHackerUpdate,
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
-    payload = check_image(payload)
+    if payload.image is not None:
+        payload = check_image(payload)
     updated = set_existing_data(hacker, payload)
     hacker.updated_at = date.now()
     updated.append("updated_at")

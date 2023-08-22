@@ -30,7 +30,8 @@ async def get_lleidahacker(userId: int, db: Session):
 
 
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
-    payload = check_image(payload)
+    if payload.image is not None:
+        payload = check_image(payload)
     new_lleidahacker = ModelLleidaHacker(**payload.dict())
     new_lleidahacker.password = get_password_hash(payload.password)
     db.add(new_lleidahacker)
@@ -49,7 +50,8 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
         ModelLleidaHacker.id == userId).first()
     if lleidahacker is None:
         raise NotFoundException("LleidaHacker not found")
-    payload = check_image(payload)
+    if payload.image is not None:
+        payload = check_image(payload)
     updated = set_existing_data(lleidahacker, payload)
     lleidahacker.updated_at = date.now()
     updated.append("updated_at")
