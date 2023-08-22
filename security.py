@@ -72,7 +72,7 @@ def create_access_token(user: ModelUser, expires_delta: timedelta = None):
     elif user.type == UserType.LLEIDAHACKER.value:
         to_encode.update(
             {"active": user.active and user.accepted and not user.rejected})
-    elif user.type == UserType.COMPANY.value:
+    elif user.type == UserType.COMPANYUSER.value:
         to_encode.update({"active": user.active})
     to_encode.update({"expt": expire.isoformat()})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -108,7 +108,7 @@ def get_data_from_token(token: str = Depends(oauth2_scheme)):
         d.available = not data.get("banned")
     elif d.type == UserType.LLEIDAHACKER.value:
         d.available = bool(data.get("active"))
-    elif d.type == UserType.COMPANY.value:
+    elif d.type == UserType.COMPANYUSER.value:
         d.available = bool(data.get("active"))
     return d
 
