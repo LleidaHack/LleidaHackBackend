@@ -2,8 +2,11 @@ from sqlalchemy.orm import Session
 from security import get_password_hash
 
 from models.User import User as ModelUser
+from models.UserType import UserType
 
 from schemas.User import User as SchemaUser
+
+from utils.service_utils import check_image
 
 
 async def get_all(db: Session):
@@ -15,16 +18,10 @@ async def get_user(db: Session, userId: int):
 
 
 async def add_user(db: Session, payload: SchemaUser):
-    new_user = ModelUser(name=payload.name,
-                         email=payload.email,
-                         password=get_password_hash(payload.password),
-                         nickname=payload.nickname,
-                         birthdate=payload.birthdate,
-                         food_restrictions=payload.food_restrictions,
-                         telephone=payload.telephone,
-                         address=payload.address,
-                         shirt_size=payload.shirt_size,
-                         image_id=payload.image_id)
+    new_user = ModelUser(**payload.dict())
+    if payload.image is not None:
+        payload = check_image(payload)
+    new_user.password = get_password_hash(payload.password)
     db.add(new_user)
     db.commit()
     return new_user

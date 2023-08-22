@@ -1,9 +1,10 @@
 from __future__ import annotations
 from typing import List
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 from models.User import User
+from models.UserType import UserType
 from schemas.Event import Event
 
 
@@ -15,9 +16,11 @@ class Company(Base):
     address: str = Column(String)
     telephone: str = Column(String)
     website: str = Column(String)
-    logo: str = Column(String)
+    image: str = Column(String)
+    is_image_url: bool = Column(Boolean, default=False)
     linkdin: str = Column(String)
-    users = relationship('CompanyUser', back_populates='company')
+    leader_id: int = Column(Integer, ForeignKey('user.id'))
+    users = relationship('User', secondary='company_user')
     events = relationship('Event', secondary='company_event_participation')
 
 
@@ -28,7 +31,9 @@ class CompanyUser(User):
     company = relationship('Company', back_populates='users')
     active: bool = Column(Integer)
     role: str = Column(String)
+    accepted: bool = Column(Boolean, default=False)
+    rejected: bool = Column(Boolean, default=False)
 
     __mapper_args__ = {
-        "polymorphic_identity": "company",
+        "polymorphic_identity": UserType.COMPANYUSER.value,
     }

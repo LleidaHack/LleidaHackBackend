@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from fastapi.security import HTTPBasicCredentials
 from security import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token, sec
 
+from error.AuthenticationException import AuthenticationException
+
 router = APIRouter(
     prefix="",
     tags=["Authentication"],
@@ -26,11 +28,7 @@ async def login(credentials: HTTPBasicCredentials = Depends(sec),
     password = credentials.password
     user = authenticate_user(username, password, db)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise AuthenticationException("Incorrect username or password")
     access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
     access_token = create_access_token(user,
                                        expires_delta=access_token_expires)
