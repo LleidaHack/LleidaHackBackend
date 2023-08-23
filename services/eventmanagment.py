@@ -20,7 +20,7 @@ async def register_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
-                                     and data.user_id != hacker.id))):
+                                     and data.user_id == hacker.id))):
             raise AuthenticationException("Not authorized")
     if hacker in event.registered_hackers or hacker in event.accepted_hackers:
         raise InvalidDataException("Hacker already registered")
