@@ -62,6 +62,7 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
         ModelHackerAccepted.user_id == hackerId).all()
     for event_acc in event_accs:
         db.delete(event_acc)
+    db.delete(hacker)
     db.commit()
     return hacker
 

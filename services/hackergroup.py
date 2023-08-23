@@ -97,7 +97,7 @@ async def delete_hacker_group(id: int, db: Session, data: TokenData):
         raise AuthenticationException("Not authorized")
     db.query(ModelHackerGroupUser).filter(
         ModelHackerGroupUser.group_id == id).delete()
-    db.query(ModelHackerGroup).filter(ModelHackerGroup.id == id).delete()
+    db.delete(hacker_group)
     db.commit()
     return hacker_group
 
