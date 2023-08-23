@@ -37,7 +37,7 @@ async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
-                                     and data.user_id != hacker.id))):
+                                     and data.user_id == hacker.id))):
             raise AuthenticationException("Not authorized")
     if not (hacker in event.registered_hackers
             or hacker in event.accepted_hackers):
