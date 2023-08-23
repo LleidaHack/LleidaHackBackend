@@ -32,6 +32,7 @@ app = FastAPI()
 
 html = """<p>Hi this test mail, thanks for using Fastapi-mail</p> """
 
+
 def send_email(email: str, template: str):
     msg = MIMEText(template, "html")
     msg['Subject'] = "Test Email"
@@ -39,8 +40,11 @@ def send_email(email: str, template: str):
     msg['To'] = email
 
     try:
-        with SMTP_SSL(Configuration.get('MAIL', 'MAIL_SERVER'), Configuration.get('MAIL', 'MAIL_PORT')) as server:
-            server.login(Configuration.get('MAIL', 'MAIL_USERNAME'), Configuration.get('MAIL', 'MAIL_PASSWORD'))
-            server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email], msg.as_string())
+        with SMTP_SSL(Configuration.get('MAIL', 'MAIL_SERVER'),
+                      Configuration.get('MAIL', 'MAIL_PORT')) as server:
+            server.login(Configuration.get('MAIL', 'MAIL_USERNAME'),
+                         Configuration.get('MAIL', 'MAIL_PASSWORD'))
+            server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
+                            msg.as_string())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
