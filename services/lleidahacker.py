@@ -73,7 +73,6 @@ async def delete_lleidahacker(userId: int, db: Session, data: TokenData):
         raise NotFoundException("LleidaHacker not found")
     db.delete(lleidahacker)
     db.commit()
-    db.refresh(lleidahacker)
     return lleidahacker
 
 
