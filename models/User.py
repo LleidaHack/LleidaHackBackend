@@ -1,11 +1,11 @@
 from datetime import date
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, Integer, String, Boolean
 from database import Base
 # from passlib import hash
 
 
 class User(Base):
-    __tablename__ = 'llhk_user'
+    __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
     nickname: str = Column(String)
@@ -17,10 +17,13 @@ class User(Base):
     address: str = Column(String)
     shirt_size: str = Column(String)
     type: str = Column(String)
-    image_id: str = Column(String)
+    created_at: date = Column(DateTime, default=date.today())
+    updated_at: date = Column(DateTime, default=date.today())
+    image: str = Column(String, default="")
+    is_image_url: bool = Column(Boolean, default=False)
 
     __mapper_args__ = {
-        "polymorphic_identity": "llhk_user",
+        "polymorphic_identity": "user",
         "polymorphic_on": type,
     }
 

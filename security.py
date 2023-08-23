@@ -5,12 +5,14 @@ from database import get_db
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPBasic
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
 from jose import JWTError, jwt
 from passlib.hash import pbkdf2_sha256
+import os
 
 from models.User import User as ModelUser
+from models.UserType import UserType
 from schemas.Token import TokenData
+from models.TokenData import TokenData as TD
 from config import Configuration
 
 SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
@@ -35,9 +37,13 @@ def get_password_hash(password):
     # return password
 
 
+def is_service_token(token: str):
+    return token.credentials == SERVICE_TOKEN
+
+
 def verify_token(req: Request):
     token = req.headers["Authorization"]
-    if token is SERVICE_TOKEN:
+    if is_service_token(token):
         return True
     dict = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     # Here your code for verifying the token or whatever you use
@@ -46,9 +52,8 @@ def verify_token(req: Request):
     return True
 
 
-def authenticate_user(username: str, password: str):
-    user_dict = get_db().query(ModelUser).filter(
-        ModelUser.email == username).first()
+def authenticate_user(username: str, password: str, db: Session):
+    user_dict = db.query(ModelUser).filter(ModelUser.email == username).first()
     if not user_dict:
         return False
     if not verify_password(password, user_dict.password):
@@ -62,6 +67,13 @@ def create_access_token(user: ModelUser, expires_delta: timedelta = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
+    if user.type == UserType.HACKER.value:
+        to_encode.update({"banned": user.banned})
+    elif user.type == UserType.LLEIDAHACKER.value:
+        to_encode.update(
+            {"active": user.active and user.accepted and not user.rejected})
+    elif user.type == UserType.COMPANYUSER.value:
+        to_encode.update({"active": user.active})
     to_encode.update({"expt": expire.isoformat()})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -80,44 +92,28 @@ def create_confirmation_token(email: str):
     return serialized_jwt
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
-        raise credentials_exception
-    user_dict = get_db().query(ModelUser).filter(
-        ModelUser.email == token_data.username).first()
-    user = ModelUser(name=user_dict.name,
-                     email=user_dict.email,
-                     password=user_dict.password,
-                     nickname=user_dict.nickname,
-                     birthdate=user_dict.birthdate,
-                     food_restrictions=user_dict.food_restrictions,
-                     telephone=user_dict.telephone,
-                     address=user_dict.address,
-                     shirt_size=user_dict.shirt_size)
-    if user is None:
-        raise credentials_exception
-    return user
+def get_data_from_token(token: str = Depends(oauth2_scheme)):
+    d = TD()
+    if is_service_token(token):
+        d.is_admin = True
+        d.is_service = True
+        d.user_id = 0
+        d.available = True
+        d.type = "service"
+        return d
+    data = decode_token(token)
+    d.user_id = data.get("user_id")
+    d.type = data.get("type")
+    if d.type == UserType.HACKER.value:
+        d.available = not data.get("banned")
+    elif d.type == UserType.LLEIDAHACKER.value:
+        d.available = bool(data.get("active"))
+    elif d.type == UserType.COMPANYUSER.value:
+        d.available = bool(data.get("active"))
+    return d
 
 
-async def get_current_active_user(
-        current_user: ModelUser = Depends(get_current_user)):
-    # if current_user.disabled:
-    # raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
-
-
-async def decode_token(token):
+def decode_token(token):
     return jwt.decode(token.credentials.encode('utf-8'),
                       SECRET_KEY,
                       algorithms=[ALGORITHM])
@@ -136,3 +132,10 @@ async def check_permissions(token: str, permission: List):
             detail="Insufficient permissions",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+async def check_image_exists(image_id: int):
+    file_path = f"static/{image_id}.jpg"
+    if not os.path.isfile(file_path):
+        return False
+    return True
