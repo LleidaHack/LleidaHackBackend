@@ -3,11 +3,13 @@ from sqlalchemy.orm import Session
 from database import get_db
 from error.NotFoundException import NotFoundException
 
-from security import oauth_schema, get_data_from_token
+from security import get_data_from_token
 from models.Event import Event
 import services.event as event_service
 import services.hacker as hacker_service
 import services.eventmanagment as eventmanagment_service
+
+from utils.auth_bearer import JWTBearer
 
 router = APIRouter(
     prefix="/eventmanagment",
@@ -19,7 +21,7 @@ router = APIRouter(
 async def register_hacker_to_event(event_id: int,
                                    hacker_id: int,
                                    db: Session = Depends(get_db),
-                                   token: str = Depends(oauth_schema)):
+                                   token: str = Depends(JWTBearer())):
     """
     Register a hacker to an event
     """
@@ -33,7 +35,7 @@ async def register_hacker_to_event(event_id: int,
 async def unregister_hacker_from_event(event_id: int,
                                        hacker_id: int,
                                        db: Session = Depends(get_db),
-                                       token: str = Depends(oauth_schema)):
+                                       token: str = Depends(JWTBearer())):
     """
     Unregister a hacker from an event
     """
@@ -51,7 +53,7 @@ async def unregister_hacker_from_event(event_id: int,
 async def participate_hacker_to_event(event_id: int,
                                       hacker_id: int,
                                       db: Session = Depends(get_db),
-                                      token: str = Depends(oauth_schema)):
+                                      token: str = Depends(JWTBearer())):
     """
     Participate a hacker to an event
     """
@@ -76,7 +78,7 @@ async def participate_hacker_to_event(event_id: int,
 async def unparticipate_hacker_from_event(event_id: int,
                                           hacker_id: int,
                                           db: Session = Depends(get_db),
-                                          token: str = Depends(oauth_schema)):
+                                          token: str = Depends(JWTBearer())):
     """
     Unparticipate a hacker from an event
     """
@@ -94,7 +96,7 @@ async def unparticipate_hacker_from_event(event_id: int,
 async def accept_hacker_to_event(event_id: int,
                                  hacker_id: int,
                                  db: Session = Depends(get_db),
-                                 token: str = Depends(oauth_schema)):
+                                 token: str = Depends(JWTBearer())):
     """
         Accept a hacker to an event
         """
@@ -112,7 +114,7 @@ async def accept_hacker_to_event(event_id: int,
 async def reject_hacker_from_event(event_id: int,
                                    hacker_id: int,
                                    db: Session = Depends(get_db),
-                                   token: str = Depends(oauth_schema)):
+                                   token: str = Depends(JWTBearer())):
     """
         Reject a hacker from an event
         """
@@ -129,7 +131,7 @@ async def reject_hacker_from_event(event_id: int,
 @router.get("/{event_id}/pending")
 async def get_pending_hackers(event_id: int,
                               db: Session = Depends(get_db),
-                              token: str = Depends(oauth_schema)):
+                              token: str = Depends(JWTBearer())):
     """
     Get the pending hackers of an event
     """
@@ -145,7 +147,7 @@ async def get_pending_hackers(event_id: int,
 @router.get("/{event_id}/status")
 async def get_event_status(event_id: int,
                            db: Session = Depends(get_db),
-                           token: str = Depends(oauth_schema)):
+                           token: str = Depends(JWTBearer())):
     """
     Get the status of an event
     """
@@ -160,7 +162,7 @@ async def eat(event_id: int,
               meal_id: int,
               hacker_id: int,
               db: Session = Depends(get_db),
-              token: str = Depends(oauth_schema)):
+              token: str = Depends(JWTBearer())):
     """
     Register a hacker to an event
     """

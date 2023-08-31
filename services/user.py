@@ -45,3 +45,12 @@ async def update_user(db: Session, userId: int, payload: SchemaUser):
     db.commit()
     db.refresh(user)
     return user
+
+
+async def set_user_token(db: Session, userId: int, token: str, refresh_token: str):
+    user = db.query(ModelUser).filter(ModelUser.id == userId).first()
+    user.token = token
+    user.refresh_token = refresh_token
+    db.commit()
+    db.refresh(user)
+    return user

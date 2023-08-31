@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -114,6 +114,18 @@ app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(utils.router)
 
+
+# @app.middleware("https")
+# async def check_token_middleware(request: Request, call_next):
+#     try:
+#         if request.url.path != "/docs" and request.url.path != "/redoc":
+#             authentication.check_token(request)
+#     except Exception as e:
+#         logger.error(e)
+#         raise AuthenticationException()
+
+#     response = await call_next(request)
+#     return response
 
 @app.get("/")
 def root():

@@ -2,7 +2,8 @@ from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
 from schemas.LleidaHacker import LleidaHackerUpdate as SchemaLleidaHackerUpdate
 
 from database import get_db
-from security import create_access_token, oauth_schema, create_refresh_token, get_data_from_token
+from security import create_access_token, create_refresh_token, get_data_from_token
+from utils.auth_bearer import JWTBearer
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
@@ -32,7 +33,7 @@ async def signup(payload: SchemaLleidaHacker,
 
 @router.get("/all")
 async def get_lleidahacker(db: Session = Depends(get_db),
-                           str=Depends(oauth_schema)):
+                           str=Depends(JWTBearer())):
     return await lleidahacker_service.get_all(db)
 
 
@@ -40,7 +41,7 @@ async def get_lleidahacker(db: Session = Depends(get_db),
 async def get_lleidahacker(userId: int,
                            response: Response,
                            db: Session = Depends(get_db),
-                           str=Depends(oauth_schema)):
+                           str=Depends(JWTBearer())):
     return await lleidahacker_service.get_lleidahacker(userId, db)
 
 
@@ -48,7 +49,7 @@ async def get_lleidahacker(userId: int,
 async def add_lleidahacker(payload: SchemaLleidaHacker,
                            response: Response,
                            db: Session = Depends(get_db),
-                           str=Depends(oauth_schema)):
+                           str=Depends(JWTBearer())):
     new_lleidahacker = await lleidahacker_service.add_lleidahacker(payload, db)
     return {"success": True, "user_id": new_lleidahacker.id}
 
@@ -57,7 +58,7 @@ async def add_lleidahacker(payload: SchemaLleidaHacker,
 async def delete_lleidahacker(userId: int,
                               response: Response,
                               db: Session = Depends(get_db),
-                              token: str = Depends(oauth_schema)):
+                              token: str = Depends(JWTBearer())):
     lleidahacker = await lleidahacker_service.delete_lleidahacker(
         userId, db, get_data_from_token(token))
     return {"success": True, "deleted_id": userId}
@@ -68,7 +69,7 @@ async def update_lleidahacker(userId: int,
                               payload: SchemaLleidaHackerUpdate,
                               response: Response,
                               db: Session = Depends(get_db),
-                              token: str = Depends(oauth_schema)):
+                              token: str = Depends(JWTBearer())):
     lleidahacker, updated = await lleidahacker_service.update_lleidahacker(
         userId, payload, db, get_data_from_token(token))
     return {"success": True, "updated_id": userId, 'updated': updated}
@@ -78,7 +79,7 @@ async def update_lleidahacker(userId: int,
 async def accept_lleidahacker(userId: int,
                               response: Response,
                               db: Session = Depends(get_db),
-                              token: str = Depends(oauth_schema)):
+                              token: str = Depends(JWTBearer())):
     lleidahacker = await lleidahacker_service.accept_lleidahacker(
         userId, db, get_data_from_token(token))
     return {"success": True, "updated_id": userId}
@@ -88,7 +89,7 @@ async def accept_lleidahacker(userId: int,
 async def reject_lleidahacker(userId: int,
                               response: Response,
                               db: Session = Depends(get_db),
-                              token: str = Depends(oauth_schema)):
+                              token: str = Depends(JWTBearer())):
     lleidahacker = await lleidahacker_service.reject_lleidahacker(
         userId, db, get_data_from_token(token))
     return {"success": True, "updated_id": userId}
@@ -98,7 +99,7 @@ async def reject_lleidahacker(userId: int,
 async def activate_lleidahacker(userId: int,
                                 response: Response,
                                 db: Session = Depends(get_db),
-                                token: str = Depends(oauth_schema)):
+                                token: str = Depends(JWTBearer())):
     lleidahacker = await lleidahacker_service.activate_lleidahacker(
         userId, db, get_data_from_token(token))
     return {"success": True, "updated_id": userId}
@@ -108,7 +109,7 @@ async def activate_lleidahacker(userId: int,
 async def deactivate_lleidahacker(userId: int,
                                   response: Response,
                                   db: Session = Depends(get_db),
-                                  token: str = Depends(oauth_schema)):
+                                  token: str = Depends(JWTBearer())):
     lleidahacker = await lleidahacker_service.deactivate_lleidahacker(
         userId, db, get_data_from_token(token))
     return {"success": True, "updated_id": userId}

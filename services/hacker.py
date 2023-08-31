@@ -120,12 +120,7 @@ async def unban_hacker(hackerId: int, db: Session, data: TokenData):
 
 
 #TODO: #34 Check if token validation is correct
-async def get_hacker_events(hackerId: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and data.user_id == hackerId))):
-            raise AuthenticationException("Not authorized")
+async def get_hacker_events(hackerId: int, db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
@@ -133,11 +128,7 @@ async def get_hacker_events(hackerId: int, db: Session, data: TokenData):
 
 
 #TODO: #34 Check if token validation is correct
-def get_hacker_groups(hackerId: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and data.user_id == hackerId))):
+def get_hacker_groups(hackerId: int, db: Session):
             raise AuthenticationException("Not authorized")
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:

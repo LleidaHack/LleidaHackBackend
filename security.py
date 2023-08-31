@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from dateutil import parser
 from typing import List
 from database import get_db
-from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPBasic
+from fastapi.security import OAuth2PasswordBearer, HTTPBasic
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
@@ -15,6 +15,8 @@ from schemas.Token import TokenData
 from models.TokenData import TokenData as TD
 from config import Configuration
 
+from services import user as user_service
+
 SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
 ALGORITHM = Configuration.get("SECURITY", "ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY",
@@ -23,7 +25,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY",
 SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-oauth_schema = HTTPBearer()
 sec = HTTPBasic()
 
 
@@ -41,14 +42,14 @@ def is_service_token(token: str):
     return token.credentials == SERVICE_TOKEN
 
 
-def verify_token(req: Request):
-    token = req.headers["Authorization"]
+def verify_token(token:str):
+    # token = req.headers["Authorization"]
     if is_service_token(token):
         return True
     dict = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     # Here your code for verifying the token or whatever you use
     if parser.parse(dict["expt"]) < datetime.utcnow():
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=401, detail="Token expired")
     return True
 
 
@@ -66,7 +67,7 @@ def create_access_token(user: ModelUser, expires_delta: timedelta = None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     if user.type == UserType.HACKER.value:
         to_encode.update({"banned": user.banned})
     elif user.type == UserType.LLEIDAHACKER.value:
@@ -76,6 +77,7 @@ def create_access_token(user: ModelUser, expires_delta: timedelta = None):
         to_encode.update({"active": user.active})
     to_encode.update({"expt": expire.isoformat()})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
     return encoded_jwt
 
 
@@ -139,3 +141,8 @@ async def check_image_exists(image_id: int):
     if not os.path.isfile(file_path):
         return False
     return True
+
+async def create_token_pair(user: ModelUser):
+    access_token = create_access_token(user)
+    refresh_token = create_refresh_token(user)
+    return access_token, refresh_token
