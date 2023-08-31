@@ -42,7 +42,7 @@ def is_service_token(token: str):
     return token.credentials == SERVICE_TOKEN
 
 
-def verify_token(token:str):
+def verify_token(token: str):
     # token = req.headers["Authorization"]
     if is_service_token(token):
         return True
@@ -67,7 +67,8 @@ def create_access_token(user: ModelUser, expires_delta: timedelta = None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(
+            minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     if user.type == UserType.HACKER.value:
         to_encode.update({"banned": user.banned})
     elif user.type == UserType.LLEIDAHACKER.value:
@@ -141,6 +142,7 @@ async def check_image_exists(image_id: int):
     if not os.path.isfile(file_path):
         return False
     return True
+
 
 async def create_token_pair(user: ModelUser):
     access_token = create_access_token(user)

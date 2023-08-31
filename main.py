@@ -114,7 +114,6 @@ app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(utils.router)
 
-
 # @app.middleware("https")
 # async def check_token_middleware(request: Request, call_next):
 #     try:
@@ -126,6 +125,7 @@ app.include_router(utils.router)
 
 #     response = await call_next(request)
 #     return response
+
 
 @app.get("/")
 def root():
