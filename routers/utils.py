@@ -2,7 +2,7 @@ from fastapi import Depends, APIRouter
 from fastapi import UploadFile, File
 
 # from database import get_db
-from security import oauth_schema
+from utils.auth_bearer import JWTBearer
 import services.utils as utils_service
 import services.mail as email_service
 

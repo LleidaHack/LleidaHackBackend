@@ -7,6 +7,8 @@ from database import Base
 class User(Base):
     __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True)
+    token: str = Column(String, default="")
+    refresh_token: str = Column(String, default="")
     name: str = Column(String)
     nickname: str = Column(String)
     password: str = Column(String)

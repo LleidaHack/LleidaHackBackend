@@ -11,6 +11,7 @@ from fastapi.security import HTTPBasicCredentials
 from security import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token, sec
 
 from error.AuthenticationException import AuthenticationException
+from services import authentication as auth_service
 
 router = APIRouter(
     prefix="",
@@ -38,6 +39,10 @@ async def login(credentials: HTTPBasicCredentials = Depends(sec),
         "token_type": "bearer"
     }
 
+@router.post("/refresh-token")
+async def refresh_token(token:str, ref:str, db: Session = Depends(get_db)):
+    return await auth_service.refresh_token(token, ref, db)
+    
 
 # @router.get("/me")
 # async def read_users_me(current_user: ModelUser = Depends(get_current_active_user)):
