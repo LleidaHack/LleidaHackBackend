@@ -10,9 +10,11 @@ class Hacker(User):
     class Config:
         orm_mode = True
 
+
 class HackerPublic(UserPublic):
     github: str
     linkedin: str
+
 
 class HackerUpdate(UserUpdate):
     github: Optional[str]
