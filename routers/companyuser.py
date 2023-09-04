@@ -8,7 +8,7 @@ import services.companyuser as companyuser_service
 
 from database import get_db
 
-from security import create_access_token
+from security import create_token_pair
 from security import create_refresh_token
 from security import get_data_from_token
 
@@ -25,12 +25,11 @@ async def signup(payload: SchemaCompanyUser,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_companyuser = await companyuser_service.add_company_user(payload, db)
-    token = create_access_token(new_companyuser)
-    refresh_token = create_refresh_token(new_companyuser)
+    access_token, refresh_token = create_token_pair(new_companyuser, db)
     return {
         "success": True,
         "user_id": new_companyuser.id,
-        "access_token": token,
+        "access_token": access_token,
         "refresh_token": refresh_token
     }
 

@@ -9,7 +9,7 @@ from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from security import create_access_token, create_refresh_token, get_data_from_token
+from security import create_token_pair, get_data_from_token
 
 from utils.auth_bearer import JWTBearer
 import services.hacker as hacker_service
@@ -25,12 +25,11 @@ async def signup(payload: SchemaHacker,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_hacker = await hacker_service.add_hacker(payload, db)
-    token = create_access_token(new_hacker)
-    refresh_token = create_refresh_token(new_hacker)
+    access_token, refresh_token = create_token_pair(new_hacker, db)
     return {
         "success": True,
         "user_id": new_hacker.id,
-        "access_token": token,
+        "access_token": access_token,
         "refresh_token": refresh_token
     }
 
@@ -38,7 +37,7 @@ async def signup(payload: SchemaHacker,
 @router.get("/all")
 async def get_hackers(db: Session = Depends(get_db),
                       token: str = Depends(JWTBearer())):
-    return await hacker_service.get_all(db, get_data_from_token(token))
+    return await hacker_service.get_all(db)
 
 
 @router.get("/{hackerId}")

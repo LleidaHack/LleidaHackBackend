@@ -8,7 +8,7 @@ from models.UserType import UserType
 from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
 from schemas.LleidaHacker import LleidaHackerUpdate as SchemaLleidaHackerUpdate
 
-from security import check_image_exists, get_password_hash
+from security import get_password_hash
 
 from utils.service_utils import set_existing_data, check_image
 
