@@ -51,8 +51,8 @@ async def update_event(id: int,
                        event: SchemaEvent,
                        db: Session = Depends(get_db),
                        token: str = Depends(JWTBearer())):
-    new_event, updated = await event_service.update_event(id, event, db,
-                                                 get_data_from_token(token))
+    new_event, updated = await event_service.update_event(
+        id, event, db, get_data_from_token(token))
     return {'success': True, 'event_id': new_event.id, 'updated': updated}
 
 
