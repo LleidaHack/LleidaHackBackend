@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
 from database import get_db
-from security import create_access_token, create_refresh_token
+from security import create_token_pair
 import services.user as user_service
 from utils.auth_bearer import JWTBearer
 
@@ -19,12 +19,11 @@ async def signup(payload: SchemaUser,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_user = await user_service.add_user(db, payload)
-    token = create_access_token(new_user)
-    refresh_token = create_refresh_token(new_user)
+    access_token, refresh_token = create_token_pair(new_user, db)
     return {
         "success": True,
         "user_id": new_user.id,
-        "acces_token": token,
+        "acces_token": access_token,
         "refresh_token": refresh_token
     }
 

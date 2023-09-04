@@ -11,7 +11,6 @@ from models.Hacker import HackerGroup as ModelHackerGroup
 from models.TokenData import TokenData
 from models.UserType import UserType
 
-from security import check_image_exists
 from utils.service_utils import set_existing_data, check_image
 
 from error.AuthenticationException import AuthenticationException

@@ -129,7 +129,6 @@ async def get_hacker_events(hackerId: int, db: Session):
 
 #TODO: #34 Check if token validation is correct
 def get_hacker_groups(hackerId: int, db: Session):
-            raise AuthenticationException("Not authorized")
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
