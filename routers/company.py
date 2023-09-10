@@ -9,8 +9,6 @@ from security import get_data_from_token
 from utils.auth_bearer import JWTBearer
 import services.company as company_service
 
-
-
 router = APIRouter(
     prefix="/company",
     tags=["Company"],
