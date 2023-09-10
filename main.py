@@ -31,10 +31,10 @@ dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
 tags_metadata = [
-    # {
-    #     "name": "User",
-    #     "description": "User related endpoints"
-    # },
+    {
+        "name": "User",
+        "description": "User related endpoints"
+    },
     {
         "name": "Hacker",
         "description": "Hacker related endpoints"
@@ -101,7 +101,7 @@ app.add_exception_handler(InputException, eh.input_exception_handler)
 
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
-# app.include_router(user.router)
+app.include_router(user.router)
 app.include_router(hacker.router)
 app.include_router(hackergroup.router)
 app.include_router(lleidahacker.router)
@@ -113,19 +113,6 @@ app.include_router(meal.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(utils.router)
-
-# @app.middleware("https")
-# async def check_token_middleware(request: Request, call_next):
-#     try:
-#         if request.url.path != "/docs" and request.url.path != "/redoc":
-#             authentication.check_token(request)
-#     except Exception as e:
-#         logger.error(e)
-#         raise AuthenticationException()
-
-#     response = await call_next(request)
-#     return response
-
 
 @app.get("/")
 def root():

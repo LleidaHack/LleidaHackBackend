@@ -2,14 +2,17 @@ from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from security import verify_token
+from config import Configuration
 
-
+SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
 class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
         super(JWTBearer, self).__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
+        if credentials.credentials == SERVICE_TOKEN:
+            return credentials.credentials
         if credentials:
             if not credentials.scheme.lower() == "bearer":
                 raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
@@ -21,7 +24,6 @@ class JWTBearer(HTTPBearer):
 
     def verify_jwt(self, jwtoken: str) -> bool:
         isTokenValid: bool = False
-
         try:
             payload = verify_token(jwtoken)
         except:

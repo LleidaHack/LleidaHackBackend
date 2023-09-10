@@ -128,8 +128,44 @@ async def get_hacker_events(hackerId: int, db: Session):
 
 
 #TODO: #34 Check if token validation is correct
-def get_hacker_groups(hackerId: int, db: Session):
+async def get_hacker_groups(hackerId: int, db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return hacker.groups
+
+async def add_dailyhack(hackerId: int, url:str, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    hacker.dailyhack_github_repo = url
+    db.commit()
+    db.refresh(hacker)
+    return hacker
+
+async def remove_dailyhack(hackerId: int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    hacker.dailyhack_github_repo = ""
+    db.commit()
+    db.refresh(hacker)
+    return hacker
+
+async def update_dailyhack(hackerId: int, url:str, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    hacker.dailyhack_github_repo = url
+    db.commit()
+    db.refresh(hacker)
+    return hacker

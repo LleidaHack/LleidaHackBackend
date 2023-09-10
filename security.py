@@ -57,7 +57,7 @@ def verify_token(token:str, db: Session = Depends(get_db)):
         raise AuthenticationException("Invalid token")
     if user.token != token:
         raise AuthenticationException("Invalid token")
-    if user.refresh_token != dict["refresh_token"]:
+    if not (dict['refresh_token'] != None and user.refresh_token == dict["refresh_token"]):
         raise AuthenticationException("Invalid token")
     # Here your code for verifying the token or whatever you use
     if parser.parse(dict["expt"]) < datetime.utcnow():
