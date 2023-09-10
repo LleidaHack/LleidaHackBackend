@@ -112,22 +112,24 @@ async def accept_hacker_to_event(event_id: int,
     return await eventmanagment_service.accept_hacker_to_event(
         event, hacker, db, get_data_from_token(token))
 
+
 @router.put("/{event_id}/acceptgroup/{group_id}")
 async def accept_group_to_event(event_id: int,
-                                    group_id: int,
-                                    db: Session = Depends(get_db),
-                                    token: str = Depends(JWTBearer())):
-        """
+                                group_id: int,
+                                db: Session = Depends(get_db),
+                                token: str = Depends(JWTBearer())):
+    """
             Accept a group to an event
             """
-        event = await event_service.get_event(event_id, db)
-        if event is None:
-            raise NotFoundException("Event not found")
-        group = await hackergroup_service.get_hacker_group(group_id, db)
-        if group is None:
-            raise NotFoundException("Group not found")
-        return await eventmanagment_service.accept_group_to_event(
-            event, group, db, get_data_from_token(token))
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    group = await hackergroup_service.get_hacker_group(group_id, db)
+    if group is None:
+        raise NotFoundException("Group not found")
+    return await eventmanagment_service.accept_group_to_event(
+        event, group, db, get_data_from_token(token))
+
 
 @router.put("/{event_id}/reject/{hacker_id}")
 async def reject_hacker_from_event(event_id: int,
@@ -146,22 +148,23 @@ async def reject_hacker_from_event(event_id: int,
     return await eventmanagment_service.reject_hacker_from_event(
         event, hacker, db, get_data_from_token(token))
 
+
 @router.put("/{event_id}/rejectgroup/{group_id}")
 async def reject_group_from_event(event_id: int,
-                                      group_id: int,
-                                      db: Session = Depends(get_db),
-                                      token: str = Depends(JWTBearer())):
-     """
+                                  group_id: int,
+                                  db: Session = Depends(get_db),
+                                  token: str = Depends(JWTBearer())):
+    """
           Reject a group from an event
           """
-     event = await event_service.get_event(event_id, db)
-     if event is None:
-          raise NotFoundException("Event not found")
-     group = await hackergroup_service.get_hacker_group(group_id, db)
-     if group is None:
-          raise NotFoundException("Group not found")
-     return await eventmanagment_service.reject_group_from_event(
-          event, group, db, get_data_from_token(token))
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    group = await hackergroup_service.get_hacker_group(group_id, db)
+    if group is None:
+        raise NotFoundException("Group not found")
+    return await eventmanagment_service.reject_group_from_event(
+        event, group, db, get_data_from_token(token))
 
 
 @router.get("/{event_id}/pending")
@@ -179,32 +182,35 @@ async def get_pending_hackers(event_id: int,
         'hackers': event.registered_hackers
     }
 
+
 @router.get("/{event_id}/pendinggruped")
 async def get_pending_hackers_gruped(event_id: int,
-                                db: Session = Depends(get_db),
-                                token: str = Depends(JWTBearer())):
-        """
+                                     db: Session = Depends(get_db),
+                                     token: str = Depends(JWTBearer())):
+    """
         Get the pending hackers of an event
         """
-        event = await event_service.get_event(event_id, db)
-        if event is None:
-            raise NotFoundException("Event not found")
-        return await eventmanagment_service.get_pending_hackers_gruped(event, db, get_data_from_token(token))
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return await eventmanagment_service.get_pending_hackers_gruped(
+        event, db, get_data_from_token(token))
+
 
 @router.get("/{event_id}/rejected")
 async def get_rejected_hackers(event_id: int,
-                                db: Session = Depends(get_db),
-                                token: str = Depends(JWTBearer())):
-        """
+                               db: Session = Depends(get_db),
+                               token: str = Depends(JWTBearer())):
+    """
         Get the rejected hackers of an event
         """
-        event = await event_service.get_event(event_id, db)
-        if event is None:
-            raise NotFoundException("Event not found")
-        return {
-            'size': len(event.rejected_hackers),
-            'hackers': event.rejected_hackers
-        }
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return {
+        'size': len(event.rejected_hackers),
+        'hackers': event.rejected_hackers
+    }
 
 
 @router.get("/{event_id}/status")
@@ -239,10 +245,13 @@ async def eat(event_id: int,
     return await eventmanagment_service.eat(event, meal, hacker, db,
                                             get_data_from_token(token))
 
+
 @router.get("/get_hackeps")
-async def get_hackeps(year:int = None, db: Session = Depends(get_db),
+async def get_hackeps(year: int = None,
+                      db: Session = Depends(get_db),
                       token: str = Depends(JWTBearer())):
     """
     Get the hackeps
     """
-    return await eventmanagment_service.get_hackeps(db, get_data_from_token(token))
+    return await eventmanagment_service.get_hackeps(db,
+                                                    get_data_from_token(token))

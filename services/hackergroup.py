@@ -146,14 +146,16 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
         raise NotFoundException("Hacker group not found")
     if hacker_group.leader_id == hackerId:
         raise InvalidDataException("Cannot remove leader from group")
-    if not (data.type == UserType.HACKER.value
-            and (data.user_id == hacker_group.leader_id or data.user_id == hackerId)):
+    if not (data.type == UserType.HACKER.value and
+            (data.user_id == hacker_group.leader_id
+             or data.user_id == hackerId)):
         raise AuthenticationException("Not authorized")
     hacker = [h for h in hacker_group.members if h.id == hackerId]
     hacker_group.members.remove(hacker[0])
     db.commit()
     db.refresh(hacker_group)
     return hacker_group
+
 
 async def set_hacker_group_leader(groupId: int, hackerId: int, db: Session,
                                   data: TokenData):

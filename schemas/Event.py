@@ -39,6 +39,7 @@ class EventUpdate(BaseModel):
     image: Optional[str]
     is_image_url: Optional[bool]
 
+
     # start_time: Time = Column(Time, default=func.now())
 class HackerEventRegistration(BaseModel):
     shirt_size: str
@@ -48,6 +49,7 @@ class HackerEventRegistration(BaseModel):
     github: str
     linkedin: str
     update_user: bool
+
 
 class HackerEventRegistrationUpdate(BaseModel):
     shirt_size: Optional[str]

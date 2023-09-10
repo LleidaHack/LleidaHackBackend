@@ -19,7 +19,9 @@ from error.InvalidDataException import InvalidDataException
 
 from utils.service_utils import isBase64
 
-async def register_hacker_to_event(payload:SchemaEventRegistration, event: ModelEvent, hacker: ModelHacker,
+
+async def register_hacker_to_event(payload: SchemaEventRegistration,
+                                   event: ModelEvent, hacker: ModelHacker,
                                    db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -30,9 +32,11 @@ async def register_hacker_to_event(payload:SchemaEventRegistration, event: Model
         raise InvalidDataException("Hacker already registered")
     if len(event.registered_hackers) >= event.max_participants:
         raise InvalidDataException("Event full")
-    if payload.cv!="" and not isBase64(payload.cv):
+    if payload.cv != "" and not isBase64(payload.cv):
         raise InvalidDataException("Invalid CV")
-    event_registration = ModelHackerRegistration(**payload.dict(), user_id=hacker.id, event_id=event.id)
+    event_registration = ModelHackerRegistration(**payload.dict(),
+                                                 user_id=hacker.id,
+                                                 event_id=event.id)
     if payload.update_user:
         if hacker.cv != payload.cv:
             hacker.cv = payload.cv
@@ -46,7 +50,7 @@ async def register_hacker_to_event(payload:SchemaEventRegistration, event: Model
             hacker.github = payload.github
         if hacker.linkedin != payload.linkedin:
             hacker.linkedin = payload.linkedin
-        
+
     db.add(event_registration)
     db.commit()
     db.refresh(event)
@@ -121,8 +125,9 @@ async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(hacker)
     return event
 
+
 async def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
-                                    db: Session, data: TokenData):
+                                db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -136,8 +141,9 @@ async def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
     db.refresh(group)
     return group
 
+
 async def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
-                                    db: Session, data: TokenData):
+                                  db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -146,6 +152,7 @@ async def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
             raise InvalidDataException("Hacker not registered")
         event.rejected_hackers.append(hacker)
         event.registered_hackers.remove(hacker)
+
 
 async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                                    db: Session, data: TokenData):
@@ -163,13 +170,18 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(hacker)
     return event
 
-async def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: TokenData):
+
+async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
+                                     data: TokenData):
     # Extract hacker IDs from registered_hackers
     pending_hackers_ids = [h.id for h in event.registered_hackers]
     # Retrieve pending hacker groups
-    pending_groups = db.query(ModelHackerGroup).filter(ModelHackerGroup.id.in_(pending_hackers_ids)).all()
+    pending_groups = db.query(ModelHackerGroup).filter(
+        ModelHackerGroup.id.in_(pending_hackers_ids)).all()
     # Collect group users' IDs
-    group_users = [hacker.id for group in pending_groups for hacker in group.members]
+    group_users = [
+        hacker.id for group in pending_groups for hacker in group.members
+    ]
     # Prepare the output data
     output_data = []
     for group in pending_groups:
@@ -196,6 +208,8 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: Token
 
     # Combine group and nogroup data into a dictionary
     result = {"groups": output_data, "nogroup": nogroup_data}
+
+
 # async def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: TokenData):
 #     if not data.is_admin:
 #         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -245,7 +259,7 @@ async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
     return event
 
 
-async def get_food_restrictions(eventId:int, db: Session, data: TokenData):
+async def get_food_restrictions(eventId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
