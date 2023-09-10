@@ -13,7 +13,6 @@ router = APIRouter(
     tags=["User"],
 )
 
-
 # @router.post("/signup")
 # async def signup(payload: SchemaUser,
 #                  response: Response,
@@ -58,7 +57,6 @@ async def add_user(payload: SchemaUser,
 #                       db: Session = Depends(get_db),
 #                       str=Depends(JWTBearer())):
 #     return await user_service.update_user(db, userId, payload)
-
 
 # @router.delete("/{userId}")
 # async def delete_user(userId: int,

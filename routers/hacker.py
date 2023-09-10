@@ -113,6 +113,7 @@ async def get_hacker_groups(userId: int,
                             token: str = Depends(JWTBearer())):
     return await hacker_service.get_hacker_groups(userId, db)
 
+
 @router.put("/{userId}/add_dailyhack")
 async def add_dailyhack(userId: int,
                         url: str,
@@ -120,15 +121,17 @@ async def add_dailyhack(userId: int,
                         token: str = Depends(JWTBearer())):
     return await hacker_service.add_dailyhack(userId, db)
 
+
 @router.put("/{userId}/remove_dailyhack")
 async def remove_dailyhack(userId: int,
-                            db: Session = Depends(get_db),
-                            token: str = Depends(JWTBearer())):
-     return await hacker_service.remove_dailyhack(userId, db)
+                           db: Session = Depends(get_db),
+                           token: str = Depends(JWTBearer())):
+    return await hacker_service.remove_dailyhack(userId, db)
+
 
 @router.put("/{userId}/update_dailyhack")
 async def update_dailyhack(userId: int,
-                            url: str,
-                            db: Session = Depends(get_db),
-                            token: str = Depends(JWTBearer())):
-     return await hacker_service.update_dailyhack(userId, db)
+                           url: str,
+                           db: Session = Depends(get_db),
+                           token: str = Depends(JWTBearer())):
+    return await hacker_service.update_dailyhack(userId, db)

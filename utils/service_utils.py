@@ -17,9 +17,10 @@ def generate_random_code(length):
     return ''.join(
         random.choice(string.ascii_uppercase) for _ in range(length))
 
+
 def generate_complex_random_code(length):
-    return ''.join(
-        random.choice(string.printable) for _ in range(length))
+    return ''.join(random.choice(string.printable) for _ in range(length))
+
 
 def isBase64(s):
     try:
@@ -37,6 +38,7 @@ def check_image(payload):
             if not isBase64(payload.image):
                 raise ValidationException("Image is not a valid base64 string")
     return payload
+
 
 def generate_user_code(db, length=20):
     code = generate_complex_random_code(length)

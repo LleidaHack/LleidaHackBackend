@@ -114,6 +114,7 @@ app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(utils.router)
 
+
 @app.get("/")
 def root():
     return RedirectResponse(url='/docs')

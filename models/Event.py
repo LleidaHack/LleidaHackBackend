@@ -58,6 +58,7 @@ class HackerAccepted(Base):
                       index=True)
     # accepted: bool = Column(Boolean, default=False)
 
+
 class HackerRejected(Base):
     __tablename__ = "hacker_event_rejected"
     user_id = Column(Integer,
