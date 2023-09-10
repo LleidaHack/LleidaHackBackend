@@ -11,10 +11,12 @@ class Hacker(User):
     class Config:
         orm_mode = True
 
+
 class HackerPublic(UserPublic):
     github: str
     linkedin: str
     dailyhack_github_repo: str
+
 
 class HackerUpdate(UserUpdate):
     github: Optional[str]

@@ -15,11 +15,13 @@ class LleidaHacker(User):
     class Config:
         orm_mode = True
 
+
 class LleidaHackerPublic(UserPublic):
     student: bool
     active: bool
     github: str
-    
+
+
 class LleidaHackerUpdate(UserUpdate):
     role: Optional[str]
     nif: Optional[str]
