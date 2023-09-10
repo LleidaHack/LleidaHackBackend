@@ -23,6 +23,7 @@ class User(Base):
     updated_at: date = Column(DateTime, default=date.today())
     image: str = Column(String, default="")
     is_image_url: bool = Column(Boolean, default=False)
+    code: str = Column(String, default="", unique=True, index=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "user",

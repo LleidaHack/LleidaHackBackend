@@ -1,7 +1,7 @@
 from __future__ import annotations
 from asyncio import events
 from typing import List
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 from models.User import User
@@ -15,9 +15,13 @@ class Hacker(User):
     banned: bool = Column(Integer, default=0)
     github: str = Column(String)
     linkedin: str = Column(String)
+    cv: str = Column(String)
+    is_verified: bool = Column(Boolean, default=0)
     groups = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
     events = relationship('Event', secondary='hacker_event_participation')
+    dailyhack_github_repo: str = Column(String)
+
     __mapper_args__ = {
         "polymorphic_identity": UserType.HACKER.value,
     }

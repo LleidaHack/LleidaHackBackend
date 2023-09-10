@@ -18,9 +18,6 @@ from utils.auth_bearer import JWTBearer
 router = APIRouter(
     prefix="/event",
     tags=["Event"],
-    # dependencies=[Depends(get_db)],
-    # dependencies=[Depends(get_token_header)],
-    # responses={404: {"description": "Not found"}},
 )
 
 
@@ -64,6 +61,20 @@ async def delete_event(id: int,
                                              get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
+@router.get("/{id}/is_registered/{hacker_id}")
+async def is_registered(id: int,
+                        hacker_id: int,
+                        db: Session = Depends(get_db),
+                        token: str = Depends(JWTBearer())):
+    return await event_service.is_registered(id, hacker_id, db,
+                                             get_data_from_token(token))
+@router.get("/{id}/is_accepted/{hacker_id}")
+async def is_accepted(id: int,
+                        hacker_id: int,
+                        db: Session = Depends(get_db),
+                        token: str = Depends(JWTBearer())):
+        return await event_service.is_accepted(id, hacker_id, db,
+                                             get_data_from_token(token))
 
 @router.get("/{id}/meals")
 async def get_event_meals(id: int,
@@ -97,6 +108,24 @@ async def get_event_groups(id: int,
                                                  get_data_from_token(token))
     return {'success': True, 'groups': event}
 
+
+@router.put("/{id}/groups/{group_id}")
+async def add_event_group(id: int,
+                            group_id: int,
+                            db: Session = Depends(get_db),
+                            token: str = Depends(JWTBearer())):
+        event = await event_service.add_hacker_group(id, group_id, db,
+                                            get_data_from_token(token))
+        return {'success': True, 'event_id': event.id}
+
+@router.delete("/{id}/groups/{group_id}")
+async def remove_event_group(id: int,
+                                 group_id: int,
+                                 db: Session = Depends(get_db),
+                                 token: str = Depends(JWTBearer())):
+          event = await event_service.remove_hacker_group(id, group_id, db,
+                                                  get_data_from_token(token))
+          return {'success': True, 'event_id': event.id}
 
 @router.put("/{id}/participants/{hacker_id}")
 async def add_event_participant(id: int,

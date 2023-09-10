@@ -65,6 +65,23 @@ async def delete_event(id: int, db: Session, data: TokenData):
     db.commit()
     return db_event
 
+async def is_registered(id: int, hacker_id: int, db: Session, data: TokenData):
+    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    if event is None:
+        raise NotFoundException("Event not found")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    return hacker in event.registered_hackers
+
+async def is_accepted(id: int, hacker_id: int, db: Session, data: TokenData):
+    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    if event is None:
+        raise NotFoundException("Event not found")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    return hacker in event.accepted_hackers
 
 async def get_event_meals(id: int, db: Session, data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()

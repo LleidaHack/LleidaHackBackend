@@ -37,11 +37,29 @@ class HackerRegistration(Base):
                       ForeignKey("event.id"),
                       primary_key=True,
                       index=True)
+    shirt_size: str = Column(String)
+    food_restrictions: str = Column(String)
+    cv: str = Column(String)
+    description: str = Column(String)
+    github: str = Column(String)
+    linkedin: str = Column(String)
     # accepted: bool = Column(Boolean, default=False)
 
 
 class HackerAccepted(Base):
     __tablename__ = "hacker_event_accepted"
+    user_id = Column(Integer,
+                     ForeignKey("hacker.user_id"),
+                     primary_key=True,
+                     index=True)
+    event_id = Column(Integer,
+                      ForeignKey("event.id"),
+                      primary_key=True,
+                      index=True)
+    # accepted: bool = Column(Boolean, default=False)
+
+class HackerRejected(Base):
+    __tablename__ = "hacker_event_rejected"
     user_id = Column(Integer,
                      ForeignKey("hacker.user_id"),
                      primary_key=True,
@@ -84,6 +102,7 @@ class Event(Base):
     description: str = Column(String)
     start_date: date = Column(DateTime, default=func.now())
     end_date: date = Column(DateTime, default=func.now())
+    # max_group_size: int = Column(Integer)
     # start_time: Time = Column(Time, default=func.now())
     location: str = Column(String)
     archived: bool = Column(Boolean, default=False)
@@ -100,6 +119,8 @@ class Event(Base):
                                       secondary='hacker_event_registration')
     accepted_hackers = relationship('Hacker',
                                     secondary='hacker_event_accepted')
+    rejected_hackers = relationship('Hacker',
+                                    secondary='hacker_event_rejected')
     participants = relationship('Hacker',
                                 secondary='hacker_event_participation')
     organizers = relationship("LleidaHacker",

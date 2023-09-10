@@ -14,18 +14,18 @@ router = APIRouter(
 )
 
 
-@router.post("/signup")
-async def signup(payload: SchemaUser,
-                 response: Response,
-                 db: Session = Depends(get_db)):
-    new_user = await user_service.add_user(db, payload)
-    access_token, refresh_token = create_token_pair(new_user, db)
-    return {
-        "success": True,
-        "user_id": new_user.id,
-        "acces_token": access_token,
-        "refresh_token": refresh_token
-    }
+# @router.post("/signup")
+# async def signup(payload: SchemaUser,
+#                  response: Response,
+#                  db: Session = Depends(get_db)):
+#     new_user = await user_service.add_user(db, payload)
+#     access_token, refresh_token = create_token_pair(new_user, db)
+#     return {
+#         "success": True,
+#         "user_id": new_user.id,
+#         "acces_token": access_token,
+#         "refresh_token": refresh_token
+#     }
 
 
 @router.get("/all")
@@ -51,18 +51,18 @@ async def add_user(payload: SchemaUser,
     return {"success": True, "user_id": new_user.id}
 
 
-@router.put("/{userId}")
-async def update_user(userId: int,
-                      payload: SchemaUser,
-                      response: Response,
-                      db: Session = Depends(get_db),
-                      str=Depends(JWTBearer())):
-    return await user_service.update_user(db, userId, payload)
+# @router.put("/{userId}")
+# async def update_user(userId: int,
+#                       payload: SchemaUser,
+#                       response: Response,
+#                       db: Session = Depends(get_db),
+#                       str=Depends(JWTBearer())):
+#     return await user_service.update_user(db, userId, payload)
 
 
-@router.delete("/{userId}")
-async def delete_user(userId: int,
-                      response: Response,
-                      db: Session = Depends(get_db),
-                      str=Depends(JWTBearer())):
-    return await user_service.delete_user(db, userId)
+# @router.delete("/{userId}")
+# async def delete_user(userId: int,
+#                       response: Response,
+#                       db: Session = Depends(get_db),
+#                       str=Depends(JWTBearer())):
+#     return await user_service.delete_user(db, userId)

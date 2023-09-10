@@ -3,6 +3,7 @@ from models.Hacker import HackerGroupUser as ModelHackerGroupUser
 from models.Hacker import Hacker as ModelHacker
 from models.TokenData import TokenData
 from models.UserType import UserType
+from models.Event import Event as ModelEvent
 
 from schemas.Hacker import HackerGroup as SchemaHackerGroup
 from schemas.Hacker import HackerGroupUpdate as SchemaHackerGroupUpdate
@@ -42,6 +43,10 @@ async def add_hacker_group(payload: SchemaHackerGroup, hackerId: int,
                                     or data.type == UserType.HACKER.value)):
             raise AuthenticationException("Not authorized")
     members = []
+    event_exists = db.query(ModelEvent).filter(
+        ModelEvent.id == payload.event_id).first()
+    if event_exists is None:
+        raise NotFoundException("Event not found")
     if data.type == UserType.HACKER.value:
         hacker = db.query(ModelHacker).filter(
             ModelHacker.id == hackerId).first()
@@ -71,6 +76,10 @@ async def update_hacker_group(id: int, payload: SchemaHackerGroupUpdate,
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
             raise AuthenticationException("Not authorized")
+    event_exists = db.query(ModelEvent).filter(
+        ModelEvent.id == payload.event_id).first()
+    if event_exists is None:
+        raise NotFoundException("Event not found")
     hacker_group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id == id).first()
     if hacker_group is None:
@@ -117,6 +126,8 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
         raise NotFoundException("Hacker not found")
     if hacker_group.members is None:
         hacker_group.members = []
+    if hacker in hacker_group.members:
+        raise InvalidDataException("Hacker already in group")
     hacker_group.members.append(hacker)
     db.commit()
     db.refresh(hacker_group)
@@ -136,14 +147,13 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
     if hacker_group.leader_id == hackerId:
         raise InvalidDataException("Cannot remove leader from group")
     if not (data.type == UserType.HACKER.value
-            and data.user_id == hacker_group.leader_id):
+            and (data.user_id == hacker_group.leader_id or data.user_id == hackerId)):
         raise AuthenticationException("Not authorized")
     hacker = [h for h in hacker_group.members if h.id == hackerId]
     hacker_group.members.remove(hacker[0])
     db.commit()
     db.refresh(hacker_group)
     return hacker_group
-
 
 async def set_hacker_group_leader(groupId: int, hackerId: int, db: Session,
                                   data: TokenData):

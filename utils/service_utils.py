@@ -3,6 +3,7 @@ import random
 import base64
 
 from error.ValidationException import ValidationException
+from models.User import User
 
 
 def set_existing_data(db_obj, req_obj):
@@ -16,6 +17,9 @@ def generate_random_code(length):
     return ''.join(
         random.choice(string.ascii_uppercase) for _ in range(length))
 
+def generate_complex_random_code(length):
+    return ''.join(
+        random.choice(string.printable) for _ in range(length))
 
 def isBase64(s):
     try:
@@ -33,3 +37,9 @@ def check_image(payload):
             if not isBase64(payload.image):
                 raise ValidationException("Image is not a valid base64 string")
     return payload
+
+def generate_user_code(db, length=20):
+    code = generate_complex_random_code(length)
+    while db.query(User).filter(User.code == code).first() is not None:
+        code = generate_complex_random_code(length)
+    return code

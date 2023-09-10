@@ -11,9 +11,6 @@ import services.meal as meal_service
 router = APIRouter(
     prefix="/meal",
     tags=["Meal"],
-    # dependencies=[Depends(get_db)],
-    # dependencies=[Depends(get_token_header)],
-    # responses={404: {"description": "Not found"}},
 )
 
 
