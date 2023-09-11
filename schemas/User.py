@@ -18,8 +18,7 @@ class User(BaseModel):
     image: Optional[str]
     is_image_url: Optional[bool]
 
-    class Config:
-        orm_mode = True
+    
 
 
 class UserPublic(BaseModel):
@@ -29,6 +28,8 @@ class UserPublic(BaseModel):
     birthdate: date
     image: Optional[str]
     is_image_url: Optional[bool]
+    class Config:
+        orm_mode = True
 
 
 class UserUpdate(BaseModel):
