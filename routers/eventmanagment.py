@@ -28,6 +28,34 @@ async def add_dailyhack(event_id: int,
     """
     return await eventmanagment_service.add_dailyhack(event_id, hacker_id, db, get_data_from_token(token))
 
+@router.get("/{event_id}/dailyhack/{hacker_id}")
+async def get_dailyhack(event_id: int,
+                        hacker_id: int,
+                        db: Session = Depends(get_db),
+                        token: str = Depends(JWTBearer())):
+    """
+    Get a dailyhack from an event
+    """
+    return await eventmanagment_service.get_dailyhack(event_id, hacker_id, db, get_data_from_token(token))
+
+@router.delete("/{event_id}/dailyhack/{hacker_id}")
+async def delete_dailyhack(event_id: int,
+                            hacker_id: int,
+                            db: Session = Depends(get_db),
+                            token: str = Depends(JWTBearer())):
+     """
+     Delete a dailyhack from an event
+     """
+     return await eventmanagment_service.delete_dailyhack(event_id, hacker_id, db, get_data_from_token(token))
+
+@router.get("/{event_id}/dailyhacks")
+async def get_dailyhacks(event_id: int,
+                        db: Session = Depends(get_db),
+                        token: str = Depends(JWTBearer())):
+    """
+    Get all dailyhacks from an event
+    """
+    return await eventmanagment_service.get_dailyhacks(event_id, db, get_data_from_token(token))
 
 @router.put("/{event_id}/register/{hacker_id}")
 async def register_hacker_to_event(event_id: int,
@@ -255,13 +283,3 @@ async def eat(event_id: int,
     return await eventmanagment_service.eat(event, meal, hacker, db,
                                             get_data_from_token(token))
 
-
-@router.get("/get_hackeps")
-async def get_hackeps(year: int = None,
-                      db: Session = Depends(get_db),
-                      token: str = Depends(JWTBearer())):
-    """
-    Get the hackeps
-    """
-    return await eventmanagment_service.get_hackeps(db,
-                                                    get_data_from_token(token))
