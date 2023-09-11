@@ -2,6 +2,7 @@ from datetime import date
 from sqlalchemy import Column, DateTime, Integer, String, Boolean
 from database import Base
 # from passlib import hash
+from sqlalchemy.orm import deferred
 
 
 class User(Base):

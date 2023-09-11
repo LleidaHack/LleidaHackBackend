@@ -6,6 +6,8 @@ from security import get_data_from_token
 import services.user as user_service
 from utils.auth_bearer import JWTBearer
 
+from models.User import User as ModelUser
+
 from schemas.User import User as SchemaUser
 
 router = APIRouter(
@@ -33,12 +35,14 @@ async def get_users(db: Session = Depends(get_db),
     return await user_service.get_all(db)
 
 
-@router.get("/{userId}")
+@router.get("/{userId}",
+            response_model=list[ModelUser],
+            response_model_exclude=["password", "token", "refresh_token"])
 async def get_user(userId: int,
                    response: Response,
                    db: Session = Depends(get_db),
                    str=Depends(JWTBearer())):
-    return await user_service.get_user(db, userId)
+    return await user_service.get_user(db, userId, get_data_from_token(str))
 
 
 @router.get("/code/{code}")
