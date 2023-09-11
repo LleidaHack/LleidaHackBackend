@@ -3,10 +3,13 @@ from security import get_password_hash
 
 from models.User import User as ModelUser
 from models.UserType import UserType
+from models.TokenData import TokenData
 
 from schemas.User import User as SchemaUser
 
 from utils.service_utils import check_image
+from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
 
 
 async def get_all(db: Session):
@@ -14,7 +17,20 @@ async def get_all(db: Session):
 
 
 async def get_user(db: Session, userId: int):
-    return db.query(ModelUser).filter(ModelUser.id == userId).first()
+    user = db.query(ModelUser).filter(ModelUser.id == userId).first()
+    if user is None:
+        raise NotFoundException("User not found")
+    return user
+
+
+async def get_user_by_code(db: Session, code: str, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    user = db.query(ModelUser).filter(ModelUser.code == code).first()
+    if user is None:
+        raise NotFoundException("User not found")
+    return user
 
 
 async def add_user(db: Session, payload: SchemaUser):

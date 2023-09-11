@@ -139,7 +139,6 @@ async def remove_event_group(id: int,
 #                                            get_data_from_token(token))
 #     return {'success': True, 'event_id': event.id}
 
-
 # @router.delete("/{id}/participants/{hacker_id}")
 # async def remove_event_participant(id: int,
 #                                    hacker_id: int,
@@ -176,6 +175,15 @@ async def get_hackeps(db: Session = Depends(get_db),
     #get the current year
     year = datetime.now().year
     return await event_service.get_hackeps(int(year), db)
+
+
+@router.get("/{eventId}/get_hacker_group/{hackerId}")
+async def get_hacker_group(eventId: int,
+                           hackerId: int,
+                           db: Session = Depends(get_db),
+                           token: str = Depends(JWTBearer())):
+    return await event_service.get_hacker_group(eventId, hackerId, db,
+                                                get_data_from_token(token))
 
 
 # @router.put("/{id}/group/{group_id}")

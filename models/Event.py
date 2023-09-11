@@ -44,6 +44,7 @@ class HackerRegistration(Base):
     github: str = Column(String)
     linkedin: str = Column(String)
     dailyhack_url: str = Column(String)
+    update_user: bool = Column(Boolean, default=True)
     # accepted: bool = Column(Boolean, default=False)
 
 
