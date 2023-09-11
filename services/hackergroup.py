@@ -36,8 +36,8 @@ async def get_hacker_group(id: int, db: Session):
         raise NotFoundException("Hacker group not found")
 
 
-async def add_hacker_group(payload: SchemaHackerGroup,
-                           db: Session, data: TokenData):
+async def add_hacker_group(payload: SchemaHackerGroup, db: Session,
+                           data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
