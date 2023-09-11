@@ -24,8 +24,7 @@ async def get_companies(db: Session = Depends(get_db),
 @router.get("/{companyId}")
 async def get_company(companyId: int,
                       response: Response,
-                      db: Session = Depends(get_db),
-                      str=Depends(JWTBearer())):
+                      db: Session = Depends(get_db)):
     return await company_service.get_company(db, companyId)
 
 

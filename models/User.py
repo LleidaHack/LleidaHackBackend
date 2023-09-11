@@ -2,6 +2,7 @@ from datetime import date
 from sqlalchemy import Column, DateTime, Integer, String, Boolean
 from database import Base
 # from passlib import hash
+from sqlalchemy.orm import deferred
 
 
 class User(Base):
@@ -29,6 +30,6 @@ class User(Base):
         "polymorphic_identity": "user",
         "polymorphic_on": type,
     }
-
+    
     # def verify_password(self, password):
     # return hash.verify(password, self.password)

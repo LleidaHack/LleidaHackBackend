@@ -16,8 +16,9 @@ async def get_all(db: Session):
     return db.query(ModelUser).all()
 
 
-async def get_user(db: Session, userId: int):
+async def get_user(db: Session, userId: int, data: TokenData):
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
+    
     if user is None:
         raise NotFoundException("User not found")
     return user
