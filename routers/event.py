@@ -176,6 +176,12 @@ async def get_hackeps(db: Session = Depends(get_db),
     year = datetime.now().year
     return await event_service.get_hackeps(int(year), db)
 
+@router.get("/{eventId}/get_hacker_group/{hackerId}")
+async def get_hacker_group(eventId: int,
+                            hackerId: int,
+                            db: Session = Depends(get_db),
+                            token: str = Depends(JWTBearer())):
+     return await event_service.get_hacker_group(eventId, hackerId, db, get_data_from_token(token))
 
 # @router.put("/{id}/group/{group_id}")
 # async def add_event_group(id: int,
