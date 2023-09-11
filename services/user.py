@@ -19,6 +19,7 @@ async def get_all(db: Session):
 async def get_user(db: Session, userId: int):
     return db.query(ModelUser).filter(ModelUser.id == userId).first()
 
+
 async def get_user_by_code(db: Session, code: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -27,6 +28,7 @@ async def get_user_by_code(db: Session, code: str, data: TokenData):
     if user is None:
         raise NotFoundException("User not found")
     return user
+
 
 async def add_user(db: Session, payload: SchemaUser):
     new_user = ModelUser(**payload.dict())
