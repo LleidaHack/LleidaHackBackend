@@ -80,7 +80,7 @@ async def add_hacker_to_group(groupId: int,
                               db: Session = Depends(get_db),
                               str=Depends(JWTBearer())):
     hacker_group = await hackergroup_service.add_hacker_to_group(
-        groupId, hackerId, db)
+        groupId, hackerId, db, get_data_from_token(str))
     return {"success": True, "added_id": hacker_group.id}
 
 
