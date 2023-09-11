@@ -10,7 +10,7 @@ from schemas.LleidaHacker import LleidaHackerUpdate as SchemaLleidaHackerUpdate
 
 from security import get_password_hash
 
-from utils.service_utils import set_existing_data, check_image
+from utils.service_utils import set_existing_data, check_image, generate_user_code
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
@@ -32,7 +32,7 @@ async def get_lleidahacker(userId: int, db: Session):
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     if payload.image is not None:
         payload = check_image(payload)
-    new_lleidahacker = ModelLleidaHacker(**payload.dict())
+    new_lleidahacker = ModelLleidaHacker(**payload.dict(), code=generate_user_code(db))
     new_lleidahacker.password = get_password_hash(payload.password)
     db.add(new_lleidahacker)
     db.commit()

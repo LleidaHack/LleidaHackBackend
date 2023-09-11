@@ -21,7 +21,7 @@ async def signup(payload: SchemaLleidaHacker,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_lleidahacker = await lleidahacker_service.add_lleidahacker(payload, db)
-    access_token, refresh_token = create_token_pair(new_lleidahacker, db)
+    access_token, refresh_token = await create_token_pair(new_lleidahacker, db)
     return {
         "success": True,
         "user_id": new_lleidahacker.id,

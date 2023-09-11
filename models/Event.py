@@ -43,6 +43,7 @@ class HackerRegistration(Base):
     description: str = Column(String)
     github: str = Column(String)
     linkedin: str = Column(String)
+    dailyhack_url: str = Column(String)
     # accepted: bool = Column(Boolean, default=False)
 
 
@@ -103,7 +104,7 @@ class Event(Base):
     description: str = Column(String)
     start_date: date = Column(DateTime, default=func.now())
     end_date: date = Column(DateTime, default=func.now())
-    # max_group_size: int = Column(Integer)
+    max_group_size: int = Column(Integer)
     # start_time: Time = Column(Time, default=func.now())
     location: str = Column(String)
     archived: bool = Column(Boolean, default=False)
@@ -113,7 +114,7 @@ class Event(Base):
     max_sponsors: int = Column(Integer)
     image: str = Column(String)
     is_image_url: bool = Column(Boolean, default=False)
-    # is_open: bool = Column(Boolean, default=True)
+    is_open: bool = Column(Boolean, default=False)
 
     #TODO add registered_hackers
     registered_hackers = relationship('Hacker',

@@ -19,6 +19,50 @@ from error.InvalidDataException import InvalidDataException
 
 from utils.service_utils import isBase64
 
+async def add_dailyhack(eventId: int, hackerId:int, url:str, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker_registration = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId, ModelHackerRegistration.event_id == eventId).first()
+    if hacker_registration is None:
+        raise NotFoundException("Hacker not registered")
+    hacker_registration.dailyhack_url = url
+    db.commit()
+    db.refresh(hacker_registration)
+    return hacker_registration
+
+async def get_dailyhack(eventId: int, hackerId:int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker_registration = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId, ModelHackerRegistration.event_id == eventId).first()
+    if hacker_registration is None:
+        raise NotFoundException("Hacker not registered")
+    return hacker_registration.dailyhack_url
+
+async def update_dailyhack(eventId: int, hackerId:int, url:str, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker_registration = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId, ModelHackerRegistration.event_id == eventId).first()
+    if hacker_registration is None:
+        raise NotFoundException("Hacker not registered")
+    hacker_registration.dailyhack_url = url
+    db.commit()
+    db.refresh(hacker_registration)
+    return hacker_registration
+
+async def delete_dailyhack(eventId: int, hackerId:int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker_registration = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId, ModelHackerRegistration.event_id == eventId).first()
+    if hacker_registration is None:
+        raise NotFoundException("Hacker not registered")
+    hacker_registration.dailyhack_url = ""
+    db.commit()
+    db.refresh(hacker_registration)
+    return hacker_registration
 
 async def register_hacker_to_event(payload: SchemaEventRegistration,
                                    event: ModelEvent, hacker: ModelHacker,
@@ -28,6 +72,8 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
                                     (data.type == UserType.HACKER.value
                                      and data.user_id == hacker.id))):
             raise AuthenticationException("Not authorized")
+    if not event.is_open:
+        raise InvalidDataException("Event registration not open")
     if hacker in event.registered_hackers or hacker in event.accepted_hackers:
         raise InvalidDataException("Hacker already registered")
     if len(event.registered_hackers) >= event.max_participants:
@@ -54,6 +100,7 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
     db.add(event_registration)
     db.commit()
     db.refresh(event)
+    db.refresh(hacker)
     return event
 
 
@@ -64,6 +111,8 @@ async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                                     (data.type == UserType.HACKER.value
                                      and data.user_id == hacker.id))):
             raise AuthenticationException("Not authorized")
+    if not event.is_open:
+        raise InvalidDataException("Event registration not open")
     if not (hacker in event.registered_hackers
             or hacker in event.accepted_hackers):
         raise InvalidDataException("Hacker not registered")
@@ -119,7 +168,6 @@ async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     if hacker in event.accepted_hackers:
         raise InvalidDataException("Hacker already accepted")
     event.accepted_hackers.append(hacker)
-    event.registered_hackers.remove(hacker)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
@@ -135,7 +183,6 @@ async def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
         if hacker not in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
         event.accepted_hackers.append(hacker)
-        event.registered_hackers.remove(hacker)
     db.commit()
     db.refresh(event)
     db.refresh(group)
@@ -151,7 +198,6 @@ async def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
         if hacker not in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
         event.rejected_hackers.append(hacker)
-        event.registered_hackers.remove(hacker)
 
 
 async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
@@ -164,7 +210,6 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     if hacker in event.accepted_hackers:
         raise InvalidDataException("Hacker already accepted")
     event.rejected_hackers.remove(hacker)
-    event.registered_hackers.remove(hacker)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
@@ -174,7 +219,8 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
                                      data: TokenData):
     # Extract hacker IDs from registered_hackers
-    pending_hackers_ids = [h.id for h in event.registered_hackers]
+    pending_hackers = [h for h in event.registered_hackers if h not in event.accepted_hackers]
+    pending_hackers_ids = [h.id for h in pending_hackers]
     # Retrieve pending hacker groups
     pending_groups = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id.in_(pending_hackers_ids)).all()
@@ -234,9 +280,11 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
 async def get_event_status(event: ModelEvent, db: Session):
     data = {
         'registratedUsers':
-        len(event.registered_hackers) + len(event.accepted_hackers),
+        len(event.registered_hackers),
         'acceptedUsers':
         len(event.accepted_hackers),
+        'rejectedUsers':
+        len(event.rejected_hackers),
         'participatingUsers':
         len(event.participants),
     }
@@ -266,7 +314,7 @@ async def get_food_restrictions(eventId: int, db: Session, data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == eventId).first()
     if event is None:
         raise NotFoundException("Event not found")
-    users = event.participants + event.accepted_hackers + event.registered_hackers + event.organizers
+    users = event.participants + event.accepted_hackers + event.organizers
     restrictions = []
     for user in users:
         if user.food_restrictions is not None or user.food_restrictions != "" or user.food_restrictions != " ":

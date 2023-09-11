@@ -126,6 +126,10 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
         raise NotFoundException("Hacker not found")
     if hacker_group.members is None:
         hacker_group.members = []
+    event = db.query(ModelEvent).filter(
+        ModelEvent.id == hacker_group.event_id).first()
+    if len(hacker_group.members) >= event.max_group_size:
+        raise InvalidDataException("Group is full")
     if hacker in hacker_group.members:
         raise InvalidDataException("Hacker already in group")
     hacker_group.members.append(hacker)

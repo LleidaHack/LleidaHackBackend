@@ -14,4 +14,4 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
         return {"success": False}
     if not (refresh_token == user.refresh_token):
         return {"success": False}
-    return create_token_pair(user)
+    return await create_token_pair(user)
