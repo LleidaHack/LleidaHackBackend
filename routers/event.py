@@ -139,7 +139,6 @@ async def remove_event_group(id: int,
 #                                            get_data_from_token(token))
 #     return {'success': True, 'event_id': event.id}
 
-
 # @router.delete("/{id}/participants/{hacker_id}")
 # async def remove_event_participant(id: int,
 #                                    hacker_id: int,
