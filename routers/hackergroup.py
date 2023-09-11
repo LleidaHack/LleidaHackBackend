@@ -84,7 +84,7 @@ async def add_hacker_to_group(groupId: int,
     return {"success": True, "added_id": hacker_group.id}
 
 
-@router.post("/{group_code}/members/{hacker_id}")
+@router.post("/{group_code}/members_by_code/{hacker_id}")
 async def add_hacker_to_group_by_code(group_code: str,
                                       hacker_id: int,
                                       response: Response,
