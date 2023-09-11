@@ -39,7 +39,7 @@ def get_password_hash(password):
 
 
 def is_service_token(token: str):
-    return token.credentials == SERVICE_TOKEN
+    return token == SERVICE_TOKEN
 
 
 def get_user(user_id: int, db: Session):
