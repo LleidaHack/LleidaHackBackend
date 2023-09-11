@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime as date
 from models.Hacker import Hacker as ModelHacker
 from models.Event import HackerRegistration as ModelHackerRegistration
 from models.Event import HackerParticipation as ModelHackerParticipation
@@ -54,11 +54,11 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
         ModelHackerRegistration.user_id == hackerId).all()
     for event_reg in event_regs:
         db.delete(event_reg)
-    event_parts = db.query().filter(
+    event_parts = db.query(ModelHackerParticipation).filter(
         ModelHackerParticipation.user_id == hackerId).all()
     for event_part in event_parts:
         db.delete(event_part)
-    event_accs = db.query().filter(
+    event_accs = db.query(ModelHackerAccepted).filter(
         ModelHackerAccepted.user_id == hackerId).all()
     for event_acc in event_accs:
         db.delete(event_acc)
