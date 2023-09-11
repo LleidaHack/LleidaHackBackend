@@ -285,7 +285,8 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
                 "birthdate": hacker.birthdate,
                 "address": hacker.address,
                 "food_restrictions": hacker.food_restrictions,
-                "shirt_size": hacker.shirt_size
+                "shirt_size": hacker.shirt_size,
+                "approved": hacker in event.accepted_hackers,
             } for hacker in group.members]
         }
         output_data.append(group_data)
