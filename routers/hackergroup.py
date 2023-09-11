@@ -83,6 +83,15 @@ async def add_hacker_to_group(groupId: int,
         groupId, hackerId, db)
     return {"success": True, "added_id": hacker_group.id}
 
+@router.post("/{group_code}/members/{hacker_id}")
+async def add_hacker_to_group_by_code(group_code: str,
+                                hacker_id: int,
+                                response: Response,
+                                db: Session = Depends(get_db),
+                                str=Depends(JWTBearer())):
+        hacker_group = await hackergroup_service.add_hacker_to_group_by_code(
+            group_code, hacker_id, db)
+        return {"success": True, "added_id": hacker_group.id}
 
 @router.delete("/{groupId}/members/{hackerId}")
 async def remove_hacker_from_group(groupId: int,
