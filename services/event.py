@@ -132,7 +132,7 @@ async def get_event_participants(id: int, db: Session, data: TokenData):
     return event.hackers
 
 
-async def get_event_sponsors(id: int, db: Session, data: TokenData):
+async def get_event_sponsors(id: int, db: Session):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
     if event is None:
         raise NotFoundException("Event not found")
