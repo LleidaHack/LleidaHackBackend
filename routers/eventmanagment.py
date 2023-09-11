@@ -22,13 +22,27 @@ router = APIRouter(
 @router.post("/{event_id}/add_dailyhack/{hacker_id}")
 async def add_dailyhack(event_id: int,
                         hacker_id: int,
+                        url: str,
                         db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
     """
     Add a dailyhack to an event
     """
     return await eventmanagment_service.add_dailyhack(
-        event_id, hacker_id, db, get_data_from_token(token))
+        event_id, hacker_id, url, db, get_data_from_token(token))
+
+
+@router.put("/{event_id}/update_dailyhack/{hacker_id}")
+async def update_dailyhack(event_id: int,
+                           hacker_id: int,
+                           url: str,
+                           db: Session = Depends(get_db),
+                           token: str = Depends(JWTBearer())):
+    """
+    Update a dailyhack to an event
+    """
+    return await eventmanagment_service.update_dailyhack(
+        event_id, hacker_id, url, db, get_data_from_token(token))
 
 
 @router.get("/{event_id}/dailyhack/{hacker_id}")
