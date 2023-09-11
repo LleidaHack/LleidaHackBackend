@@ -30,6 +30,6 @@ class User(Base):
         "polymorphic_identity": "user",
         "polymorphic_on": type,
     }
-    
+
     # def verify_password(self, password):
     # return hash.verify(password, self.password)

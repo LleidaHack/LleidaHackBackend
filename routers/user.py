@@ -35,7 +35,9 @@ async def get_users(db: Session = Depends(get_db),
     return await user_service.get_all(db)
 
 
-@router.get("/{userId}", response_model=list[ModelUser], response_model_exclude=["password", "token", "refresh_token"])
+@router.get("/{userId}",
+            response_model=list[ModelUser],
+            response_model_exclude=["password", "token", "refresh_token"])
 async def get_user(userId: int,
                    response: Response,
                    db: Session = Depends(get_db),
