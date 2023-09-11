@@ -34,7 +34,7 @@ async def get_hacker_group(id: int, db: Session):
         ModelHackerGroup.id == id).first()
     if group is None:
         raise NotFoundException("Hacker group not found")
-
+    return group
 
 async def add_hacker_group(payload: SchemaHackerGroup, db: Session,
                            data: TokenData):
