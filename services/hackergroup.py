@@ -36,7 +36,7 @@ async def get_hacker_group(id: int, db: Session):
         raise NotFoundException("Hacker group not found")
 
 
-async def add_hacker_group(payload: SchemaHackerGroup, hackerId: int,
+async def add_hacker_group(payload: SchemaHackerGroup,
                            db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
@@ -49,7 +49,7 @@ async def add_hacker_group(payload: SchemaHackerGroup, hackerId: int,
         raise NotFoundException("Event not found")
     if data.type == UserType.HACKER.value:
         hacker = db.query(ModelHacker).filter(
-            ModelHacker.id == hackerId).first()
+            ModelHacker.id == data.user_id).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         members.append(hacker)

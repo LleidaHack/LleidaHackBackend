@@ -24,8 +24,8 @@ class HackerUpdate(UserUpdate):
 class HackerGroup(BaseModel):
     name: str
     description: str
-    members: List[Hacker]
     leader: int
+    event_id: int
 
     class Config:
         orm_mode = True
@@ -34,5 +34,4 @@ class HackerGroup(BaseModel):
 class HackerGroupUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
-    members: Optional[List[Hacker]]
     leader: Optional[int]
