@@ -22,6 +22,7 @@ async def get_user(db: Session, userId: int):
         raise NotFoundException("User not found")
     return user
 
+
 async def get_user_by_code(db: Session, code: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
