@@ -1,7 +1,7 @@
 from schemas.Hacker import HackerGroup as SchemaHackerGroup
 
 from database import get_db
-from security import decode_token
+from security import get_data_from_token
 from utils.auth_bearer import JWTBearer
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
@@ -33,9 +33,8 @@ async def add_hacker_group(payload: SchemaHackerGroup,
                            response: Response,
                            db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):
-    token = await decode_token(str)
     new_hacker_group = await hackergroup_service.add_hacker_group(
-        payload, token['user_id'], db)
+        payload, db, get_data_from_token(str))
     #await hackergroup_service.add_hacker_to_group(new_hacker_group.id, token["user_id"], db)
     #await hackergroup_service.set_hacker_group_leader(new_hacker_group.id, token['user_id'], db)
     return {

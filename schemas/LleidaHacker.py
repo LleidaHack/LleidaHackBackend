@@ -33,7 +33,6 @@ class LleidaHackerUpdate(UserUpdate):
 class LleidaHackerGroup(BaseModel):
     name: str
     description: str
-    members: List[LleidaHacker]
 
     # leader: int
 
@@ -44,6 +43,5 @@ class LleidaHackerGroup(BaseModel):
 class LleidaHackerGroupUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
-    members: Optional[List[LleidaHacker]]
 
     # leader: Optional[int]
