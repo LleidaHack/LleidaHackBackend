@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from schemas.User import User, UserUpdate
+from schemas.User import User, UserUpdate, UserPublic
 
 
 class LleidaHacker(User):
@@ -14,6 +14,12 @@ class LleidaHacker(User):
 
     class Config:
         orm_mode = True
+
+
+class LleidaHackerPublic(UserPublic):
+    student: bool
+    active: bool
+    github: str
 
 
 class LleidaHackerUpdate(UserUpdate):

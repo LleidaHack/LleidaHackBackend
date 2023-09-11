@@ -12,7 +12,7 @@ from schemas.Hacker import HackerUpdate as SchemaHackerUpdate
 from sqlalchemy.orm import Session
 
 from security import get_password_hash
-from utils.service_utils import set_existing_data, check_image
+from utils.service_utils import set_existing_data, check_image, generate_user_code
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
@@ -31,7 +31,7 @@ async def get_hacker(hackerId: int, db: Session):
 
 
 async def add_hacker(payload: SchemaHacker, db: Session):
-    new_hacker = ModelHacker(**payload.dict())
+    new_hacker = ModelHacker(**payload.dict(), code=generate_user_code(db))
     if payload.image is not None:
         payload = check_image(payload)
     new_hacker.password = get_password_hash(payload.password)
@@ -120,12 +120,7 @@ async def unban_hacker(hackerId: int, db: Session, data: TokenData):
 
 
 #TODO: #34 Check if token validation is correct
-async def get_hacker_events(hackerId: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and data.user_id == hackerId))):
-            raise AuthenticationException("Not authorized")
+async def get_hacker_events(hackerId: int, db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
@@ -133,7 +128,14 @@ async def get_hacker_events(hackerId: int, db: Session, data: TokenData):
 
 
 #TODO: #34 Check if token validation is correct
-def get_hacker_groups(hackerId: int, db: Session, data: TokenData):
+async def get_hacker_groups(hackerId: int, db: Session):
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    return hacker.groups
+
+
+async def add_dailyhack(hackerId: int, url: str, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -142,4 +144,38 @@ def get_hacker_groups(hackerId: int, db: Session, data: TokenData):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
-    return hacker.groups
+    hacker.dailyhack_github_repo = url
+    db.commit()
+    db.refresh(hacker)
+    return hacker
+
+
+async def remove_dailyhack(hackerId: int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    hacker.dailyhack_github_repo = ""
+    db.commit()
+    db.refresh(hacker)
+    return hacker
+
+
+async def update_dailyhack(hackerId: int, url: str, db: Session,
+                           data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    hacker.dailyhack_github_repo = url
+    db.commit()
+    db.refresh(hacker)
+    return hacker

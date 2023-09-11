@@ -11,7 +11,6 @@ from models.Hacker import HackerGroup as ModelHackerGroup
 from models.TokenData import TokenData
 from models.UserType import UserType
 
-from security import check_image_exists
 from utils.service_utils import set_existing_data, check_image
 
 from error.AuthenticationException import AuthenticationException
@@ -22,7 +21,12 @@ from error.NotFoundException import NotFoundException
 async def get_all(db: Session):
     return db.query(ModelEvent).all()
 
-
+async def get_hackeps(year:int ,db: Session):
+    #return and event called HackEPS year ignoring caps
+    e = db.query(ModelEvent).filter(ModelEvent.name.ilike(f'%HackEPS {year}%')).first()
+    if e is None:
+        return db.query(ModelEvent).filter(ModelEvent.name.ilike(f'%HackEPS {year-1}%')).first()
+    return e
 async def get_event(id: int, db: Session):
     return db.query(ModelEvent).filter(ModelEvent.id == id).first()
 
@@ -65,6 +69,26 @@ async def delete_event(id: int, db: Session, data: TokenData):
     db.delete(db_event)
     db.commit()
     return db_event
+
+
+async def is_registered(id: int, hacker_id: int, db: Session, data: TokenData):
+    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    if event is None:
+        raise NotFoundException("Event not found")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    return hacker in event.registered_hackers
+
+
+async def is_accepted(id: int, hacker_id: int, db: Session, data: TokenData):
+    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    if event is None:
+        raise NotFoundException("Event not found")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    return hacker in event.accepted_hackers
 
 
 async def get_event_meals(id: int, db: Session, data: TokenData):
