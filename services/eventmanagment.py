@@ -297,14 +297,21 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 #     result = {"groups": output_data, "nogroup": nogroup_data}
 
 
-async def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: TokenData):
+async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
+                                     data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
-    pending_hackers_ids = [h.id for h in subtract_lists(event.registered_hackers, event.accepted_hackers)]
+    pending_hackers_ids = [
+        h.id for h in subtract_lists(event.registered_hackers,
+                                     event.accepted_hackers)
+    ]
     #get pending hacker groups
-    pending_groups = db.query(ModelHackerGroup).filter(ModelHackerGroup.id.in_(pending_hackers_ids)).all()
-    group_users = [hacker.id for group in pending_groups for hacker in group.members]
+    pending_groups = db.query(ModelHackerGroup).filter(
+        ModelHackerGroup.id.in_(pending_hackers_ids)).all()
+    group_users = [
+        hacker.id for group in pending_groups for hacker in group.members
+    ]
     #join groups and hackers
     out = "[{groups: ["
     for group in pending_groups:
