@@ -40,11 +40,14 @@ async def get_user(userId: int,
                    str=Depends(JWTBearer())):
     return await user_service.get_user(db, userId)
 
+
 async def get_user_by_code(code: str,
-                            response: Response,
-                            db: Session = Depends(get_db),
-                            str=Depends(JWTBearer())):
-     return await user_service.get_user_by_code(db, code, get_data_from_token(str))
+                           response: Response,
+                           db: Session = Depends(get_db),
+                           str=Depends(JWTBearer())):
+    return await user_service.get_user_by_code(db, code,
+                                               get_data_from_token(str))
+
 
 @router.post("/")
 async def add_user(payload: SchemaUser,

@@ -34,7 +34,9 @@ async def get_hackeps(year: int, db: Session):
             ModelEvent.name.ilike(f'%HackEPS {year-1}%')).first()
     return e
 
-async def get_hacker_group(event_id: int, hacker_id: int, db: Session, data: TokenData):
+
+async def get_hacker_group(event_id: int, hacker_id: int, db: Session,
+                           data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == event_id).first()
     if event is None:
         raise NotFoundException("Event not found")
@@ -43,9 +45,14 @@ async def get_hacker_group(event_id: int, hacker_id: int, db: Session, data: Tok
         raise NotFoundException("Hacker not found")
     if hacker not in event.registered_hackers:
         raise NotFoundException("Hacker is not participant")
-    user_groups = db.query(ModelHackerGroupUser).filter(ModelHackerGroupUser.hacker_id == hacker_id).all()
-    group = db.query(ModelHackerGroup).filter(ModelHackerGroup.event_id == event_id).filter(ModelHackerGroup.id.in_([g.hacker_group_id for g in user_groups])).first()
+    user_groups = db.query(ModelHackerGroupUser).filter(
+        ModelHackerGroupUser.hacker_id == hacker_id).all()
+    group = db.query(ModelHackerGroup).filter(
+        ModelHackerGroup.event_id == event_id).filter(
+            ModelHackerGroup.id.in_([g.hacker_group_id
+                                     for g in user_groups])).first()
     return group
+
 
 async def get_event(id: int, db: Session):
     return db.query(ModelEvent).filter(ModelEvent.id == id).first()
