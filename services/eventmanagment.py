@@ -256,66 +256,66 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
-                                     data: TokenData):
-    # Extract hacker IDs from registered_hackers
-    pending_hackers = subtract_lists(event.registered_hackers,
-                                     event.accepted_hackers)
-    pending_hackers_ids = [h.id for h in pending_hackers]
-    # Retrieve pending hacker groups
-    pending_groups = db.query(ModelHackerGroup).filter(
-        ModelHackerGroup.id.in_(pending_hackers_ids)).all()
-    # Collect group users' IDs
-    group_users = [
-        hacker.id for group in pending_groups for hacker in group.members
-    ]
-    # Prepare the output data
-    output_data = []
-    for group in pending_groups:
-        group_data = {
-            group.name: [{
-                "id": hacker.id,
-                "name": hacker.name,
-                "birthdate": hacker.birthdate,
-                "address": hacker.address,
-                "food_restrictions": hacker.food_restrictions,
-                "shirt_size": hacker.shirt_size
-            } for hacker in group.members]
-        }
-        output_data.append(group_data)
-    # Handle hackers without a group
-    nogroup_data = [{
-        "id": hacker.id,
-        "name": hacker.name,
-        "birthdate": hacker.birthdate,
-        "address": hacker.address,
-        "food_restrictions": hacker.food_restrictions,
-        "shirt_size": hacker.shirt_size
-    } for hacker in event.registered_hackers if hacker.id not in group_users]
-
-    # Combine group and nogroup data into a dictionary
-    result = {"groups": output_data, "nogroup": nogroup_data}
-
-
-# async def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: TokenData):
-#     if not data.is_admin:
-#         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
-#             raise AuthenticationException("Not authorized")
-#     pending_hackers_ids = [h.id for h in event.registered_hackers]
-#     #get pending hacker groups
-#     pending_groups = db.query(ModelHackerGroup).filter(ModelHackerGroup.id.in_(pending_hackers_ids)).all()
-#     group_users = [hacker.id for group in pending_groups for hacker in group.members]
-#     #join groups and hackers
-#     out = "[{groups: ["
+# async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
+#                                      data: TokenData):
+#     # Extract hacker IDs from registered_hackers
+#     pending_hackers = subtract_lists(event.registered_hackers,
+#                                      event.accepted_hackers)
+#     pending_hackers_ids = [h.id for h in pending_hackers]
+#     # Retrieve pending hacker groups
+#     pending_groups = db.query(ModelHackerGroup).filter(
+#         ModelHackerGroup.id.in_(pending_hackers_ids)).all()
+#     # Collect group users' IDs
+#     group_users = [
+#         hacker.id for group in pending_groups for hacker in group.members
+#     ]
+#     # Prepare the output data
+#     output_data = []
 #     for group in pending_groups:
-#         out += "{" + group.name + ": ["
-#         for hacker in group.members:
-#             out += "{" + hacker.id + ", " + hacker.name + "," + hacker.birthdate + "," + hacker.address + "," + hacker.food_restrictions + "," + hacker.shirt_size + "},"
-#         out += "]},"
-#     out += "{nogroup: ["
-#     for hacker in event.registered_hackers and hacker.id not in group_users:
-#         out += "{" + hacker.id + ", " + hacker.name + "," + hacker.birthdate + "," + hacker.address + "," + hacker.food_restrictions + "," + hacker.shirt_size + "},"
-#     out += "]}]"
+#         group_data = {
+#             group.name: [{
+#                 "id": hacker.id,
+#                 "name": hacker.name,
+#                 "birthdate": hacker.birthdate,
+#                 "address": hacker.address,
+#                 "food_restrictions": hacker.food_restrictions,
+#                 "shirt_size": hacker.shirt_size
+#             } for hacker in group.members]
+#         }
+#         output_data.append(group_data)
+#     # Handle hackers without a group
+#     nogroup_data = [{
+#         "id": hacker.id,
+#         "name": hacker.name,
+#         "birthdate": hacker.birthdate,
+#         "address": hacker.address,
+#         "food_restrictions": hacker.food_restrictions,
+#         "shirt_size": hacker.shirt_size
+#     } for hacker in event.registered_hackers if hacker.id not in group_users]
+
+#     # Combine group and nogroup data into a dictionary
+#     result = {"groups": output_data, "nogroup": nogroup_data}
+
+
+async def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    pending_hackers_ids = [h.id for h in subtract_lists(event.registered_hackers, event.accepted_hackers)]
+    #get pending hacker groups
+    pending_groups = db.query(ModelHackerGroup).filter(ModelHackerGroup.id.in_(pending_hackers_ids)).all()
+    group_users = [hacker.id for group in pending_groups for hacker in group.members]
+    #join groups and hackers
+    out = "[{groups: ["
+    for group in pending_groups:
+        out += "{" + group.name + ": ["
+        for hacker in group.members:
+            out += "{" + hacker.id + ", " + hacker.name + "," + hacker.birthdate + "," + hacker.address + "," + hacker.food_restrictions + "," + hacker.shirt_size + "},"
+        out += "]},"
+    out += "{nogroup: ["
+    for hacker in event.registered_hackers and hacker.id not in group_users:
+        out += "{" + hacker.id + ", " + hacker.name + "," + hacker.birthdate + "," + hacker.address + "," + hacker.food_restrictions + "," + hacker.shirt_size + "},"
+    out += "]}]"
 
 
 async def get_event_status(event: ModelEvent, db: Session):
