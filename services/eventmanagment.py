@@ -17,7 +17,7 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
-from utils.service_utils import isBase64
+from utils.service_utils import isBase64, subtract_lists
 
 
 async def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
@@ -259,9 +259,8 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
                                      data: TokenData):
     # Extract hacker IDs from registered_hackers
-    pending_hackers = [
-        h for h in event.registered_hackers if h not in event.accepted_hackers
-    ]
+    pending_hackers = subtract_lists(event.registered_hackers,
+                                     event.accepted_hackers)
     pending_hackers_ids = [h.id for h in pending_hackers]
     # Retrieve pending hacker groups
     pending_groups = db.query(ModelHackerGroup).filter(

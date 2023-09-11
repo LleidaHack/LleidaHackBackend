@@ -12,6 +12,7 @@ import services.hackergroup as hackergroup_service
 import services.eventmanagment as eventmanagment_service
 
 from utils.auth_bearer import JWTBearer
+from utils.service_utils import subtract_lists
 
 router = APIRouter(
     prefix="/eventmanagment",
@@ -240,7 +241,7 @@ async def get_pending_hackers(event_id: int,
         raise NotFoundException("Event not found")
     return {
         'size': len(event.registered_hackers),
-        'hackers': event.registered_hackers
+        'hackers': subtract_lists(event.registered_hackers, event.accepted_hackers)
     }
 
 
