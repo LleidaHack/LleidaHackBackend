@@ -6,7 +6,6 @@ from typing import List, Optional
 class Hacker(User):
     github: str
     linkedin: str
-    dailyhack_github_repo: str
 
     class Config:
         orm_mode = True
@@ -15,13 +14,11 @@ class Hacker(User):
 class HackerPublic(UserPublic):
     github: str
     linkedin: str
-    dailyhack_github_repo: str
 
 
 class HackerUpdate(UserUpdate):
     github: Optional[str]
     linkedin: Optional[str]
-    dailyhack_github_repo: Optional[str]
 
 
 class HackerGroup(BaseModel):
