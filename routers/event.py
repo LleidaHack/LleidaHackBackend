@@ -173,12 +173,15 @@ async def remove_event_sponsor(id: int,
                                                get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
+
 @router.get("/get_hackeps")
 async def get_hackeps(db: Session = Depends(get_db),
-                        token: str = Depends(JWTBearer())):
+                      token: str = Depends(JWTBearer())):
     #get the current year
     year = datetime.now().year
-    return await event_service.get_hackeps(int(year),db)
+    return await event_service.get_hackeps(int(year), db)
+
+
 # @router.put("/{id}/group/{group_id}")
 # async def add_event_group(id: int,
 #                           group_id: int,
