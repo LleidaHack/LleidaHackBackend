@@ -38,6 +38,7 @@ class EventUpdate(BaseModel):
     status: Optional[int]
     image: Optional[str]
     is_image_url: Optional[bool]
+    is_open: Optional[bool]
 
 
     # start_time: Time = Column(Time, default=func.now())
