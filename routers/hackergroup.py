@@ -1,4 +1,6 @@
+from typing import List
 from schemas.Hacker import HackerGroup as SchemaHackerGroup
+from schemas.Hacker import HackerPublic as SchemaHackerPublic
 
 from database import get_db
 from security import get_data_from_token
@@ -64,7 +66,7 @@ async def delete_hacker_group(groupId: int,
     return {"success": True, "deleted_id": hacker_group.id}
 
 
-@router.get("/{groupId}/members")
+@router.get("/{groupId}/members", response_model=List[SchemaHackerPublic])
 async def get_hacker_group_members(groupId: int,
                                    response: Response,
                                    db: Session = Depends(get_db),
