@@ -265,9 +265,12 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
     # Retrieve pending hacker groups
     pending_groups_ids = db.query(ModelHackerGroupUser.group_id).filter(
         ModelHackerGroupUser.hacker_id.in_(pending_hackers_ids)).all()
+    pending_groups_ids = [g[0] for g in pending_groups_ids]
+    #remove duplicates
+    pending_groups_ids = list(dict.fromkeys(pending_groups_ids))
     pending_groups = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id.in_(pending_groups_ids)).all()
-    # return pending_groups
+    # return pending_groups_ids
     # Collect group users' IDs
     group_users = [
         hacker.id for group in pending_groups for hacker in group.members
