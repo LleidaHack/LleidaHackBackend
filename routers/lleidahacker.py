@@ -44,13 +44,13 @@ async def get_lleidahacker(userId: int,
     return await lleidahacker_service.get_lleidahacker(userId, db)
 
 
-@router.post("/")
-async def add_lleidahacker(payload: SchemaLleidaHacker,
-                           response: Response,
-                           db: Session = Depends(get_db),
-                           str=Depends(JWTBearer())):
-    new_lleidahacker = await lleidahacker_service.add_lleidahacker(payload, db)
-    return {"success": True, "user_id": new_lleidahacker.id}
+# @router.post("/")
+# async def add_lleidahacker(payload: SchemaLleidaHacker,
+#                            response: Response,
+#                            db: Session = Depends(get_db),
+#                            str=Depends(JWTBearer())):
+#     new_lleidahacker = await lleidahacker_service.add_lleidahacker(payload, db)
+#     return {"success": True, "user_id": new_lleidahacker.id}
 
 
 @router.delete("/{userId}")

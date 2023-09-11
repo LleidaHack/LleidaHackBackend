@@ -48,14 +48,14 @@ async def get_hacker(hackerId: int,
     return await hacker_service.get_hacker(hackerId, db)
 
 
-@router.post("/")
-async def add_hacker(payload: SchemaHacker,
-                     response: Response,
-                     db: Session = Depends(get_db),
-                     token: str = Depends(JWTBearer())):
-    new_hacker = await hacker_service.add_hacker(payload, db,
-                                                 get_data_from_token(token))
-    return {"success": True, "user_id": new_hacker.id}
+# @router.post("/")
+# async def add_hacker(payload: SchemaHacker,
+#                      response: Response,
+#                      db: Session = Depends(get_db),
+#                      token: str = Depends(JWTBearer())):
+#     new_hacker = await hacker_service.add_hacker(payload, db,
+#                                                  get_data_from_token(token))
+#     return {"success": True, "user_id": new_hacker.id}
 
 
 @router.put("/{hackerId}")
@@ -64,9 +64,9 @@ async def update_hacker(hackerId: int,
                         response: Response,
                         db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
-    hacker = await hacker_service.update_hacker(hackerId, payload, db,
+    hacker, updated = await hacker_service.update_hacker(hackerId, payload, db,
                                                 get_data_from_token(token))
-    return {"success": True, "updated_id": hacker.id}
+    return {"success": True, "updated_id": hacker.id, "updated": updated}
 
 
 @router.post("/{userId}/ban")

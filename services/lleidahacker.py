@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime as date
 from sqlalchemy.orm import Session
 
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
