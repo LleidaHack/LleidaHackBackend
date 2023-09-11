@@ -6,11 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
 from schemas.Event import Event as SchemaEvent
-
-from models.Event import Event as ModelEvent
-from models.Company import Company as ModelCompany
-from models.Hacker import Hacker as ModelHacker
-from models.Hacker import HackerGroup as ModelHackerGroup
+from schemas.Event import EventUpdate as SchemaEventUpdate
 
 import services.event as event_service
 
@@ -46,7 +42,7 @@ async def create_event(event: SchemaEvent,
 
 @router.put("/{id}")
 async def update_event(id: int,
-                       event: SchemaEvent,
+                       event: SchemaEventUpdate,
                        db: Session = Depends(get_db),
                        token: str = Depends(JWTBearer())):
     new_event, updated = await event_service.update_event(
