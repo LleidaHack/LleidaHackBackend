@@ -139,11 +139,13 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
     db.refresh(hacker_group)
     return hacker_group
 
+
 async def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
-                                data: TokenData):
+                                      data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                    or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
             raise AuthenticationException("Not authorized")
     hacker_group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.code == code).first()
@@ -166,6 +168,8 @@ async def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
     db.commit()
     db.refresh(hacker_group)
     return hacker_group
+
+
 async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
                                    data: TokenData):
     if not data.is_admin:
