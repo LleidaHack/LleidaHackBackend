@@ -95,10 +95,8 @@ async def get_event_participants(id: int,
 
 @router.get("/{id}/sponsors")
 async def get_event_sponsors(id: int,
-                             db: Session = Depends(get_db),
-                             token: str = Depends(JWTBearer())):
-    return await event_service.get_event_sponsors(id, db,
-                                                  get_data_from_token(token))
+                             db: Session = Depends(get_db)):
+    return await event_service.get_event_sponsors(id, db)
 
 
 @router.get("/{id}/groups")
