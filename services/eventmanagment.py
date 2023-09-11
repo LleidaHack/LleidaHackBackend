@@ -88,6 +88,7 @@ async def delete_dailyhack(eventId: int, hackerId: int, db: Session,
     db.refresh(hacker_registration)
     return hacker_registration
 
+
 async def get_dailyhacks(eventId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -101,6 +102,7 @@ async def get_dailyhacks(eventId: int, db: Session, data: TokenData):
             "dailyhack": registration.dailyhack_url
         })
     return userid_dailyhack
+
 
 async def register_hacker_to_event(payload: SchemaEventRegistration,
                                    event: ModelEvent, hacker: ModelHacker,
