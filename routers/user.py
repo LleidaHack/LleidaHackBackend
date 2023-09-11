@@ -40,6 +40,7 @@ async def get_user(userId: int,
                    str=Depends(JWTBearer())):
     return await user_service.get_user(db, userId)
 
+
 @router.get("/code/{code}")
 async def get_user_by_code(code: str,
                            response: Response,
