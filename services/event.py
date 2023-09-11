@@ -142,26 +142,26 @@ async def add_company(id: int, company_id: int, db: Session, data: TokenData):
     return event
 
 
-async def add_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and hacker_id != data.user_id))):
-            raise Exception("Not authorized")
-    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    if event is None:
-        raise Exception("Event not found")
-    hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
-    if hacker is None:
-        raise Exception("Hacker not found")
-    if not data.is_admin:
-        if event.max_participants <= len(event.hackers):
-            raise Exception("Event is full")
-    event.hackers.append(hacker)
-    db.commit()
-    db.refresh(event)
-    db.refresh(hacker)
-    return event
+# async def add_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
+#     if not data.is_admin:
+#         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+#                                     (data.type == UserType.HACKER.value
+#                                      and hacker_id != data.user_id))):
+#             raise Exception("Not authorized")
+#     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+#     if event is None:
+#         raise Exception("Event not found")
+#     hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
+#     if hacker is None:
+#         raise Exception("Hacker not found")
+#     if not data.is_admin:
+#         if event.max_participants <= len(event.hackers):
+#             raise Exception("Event is full")
+#     event.hackers.append(hacker)
+#     db.commit()
+#     db.refresh(event)
+#     db.refresh(hacker)
+#     return event
 
 
 async def add_hacker_group(id: int, hacker_group_id: int, db: Session,
@@ -217,29 +217,29 @@ async def remove_company(id: int, company_id: int, db: Session,
     return event
 
 
-async def remove_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and hacker_id != data.user_id))):
-            raise Exception("Not authorized")
-    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    if event is None:
-        raise Exception("Event not found")
-    hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
-    if hacker is None:
-        raise Exception("Hacker not found")
-    if hacker not in event.hackers:
-        raise Exception("Hacker is not participant")
-    event.hackers.remove(hacker)
-    hacker_group = db.query(ModelHackerGroup).filter(
-        ModelHackerGroup.id == hacker.hacker_group_id).first()
-    if hacker_group is not None:
-        hacker_group.hackers.remove(hacker)
-    db.commit()
-    db.refresh(hacker_group)
-    db.refresh(hacker)
-    db.refresh(event)
+# async def remove_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
+#     if not data.is_admin:
+#         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+#                                     (data.type == UserType.HACKER.value
+#                                      and hacker_id != data.user_id))):
+#             raise Exception("Not authorized")
+#     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+#     if event is None:
+#         raise Exception("Event not found")
+#     hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
+#     if hacker is None:
+#         raise Exception("Hacker not found")
+#     if hacker not in event.hackers:
+#         raise Exception("Hacker is not participant")
+#     event.hackers.remove(hacker)
+#     hacker_group = db.query(ModelHackerGroup).filter(
+#         ModelHackerGroup.id == hacker.hacker_group_id).first()
+#     if hacker_group is not None:
+#         hacker_group.hackers.remove(hacker)
+#     db.commit()
+#     db.refresh(hacker_group)
+#     db.refresh(hacker)
+#     db.refresh(event)
     return event
 
 
