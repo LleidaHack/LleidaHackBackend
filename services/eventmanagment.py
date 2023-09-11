@@ -126,8 +126,8 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
     if payload.update_user:
         if hacker.cv != payload.cv:
             hacker.cv = payload.cv
-        if hacker.description != payload.description:
-            hacker.description = payload.description
+        # if hacker.description != payload.description:
+        #     hacker.description = payload.description
         if hacker.food_restrictions != payload.food_restrictions:
             hacker.food_restrictions = payload.food_restrictions
         if hacker.shirt_size != payload.shirt_size:
