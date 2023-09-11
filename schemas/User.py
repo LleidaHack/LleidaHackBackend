@@ -17,10 +17,13 @@ class User(BaseModel):
     shirt_size: str
     image: Optional[str]
     is_image_url: Optional[bool]
+
     class Config:
         orm_mode = True
-        exclude = ['password', 'token', 'refresh_token', 'code', 'address', 'shirt_size', 'food_restrictions', 'telephone', 'email']
-    
+        exclude = [
+            'password', 'token', 'refresh_token', 'code', 'address',
+            'shirt_size', 'food_restrictions', 'telephone', 'email'
+        ]
 
 
 class UserPublic(BaseModel):
@@ -30,7 +33,6 @@ class UserPublic(BaseModel):
     birthdate: date
     image: Optional[str]
     is_image_url: Optional[bool]
-    
 
 
 class UserUpdate(BaseModel):
