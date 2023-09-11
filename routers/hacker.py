@@ -64,8 +64,8 @@ async def update_hacker(hackerId: int,
                         response: Response,
                         db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
-    hacker, updated = await hacker_service.update_hacker(hackerId, payload, db,
-                                                get_data_from_token(token))
+    hacker, updated = await hacker_service.update_hacker(
+        hackerId, payload, db, get_data_from_token(token))
     return {"success": True, "updated_id": hacker.id, "updated": updated}
 
 
