@@ -128,6 +128,8 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
         hacker_group.members = []
     event = db.query(ModelEvent).filter(
         ModelEvent.id == hacker_group.event_id).first()
+    if hacker not in event.registered_hackers:
+        raise InvalidDataException("Hacker not registered")
     if len(hacker_group.members) >= event.max_group_size:
         raise InvalidDataException("Group is full")
     if hacker in hacker_group.members:
@@ -137,7 +139,33 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
     db.refresh(hacker_group)
     return hacker_group
 
-
+async def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
+                                data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value
+                                    or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+            raise AuthenticationException("Not authorized")
+    hacker_group = db.query(ModelHackerGroup).filter(
+        ModelHackerGroup.code == code).first()
+    if hacker_group is None:
+        raise NotFoundException("Hacker group not found")
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    if hacker_group.members is None:
+        hacker_group.members = []
+    event = db.query(ModelEvent).filter(
+        ModelEvent.id == hacker_group.event_id).first()
+    if hacker not in event.registered_hackers:
+        raise InvalidDataException("Hacker not registered")
+    if len(hacker_group.members) >= event.max_group_size:
+        raise InvalidDataException("Group is full")
+    if hacker in hacker_group.members:
+        raise InvalidDataException("Hacker already in group")
+    hacker_group.members.append(hacker)
+    db.commit()
+    db.refresh(hacker_group)
+    return hacker_group
 async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
                                    data: TokenData):
     if not data.is_admin:
