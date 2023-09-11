@@ -41,6 +41,7 @@ async def get_user(userId: int,
     return await user_service.get_user(db, userId)
 
 
+@router.get("/code/{code}")
 async def get_user_by_code(code: str,
                            response: Response,
                            db: Session = Depends(get_db),
