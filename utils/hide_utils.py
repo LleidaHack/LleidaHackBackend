@@ -10,3 +10,8 @@ def user_show_all(user: ModelUser):
     user.address
     user.code
     user.food_restrictions
+
+
+def user_show_lleidahacker(user: ModelUser):
+    user.code
+    user.food_restrictions
