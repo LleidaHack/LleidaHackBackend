@@ -12,7 +12,7 @@ from schemas.Hacker import HackerUpdate as SchemaHackerUpdate
 from sqlalchemy.orm import Session
 
 from security import get_password_hash
-from utils.service_utils import set_existing_data, check_image
+from utils.service_utils import set_existing_data, check_image, generate_user_code
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
@@ -31,7 +31,7 @@ async def get_hacker(hackerId: int, db: Session):
 
 
 async def add_hacker(payload: SchemaHacker, db: Session):
-    new_hacker = ModelHacker(**payload.dict())
+    new_hacker = ModelHacker(**payload.dict(), code=generate_user_code(db))
     if payload.image is not None:
         payload = check_image(payload)
     new_hacker.password = get_password_hash(payload.password)

@@ -48,6 +48,7 @@ class HackerEventRegistration(BaseModel):
     description: str
     github: str
     linkedin: str
+    dailyhack_url: Optional[str]
     update_user: bool
 
 
@@ -56,3 +57,4 @@ class HackerEventRegistrationUpdate(BaseModel):
     food_restrictions: Optional[str]
     cv: Optional[str]
     description: Optional[str]
+    dailyhack_url: Optional[str]

@@ -25,7 +25,7 @@ async def signup(payload: SchemaCompanyUser,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_companyuser = await companyuser_service.add_company_user(payload, db)
-    access_token, refresh_token = create_token_pair(new_companyuser, db)
+    access_token, refresh_token = await create_token_pair(new_companyuser, db)
     return {
         "success": True,
         "user_id": new_companyuser.id,

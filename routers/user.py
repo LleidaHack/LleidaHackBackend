@@ -18,7 +18,7 @@ router = APIRouter(
 #                  response: Response,
 #                  db: Session = Depends(get_db)):
 #     new_user = await user_service.add_user(db, payload)
-#     access_token, refresh_token = create_token_pair(new_user, db)
+#     access_token, refresh_token = await create_token_pair(new_user, db)
 #     return {
 #         "success": True,
 #         "user_id": new_user.id,

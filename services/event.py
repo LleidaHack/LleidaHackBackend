@@ -21,7 +21,12 @@ from error.NotFoundException import NotFoundException
 async def get_all(db: Session):
     return db.query(ModelEvent).all()
 
-
+async def get_hackeps(year:int ,db: Session):
+    #return and event called HackEPS year ignoring caps
+    e = db.query(ModelEvent).filter(ModelEvent.name.ilike(f'%HackEPS {year}%')).first()
+    if e is None:
+        return db.query(ModelEvent).filter(ModelEvent.name.ilike(f'%HackEPS {year-1}%')).first()
+    return e
 async def get_event(id: int, db: Session):
     return db.query(ModelEvent).filter(ModelEvent.id == id).first()
 
