@@ -28,7 +28,8 @@ async def get_company_user(companyUserId: int, db: Session):
 
 
 async def add_company_user(payload: SchemaCompanyUser, db: Session):
-    new_company_user = ModelCompanyUser(**payload.dict(), code=generate_user_code(db)
+    new_company_user = ModelCompanyUser(**payload.dict(),
+                                        code=generate_user_code(db))
     new_company_user.password = get_password_hash(payload.password)
     if payload.image is not None:
         payload = check_image(payload)
