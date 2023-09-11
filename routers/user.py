@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
 from database import get_db
-from security import create_token_pair
+from security import get_data_from_token
 import services.user as user_service
 from utils.auth_bearer import JWTBearer
 
@@ -39,6 +39,14 @@ async def get_user(userId: int,
                    db: Session = Depends(get_db),
                    str=Depends(JWTBearer())):
     return await user_service.get_user(db, userId)
+
+
+async def get_user_by_code(code: str,
+                           response: Response,
+                           db: Session = Depends(get_db),
+                           str=Depends(JWTBearer())):
+    return await user_service.get_user_by_code(db, code,
+                                               get_data_from_token(str))
 
 
 @router.post("/")
