@@ -9,6 +9,7 @@ from schemas.User import User as SchemaUser
 
 from utils.service_utils import check_image
 from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
 
 
 async def get_all(db: Session):
@@ -22,7 +23,10 @@ async def get_user_by_code(db: Session, code: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
-    return db.query(ModelUser).filter(ModelUser.code == code).first()
+    user = db.query(ModelUser).filter(ModelUser.code == code).first()
+    if user is None:
+        raise NotFoundException("User not found")
+    return user
 
 async def add_user(db: Session, payload: SchemaUser):
     new_user = ModelUser(**payload.dict())
