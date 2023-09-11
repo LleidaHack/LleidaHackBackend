@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -31,10 +31,10 @@ dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
 tags_metadata = [
-    # {
-    #     "name": "User",
-    #     "description": "User related endpoints"
-    # },
+    {
+        "name": "User",
+        "description": "User related endpoints"
+    },
     {
         "name": "Hacker",
         "description": "Hacker related endpoints"
@@ -101,7 +101,7 @@ app.add_exception_handler(InputException, eh.input_exception_handler)
 
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
-# app.include_router(user.router)
+app.include_router(user.router)
 app.include_router(hacker.router)
 app.include_router(hackergroup.router)
 app.include_router(lleidahacker.router)

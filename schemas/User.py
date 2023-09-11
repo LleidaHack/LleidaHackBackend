@@ -22,6 +22,15 @@ class User(BaseModel):
         orm_mode = True
 
 
+class UserPublic(BaseModel):
+    id: int
+    name: str
+    nickname: str
+    birthdate: date
+    image: Optional[str]
+    is_image_url: Optional[bool]
+
+
 class UserUpdate(BaseModel):
     name: Optional[str]
     nickname: Optional[str]

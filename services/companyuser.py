@@ -8,7 +8,7 @@ from schemas.Company import CompanyUserUpdate as SchemaCompanyUserUpdate
 from sqlalchemy.orm import Session
 
 from security import get_password_hash
-from utils.service_utils import set_existing_data, check_image
+from utils.service_utils import set_existing_data, check_image, generate_user_code
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
@@ -28,7 +28,7 @@ async def get_company_user(companyUserId: int, db: Session):
 
 
 async def add_company_user(payload: SchemaCompanyUser, db: Session):
-    new_company_user = ModelCompanyUser(**payload.dict())
+    new_company_user = ModelCompanyUser(**payload.dict(), code=generate_user_code(db)
     new_company_user.password = get_password_hash(payload.password)
     if payload.image is not None:
         payload = check_image(payload)

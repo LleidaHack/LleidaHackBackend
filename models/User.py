@@ -7,6 +7,8 @@ from database import Base
 class User(Base):
     __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True)
+    token: str = Column(String, default="")
+    refresh_token: str = Column(String, default="")
     name: str = Column(String)
     nickname: str = Column(String)
     password: str = Column(String)
@@ -21,6 +23,7 @@ class User(Base):
     updated_at: date = Column(DateTime, default=date.today())
     image: str = Column(String, default="")
     is_image_url: bool = Column(Boolean, default=False)
+    code: str = Column(String, default="", unique=True, index=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "user",
