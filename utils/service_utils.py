@@ -45,3 +45,7 @@ def generate_user_code(db, length=20):
     while db.query(User).filter(User.code == code).first() is not None:
         code = generate_complex_random_code(length)
     return code
+
+
+def subtract_lists(list1, list2):
+    return [item for item in list1 if item not in list2]
