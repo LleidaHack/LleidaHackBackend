@@ -17,8 +17,10 @@ async def get_all(db: Session):
 
 
 async def get_user(db: Session, userId: int):
-    return db.query(ModelUser).filter(ModelUser.id == userId).first()
-
+    user = db.query(ModelUser).filter(ModelUser.id == userId).first()
+    if user is None:
+        raise NotFoundException("User not found")
+    return user
 
 async def get_user_by_code(db: Session, code: str, data: TokenData):
     if not data.is_admin:
