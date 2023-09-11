@@ -45,10 +45,10 @@ class EventUpdate(BaseModel):
 class HackerEventRegistration(BaseModel):
     shirt_size: str
     food_restrictions: str
-    cv: str
-    description: str
-    github: str
-    linkedin: str
+    cv: Optional[str]
+    description: Optional[str]
+    github: Optional[str]
+    linkedin: Optional[str]
     dailyhack_url: Optional[str]
     update_user: bool
 
