@@ -46,5 +46,6 @@ def generate_user_code(db, length=20):
         code = generate_complex_random_code(length)
     return code
 
+
 def subtract_lists(list1, list2):
     return [item for item in list1 if item not in list2]

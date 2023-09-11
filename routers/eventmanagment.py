@@ -241,7 +241,8 @@ async def get_pending_hackers(event_id: int,
         raise NotFoundException("Event not found")
     return {
         'size': len(event.registered_hackers),
-        'hackers': subtract_lists(event.registered_hackers, event.accepted_hackers)
+        'hackers': subtract_lists(event.registered_hackers,
+                                  event.accepted_hackers)
     }
 
 
