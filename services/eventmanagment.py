@@ -19,11 +19,17 @@ from error.InvalidDataException import InvalidDataException
 
 from utils.service_utils import isBase64
 
-async def add_dailyhack(eventId: int, hackerId:int, url:str, db: Session, data: TokenData):
+
+async def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
+                        data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
             raise AuthenticationException("Not authorized")
-    hacker_registration = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId, ModelHackerRegistration.event_id == eventId).first()
+    hacker_registration = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == hackerId,
+        ModelHackerRegistration.event_id == eventId).first()
     if hacker_registration is None:
         raise NotFoundException("Hacker not registered")
     hacker_registration.dailyhack_url = url
@@ -31,20 +37,32 @@ async def add_dailyhack(eventId: int, hackerId:int, url:str, db: Session, data: 
     db.refresh(hacker_registration)
     return hacker_registration
 
-async def get_dailyhack(eventId: int, hackerId:int, db: Session, data: TokenData):
+
+async def get_dailyhack(eventId: int, hackerId: int, db: Session,
+                        data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
             raise AuthenticationException("Not authorized")
-    hacker_registration = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId, ModelHackerRegistration.event_id == eventId).first()
+    hacker_registration = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == hackerId,
+        ModelHackerRegistration.event_id == eventId).first()
     if hacker_registration is None:
         raise NotFoundException("Hacker not registered")
     return hacker_registration.dailyhack_url
 
-async def update_dailyhack(eventId: int, hackerId:int, url:str, db: Session, data: TokenData):
+
+async def update_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
+                           data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
             raise AuthenticationException("Not authorized")
-    hacker_registration = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId, ModelHackerRegistration.event_id == eventId).first()
+    hacker_registration = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == hackerId,
+        ModelHackerRegistration.event_id == eventId).first()
     if hacker_registration is None:
         raise NotFoundException("Hacker not registered")
     hacker_registration.dailyhack_url = url
@@ -52,17 +70,24 @@ async def update_dailyhack(eventId: int, hackerId:int, url:str, db: Session, dat
     db.refresh(hacker_registration)
     return hacker_registration
 
-async def delete_dailyhack(eventId: int, hackerId:int, db: Session, data: TokenData):
+
+async def delete_dailyhack(eventId: int, hackerId: int, db: Session,
+                           data: TokenData):
     if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                    (data.type == UserType.HACKER.value
+                                     and data.user_id == hackerId))):
             raise AuthenticationException("Not authorized")
-    hacker_registration = db.query(ModelHackerRegistration).filter(ModelHackerRegistration.user_id == hackerId, ModelHackerRegistration.event_id == eventId).first()
+    hacker_registration = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == hackerId,
+        ModelHackerRegistration.event_id == eventId).first()
     if hacker_registration is None:
         raise NotFoundException("Hacker not registered")
     hacker_registration.dailyhack_url = ""
     db.commit()
     db.refresh(hacker_registration)
     return hacker_registration
+
 
 async def register_hacker_to_event(payload: SchemaEventRegistration,
                                    event: ModelEvent, hacker: ModelHacker,
@@ -219,7 +244,9 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
                                      data: TokenData):
     # Extract hacker IDs from registered_hackers
-    pending_hackers = [h for h in event.registered_hackers if h not in event.accepted_hackers]
+    pending_hackers = [
+        h for h in event.registered_hackers if h not in event.accepted_hackers
+    ]
     pending_hackers_ids = [h.id for h in pending_hackers]
     # Retrieve pending hacker groups
     pending_groups = db.query(ModelHackerGroup).filter(
@@ -279,14 +306,10 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
 
 async def get_event_status(event: ModelEvent, db: Session):
     data = {
-        'registratedUsers':
-        len(event.registered_hackers),
-        'acceptedUsers':
-        len(event.accepted_hackers),
-        'rejectedUsers':
-        len(event.rejected_hackers),
-        'participatingUsers':
-        len(event.participants),
+        'registratedUsers': len(event.registered_hackers),
+        'acceptedUsers': len(event.accepted_hackers),
+        'rejectedUsers': len(event.rejected_hackers),
+        'participatingUsers': len(event.participants),
     }
     for meal in event.meals:
         data[meal.name] = len(meal.users)
