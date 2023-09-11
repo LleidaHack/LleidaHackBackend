@@ -1,9 +1,14 @@
 from config import Configuration
 from fastapi import FastAPI
 from starlette.responses import JSONResponse
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import EmailStr, BaseModel
 from typing import List
+from models.UserType import UserType
+from fastapi import FastAPI
+from fastapi.exceptions import HTTPException
+from pydantic import BaseModel
+from smtplib import SMTP_SSL
+from email.mime.text import MIMEText
 
 
 class EmailSchema(BaseModel):
@@ -28,15 +33,18 @@ app = FastAPI()
 html = """<p>Hi this test mail, thanks for using Fastapi-mail</p> """
 
 
-async def simple_send(email: EmailSchema) -> JSONResponse:
-    pass
-    # message = MessageSchema(
-    #     subject="Fastapi-Mail module",
-    #     recipients=email.dict().get("email"),  # List of recipients, as many as you can pass
-    #     body=html,
-    #     subtype="html"
-    # )
+def send_email(email: str, template: str):
+    msg = MIMEText(template, "html")
+    msg['Subject'] = "Test Email"
+    msg['From'] = Configuration.get('MAIL', 'MAIL_FROM')
+    msg['To'] = email
 
-    # fm = FastMail(conf)
-    # await fm.send_message(message)
-    # return JSONResponse(status_code=200, content={"message": "email has been sent"})
+    try:
+        with SMTP_SSL(Configuration.get('MAIL', 'MAIL_SERVER'),
+                      Configuration.get('MAIL', 'MAIL_PORT')) as server:
+            server.login(Configuration.get('MAIL', 'MAIL_USERNAME'),
+                         Configuration.get('MAIL', 'MAIL_PASSWORD'))
+            server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
+                            msg.as_string())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

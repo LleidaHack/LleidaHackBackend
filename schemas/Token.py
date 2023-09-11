@@ -8,4 +8,4 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: int
-    username: str
+    type: str
