@@ -35,7 +35,7 @@ async def add_lleidahacker_group(payload: SchemaLleidaHackerGroup,
                                  str=Depends(oauth_schema)):
     new_lleidahacker_group = await lleidahackergroup_service.add_lleidahackergroup(
         payload, db)
-    return {"success": True, "created_id": new_lleidahacker_group.id}
+    return {"success": True, "user_id": new_lleidahacker_group.id}
 
 
 @router.delete("/{groupId}")
@@ -66,7 +66,7 @@ async def add_lleidahacker_group_member(groupId: int,
                                         str=Depends(oauth_schema)):
     new_lleidahacker_group = await lleidahackergroup_service.add_lleidahacker_to_group(
         groupId, lleidahackerId, db)
-    return {"success": True, "created_id": new_lleidahacker_group.id}
+    return {"success": True, "user_id": new_lleidahacker_group.id}
 
 
 @router.delete("/{groupId}/members/{lleidahackerId}")

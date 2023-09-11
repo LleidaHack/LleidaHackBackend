@@ -1,4 +1,4 @@
-name: deploy on VPS
+name: install enviroment
 on:
   workflow_dispatch:
 

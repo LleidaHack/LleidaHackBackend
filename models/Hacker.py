@@ -5,6 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from database import Base
 from models.User import User
+from models.UserType import UserType
 from schemas.Event import Event
 
 
@@ -18,7 +19,7 @@ class Hacker(User):
     # is_leader: bool = Column(Integer, default=0)
     events = relationship('Event', secondary='hacker_event_participation')
     __mapper_args__ = {
-        "polymorphic_identity": "hacker",
+        "polymorphic_identity": UserType.HACKER.value,
     }
 
 
@@ -31,10 +32,12 @@ class HackerGroupUser(Base):
 class HackerGroup(Base):
     __tablename__ = 'hacker_group'
     id: int = Column(Integer, primary_key=True, index=True)
+    code: str = Column(String, unique=True, index=True)
     name: str = Column(String)
     description: str = Column(String)
     leader_id: int = Column(Integer,
                             ForeignKey('hacker.user_id'),
                             nullable=False)
+    event_id = Column(Integer, ForeignKey('event.id'), nullable=False)
     # event: Event = relationship('Event', secondary='hacker_event')
     members = relationship('Hacker', secondary='hacker_group_user')
