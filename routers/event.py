@@ -140,14 +140,14 @@ async def remove_event_group(id: int,
 #     return {'success': True, 'event_id': event.id}
 
 
-@router.delete("/{id}/participants/{hacker_id}")
-async def remove_event_participant(id: int,
-                                   hacker_id: int,
-                                   db: Session = Depends(get_db),
-                                   token: str = Depends(JWTBearer())):
-    event = await event_service.remove_hacker(id, hacker_id, db,
-                                              get_data_from_token(token))
-    return {'success': True, 'event_id': event.id}
+# @router.delete("/{id}/participants/{hacker_id}")
+# async def remove_event_participant(id: int,
+#                                    hacker_id: int,
+#                                    db: Session = Depends(get_db),
+#                                    token: str = Depends(JWTBearer())):
+#     event = await event_service.remove_hacker(id, hacker_id, db,
+#                                               get_data_from_token(token))
+#     return {'success': True, 'event_id': event.id}
 
 
 @router.put("/{id}/sponsors/{company_id}")
