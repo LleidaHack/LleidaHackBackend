@@ -11,6 +11,8 @@ from utils.service_utils import check_image
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 
+from utils.hide_utils import user_show_private
+
 
 async def get_all(db: Session):
     return db.query(ModelUser).all()
@@ -18,9 +20,12 @@ async def get_all(db: Session):
 
 async def get_user(db: Session, userId: int, data: TokenData):
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
-
     if user is None:
         raise NotFoundException("User not found")
+    if data.is_admin or (data.available and
+                         (data.type == UserType.LLEIDAHACKER.value
+                          or data.user_id == userId)):
+        user_show_private(user)
     return user
 
 
