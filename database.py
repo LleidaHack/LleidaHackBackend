@@ -18,5 +18,7 @@ def get_db():
         yield db
     except Exception as e:
         db.close()
+
+
 def db_get():
     return SessionLocal()

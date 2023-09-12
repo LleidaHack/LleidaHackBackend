@@ -16,6 +16,7 @@ from error.ValidationException import ValidationException
 
 from utils.hide_utils import companyuser_show_private
 
+
 async def get_all(db: Session):
     return db.query(ModelCompanyUser).all()
 
@@ -25,7 +26,10 @@ async def get_company_user(companyUserId: int, db: Session, data: TokenData):
         ModelCompanyUser.id == companyUserId).first()
     if user is None:
         raise NotFoundException("Company user not found")
-    if data.is_admin or (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.COMPANYUSER.value and data.user_id == companyUserId))):
+    if data.is_admin or (data.available and
+                         (data.type == UserType.LLEIDAHACKER.value or
+                          (data.type == UserType.COMPANYUSER.value
+                           and data.user_id == companyUserId))):
         companyuser_show_private(user)
     return user
 

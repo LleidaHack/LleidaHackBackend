@@ -15,10 +15,12 @@ def user_show_private(user: ModelUser):
     user.code
     user.food_restrictions
 
+
 def hacker_show_private(hacker: ModelHacker):
     user_show_private(hacker)
     hacker.cv
     hacker.banned
+
 
 def lleidahacker_show_private(lleidahacker: ModelLleidaHacker):
     user_show_private(lleidahacker)
@@ -26,6 +28,7 @@ def lleidahacker_show_private(lleidahacker: ModelLleidaHacker):
     lleidahacker.nif
     lleidahacker.accepted
     lleidahacker.rejected
+
 
 def companyuser_show_private(company: ModelCompanyUser):
     user_show_private(company)

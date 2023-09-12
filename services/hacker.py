@@ -20,6 +20,7 @@ from error.InvalidDataException import InvalidDataException
 
 from utils.hide_utils import hacker_show_private
 
+
 async def get_all(db: Session):
     return db.query(ModelHacker).all()
 
@@ -28,7 +29,10 @@ async def get_hacker(hackerId: int, db: Session, data: TokenData):
     user = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if user is None:
         raise NotFoundException("Hacker not found")
-    if data.is_admin or (data.available and (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+    if data.is_admin or (
+            data.available and
+        (data.type == UserType.LLEIDAHACKER.value or
+         (data.type == UserType.HACKER.value and data.user_id == hackerId))):
         hacker_show_private(user)
     return user
 

@@ -41,7 +41,8 @@ async def get_lleidahacker(userId: int,
                            response: Response,
                            db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):
-    return await lleidahacker_service.get_lleidahacker(userId, db, get_data_from_token(str))
+    return await lleidahacker_service.get_lleidahacker(
+        userId, db, get_data_from_token(str))
 
 
 # @router.post("/")
