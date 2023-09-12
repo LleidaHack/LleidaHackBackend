@@ -11,6 +11,7 @@ from schemas.Event import Event
 
 from sqlalchemy.orm import deferred
 
+
 class LleidaHacker(User):
     __tablename__ = 'lleida_hacker'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)

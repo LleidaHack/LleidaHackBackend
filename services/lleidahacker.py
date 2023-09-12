@@ -18,6 +18,7 @@ from error.InvalidDataException import InvalidDataException
 
 from utils.hide_utils import lleidahacker_show_private
 
+
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
@@ -27,7 +28,9 @@ async def get_lleidahacker(userId: int, db: Session, data: TokenData):
         ModelLleidaHacker.id == userId).first()
     if user is None:
         raise NotFoundException("LleidaHacker not found")
-    if data.is_admin or (data.available and (data.type == UserType.LLEIDAHACKER.value and data.user_id == userId)):
+    if data.is_admin or (data.available and
+                         (data.type == UserType.LLEIDAHACKER.value
+                          and data.user_id == userId)):
         lleidahacker_show_private(user)
     return user
 

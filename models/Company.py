@@ -9,6 +9,7 @@ from schemas.Event import Event
 
 from sqlalchemy.orm import deferred
 
+
 class Company(Base):
     __tablename__ = 'company'
     id: int = Column(Integer, primary_key=True, index=True)

@@ -8,6 +8,7 @@ SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
 
 from database import db_get
 
+
 class JWTBearer(HTTPBearer):
 
     def __init__(self, auto_error: bool = True):

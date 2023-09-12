@@ -45,7 +45,8 @@ async def get_hacker(hackerId: int,
                      response: Response,
                      db: Session = Depends(get_db),
                      token: str = Depends(JWTBearer())):
-    return await hacker_service.get_hacker(hackerId, db, get_data_from_token(token))
+    return await hacker_service.get_hacker(hackerId, db,
+                                           get_data_from_token(token))
 
 
 # @router.post("/")
