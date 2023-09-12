@@ -45,7 +45,7 @@ async def get_company_user(companyUserId: int,
                            response: Response,
                            db: Session = Depends(get_db),
                            token: str = Depends(JWTBearer())):
-    return companyuser_service.get_companyuser(db, companyUserId)
+    return companyuser_service.get_companyuser(db, companyUserId, get_data_from_token(token))
 
 
 # @router.post("/")

@@ -16,16 +16,19 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
+from utils.hide_utils import lleidahacker_show_private
 
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
 
-async def get_lleidahacker(userId: int, db: Session):
+async def get_lleidahacker(userId: int, db: Session, data: TokenData):
     user = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
     if user is None:
         raise NotFoundException("LleidaHacker not found")
+    if data.is_admin or (data.available and (data.type == UserType.LLEIDAHACKER.value and data.user_id == userId)):
+        lleidahacker_show_private(user)
     return user
 
 
