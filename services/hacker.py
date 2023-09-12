@@ -18,15 +18,22 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
+from utils.hide_utils import hacker_show_private
+
 
 async def get_all(db: Session):
     return db.query(ModelHacker).all()
 
 
-async def get_hacker(hackerId: int, db: Session):
+async def get_hacker(hackerId: int, db: Session, data: TokenData):
     user = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if user is None:
         raise NotFoundException("Hacker not found")
+    if data.is_admin or (
+            data.available and
+        (data.type == UserType.LLEIDAHACKER.value or
+         (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        hacker_show_private(user)
     return user
 
 
@@ -133,49 +140,3 @@ async def get_hacker_groups(hackerId: int, db: Session):
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return hacker.groups
-
-
-async def add_dailyhack(hackerId: int, url: str, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and data.user_id == hackerId))):
-            raise AuthenticationException("Not authorized")
-    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
-    if hacker is None:
-        raise NotFoundException("Hacker not found")
-    hacker.dailyhack_github_repo = url
-    db.commit()
-    db.refresh(hacker)
-    return hacker
-
-
-async def remove_dailyhack(hackerId: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and data.user_id == hackerId))):
-            raise AuthenticationException("Not authorized")
-    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
-    if hacker is None:
-        raise NotFoundException("Hacker not found")
-    hacker.dailyhack_github_repo = ""
-    db.commit()
-    db.refresh(hacker)
-    return hacker
-
-
-async def update_dailyhack(hackerId: int, url: str, db: Session,
-                           data: TokenData):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and data.user_id == hackerId))):
-            raise AuthenticationException("Not authorized")
-    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
-    if hacker is None:
-        raise NotFoundException("Hacker not found")
-    hacker.dailyhack_github_repo = url
-    db.commit()
-    db.refresh(hacker)
-    return hacker

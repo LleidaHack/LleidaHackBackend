@@ -49,7 +49,7 @@ def get_user(user_id: int, db: Session):
     return user
 
 
-def verify_token(token: str, db: Session = Depends(get_db)):
+def verify_token(token: str, db: Session):
     # token = req.headers["Authorization"]
     if is_service_token(token):
         return True
@@ -58,9 +58,6 @@ def verify_token(token: str, db: Session = Depends(get_db)):
     if user.type != dict["type"]:
         raise AuthenticationException("Invalid token")
     if user.token != token:
-        raise AuthenticationException("Invalid token")
-    if not (dict['refresh_token'] != None
-            and user.refresh_token == dict["refresh_token"]):
         raise AuthenticationException("Invalid token")
     # Here your code for verifying the token or whatever you use
     if parser.parse(dict["expt"]) < datetime.utcnow():
@@ -156,7 +153,7 @@ def get_data_from_token(
 
 
 def decode_token(token):
-    return jwt.decode(token.credentials.encode('utf-8'),
+    return jwt.decode(token.encode('utf-8'),
                       SECRET_KEY,
                       algorithms=[ALGORITHM])
 

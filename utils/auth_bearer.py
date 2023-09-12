@@ -6,6 +6,8 @@ from config import Configuration
 
 SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
 
+from database import db_get
+
 
 class JWTBearer(HTTPBearer):
 
@@ -32,7 +34,7 @@ class JWTBearer(HTTPBearer):
     def verify_jwt(self, jwtoken: str) -> bool:
         isTokenValid: bool = False
         try:
-            payload = verify_token(jwtoken)
+            payload = verify_token(jwtoken, db_get())
         except:
             payload = None
         if payload:
