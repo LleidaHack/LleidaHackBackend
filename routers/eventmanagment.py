@@ -91,7 +91,7 @@ async def register_hacker_to_event(event_id: int,
     Register a hacker to an event
     """
     event = await event_service.get_event(event_id, db)
-    hacker = await hacker_service.get_hacker(hacker_id, db)
+    hacker = await hacker_service.get_hacker(hacker_id, db, get_data_from_token(token))
     return await eventmanagment_service.register_hacker_to_event(
         registration, event, hacker, db, get_data_from_token(token))
 
@@ -107,7 +107,7 @@ async def unregister_hacker_from_event(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    hacker = await hacker_service.get_hacker(hacker_id, db)
+    hacker = await hacker_service.get_hacker(hacker_id, db, get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return await eventmanagment_service.unregister_hacker_from_event(
@@ -125,7 +125,7 @@ async def participate_hacker_to_event(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    hacker = await hacker_service.get_hacker(hacker_id, db)
+    hacker = await hacker_service.get_hacker(hacker_id, db, get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     await eventmanagment_service.participate_hacker_to_event(
@@ -150,7 +150,7 @@ async def unparticipate_hacker_from_event(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    hacker = await hacker_service.get_hacker(hacker_id, db)
+    hacker = await hacker_service.get_hacker(hacker_id, db, get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     await eventmanagment_service.unparticipate_hacker_from_event(
@@ -168,7 +168,7 @@ async def accept_hacker_to_event(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    hacker = await hacker_service.get_hacker(hacker_id, db)
+    hacker = await hacker_service.get_hacker(hacker_id, db, get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return await eventmanagment_service.accept_hacker_to_event(
@@ -204,7 +204,7 @@ async def reject_hacker_from_event(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    hacker = await hacker_service.get_hacker(hacker_id, db)
+    hacker = await hacker_service.get_hacker(hacker_id, db, get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return await eventmanagment_service.reject_hacker_from_event(
@@ -301,7 +301,7 @@ async def eat(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    hacker = await hacker_service.get_hacker(hacker_id, db)
+    hacker = await hacker_service.get_hacker(hacker_id, db, get_data_from_token(token)) 
     if hacker is None:
         raise NotFoundException("Hacker not found")
     meal = [meal for meal in event.meals if meal.id == meal_id][0]
