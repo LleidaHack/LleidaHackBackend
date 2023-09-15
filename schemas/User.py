@@ -20,6 +20,19 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
+        exclude = [
+            'password', 'token', 'refresh_token', 'code', 'address',
+            'shirt_size', 'food_restrictions', 'telephone', 'email'
+        ]
+
+
+class UserPublic(BaseModel):
+    id: int
+    name: str
+    nickname: str
+    birthdate: date
+    image: Optional[str]
+    is_image_url: Optional[bool]
 
 
 class UserUpdate(BaseModel):

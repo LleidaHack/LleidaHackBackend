@@ -3,18 +3,40 @@ from security import get_password_hash
 
 from models.User import User as ModelUser
 from models.UserType import UserType
+from models.TokenData import TokenData
 
 from schemas.User import User as SchemaUser
 
 from utils.service_utils import check_image
+from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
+
+from utils.hide_utils import user_show_private
 
 
 async def get_all(db: Session):
     return db.query(ModelUser).all()
 
 
-async def get_user(db: Session, userId: int):
-    return db.query(ModelUser).filter(ModelUser.id == userId).first()
+async def get_user(db: Session, userId: int, data: TokenData):
+    user = db.query(ModelUser).filter(ModelUser.id == userId).first()
+    if user is None:
+        raise NotFoundException("User not found")
+    if data.is_admin or (data.available and
+                         (data.type == UserType.LLEIDAHACKER.value
+                          or data.user_id == userId)):
+        user_show_private(user)
+    return user
+
+
+async def get_user_by_code(db: Session, code: str, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    user = db.query(ModelUser).filter(ModelUser.code == code).first()
+    if user is None:
+        raise NotFoundException("User not found")
+    return user
 
 
 async def add_user(db: Session, payload: SchemaUser):
@@ -42,6 +64,16 @@ async def update_user(db: Session, userId: int, payload: SchemaUser):
     user.address = payload.address
     user.shirt_size = payload.shirt_size
     user.image_id = payload.image_id
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+async def set_user_token(db: Session, userId: int, token: str,
+                         refresh_token: str):
+    user = db.query(ModelUser).filter(ModelUser.id == userId).first()
+    user.token = token
+    user.refresh_token = refresh_token
     db.commit()
     db.refresh(user)
     return user
