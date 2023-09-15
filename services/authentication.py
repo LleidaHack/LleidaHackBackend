@@ -24,11 +24,11 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     return await create_token_pair(user)
 
 async def get_me(data: TokenData, db: Session = Depends(get_db)):
-    if data.user_type == UserType.HACKER.value:
-        return await db.query(ModelHacker).filter(ModelHacker.id == data.user_id).first()
-    elif data.user_type == UserType.LLEIDAHACKER.value:
+    if data.type == UserType.HACKER.value:
+        return db.query(ModelHacker).filter(ModelHacker.id == data.user_id).first()
+    elif data.type == UserType.LLEIDAHACKER.value:
         return await db.query(ModelLleidaHacker).filter(ModelLleidaHacker.id == data.user_id).first()
-    elif data.user_type == UserType.COMPANYUSER.value:
+    elif data.type == UserType.COMPANYUSER.value:
         return await db.query(ModelCompanyUser).filter(ModelCompanyUser.id == data.user_id).first()
     else:
         return None

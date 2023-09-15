@@ -28,10 +28,10 @@ async def get_all(db: Session):
 async def get_hackeps(year: int, db: Session):
     #return and event called HackEPS year ignoring caps
     e = db.query(ModelEvent).filter(
-        ModelEvent.name.ilike(f'%HackEPS {year}%')).first()
+        ModelEvent.name.ilike(f'%HackEPS {str(year)}%')).first()
     if e is None:
         return db.query(ModelEvent).filter(
-            ModelEvent.name.ilike(f'%HackEPS {year-1}%')).first()
+            ModelEvent.name.ilike(f'%HackEPS {str(year-1)}%')).first()
     return e
 
 

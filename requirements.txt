@@ -5,7 +5,7 @@ fastapi-sqlalchemy
 starlette==0.19.1
 pydantic==1.10.11
 alembic
-sqlalchemy
+sqlalchemy == 1.4.25
 sqlalchemy-utils
 gunicorn
 python-jose[cryptography]
