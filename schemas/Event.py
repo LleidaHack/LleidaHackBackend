@@ -14,6 +14,7 @@ class Event(BaseModel):
     archived: bool
     price: int
     max_participants: int
+    max_group_size: int
     max_sponsors: int
     status: int
     image: Optional[str]
