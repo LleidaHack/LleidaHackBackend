@@ -11,6 +11,7 @@ from models.Company import CompanyUser as ModelCompanyUser
 
 from security import create_token_pair, get_data_from_token
 
+from error.InputException import InputException
 
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
@@ -35,4 +36,4 @@ async def get_me(data: TokenData, db: Session = Depends(get_db)):
         return await db.query(ModelCompanyUser).filter(
             ModelCompanyUser.id == data.user_id).first()
     else:
-        return None
+        raise InputException("Invalid token")
