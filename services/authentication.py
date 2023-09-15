@@ -13,6 +13,7 @@ from security import create_token_pair, get_data_from_token
 
 from error.InputException import InputException
 
+
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
     if data is None:
