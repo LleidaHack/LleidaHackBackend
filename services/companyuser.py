@@ -15,7 +15,7 @@ from error.NotFoundException import NotFoundException
 from error.ValidationException import ValidationException
 
 from utils.hide_utils import companyuser_show_private
-
+from utils.service_utils import check_user
 
 async def get_all(db: Session):
     return db.query(ModelCompanyUser).all()
@@ -35,6 +35,7 @@ async def get_company_user(companyUserId: int, db: Session, data: TokenData):
 
 
 async def add_company_user(payload: SchemaCompanyUser, db: Session):
+    check_user(db, payload.email, payload.nickname)
     new_company_user = ModelCompanyUser(**payload.dict(),
                                         code=generate_user_code(db))
     new_company_user.password = get_password_hash(payload.password)
