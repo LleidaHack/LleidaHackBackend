@@ -27,6 +27,7 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
         return {"success": False}
     return await create_all_tokens(user)
 
+
 async def reset_password(email: str, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == email).first()
     if user is None:
@@ -34,6 +35,7 @@ async def reset_password(email: str, db: Session = Depends(get_db)):
     if not user.is_verified:
         raise InvalidDataException("User not verified")
     return await create_all_tokens(user)
+
 
 async def get_me(data: TokenData, db: Session = Depends(get_db)):
     if data.type == UserType.HACKER.value:
@@ -49,7 +51,9 @@ async def get_me(data: TokenData, db: Session = Depends(get_db)):
         raise InputException("Invalid token")
 
 
-async def verify_user(data: TokenData, token:str, db: Session = Depends(get_db)):
+async def verify_user(data: TokenData,
+                      token: str,
+                      db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
     if user is None:
         raise InvalidDataException("User not found")
@@ -62,4 +66,4 @@ async def verify_user(data: TokenData, token:str, db: Session = Depends(get_db))
     user.is_verified = True
     db.commit()
     db.refresh(user)
-    return {"success": True}    
+    return {"success": True}
