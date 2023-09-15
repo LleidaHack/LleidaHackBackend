@@ -25,13 +25,13 @@ class User(BaseModel):
         if '.' not in v:
             raise ValueError('must contain a .')
         return v
-    
+
     @validator('telephone')
     def telephone_validation(cls, v):
         if len(v) < 8:
             raise ValueError('must contain at least 8 digits')
         return v
-    
+
     @validator('password')
     def password_validation(cls, v):
         if len(v) < 8:
@@ -43,7 +43,7 @@ class User(BaseModel):
         if v > date.today():
             raise ValueError('must be a valid date')
         return v
-    
+
     @validator('shirt_size')
     def shirt_size_validation(cls, v):
         if v not in ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']:
@@ -52,7 +52,7 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
-       
+
 
 class UserPublic(BaseModel):
     id: int

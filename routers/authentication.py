@@ -17,8 +17,10 @@ router = APIRouter(
 )
 
 from services.mail import send_registration_confirmation_email
+
+
 @router.post("/test")
-async def test(id:int, db: Session = Depends(get_db)):
+async def test(id: int, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.id == id).first()
     await send_registration_confirmation_email(user)
 
@@ -39,21 +41,27 @@ async def login(credentials: HTTPBasicCredentials = Depends(sec),
         "token_type": "bearer"
     }
 
+
 @router.post("/reset-password")
 async def reset_password(email: str, db: Session = Depends(get_db)):
     return await auth_service.reset_password(email, db)
+
 
 @router.post("/refresh-token")
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     return await auth_service.refresh_token(refresh_token, db)
 
+
 @router.get("/me")
 async def me(db: Session = Depends(get_db), token: str = Depends(JWTBearer())):
     return await auth_service.get_me(get_data_from_token(token), db)
 
+
 @router.post("/verify")
 async def verify(token: str, db: Session = Depends(get_db)):
-    return await auth_service.verify_user(get_data_from_token(token), token, db)
+    return await auth_service.verify_user(get_data_from_token(token), token,
+                                          db)
+
 
 @router.get("/check_token")
 async def check_token(token: str = Depends(JWTBearer())):

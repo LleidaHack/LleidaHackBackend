@@ -125,8 +125,8 @@ def create_refresh_token(user: ModelUser,
     update_tokens(user.id, db, refresh_token=encoded_jwt)
     return encoded_jwt
 
-def create_verification_token(user: ModelUser,
-                            db: Session):
+
+def create_verification_token(user: ModelUser, db: Session):
     to_encode = {'user_id': user.id, 'type': user.type}
     #expire in 10 minutes
     expire = datetime.utcnow() + timedelta(minutes=10)
@@ -135,8 +135,8 @@ def create_verification_token(user: ModelUser,
     update_tokens(user.id, db, verification_token=encoded_jwt)
     return encoded_jwt
 
-def create_reset_password_token(user: ModelUser,
-                            db: Session):
+
+def create_reset_password_token(user: ModelUser, db: Session):
     to_encode = {'user_id': user.id, 'type': user.type}
     #expire in 10 minutes
     expire = datetime.utcnow() + timedelta(minutes=10)
@@ -144,8 +144,10 @@ def create_reset_password_token(user: ModelUser,
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     update_tokens(user.id, db, reset_pass_token=encoded_jwt)
 
-def get_data_from_token(
-        token: str = Depends(oauth2_scheme), refresh: bool = False, verify: bool = False):
+
+def get_data_from_token(token: str = Depends(oauth2_scheme),
+                        refresh: bool = False,
+                        verify: bool = False):
     d = TD()
     if is_service_token(token):
         d.is_admin = True
@@ -193,7 +195,9 @@ def decode_token(token):
 #         )
 
 
-async def create_all_tokens(user: ModelUser, db: Session, reset_password: bool = False):
+async def create_all_tokens(user: ModelUser,
+                            db: Session,
+                            reset_password: bool = False):
     if reset_password:
         create_reset_password_token(user, db)
         return
