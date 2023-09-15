@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import Column, DateTime, Integer, String, Boolean, Text
+from sqlalchemy import Column, DateTime, Integer, String, Boolean
 from database import Base
 # from passlib import hash
 from sqlalchemy.orm import deferred
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped
 class User(Base):
     __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True)
-    token: Mapped[str] = deferred(Column(Text, default=""))
+    token: Mapped[str] = deferred(Column(String, default=""))
     refresh_token: Mapped[str] = deferred(Column(String, default=""))
     name: str = Column(String)
     nickname: str = Column(String, unique=True, index=True)
