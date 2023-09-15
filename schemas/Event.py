@@ -14,6 +14,7 @@ class Event(BaseModel):
     archived: bool
     price: int
     max_participants: int
+    max_group_size: int
     max_sponsors: int
     status: int
     image: Optional[str]
@@ -38,5 +39,25 @@ class EventUpdate(BaseModel):
     status: Optional[int]
     image: Optional[str]
     is_image_url: Optional[bool]
+    is_open: Optional[bool]
+    max_group_size: Optional[int]
+
 
     # start_time: Time = Column(Time, default=func.now())
+class HackerEventRegistration(BaseModel):
+    shirt_size: str
+    food_restrictions: str
+    cv: Optional[str]
+    description: Optional[str]
+    github: Optional[str]
+    linkedin: Optional[str]
+    dailyhack_url: Optional[str]
+    update_user: bool
+
+
+class HackerEventRegistrationUpdate(BaseModel):
+    shirt_size: Optional[str]
+    food_restrictions: Optional[str]
+    cv: Optional[str]
+    description: Optional[str]
+    dailyhack_url: Optional[str]
