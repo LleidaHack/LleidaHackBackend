@@ -17,6 +17,12 @@ router = APIRouter(
     tags=["Event"],
 )
 
+@router.get("/get_hackeps")
+async def get_hackeps(db: Session = Depends(get_db),
+                      token: str = Depends(JWTBearer())):
+    #get the current year
+    year = datetime.now().year
+    return await event_service.get_hackeps(int(year), db)
 
 @router.get("/all")
 async def get_events(db: Session = Depends(get_db),
@@ -166,12 +172,7 @@ async def remove_event_sponsor(id: int,
     return {'success': True, 'event_id': event.id}
 
 
-@router.get("/get_hackeps")
-async def get_hackeps(db: Session = Depends(get_db),
-                      token: str = Depends(JWTBearer())):
-    #get the current year
-    year = datetime.now().year
-    return await event_service.get_hackeps(int(year), db)
+
 
 
 @router.get("/{eventId}/get_hacker_group/{hackerId}")
