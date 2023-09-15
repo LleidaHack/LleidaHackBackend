@@ -59,6 +59,7 @@ async def confirm_email(email: str, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "User email confirmed"}
 
+
 @router.post("/me")
 async def me(db: Session = Depends(get_db), token: str = Depends(JWTBearer())):
     return await auth_service.get_me(get_data_from_token(token), db)

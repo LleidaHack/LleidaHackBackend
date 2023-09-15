@@ -9,14 +9,17 @@ from models.User import User
 def get_user_by_mail(db, email):
     return db.query(User).filter(User.email == email).first()
 
+
 def get_user_by_nickname(db, nickname):
     return db.query(User).filter(User.nickname == nickname).first()
+
 
 def check_user(db, email, nickname):
     if get_user_by_mail(db, email) is not None:
         raise ValidationException("Email already exists")
     if get_user_by_nickname(db, nickname) is not None:
         raise ValidationException("Nickname already exists")
+
 
 def set_existing_data(db_obj, req_obj):
     data = req_obj.dict(exclude_unset=True)

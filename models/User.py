@@ -6,6 +6,7 @@ from sqlalchemy.orm import deferred
 
 from sqlalchemy.orm import Mapped
 
+
 class User(Base):
     __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True)
@@ -25,7 +26,8 @@ class User(Base):
     updated_at: date = Column(DateTime, default=date.today())
     image: str = Column(String, default="")
     is_image_url: bool = Column(Boolean, default=False)
-    code: Mapped[str] = deferred(Column(String, default="", unique=True, index=True))
+    code: Mapped[str] = deferred(
+        Column(String, default="", unique=True, index=True))
 
     __mapper_args__ = {
         "polymorphic_identity": "user",

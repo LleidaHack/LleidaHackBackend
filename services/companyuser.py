@@ -17,6 +17,7 @@ from error.ValidationException import ValidationException
 from utils.hide_utils import companyuser_show_private
 from utils.service_utils import check_user
 
+
 async def get_all(db: Session):
     return db.query(ModelCompanyUser).all()
 

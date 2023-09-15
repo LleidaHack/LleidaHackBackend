@@ -19,6 +19,7 @@ from error.InvalidDataException import InvalidDataException
 from utils.hide_utils import lleidahacker_show_private
 from utils.service_utils import check_user
 
+
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 

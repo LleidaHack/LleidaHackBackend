@@ -279,8 +279,9 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
     output_data = []
     for group in pending_groups:
         group_data = {
-            "name": group.name,
-            "members":  [{
+            "name":
+            group.name,
+            "members": [{
                 "id": hacker.id,
                 "name": hacker.name,
                 "birthdate": hacker.birthdate,
