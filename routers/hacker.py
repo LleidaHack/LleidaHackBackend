@@ -9,10 +9,12 @@ from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from security import create_token_pair, get_data_from_token
+from security import create_all_tokens, get_data_from_token
 
 from utils.auth_bearer import JWTBearer
 import services.hacker as hacker_service
+
+from services.mail import send_registration_confirmation_email
 
 router = APIRouter(
     prefix="/hacker",
@@ -25,7 +27,8 @@ async def signup(payload: SchemaHacker,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_hacker = await hacker_service.add_hacker(payload, db)
-    access_token, refresh_token = await create_token_pair(new_hacker, db)
+    access_token, refresh_token = await create_all_tokens(new_hacker, db)
+    send_registration_confirmation_email(new_hacker)
     return {
         "success": True,
         "user_id": new_hacker.id,
