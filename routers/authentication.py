@@ -12,6 +12,7 @@ from security import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, sec, create
 
 from error.AuthenticationException import AuthenticationException
 from services import authentication as auth_service
+from utils.auth_bearer import JWTBearer
 
 router = APIRouter(
     prefix="",
@@ -57,3 +58,7 @@ async def confirm_email(email: str, db: Session = Depends(get_db)):
     user.active = True
     db.commit()
     return {"message": "User email confirmed"}
+
+@router.post("/me")
+async def me(db: Session = Depends(get_db), token: str = Depends(JWTBearer())):
+    return await auth_service.get_me(token, db)
