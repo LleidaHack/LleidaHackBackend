@@ -10,8 +10,11 @@ from sqlalchemy.orm import Mapped
 class User(Base):
     __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True)
+    is_verified: bool = Column(Boolean, default=False)
     token: Mapped[str] = deferred(Column(String, default=""))
     refresh_token: Mapped[str] = deferred(Column(String, default=""))
+    verification_token: Mapped[str] = deferred(Column(String, default=""))
+    rest_password_token: Mapped[str] = deferred(Column(String, default=""))
     name: str = Column(String)
     nickname: str = Column(String, unique=True, index=True)
     password: Mapped[str] = deferred(Column(String))

@@ -77,12 +77,18 @@ def authenticate_user(username: str, password: str, db: Session):
 def update_tokens(user_id: int,
                   db: Session,
                   access_token: str = None,
-                  refresh_token: str = None):
+                  refresh_token: str = None,
+                  verification_token: str = None,
+                  reset_pass_token: str = None):
     user = get_user(user_id, db)
     if access_token is not None:
         user.token = access_token
     if refresh_token is not None:
         user.refresh_token = refresh_token
+    if verification_token is not None:
+        user.verification_token = verification_token
+    if reset_pass_token is not None:
+        user.reset_password_token = reset_pass_token
     db.commit()
     db.refresh(user)
 
@@ -119,16 +125,27 @@ def create_refresh_token(user: ModelUser,
     update_tokens(user.id, db, refresh_token=encoded_jwt)
     return encoded_jwt
 
+def create_verification_token(user: ModelUser,
+                            db: Session):
+    to_encode = {'user_id': user.id, 'type': user.type}
+    #expire in 10 minutes
+    expire = datetime.utcnow() + timedelta(minutes=10)
+    to_encode.update({"expt": expire.isoformat()})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    update_tokens(user.id, db, verification_token=encoded_jwt)
+    return encoded_jwt
 
-def create_confirmation_token(email: str):
-    serialized_jwt = jwt.encode({"email": email},
-                                SECRET_KEY,
-                                algorithm=ALGORITHM)
-    return serialized_jwt
-
+def create_reset_password_token(user: ModelUser,
+                            db: Session):
+    to_encode = {'user_id': user.id, 'type': user.type}
+    #expire in 10 minutes
+    expire = datetime.utcnow() + timedelta(minutes=10)
+    to_encode.update({"expt": expire.isoformat()})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    update_tokens(user.id, db, reset_pass_token=encoded_jwt)
 
 def get_data_from_token(
-        token: str = Depends(oauth2_scheme), refresh: bool = False):
+        token: str = Depends(oauth2_scheme), refresh: bool = False, verify: bool = False):
     d = TD()
     if is_service_token(token):
         d.is_admin = True
@@ -141,7 +158,10 @@ def get_data_from_token(
     data = decode_token(token)
     d.user_id = data.get("user_id")
     d.type = data.get("type")
-    d.email = data.get("email")
+    if not verify:
+        d.email = data.get("email")
+    else:
+        d.expt = data.get("expt")
     if refresh:
         if d.type == UserType.HACKER.value:
             d.available = not data.get("banned")
@@ -173,7 +193,11 @@ def decode_token(token):
 #         )
 
 
-async def create_token_pair(user: ModelUser, db: Session):
+async def create_all_tokens(user: ModelUser, db: Session, reset_password: bool = False):
+    if reset_password:
+        create_reset_password_token(user, db)
+        return
+    create_verification_token(user, db)
     access_token = create_access_token(user, db)
     refresh_token = create_refresh_token(user, db)
     return access_token, refresh_token

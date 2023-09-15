@@ -1,0 +1,55 @@
+<html>
+<head>
+    <style>
+        /* CSS code modified to match the style of frontend.integration.lleidhack.dev */
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f0f0f0;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            background-color: #1a1a1a; /* changed from #0078d4 */
+            color: white;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1a1a1a; /* changed from #0078d4 */
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="logo.png" alt="LleidHack Logo"> <!-- added logo image -->
+            <h1>LleidHack</h1>
+            <p>The biggest hackathon in Lleida</p>
+        </div>
+        <div class="content">
+            <p>Hi $name,</p>
+            <p>Thank you for registering for LleidHack. We are excited to have you join us for this amazing event.</p>
+            <p>Please confirm your registration by clicking the button below:</p>
+            <p><a href="$frontend_link/verify/?token=$token" class="button">Confirm Registration</a></p>
+            <p>If you have any questions, please contact us at <a href="mailto:$contact_mail">$contact_mail</a>.</p>
+            <p>See you soon!</p>
+            <p>The LleidHack Team</p>
+        </div>
+    </div>
+</body>
+</html>

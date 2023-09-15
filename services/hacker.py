@@ -44,6 +44,7 @@ async def add_hacker(payload: SchemaHacker, db: Session):
     if payload.image is not None:
         payload = check_image(payload)
     new_hacker.password = get_password_hash(payload.password)
+    
     db.add(new_hacker)
     db.commit()
     db.refresh(new_hacker)
