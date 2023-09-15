@@ -10,18 +10,19 @@ from schemas.LleidaHacker import LleidaHackerGroup
 from schemas.Event import Event
 
 from sqlalchemy.orm import deferred
+from sqlalchemy.orm import Mapped
 
 
 class LleidaHacker(User):
     __tablename__ = 'lleida_hacker'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    role: str = deferred(Column(String))
-    nif: str = deferred(Column(String, unique=True))
+    role: Mapped[str] = deferred(Column(String))
+    nif: Mapped[str] = deferred(Column(String, unique=True))
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
     github: str = Column(String)
-    accepted: bool = deferred(Column(Boolean, default=True))
-    rejected: bool = deferred(Column(Boolean, default=False))
+    accepted: Mapped[bool] = deferred(Column(Boolean, default=True))
+    rejected: Mapped[bool] = deferred(Column(Boolean, default=False))
     groups = relationship('LleidaHackerGroup',
                           secondary='lleida_hacker_group_user')
     events = relationship('Event',

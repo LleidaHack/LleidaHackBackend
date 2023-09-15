@@ -17,6 +17,7 @@ from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
 from utils.hide_utils import lleidahacker_show_private
+from utils.service_utils import check_user
 
 
 async def get_all(db: Session):
@@ -36,6 +37,7 @@ async def get_lleidahacker(userId: int, db: Session, data: TokenData):
 
 
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
+    check_user(db, payload.email, payload.nickname)
     if payload.image is not None:
         payload = check_image(payload)
     new_lleidahacker = ModelLleidaHacker(**payload.dict(),
