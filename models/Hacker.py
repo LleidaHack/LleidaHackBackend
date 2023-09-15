@@ -9,15 +9,15 @@ from models.UserType import UserType
 from schemas.Event import Event
 
 from sqlalchemy.orm import deferred
-
+from sqlalchemy.orm import Mapped
 
 class Hacker(User):
     __tablename__ = 'hacker'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    banned: bool = deferred(Column(Integer, default=0))
+    banned: Mapped[bool] = deferred(Column(Integer, default=0))
     github: str = Column(String)
     linkedin: str = Column(String)
-    cv: str = deferred(Column(String))
+    cv: Mapped[str] = deferred(Column(String))
     is_verified: bool = Column(Boolean, default=0)
     groups = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
