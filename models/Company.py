@@ -8,7 +8,7 @@ from models.UserType import UserType
 from schemas.Event import Event
 
 from sqlalchemy.orm import deferred
-
+from sqlalchemy.orm import Mapped
 
 class Company(Base):
     __tablename__ = 'company'
@@ -31,10 +31,10 @@ class CompanyUser(User):
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
     company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
     company = relationship('Company', back_populates='users')
-    active: bool = deferred(Column(Integer))
-    role: str = deferred(Column(String))
-    accepted: bool = deferred(Column(Boolean, default=False))
-    rejected: bool = deferred(Column(Boolean, default=False))
+    active: Mapped[bool] = deferred(Column(Integer))
+    role: Mapped[str] = deferred(Column(String))
+    accepted: Mapped[bool] = deferred(Column(Boolean, default=False))
+    rejected: Mapped[bool] = deferred(Column(Boolean, default=False))
 
     __mapper_args__ = {
         "polymorphic_identity": UserType.COMPANYUSER.value,
