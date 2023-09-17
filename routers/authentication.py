@@ -18,7 +18,6 @@ router = APIRouter(
 
 from services.mail import send_registration_confirmation_email, send_password_reset_email
 
-
 # @router.post("/test")
 # async def test(id: int, db: Session = Depends(get_db)):
 #     user = db.query(ModelUser).filter(ModelUser.id == id).first()
