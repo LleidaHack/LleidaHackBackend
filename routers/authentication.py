@@ -47,9 +47,13 @@ async def login(credentials: HTTPBasicCredentials = Depends(sec),
 async def reset_password(email: str, db: Session = Depends(get_db)):
     return await auth_service.reset_password(email, db)
 
+
 @router.post("/confirm-reset-password")
-async def confirm_reset_password(token: str, password: str, db: Session = Depends(get_db)):
+async def confirm_reset_password(token: str,
+                                 password: str,
+                                 db: Session = Depends(get_db)):
     return await auth_service.confirm_reset_password(token, password, db)
+
 
 @router.post("/refresh-token")
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
@@ -66,9 +70,11 @@ async def verify(token: str, db: Session = Depends(get_db)):
     return await auth_service.verify_user(get_data_from_token(token), token,
                                           db)
 
+
 @router.post("/resend-verification")
 async def resend_verification(email: str, db: Session = Depends(get_db)):
     return await auth_service.resend_verification(email, db)
+
 
 @router.get("/check_token")
 async def check_token(token: str = Depends(JWTBearer())):
