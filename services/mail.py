@@ -17,7 +17,7 @@ class EmailSchema(BaseModel):
     email: List[EmailStr]
 
 
-FRONT_LINK = Configuration.get('OTHERS', 'FRONT_LINK')
+FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')
 CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
 
 
@@ -55,7 +55,7 @@ def generate_registration_confirmation_template(user: ModelUser):
 
 def generate_password_reset_template(user: ModelUser):
     t = Template(
-        open('mail_templates/password_reset.html', 'r',
+        open('mail_templates/forgot_password.html', 'r',
              encoding='utf-8').read())
     return t.substitute(name=user.name,
                         email=user.email,
@@ -67,3 +67,20 @@ def generate_password_reset_template(user: ModelUser):
 async def send_registration_confirmation_email(user: ModelUser):
     send_email(user.email, generate_registration_confirmation_template(user),
                'Registration Confirmation')
+
+async def send_password_reset_email(user: ModelUser):
+    send_email(user.email, generate_password_reset_template(user),
+               'Password Reset')
+
+async def send_event_registration_email(user: ModelUser, event_name: str):
+    pass
+
+async def send_event_accepted_email(user: ModelUser, event_name: str):
+    pass
+
+# async def send_event_rejected_email(user: ModelUser, event_name: str):
+#     pass
+
+async def send_dailyhack_added_email(user: ModelUser, dailyhack_name: str):
+    pass
+

@@ -6,3 +6,4 @@ class TokenData:
     available: bool = True
     is_admin: bool = False
     is_service: bool = False
+    is_verified: bool = False
