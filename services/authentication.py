@@ -38,8 +38,8 @@ async def reset_password(email: str, db: Session = Depends(get_db)):
 
 
 async def confirm_reset_password(token: str,
-                                    password: str,
-                                    db: Session = Depends(get_db)):
+                                 password: str,
+                                 db: Session = Depends(get_db)):
     data = get_data_from_token(token, True)
     if data is None:
         raise InvalidDataException("Invalid token")
@@ -55,7 +55,6 @@ async def confirm_reset_password(token: str,
     db.commit()
     db.refresh(user)
     return {"success": True}
-    
 
 
 async def get_me(data: TokenData, db: Session = Depends(get_db)):
@@ -88,6 +87,7 @@ async def verify_user(data: TokenData,
     db.commit()
     db.refresh(user)
     return {"success": True}
+
 
 async def resend_verification(email: str, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == email).first()
