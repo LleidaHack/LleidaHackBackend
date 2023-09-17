@@ -20,7 +20,7 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
     if data is None:
         raise InvalidDataException("Invalid token")
-    user = db.query(ModelUser).filter(ModelUser.id == data["user_id"]).first()
+    user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
     if user is None:
         raise InvalidDataException("User not found")
     if not (refresh_token == user.refresh_token):
