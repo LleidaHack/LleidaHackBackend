@@ -19,12 +19,12 @@ from error.InvalidDataException import InvalidDataException
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
     if data is None:
-        return {"success": False}
+        raise InvalidDataException("Invalid token")
     user = db.query(ModelUser).filter(ModelUser.id == data["user_id"]).first()
     if user is None:
-        return {"success": False}
+        raise InvalidDataException("User not found")
     if not (refresh_token == user.refresh_token):
-        return {"success": False}
+        raise InvalidDataException("Invalid token")
     return await create_all_tokens(user)
 
 
@@ -34,7 +34,28 @@ async def reset_password(email: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User not found")
     if not user.is_verified:
         raise InvalidDataException("User not verified")
-    return await create_all_tokens(user)
+    return await create_all_tokens(user, True)
+
+
+async def confirm_reset_password(token: str,
+                                    password: str,
+                                    db: Session = Depends(get_db)):
+    data = get_data_from_token(token, True)
+    if data is None:
+        raise InvalidDataException("Invalid token")
+    if data.expt < datetime.utcnow().isoformat():
+        raise InvalidDataException("Token expired")
+    user = db.query(ModelUser).filter(ModelUser.id == data["user_id"]).first()
+    if user is None:
+        raise InvalidDataException("User not found")
+    if not (token == user.reset_password_token):
+        raise InvalidDataException("Invalid token")
+    user.password = password
+    user.reset_password_token = None
+    db.commit()
+    db.refresh(user)
+    return {"success": True}
+    
 
 
 async def get_me(data: TokenData, db: Session = Depends(get_db)):
@@ -67,3 +88,11 @@ async def verify_user(data: TokenData,
     db.commit()
     db.refresh(user)
     return {"success": True}
+
+async def resend_verification(email: str, db: Session = Depends(get_db)):
+    user = db.query(ModelUser).filter(ModelUser.email == email).first()
+    if user is None:
+        raise InvalidDataException("User not found")
+    if user.is_verified:
+        raise InvalidDataException("User already verified")
+    return await create_all_tokens(user, True)
