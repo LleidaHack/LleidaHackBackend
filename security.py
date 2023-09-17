@@ -96,7 +96,12 @@ def update_tokens(user_id: int,
 def create_access_token(user: ModelUser,
                         db: Session,
                         expires_delta: timedelta = None):
-    to_encode = {'user_id': user.id, 'email': user.email, 'type': user.type, "is_verified": user.is_verified}
+    to_encode = {
+        'user_id': user.id,
+        'email': user.email,
+        'type': user.type,
+        "is_verified": user.is_verified
+    }
     # return "test- "+ ACCESS_TOKEN_EXPIRE_MINUTES
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
