@@ -87,6 +87,7 @@ async def verify_user(token: str, db: Session = Depends(get_db)):
     if data.expt < datetime.utcnow().isoformat():
         raise InvalidDataException("Token expired")
     user.is_verified = True
+    user.verification_token = None
     db.commit()
     db.refresh(user)
     return {"success": True}
