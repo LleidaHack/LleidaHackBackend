@@ -1,6 +1,6 @@
 # from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError, validator
 from datetime import date
 from typing import Optional
 
@@ -18,12 +18,40 @@ class User(BaseModel):
     image: Optional[str]
     is_image_url: Optional[bool]
 
+    @validator('email')
+    def email_validation(cls, v):
+        if '@' not in v:
+            raise ValueError('must contain a @')
+        if '.' not in v:
+            raise ValueError('must contain a .')
+        return v
+
+    @validator('telephone')
+    def telephone_validation(cls, v):
+        if len(v) < 8:
+            raise ValueError('must contain at least 8 digits')
+        return v
+
+    @validator('password')
+    def password_validation(cls, v):
+        if len(v) < 8:
+            raise ValueError('must contain at least 8 characters')
+        return v
+
+    @validator('birthdate')
+    def birthdate_validation(cls, v):
+        if v > date.today():
+            raise ValueError('must be a valid date')
+        return v
+
+    @validator('shirt_size')
+    def shirt_size_validation(cls, v):
+        if v not in ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']:
+            raise ValueError('must be a valid shirt size')
+        return v
+
     class Config:
         orm_mode = True
-        exclude = [
-            'password', 'token', 'refresh_token', 'code', 'address',
-            'shirt_size', 'food_restrictions', 'telephone', 'email'
-        ]
 
 
 class UserPublic(BaseModel):

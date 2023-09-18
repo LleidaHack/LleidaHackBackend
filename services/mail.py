@@ -10,32 +10,20 @@ from pydantic import BaseModel
 from smtplib import SMTP_SSL
 from email.mime.text import MIMEText
 
+from models.User import User as ModelUser
+
 
 class EmailSchema(BaseModel):
     email: List[EmailStr]
 
 
-# conf = ConnectionConfig(
-#     MAIL_USERNAME = Configuration.get('MAIL', 'MAIL_USERNAME'),
-#     MAIL_PASSWORD = Configuration.get('MAIL', 'MAIL_PASSWORD'),
-#     MAIL_FROM = Configuration.get('MAIL', 'MAIL_FROM'),
-#     MAIL_PORT = int(Configuration.get('MAIL', 'MAIL_PORT')),
-#     MAIL_SERVER = Configuration.get('MAIL', 'MAIL_SERVER'),
-#     MAIL_FROM_NAME = Configuration.get('MAIL', 'MAIL_FROM_NAME'),
-#     MAIL_TLS = True,
-#     MAIL_SSL = False,
-#     USE_CREDENTIALS = True,
-#     VALIDATE_CERTS = True
-# )
-
-app = FastAPI()
-
-html = """<p>Hi this test mail, thanks for using Fastapi-mail</p> """
+FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')
+CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
 
 
-def send_email(email: str, template: str):
+def send_email(email: str, template: str, subject: str):
     msg = MIMEText(template, "html")
-    msg['Subject'] = "Test Email"
+    msg['Subject'] = subject
     msg['From'] = Configuration.get('MAIL', 'MAIL_FROM')
     msg['To'] = email
 
@@ -48,3 +36,55 @@ def send_email(email: str, template: str):
                             msg.as_string())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+from string import Template
+
+
+def generate_registration_confirmation_template(user: ModelUser):
+    t = Template(
+        open('mail_templates/registration_confirmation.html',
+             'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        email=user.email,
+                        front_link=FRONT_LINK,
+                        token=user.verification_token,
+                        contact_mail=CONTACT_MAIL)
+
+
+def generate_password_reset_template(user: ModelUser):
+    t = Template(
+        open('mail_templates/forgot_password.html', 'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        email=user.email,
+                        front_link=FRONT_LINK,
+                        token=user.rest_password_token,
+                        contact_mail=CONTACT_MAIL)
+
+
+async def send_registration_confirmation_email(user: ModelUser):
+    send_email(user.email, generate_registration_confirmation_template(user),
+               'Registration Confirmation')
+
+
+async def send_password_reset_email(user: ModelUser):
+    send_email(user.email, generate_password_reset_template(user),
+               'Password Reset')
+
+
+async def send_event_registration_email(user: ModelUser, event_name: str):
+    pass
+
+
+async def send_event_accepted_email(user: ModelUser, event_name: str):
+    pass
+
+
+# async def send_event_rejected_email(user: ModelUser, event_name: str):
+#     pass
+
+
+async def send_dailyhack_added_email(user: ModelUser, dailyhack_name: str):
+    pass

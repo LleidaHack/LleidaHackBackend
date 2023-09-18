@@ -19,7 +19,6 @@ class Hacker(User):
     github: str = Column(String)
     linkedin: str = Column(String)
     cv: Mapped[str] = deferred(Column(String))
-    is_verified: bool = Column(Boolean, default=0)
     groups = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
     events = relationship('Event', secondary='hacker_event_participation')
