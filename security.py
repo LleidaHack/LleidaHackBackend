@@ -201,15 +201,17 @@ def decode_token(token):
 #         )
 
 
-async def create_all_tokens(user: ModelUser,
-                            db: Session,
-                            reset_password: bool = False):
+def create_all_tokens(user: ModelUser,
+                      db: Session,
+                      reset_password: bool = False,
+                      verification: bool = False):
     if reset_password:
         create_reset_password_token(user, db)
         return
-    if not user.is_verified:
+    if not user.is_verified and verification:
         create_verification_token(user, db)
-        return
+        if verification:
+            return
     access_token = create_access_token(user, db)
     refresh_token = create_refresh_token(user, db)
     return access_token, refresh_token
