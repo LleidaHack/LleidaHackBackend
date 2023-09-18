@@ -31,7 +31,7 @@ async def signup(payload: SchemaHacker,
     # return new_hacker
     access_token, refresh_token = create_all_tokens(new_hacker,
                                                     db,
-                                                    verifyication=True)
+                                                    verification=True)
     await send_registration_confirmation_email(new_hacker)
     return {
         "success": True,
