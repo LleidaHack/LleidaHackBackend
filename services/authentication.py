@@ -75,8 +75,7 @@ async def get_me(data: TokenData, db: Session = Depends(get_db)):
         raise InputException("Invalid token")
 
 
-async def verify_user(token: str,
-                      db: Session = Depends(get_db)):
+async def verify_user(token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(token, special=True)
     user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
     if user is None:
