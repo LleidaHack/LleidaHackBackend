@@ -95,10 +95,11 @@ async def verify_user(token: str, db: Session = Depends(get_db)):
 
 async def resend_verification(email: str, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == email).first()
+    # return user
     if user is None:
         raise InvalidDataException("User not found")
     if user.is_verified:
         raise InvalidDataException("User already verified")
-    await create_all_tokens(user, True)
+    create_all_tokens(user, db, verification=True)
     await send_registration_confirmation_email(user)
     return {"success": True}
