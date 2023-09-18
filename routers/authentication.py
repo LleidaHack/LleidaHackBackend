@@ -66,7 +66,7 @@ async def me(db: Session = Depends(get_db), token: str = Depends(JWTBearer())):
 
 @router.post("/verify")
 async def verify(token: str, db: Session = Depends(get_db)):
-    return await auth_service.verify_user(get_data_from_token(token), token,
+    return await auth_service.verify_user(token,
                                           db)
 
 

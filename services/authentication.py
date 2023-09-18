@@ -44,7 +44,7 @@ async def reset_password(email: str, db: Session = Depends(get_db)):
 async def confirm_reset_password(token: str,
                                  password: str,
                                  db: Session = Depends(get_db)):
-    data = get_data_from_token(token, True)
+    data = get_data_from_token(token, special=True)
     if data is None:
         raise InvalidDataException("Invalid token")
     if data.expt < datetime.utcnow().isoformat():
@@ -75,9 +75,9 @@ async def get_me(data: TokenData, db: Session = Depends(get_db)):
         raise InputException("Invalid token")
 
 
-async def verify_user(data: TokenData,
-                      token: str,
+async def verify_user(token: str,
                       db: Session = Depends(get_db)):
+    data = get_data_from_token(token, special=True)
     user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
     if user is None:
         raise InvalidDataException("User not found")
