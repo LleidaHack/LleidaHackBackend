@@ -210,8 +210,6 @@ def create_all_tokens(user: ModelUser,
         return
     if not user.is_verified and verification:
         create_verification_token(user, db)
-        if verification:
-            return
     access_token = create_access_token(user, db)
     refresh_token = create_refresh_token(user, db)
     return access_token, refresh_token
