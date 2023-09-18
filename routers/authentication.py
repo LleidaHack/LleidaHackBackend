@@ -16,7 +16,7 @@ router = APIRouter(
     tags=["Authentication"],
 )
 
-from services.mail import send_registration_confirmation_email, send_password_reset_email
+# from services.mail import send_registration_confirmation_email, send_password_reset_email
 
 # @router.post("/test")
 # async def test(id: int, db: Session = Depends(get_db)):
