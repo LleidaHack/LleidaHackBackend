@@ -152,7 +152,7 @@ def create_reset_password_token(user: ModelUser, db: Session):
 
 def get_data_from_token(token: str = Depends(oauth2_scheme),
                         refresh: bool = False,
-                        verify: bool = False):
+                        special: bool = False):
     d = TD()
     if is_service_token(token):
         d.is_admin = True
@@ -165,11 +165,11 @@ def get_data_from_token(token: str = Depends(oauth2_scheme),
     data = decode_token(token)
     d.user_id = data.get("user_id")
     d.type = data.get("type")
-    if not verify:
+    if not special:
         d.email = data.get("email")
     else:
         d.expt = data.get("expt")
-    if not refresh:
+    if not refresh and not special:
         d.is_verified = data.get("is_verified")
         if d.type == UserType.HACKER.value:
             d.available = not data.get("banned")
@@ -207,7 +207,9 @@ async def create_all_tokens(user: ModelUser,
     if reset_password:
         create_reset_password_token(user, db)
         return
-    create_verification_token(user, db)
+    if not user.is_verified:
+        create_verification_token(user, db)
+        return
     access_token = create_access_token(user, db)
     refresh_token = create_refresh_token(user, db)
     return access_token, refresh_token

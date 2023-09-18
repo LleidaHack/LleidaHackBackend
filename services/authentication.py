@@ -15,6 +15,7 @@ from security import create_all_tokens, get_data_from_token
 from error.InputException import InputException
 from error.InvalidDataException import InvalidDataException
 
+from services.mail import send_registration_confirmation_email, send_password_reset_email
 
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
@@ -34,7 +35,9 @@ async def reset_password(email: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User not found")
     if not user.is_verified:
         raise InvalidDataException("User not verified")
-    return await create_all_tokens(user, True)
+    await create_all_tokens(user, True)
+    await send_password_reset_email(user)
+    return {"success": True}
 
 
 async def confirm_reset_password(token: str,
@@ -95,4 +98,6 @@ async def resend_verification(email: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User not found")
     if user.is_verified:
         raise InvalidDataException("User already verified")
-    return await create_all_tokens(user, True)
+    await create_all_tokens(user, True)
+    await send_registration_confirmation_email(user)
+    return {"success": True}
