@@ -2,7 +2,7 @@ from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
 from schemas.LleidaHacker import LleidaHackerUpdate as SchemaLleidaHackerUpdate
 
 from database import get_db
-from security import create_token_pair, get_data_from_token
+from security import create_all_tokens, get_data_from_token
 from utils.auth_bearer import JWTBearer
 
 from sqlalchemy.orm import Session
@@ -21,7 +21,7 @@ async def signup(payload: SchemaLleidaHacker,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_lleidahacker = await lleidahacker_service.add_lleidahacker(payload, db)
-    access_token, refresh_token = await create_token_pair(new_lleidahacker, db)
+    access_token, refresh_token = await create_all_tokens(new_lleidahacker, db)
     return {
         "success": True,
         "user_id": new_lleidahacker.id,
