@@ -17,6 +17,7 @@ from error.InvalidDataException import InvalidDataException
 
 from services.mail import send_registration_confirmation_email, send_password_reset_email
 
+
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
     if data is None:
