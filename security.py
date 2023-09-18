@@ -200,10 +200,11 @@ def decode_token(token):
 #             headers={"WWW-Authenticate": "Bearer"},
 #         )
 
+
 def create_all_tokens(user: ModelUser,
-                            db: Session,
-                            reset_password: bool = False,
-                            verification: bool = False):
+                      db: Session,
+                      reset_password: bool = False,
+                      verification: bool = False):
     if reset_password:
         create_reset_password_token(user, db)
         return
