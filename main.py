@@ -66,10 +66,6 @@ tags_metadata = [
         "name": "Authentication",
         "description": "Authentication related endpoints"
     },
-    {
-        "name": "Utils",
-        "description": "Utils related endpoints"
-    },
 ]
 
 app = FastAPI(title="LleidaHack API",
@@ -111,7 +107,6 @@ app.include_router(event.router)
 app.include_router(meal.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
-app.include_router(utils.router)
 
 
 @app.get("/")
