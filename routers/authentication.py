@@ -78,3 +78,7 @@ async def resend_verification(email: str, db: Session = Depends(get_db)):
 @router.get("/check_token")
 async def check_token(token: str = Depends(JWTBearer())):
     return {"success": True}
+
+@router.get("/contact")
+async def contact(name:str, email: str, message: str, db: Session = Depends(get_db)):
+    return await auth_service.contact(name, email, message, db)
