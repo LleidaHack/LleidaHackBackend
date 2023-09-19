@@ -90,5 +90,5 @@ async def send_dailyhack_added_email(user: ModelUser, dailyhack_name: str):
     pass
 
 
-async def send_contact_email(name: str, email: str, message: str):
+async def send_contact_email(name: str, title:str, email: str, message: str):
     pass
