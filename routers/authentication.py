@@ -32,7 +32,8 @@ async def login(credentials: HTTPBasicCredentials = Depends(sec),
     password = credentials.password
     user = authenticate_user(username, password, db)
     if not user:
-        raise AuthenticationException("Incorrect username or password, or user not verified")
+        raise AuthenticationException(
+            "Incorrect username or password, or user not verified")
     access_token, refresh_token = create_all_tokens(user, db)
     return {
         "user_id": user.id,
