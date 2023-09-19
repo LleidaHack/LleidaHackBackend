@@ -42,7 +42,9 @@ async def get_hacker(hackerId: int, db: Session, data: TokenData):
 
 async def add_hacker(payload: SchemaHacker, db: Session):
     check_user(db, payload.email, payload.nickname)
-    new_hacker = ModelHacker(**payload.dict(), code=generate_user_code(db), is_verified=True)
+    new_hacker = ModelHacker(**payload.dict(),
+                             code=generate_user_code(db),
+                             is_verified=True)
     if payload.image is not None:
         payload = check_image(payload)
     new_hacker.password = get_password_hash(payload.password)
