@@ -33,7 +33,7 @@ async def login(credentials: HTTPBasicCredentials = Depends(sec),
     user = authenticate_user(username, password, db)
     if not user:
         raise AuthenticationException("Incorrect username or password")
-    access_token, refresh_token = await create_all_tokens(user, db)
+    access_token, refresh_token = create_all_tokens(user, db)
     return {
         "user_id": user.id,
         "access_token": access_token,
