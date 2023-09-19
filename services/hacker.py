@@ -1,5 +1,7 @@
 from datetime import datetime as date
 from models.Hacker import Hacker as ModelHacker
+from models.Hacker import HackerGroup as ModelHackerGroup
+from models.Hacker import HackerGroupUser as ModelHackerGroupUser
 from models.Event import HackerRegistration as ModelHackerRegistration
 from models.Event import HackerParticipation as ModelHackerParticipation
 from models.Event import HackerAccepted as ModelHackerAccepted
@@ -60,8 +62,11 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if not hacker:
         raise NotFoundException("Hacker not found")
-    hacker_groups = db.query(
-        ModelHacker.groups).filter(ModelHacker.id == hackerId).all()
+    hacker_groups_ids = db.query(
+        ModelHackerGroupUser).filter(ModelHackerGroupUser.hacker_id == hackerId).all()
+    hacker_groups_ids = [group.group_id for group in hacker_groups_ids]
+    hacker_groups = db.query(ModelHackerGroup).filter(
+        ModelHackerGroup.id.in_(hacker_groups_ids)).all()
     for group in hacker_groups:
         if len(group.hackers) == 1:
             group.members.remove(hacker)
