@@ -234,7 +234,7 @@ async def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
-    for hacker in group.hackers and hacker not in event.accepted_hackers:
+    for hacker in group.members and hacker not in event.accepted_hackers:
         if hacker not in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
         event.rejected_hackers.append(hacker)
