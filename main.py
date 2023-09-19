@@ -18,7 +18,6 @@ from routers import event
 from routers import meal
 from routers import eventmanagment
 from routers import authentication
-from routers import utils
 
 from error import error_handler as eh
 from error.AuthenticationException import AuthenticationException
