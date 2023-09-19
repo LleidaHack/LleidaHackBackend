@@ -27,7 +27,7 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User not found")
     if not (refresh_token == user.refresh_token):
         raise InvalidDataException("Invalid token")
-    return await create_all_tokens(user)
+    return create_all_tokens(user)
 
 
 async def reset_password(email: str, db: Session = Depends(get_db)):
@@ -36,7 +36,7 @@ async def reset_password(email: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User not found")
     if not user.is_verified:
         raise InvalidDataException("User not verified")
-    await create_all_tokens(user, True)
+    create_all_tokens(user, True)
     await send_password_reset_email(user)
     return {"success": True}
 
