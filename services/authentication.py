@@ -105,6 +105,9 @@ async def resend_verification(email: str, db: Session = Depends(get_db)):
     return {"success": True}
 
 
-async def contact(email: str, title:str, message: str, db: Session = Depends(get_db)):
+async def contact(email: str,
+                  title: str,
+                  message: str,
+                  db: Session = Depends(get_db)):
     await send_contact_email(email, title, message)
     return {"success": True}
