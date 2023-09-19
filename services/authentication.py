@@ -15,7 +15,7 @@ from security import create_all_tokens, get_data_from_token
 from error.InputException import InputException
 from error.InvalidDataException import InvalidDataException
 
-from services.mail import send_registration_confirmation_email, send_password_reset_email
+from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
 
 
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
@@ -102,4 +102,8 @@ async def resend_verification(email: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User already verified")
     create_all_tokens(user, db, verification=True)
     await send_registration_confirmation_email(user)
+    return {"success": True}
+
+async def contact(email: str, message: str, db: Session = Depends(get_db)):
+    await send_contact_email(email, message)
     return {"success": True}
