@@ -274,7 +274,7 @@ async def remove_hacker_group(id: int, hacker_group_id: int, db: Session,
         ModelHackerGroup.id == hacker_group_id).first()
     if hacker_group is None:
         raise Exception("Hacker group not found")
-    group_hackers = [hacker.id for hacker in hacker_group.hackers]
+    group_hackers = [hacker.id for hacker in hacker_group.members]
     if not data.is_admin:
         if data.user_id not in group_hackers or hacker_group.leader_id != data.user_id:
             raise Exception("Not authorized")
@@ -282,8 +282,8 @@ async def remove_hacker_group(id: int, hacker_group_id: int, db: Session,
     if event is None:
         raise Exception("Event not found")
     event.hacker_groups.remove(hacker_group)
-    for hacker in hacker_group.hackers:
-        event.hackers.remove(hacker)
+    for hacker in hacker_group.members:
+        event.registered_hackers.remove(hacker)
     db.commit()
     db.refresh(hacker_group)
     db.refresh(event)
