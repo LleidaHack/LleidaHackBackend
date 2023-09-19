@@ -304,7 +304,9 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
         "food_restrictions": hacker.food_restrictions,
         "shirt_size": hacker.shirt_size,
         "approved": hacker in event.accepted_hackers,
-    } for hacker in subtract_lists(event.registered_hackers, event.accepted_hackers) if hacker.id not in group_users]
+    } for hacker in subtract_lists(event.registered_hackers,
+                                   event.accepted_hackers)
+                    if hacker.id not in group_users]
 
     # Combine group and nogroup data into a dictionary
     return {"groups": output_data, "nogroup": nogroup_data}
