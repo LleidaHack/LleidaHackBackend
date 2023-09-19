@@ -104,6 +104,7 @@ async def delete_hacker(userId: int,
     hacker = await hacker_service.remove_hacker(userId, db,
                                                 get_data_from_token(token))
     return {"success": True, "deleted_id": hacker.id}
+    # return hacker
 
 
 @router.get("/{userId}/events")

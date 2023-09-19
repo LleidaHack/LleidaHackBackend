@@ -41,7 +41,7 @@ async def add_hacker_group(payload: SchemaHackerGroup,
     #await hackergroup_service.set_hacker_group_leader(new_hacker_group.id, token['user_id'], db)
     return {
         "success": True,
-        "user_id": new_hacker_group.id,
+        "group_id": new_hacker_group.id,
         "code": new_hacker_group.code
     }
 
