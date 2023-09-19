@@ -16,8 +16,7 @@ router = APIRouter(
 
 
 @router.get("/all")
-async def get_companies(db: Session = Depends(get_db),
-                        token: str = Depends(JWTBearer())):
+async def get_companies(db: Session = Depends(get_db)):
     return await company_service.get_all(db)
 
 

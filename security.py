@@ -69,6 +69,8 @@ def authenticate_user(username: str, password: str, db: Session):
     user_dict = db.query(ModelUser).filter(ModelUser.email == username).first()
     if not user_dict:
         return False
+    if not user_dict.is_verified:
+        return False
     if not verify_password(password, user_dict.password):
         return False
     return user_dict
