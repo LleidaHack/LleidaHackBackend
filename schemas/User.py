@@ -3,6 +3,7 @@
 from pydantic import BaseModel, ValidationError, validator
 from datetime import date
 from typing import Optional
+import re
 
 
 class User(BaseModel):
@@ -20,22 +21,20 @@ class User(BaseModel):
 
     @validator('email')
     def email_validation(cls, v):
-        if '@' not in v:
-            raise ValueError('must contain a @')
-        if '.' not in v:
-            raise ValueError('must contain a .')
+        if(re.search("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$", v) is None):
+            raise ValueError('must be a valid email')
         return v
 
     @validator('telephone')
     def telephone_validation(cls, v):
-        if len(v) < 8:
+        if re.search("^([/+][0-9]{1,2})?[0-9]{9}$", v) is None:
             raise ValueError('must contain at least 8 digits')
         return v
 
     @validator('password')
     def password_validation(cls, v):
-        if len(v) < 8:
-            raise ValueError('must contain at least 8 characters')
+        if(re.search("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$", v) is None):
+            raise ValueError('must contain at least 8 characters, at least one uppercase letter, one lowercase letter and one number')
         return v
 
     @validator('birthdate')
