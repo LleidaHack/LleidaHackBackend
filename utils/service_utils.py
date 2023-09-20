@@ -19,7 +19,7 @@ async def check_user(db, email, nickname):
     #     raise ValidationException("Email already exists")
     # if get_user_by_nickname(db, nickname) is not None:
     #     raise ValidationException("Nickname already exists")
-    u= get_user_by_mail(db, email)
+    u = get_user_by_mail(db, email)
     if u is not None:
         return u
     u = get_user_by_nickname(db, nickname)
