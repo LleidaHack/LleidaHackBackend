@@ -15,16 +15,10 @@ def get_user_by_nickname(db, nickname):
 
 
 async def check_user(db, email, nickname):
-    # if get_user_by_mail(db, email) is not None:
-    #     raise ValidationException("Email already exists")
-    # if get_user_by_nickname(db, nickname) is not None:
-    #     raise ValidationException("Nickname already exists")
-    u= get_user_by_mail(db, email)
-    if u is not None:
-        return u
-    u = get_user_by_nickname(db, nickname)
-    if u is not None:
-        return u
+    if get_user_by_mail(db, email) is not None:
+        raise ValidationException("Email already exists")
+    if get_user_by_nickname(db, nickname) is not None:
+        raise ValidationException("Nickname already exists")
 
 
 def set_existing_data(db_obj, req_obj):
