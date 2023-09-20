@@ -116,9 +116,9 @@ async def unregister_hacker_from_event(event_id: int,
         event, hacker, db, get_data_from_token(token))
 
 
-@router.put("/{event_id}/participate/{hacker_id}")
+@router.put("/{event_id}/participate/{hacker_code}")
 async def participate_hacker_to_event(event_id: int,
-                                      hacker_id: int,
+                                      hacker_code: int,
                                       db: Session = Depends(get_db),
                                       token: str = Depends(JWTBearer())):
     """
@@ -127,8 +127,7 @@ async def participate_hacker_to_event(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    hacker = await hacker_service.get_hacker(hacker_id, db,
-                                             get_data_from_token(token))
+    hacker = await hacker_service.get_hacker_by_code(hacker_code, db)
     if hacker is None:
         raise NotFoundException("Hacker not found")
     await eventmanagment_service.participate_hacker_to_event(
@@ -295,10 +294,10 @@ async def get_event_status(event_id: int,
     return await eventmanagment_service.get_event_status(event, db)
 
 
-@router.put("/{event_id}/eat/{meal_id}/{hacker_id}")
+@router.put("/{event_id}/eat/{meal_id}/{hacker_code}")
 async def eat(event_id: int,
               meal_id: int,
-              hacker_id: int,
+              hacker_code: str,
               db: Session = Depends(get_db),
               token: str = Depends(JWTBearer())):
     """
@@ -307,8 +306,7 @@ async def eat(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    hacker = await hacker_service.get_hacker(hacker_id, db,
-                                             get_data_from_token(token))
+    hacker = await hacker_service.get_hacker_by_code(hacker_code, db)
     if hacker is None:
         raise NotFoundException("Hacker not found")
     meal = [meal for meal in event.meals if meal.id == meal_id][0]

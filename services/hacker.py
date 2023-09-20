@@ -40,6 +40,13 @@ async def get_hacker(hackerId: int, db: Session, data: TokenData):
     return user
 
 
+async def get_hacker_by_code(code: str, db: Session):
+    user = db.query(ModelHacker).filter(ModelHacker.code == code).first()
+    if user is None:
+        raise NotFoundException("Hacker not found")
+    return user
+
+
 async def add_hacker(payload: SchemaHacker, db: Session):
     check_user(db, payload.email, payload.nickname)
     new_hacker = ModelHacker(**payload.dict(),
