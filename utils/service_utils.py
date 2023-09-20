@@ -14,7 +14,7 @@ def get_user_by_nickname(db, nickname):
     return db.query(User).filter(User.nickname == nickname).first()
 
 
-def check_user(db, email, nickname):
+async def check_user(db, email, nickname):
     if get_user_by_mail(db, email) is not None:
         raise ValidationException("Email already exists")
     if get_user_by_nickname(db, nickname) is not None:
