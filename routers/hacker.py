@@ -28,7 +28,7 @@ async def signup(payload: SchemaHacker,
                  db: Session = Depends(get_db)):
     new_hacker = await hacker_service.add_hacker(payload, db)
 
-    # return new_hacker
+    return new_hacker
     access_token, refresh_token = create_all_tokens(new_hacker,
                                                     db,
                                                     verification=True)
