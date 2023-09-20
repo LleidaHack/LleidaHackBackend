@@ -343,6 +343,7 @@ async def get_event_status(event: ModelEvent, db: Session):
     }
     for meal in event.meals:
         data[meal.name] = len(meal.users)
+    return data
 
 
 async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
