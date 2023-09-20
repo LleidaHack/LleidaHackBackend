@@ -1,5 +1,5 @@
 from datetime import datetime as date
-from database import get_db
+from database import db_get
 from models.Hacker import Hacker as ModelHacker
 from models.Hacker import HackerGroup as ModelHackerGroup
 from models.Hacker import HackerGroupUser as ModelHackerGroupUser
@@ -103,7 +103,7 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
         db.delete(event_acc)
     db.delete(hacker)
     db.commit()
-    get_db().expire(hacker)
+    db_get().expire(hacker)
     return hacker
 
 
