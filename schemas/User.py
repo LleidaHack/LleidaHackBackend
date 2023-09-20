@@ -21,7 +21,9 @@ class User(BaseModel):
 
     @validator('email')
     def email_validation(cls, v):
-        if(re.search("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$", v) is None):
+        if (re.search(
+                "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
+                v) is None):
             raise ValueError('must be a valid email')
         return v
 
@@ -33,8 +35,11 @@ class User(BaseModel):
 
     @validator('password')
     def password_validation(cls, v):
-        if(re.search("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$", v) is None):
-            raise ValueError('must contain at least 8 characters, at least one uppercase letter, one lowercase letter and one number')
+        if (re.search("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$", v)
+                is None):
+            raise ValueError(
+                'must contain at least 8 characters, at least one uppercase letter, one lowercase letter and one number'
+            )
         return v
 
     @validator('birthdate')
