@@ -48,7 +48,7 @@ async def get_hacker_by_code(code: str, db: Session):
 
 
 async def add_hacker(payload: SchemaHacker, db: Session):
-    check_user(db, payload.email, payload.nickname)
+    await check_user(db, payload.email, payload.nickname)
     new_hacker = ModelHacker(**payload.dict(),
                              code=generate_user_code(db),
                              is_verified=True)
