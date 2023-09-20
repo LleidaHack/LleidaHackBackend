@@ -42,7 +42,7 @@ class Event(BaseModel):
 
     @validator('max_group_size')
     def max_group_size_validation(cls, v):
-        if v < 0:
+        if v <= 0:
             raise ValueError('must be a valid number')
         return v
 
