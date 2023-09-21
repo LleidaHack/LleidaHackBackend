@@ -51,6 +51,8 @@ def send_email(email: str, template: str, subject: str, attachments: List = []):
             msg.attach(html)
             while(attachments):
                 add_image_attachment(msg, attachments.pop())
+            server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
+                            msg.as_string())
             # server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
                             # msg.as_string())
     except Exception as e:
