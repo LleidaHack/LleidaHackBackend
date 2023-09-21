@@ -1,3 +1,5 @@
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 from config import Configuration
 from fastapi import FastAPI
 from starlette.responses import JSONResponse
@@ -11,6 +13,7 @@ from smtplib import SMTP_SSL
 from email.mime.text import MIMEText
 
 from models.User import User as ModelUser
+from string import Template
 
 
 class EmailSchema(BaseModel):
@@ -22,9 +25,17 @@ CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
 STATIC_FOLDER = Configuration.get(
     'OTHERS', 'FRONT_URL') + '/' + Configuration.get('OTHERS', 'STATIC_FOLDER')
 
+def get_all_images():
+    import os
+    images = []
+    for root, dirs, files in os.walk("mail_templates/images"):
+        for file in files:
+            if file.endswith(".png"):
+                images.append(os.path.join(root, file))
+    return images
 
-def send_email(email: str, template: str, subject: str):
-    msg = MIMEText(template, "html")
+def send_email(email: str, template: str, subject: str, attachments: List = []):
+    msg = MIMEMultipart('related')
     msg['Subject'] = subject
     msg['From'] = Configuration.get('MAIL', 'MAIL_FROM')
     msg['To'] = email
@@ -34,13 +45,22 @@ def send_email(email: str, template: str, subject: str):
                       Configuration.get('MAIL', 'MAIL_PORT')) as server:
             server.login(Configuration.get('MAIL', 'MAIL_USERNAME'),
                          Configuration.get('MAIL', 'MAIL_PASSWORD'))
-            server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
-                            msg.as_string())
+            #send multipart mail adding images withn add_image_attachment and the html
+            html = MIMEText(template, 'html')
+            # Attach parts into message container.
+            msg.attach(html)
+            while(attachments):
+                add_image_attachment(msg, attachments.pop())
+            # server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
+                            # msg.as_string())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-from string import Template
+def add_image_attachment(msg, image_path):
+    with open(image_path, 'rb') as f:
+        img_data = f.read()
+        msg.add_header('Content-ID', '<{}>'.format(image_path.split('/')[-1]))
+        msg.attach(MIMEImage(img_data, 'png'))
 
 
 def generate_registration_confirmation_template(user: ModelUser):
@@ -68,7 +88,7 @@ def generate_password_reset_template(user: ModelUser):
 
 async def send_registration_confirmation_email(user: ModelUser):
     send_email(user.email, generate_registration_confirmation_template(user),
-               'Registration Confirmation')
+               'Registration Confirmation', get_all_images())
 
 
 async def send_password_reset_email(user: ModelUser):
