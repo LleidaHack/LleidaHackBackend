@@ -19,6 +19,8 @@ class EmailSchema(BaseModel):
 
 FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')
 CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
+STATIC_FOLDER = Configuration.get(
+    'OTHERS', 'FRONT_URL') + '/' + Configuration.get('OTHERS', 'STATIC_FOLDER')
 
 
 def send_email(email: str, template: str, subject: str):
@@ -43,14 +45,14 @@ from string import Template
 
 def generate_registration_confirmation_template(user: ModelUser):
     t = Template(
-        open('mail_templates/registration_confirmation.html',
-             'r',
+        open('mail_templates/correu_registre.html', 'r',
              encoding='utf-8').read())
     return t.substitute(name=user.name,
                         email=user.email,
                         front_link=FRONT_LINK,
                         token=user.verification_token,
-                        contact_mail=CONTACT_MAIL)
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
 
 
 def generate_password_reset_template(user: ModelUser):
