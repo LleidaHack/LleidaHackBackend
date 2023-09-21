@@ -25,6 +25,7 @@ CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
 STATIC_FOLDER = Configuration.get(
     'OTHERS', 'FRONT_URL') + '/' + Configuration.get('OTHERS', 'STATIC_FOLDER')
 
+
 def get_all_images():
     import os
     images = []
@@ -34,7 +35,11 @@ def get_all_images():
                 images.append(os.path.join(root, file))
     return images
 
-def send_email(email: str, template: str, subject: str, attachments: List = []):
+
+def send_email(email: str,
+               template: str,
+               subject: str,
+               attachments: List = []):
     msg = MIMEMultipart('related')
     msg['Subject'] = subject
     msg['From'] = Configuration.get('MAIL', 'MAIL_FROM')
@@ -49,12 +54,13 @@ def send_email(email: str, template: str, subject: str, attachments: List = []):
             html = MIMEText(template, 'html')
             # Attach parts into message container.
             msg.attach(html)
-            while(attachments):
+            while (attachments):
                 add_image_attachment(msg, attachments.pop())
             # server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
-                            # msg.as_string())
+            # msg.as_string())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 def add_image_attachment(msg, image_path):
     with open(image_path, 'rb') as f:
