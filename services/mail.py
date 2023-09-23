@@ -23,17 +23,7 @@ class EmailSchema(BaseModel):
 FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')
 CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
 STATIC_FOLDER = Configuration.get(
-    'OTHERS', 'FRONT_URL') + '/' + Configuration.get('OTHERS', 'STATIC_FOLDER')
-
-
-def get_all_images():
-    import os
-    images = []
-    for root, dirs, files in os.walk("mail_templates/images"):
-        for file in files:
-            if file.endswith(".png"):
-                images.append(os.path.join(root, file))
-    return images
+    'OTHERS', 'BACK_URL') + '/' + Configuration.get('OTHERS', 'STATIC_FOLDER') + '/images'
 
 
 def send_email(email: str,
@@ -52,24 +42,11 @@ def send_email(email: str,
                          Configuration.get('MAIL', 'MAIL_PASSWORD'))
             #send multipart mail adding images withn add_image_attachment and the html
             html = MIMEText(template, 'html')
-            # Attach parts into message container.
             msg.attach(html)
-            while (attachments):
-                add_image_attachment(msg, attachments.pop())
             server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
-                            msg.as_string())
-            # server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
-            # msg.as_string())
+            msg.as_string())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-def add_image_attachment(msg, image_path):
-    with open(image_path, 'rb') as f:
-        img_data = f.read()
-        msg.add_header('Content-ID', '<{}>'.format(image_path.split('/')[-1]))
-        msg.attach(MIMEImage(img_data, 'png'))
-
 
 def generate_registration_confirmation_template(user: ModelUser):
     t = Template(
@@ -85,18 +62,75 @@ def generate_registration_confirmation_template(user: ModelUser):
 
 def generate_password_reset_template(user: ModelUser):
     t = Template(
-        open('mail_templates/forgot_password.html', 'r',
+        open('mail_templates/correu_reset_password.html', 'r',
              encoding='utf-8').read())
     return t.substitute(name=user.name,
                         email=user.email,
                         front_link=FRONT_LINK,
                         token=user.rest_password_token,
-                        contact_mail=CONTACT_MAIL)
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+def generate_event_registration_template(user: ModelUser, event_name: str):
+    t = Template(
+        open('mail_templates/correu_inscripcio_hackeps.html', 'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        email=user.email,
+                        event_name=event_name,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+def generate_event_accepted_template(user: ModelUser, event_name: str):
+    t = Template(
+        open('mail_templates/correu_acceptacio_hackeps.html', 'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        email=user.email,
+                        event_name=event_name,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+def generate_dailyhack_entregat_template(user: ModelUser, dailyhack_name: str):
+    t = Template(
+        open('mail_templates/correu_entrega_dailyhack.html', 'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        email=user.email,
+                        dailyhack_name=dailyhack_name,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+def generate_dailyhack_publicat_template(user: ModelUser, dailyhack_name: str):
+    t = Template(
+        open('mail_templates/correu_publicacio_dailyhack.html', 'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        email=user.email,
+                        dailyhack_name=dailyhack_name,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+def generate_contact_template(name: str, title: str, email: str, message: str):
+    t = Template(
+        open('mail_templates/correu_contacte.html', 'r',
+             encoding='utf-8').read())
+    return t.substitute(name=name,
+                        email=email,
+                        title=title,
+                        message=message,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
 
 
 async def send_registration_confirmation_email(user: ModelUser):
     send_email(user.email, generate_registration_confirmation_template(user),
-               'Registration Confirmation', get_all_images())
+               'Registration Confirmation')
 
 
 async def send_password_reset_email(user: ModelUser):
@@ -105,11 +139,12 @@ async def send_password_reset_email(user: ModelUser):
 
 
 async def send_event_registration_email(user: ModelUser, event_name: str):
-    pass
-
+    send_email(user.email, generate_event_registration_template(user, event_name),
+               'Event Registration')
 
 async def send_event_accepted_email(user: ModelUser, event_name: str):
-    pass
+    send_email(user.email, generate_event_accepted_template(user, event_name),
+               'Event Accepted')
 
 
 # async def send_event_rejected_email(user: ModelUser, event_name: str):
@@ -117,8 +152,10 @@ async def send_event_accepted_email(user: ModelUser, event_name: str):
 
 
 async def send_dailyhack_added_email(user: ModelUser, dailyhack_name: str):
-    pass
+    send_email(user.email, generate_dailyhack_entregat_template(user, dailyhack_name),
+               'Dailyhack Added')
 
 
 async def send_contact_email(name: str, title: str, email: str, message: str):
-    pass
+    send_email(email, generate_contact_template(name, title, email, message),
+               'Contact')
