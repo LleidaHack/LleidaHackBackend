@@ -136,6 +136,14 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
             hacker.github = payload.github
         if hacker.linkedin != payload.linkedin:
             hacker.linkedin = payload.linkedin
+        if hacker.studies != payload.studies:
+            hacker.studies = payload.studies
+        if hacker.study_center != payload.study_center:
+            hacker.study_center = payload.study_center
+        if hacker.location != payload.location:
+            hacker.location = payload.location
+        if hacker.how_did_you_meet_us != payload.how_did_you_meet_us:
+            hacker.how_did_you_meet_us = payload.how_did_you_meet_us
 
     db.add(event_registration)
     db.commit()

@@ -37,7 +37,7 @@ async def get_lleidahacker(userId: int, db: Session, data: TokenData):
 
 
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
-    check_user(db, payload.email, payload.nickname)
+    check_user(db, payload.email, payload.nickname, payload.telephone)
     if payload.image is not None:
         payload = check_image(payload)
     new_lleidahacker = ModelLleidaHacker(**payload.dict(),
