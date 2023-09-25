@@ -11,9 +11,10 @@ from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from smtplib import SMTP_SSL
 from email.mime.text import MIMEText
+from string import Template
 
 from models.User import User as ModelUser
-from string import Template
+from models.Event import Event as ModelEvent
 
 
 class EmailSchema(BaseModel):
@@ -62,6 +63,11 @@ def generate_registration_confirmation_template(user: ModelUser):
                         static_folder=STATIC_FOLDER)
 
 
+async def send_registration_confirmation_email(user: ModelUser):
+    send_email(user.email, generate_registration_confirmation_template(user),
+               'Registration Confirmation')
+
+
 def generate_password_reset_template(user: ModelUser):
     t = Template(
         open('mail_templates/correu_reset_password.html',
@@ -73,6 +79,11 @@ def generate_password_reset_template(user: ModelUser):
                         token=user.rest_password_token,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
+
+
+async def send_password_reset_email(user: ModelUser):
+    send_email(user.email, generate_password_reset_template(user),
+               'Password Reset')
 
 
 def generate_event_registration_template(user: ModelUser, event_name: str):
@@ -88,14 +99,21 @@ def generate_event_registration_template(user: ModelUser, event_name: str):
                         static_folder=STATIC_FOLDER)
 
 
-def generate_event_accepted_template(user: ModelUser, event_name: str):
+async def send_event_registration_email(user: ModelUser, event: ModelEvent):
+    send_email(user.email, generate_event_registration_template(user, event),
+               'Event Registration')
+
+
+def generate_event_accepted_template(user: ModelUser, event: ModelEvent):
     t = Template(
         open('mail_templates/correu_acceptacio_hackeps.html',
              'r',
              encoding='utf-8').read())
+    raise Exception("falta definir els days left")
     return t.substitute(name=user.name,
                         email=user.email,
-                        event_name=event_name,
+                        event_name=event.name,
+                        days_left=1,
                         front_link=FRONT_LINK,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
@@ -138,22 +156,6 @@ def generate_contact_template(name: str, title: str, email: str, message: str):
                         front_link=FRONT_LINK,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
-
-
-async def send_registration_confirmation_email(user: ModelUser):
-    send_email(user.email, generate_registration_confirmation_template(user),
-               'Registration Confirmation')
-
-
-async def send_password_reset_email(user: ModelUser):
-    send_email(user.email, generate_password_reset_template(user),
-               'Password Reset')
-
-
-async def send_event_registration_email(user: ModelUser, event_name: str):
-    send_email(user.email,
-               generate_event_registration_template(user, event_name),
-               'Event Registration')
 
 
 async def send_event_accepted_email(user: ModelUser, event_name: str):

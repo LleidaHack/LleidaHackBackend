@@ -21,7 +21,7 @@ class User(Base):
     birthdate: date = Column(DateTime)
     food_restrictions: Mapped[str] = deferred(Column(String))
     email: Mapped[str] = deferred(Column(String, unique=True, index=True))
-    telephone: Mapped[str] = deferred(Column(String))
+    telephone: Mapped[str] = deferred(Column(String, unique=True, index=True))
     address: Mapped[str] = deferred(Column(String))
     shirt_size: Mapped[str] = deferred(Column(String))
     type: str = Column(String)

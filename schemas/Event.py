@@ -82,6 +82,10 @@ class HackerEventRegistration(BaseModel):
     github: Optional[str]
     linkedin: Optional[str]
     dailyhack_url: Optional[str]
+    studies: str
+    study_center: str
+    location: str
+    how_did_you_meet_us: str
     update_user: bool
 
     @validator('shirt_size')
@@ -97,3 +101,9 @@ class HackerEventRegistrationUpdate(BaseModel):
     cv: Optional[str]
     description: Optional[str]
     dailyhack_url: Optional[str]
+    github: Optional[str]
+    linkedin: Optional[str]
+    studies: Optional[str]
+    study_center: Optional[str]
+    location: Optional[str]
+    how_did_you_meet_us: Optional[str]

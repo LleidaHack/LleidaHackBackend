@@ -44,7 +44,12 @@ class HackerRegistration(Base):
     github: str = Column(String, default="")
     linkedin: str = Column(String, default="")
     dailyhack_url: str = Column(String, default="")
+    studies: str = Column(String, default="")
+    study_center: str = Column(String, default="")
+    location: str = Column(String, default="")
+    how_did_you_meet_us: str = Column(String, default="")
     update_user: bool = Column(Boolean, default=True)
+    confirmed_assistance: bool = Column(Boolean, default=False)
     # accepted: bool = Column(Boolean, default=False)
 
 
