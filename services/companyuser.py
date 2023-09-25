@@ -36,7 +36,7 @@ async def get_company_user(companyUserId: int, db: Session, data: TokenData):
 
 
 async def add_company_user(payload: SchemaCompanyUser, db: Session):
-    check_user(db, payload.email, payload.nickname)
+    check_user(db, payload.email, payload.nickname, payload.telephone)
     new_company_user = ModelCompanyUser(**payload.dict(),
                                         code=generate_user_code(db))
     new_company_user.password = get_password_hash(payload.password)
