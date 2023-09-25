@@ -13,6 +13,7 @@ def get_user_by_mail(db, email):
 def get_user_by_nickname(db, nickname):
     return db.query(User).filter(User.nickname == nickname).first()
 
+
 def get_user_by_telephone(db, telephone):
     return db.query(User).filter(User.telephone == telephone).first()
 
