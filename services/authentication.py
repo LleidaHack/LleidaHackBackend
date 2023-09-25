@@ -36,7 +36,7 @@ async def reset_password(email: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User not found")
     if not user.is_verified:
         raise InvalidDataException("User not verified")
-    create_all_tokens(user, True)
+    create_all_tokens(user, db, True)
     await send_password_reset_email(user)
     return {"success": True}
 
