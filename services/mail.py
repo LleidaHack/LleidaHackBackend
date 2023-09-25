@@ -62,9 +62,11 @@ def generate_registration_confirmation_template(user: ModelUser):
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+
 async def send_registration_confirmation_email(user: ModelUser):
     send_email(user.email, generate_registration_confirmation_template(user),
                'Registration Confirmation')
+
 
 def generate_password_reset_template(user: ModelUser):
     t = Template(
@@ -78,9 +80,11 @@ def generate_password_reset_template(user: ModelUser):
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+
 async def send_password_reset_email(user: ModelUser):
     send_email(user.email, generate_password_reset_template(user),
                'Password Reset')
+
 
 def generate_event_registration_template(user: ModelUser, event_name: str):
     t = Template(
@@ -94,10 +98,11 @@ def generate_event_registration_template(user: ModelUser, event_name: str):
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+
 async def send_event_registration_email(user: ModelUser, event: ModelEvent):
-    send_email(user.email,
-               generate_event_registration_template(user, event),
+    send_email(user.email, generate_event_registration_template(user, event),
                'Event Registration')
+
 
 def generate_event_accepted_template(user: ModelUser, event: ModelEvent):
     t = Template(
@@ -151,12 +156,6 @@ def generate_contact_template(name: str, title: str, email: str, message: str):
                         front_link=FRONT_LINK,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
-
-
-
-
-
-
 
 
 async def send_event_accepted_email(user: ModelUser, event_name: str):
