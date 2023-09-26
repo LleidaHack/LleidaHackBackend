@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -18,7 +18,6 @@ from routers import event
 from routers import meal
 from routers import eventmanagment
 from routers import authentication
-from routers import utils
 
 from error import error_handler as eh
 from error.AuthenticationException import AuthenticationException
@@ -31,10 +30,10 @@ dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
 tags_metadata = [
-    # {
-    #     "name": "User",
-    #     "description": "User related endpoints"
-    # },
+    {
+        "name": "User",
+        "description": "User related endpoints"
+    },
     {
         "name": "Hacker",
         "description": "Hacker related endpoints"
@@ -67,10 +66,6 @@ tags_metadata = [
         "name": "Authentication",
         "description": "Authentication related endpoints"
     },
-    {
-        "name": "Utils",
-        "description": "Utils related endpoints"
-    },
 ]
 
 app = FastAPI(title="LleidaHack API",
@@ -101,7 +96,7 @@ app.add_exception_handler(InputException, eh.input_exception_handler)
 
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
-# app.include_router(user.router)
+app.include_router(user.router)
 app.include_router(hacker.router)
 app.include_router(hackergroup.router)
 app.include_router(lleidahacker.router)
@@ -112,7 +107,6 @@ app.include_router(event.router)
 app.include_router(meal.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
-app.include_router(utils.router)
 
 
 @app.get("/")

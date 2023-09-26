@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime as date
 from sqlalchemy.orm import Session
 
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
@@ -8,31 +8,40 @@ from models.UserType import UserType
 from schemas.LleidaHacker import LleidaHacker as SchemaLleidaHacker
 from schemas.LleidaHacker import LleidaHackerUpdate as SchemaLleidaHackerUpdate
 
-from security import check_image_exists, get_password_hash
+from security import get_password_hash
 
-from utils.service_utils import set_existing_data, check_image
+from utils.service_utils import set_existing_data, check_image, generate_user_code
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
+
+from utils.hide_utils import lleidahacker_show_private
+from utils.service_utils import check_user
 
 
 async def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
 
-async def get_lleidahacker(userId: int, db: Session):
+async def get_lleidahacker(userId: int, db: Session, data: TokenData):
     user = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
     if user is None:
         raise NotFoundException("LleidaHacker not found")
+    if data.is_admin or (data.available and
+                         (data.type == UserType.LLEIDAHACKER.value
+                          and data.user_id == userId)):
+        lleidahacker_show_private(user)
     return user
 
 
 async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
+    check_user(db, payload.email, payload.nickname, payload.telephone)
     if payload.image is not None:
         payload = check_image(payload)
-    new_lleidahacker = ModelLleidaHacker(**payload.dict())
+    new_lleidahacker = ModelLleidaHacker(**payload.dict(),
+                                         code=generate_user_code(db))
     new_lleidahacker.password = get_password_hash(payload.password)
     db.add(new_lleidahacker)
     db.commit()
