@@ -20,6 +20,10 @@ def hacker_show_private(hacker: ModelHacker):
     user_show_private(hacker)
     hacker.cv
     hacker.banned
+    hacker.studies
+    hacker.study_center
+    hacker.location
+    hacker.how_did_you_meet_us
 
 
 def lleidahacker_show_private(lleidahacker: ModelLleidaHacker):
