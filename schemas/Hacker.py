@@ -1,4 +1,4 @@
-from schemas.User import User, UserUpdate
+from schemas.User import User, UserUpdate, UserPublic
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -11,6 +11,11 @@ class Hacker(User):
         orm_mode = True
 
 
+class HackerPublic(UserPublic):
+    github: str
+    linkedin: str
+
+
 class HackerUpdate(UserUpdate):
     github: Optional[str]
     linkedin: Optional[str]
@@ -19,8 +24,8 @@ class HackerUpdate(UserUpdate):
 class HackerGroup(BaseModel):
     name: str
     description: str
-    members: List[Hacker]
-    leader: int
+    leader_id: int
+    event_id: int
 
     class Config:
         orm_mode = True
@@ -29,5 +34,4 @@ class HackerGroup(BaseModel):
 class HackerGroupUpdate(BaseModel):
     name: Optional[str]
     description: Optional[str]
-    members: Optional[List[Hacker]]
-    leader: Optional[int]
+    leader_id: Optional[int]

@@ -1,15 +1,18 @@
-from schemas.Company import CompanyUser as SchemaCompanyUser
-from schemas.Company import CompanyUserUpdate as SchemaCompanyUserUpdate
-
-from database import get_db
-from security import create_access_token, oauth_schema, create_refresh_token
-
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
+from schemas.Company import CompanyUser as SchemaCompanyUser
+from schemas.Company import CompanyUserUpdate as SchemaCompanyUserUpdate
+
 import services.companyuser as companyuser_service
 
+from database import get_db
+
+from security import create_all_tokens
+from security import create_refresh_token
 from security import get_data_from_token
+
+from utils.auth_bearer import JWTBearer
 
 router = APIRouter(
     prefix="/company/user",
@@ -22,19 +25,18 @@ async def signup(payload: SchemaCompanyUser,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_companyuser = await companyuser_service.add_company_user(payload, db)
-    token = create_access_token(new_companyuser)
-    refresh_token = create_refresh_token(new_companyuser)
+    access_token, refresh_token = create_all_tokens(new_companyuser, db)
     return {
         "success": True,
         "user_id": new_companyuser.id,
-        "access_token": token,
+        "access_token": access_token,
         "refresh_token": refresh_token
     }
 
 
 @router.get("/all")
 async def get_company_users(db: Session = Depends(get_db),
-                            token: str = Depends(oauth_schema)):
+                            token: str = Depends(JWTBearer())):
     return companyuser_service.get_companyusers(db)
 
 
@@ -42,15 +44,16 @@ async def get_company_users(db: Session = Depends(get_db),
 async def get_company_user(companyUserId: int,
                            response: Response,
                            db: Session = Depends(get_db),
-                           token: str = Depends(oauth_schema)):
-    return companyuser_service.get_companyuser(db, companyUserId)
+                           token: str = Depends(JWTBearer())):
+    return companyuser_service.get_companyuser(db, companyUserId,
+                                               get_data_from_token(token))
 
 
 # @router.post("/")
 # async def add_company_user(payload: SchemaCompanyUser,
 #                            response: Response,
 #                            db: Session = Depends(get_db),
-#                            token: str = Depends(oauth_schema)):
+#                            token: str = Depends(JWTBearer())):
 #     new_companyuser = await companyuser_service.add_company_user(db, payload)
 #     return {"success": True, "user_id": new_companyuser.id}
 
@@ -60,7 +63,7 @@ async def update_company_user(companyUserId: int,
                               payload: SchemaCompanyUserUpdate,
                               response: Response,
                               db: Session = Depends(get_db),
-                              token: str = Depends(oauth_schema)):
+                              token: str = Depends(JWTBearer())):
     companyuser = await companyuser_service.update_companyuser(
         db, companyUserId, payload, get_data_from_token(token))
     return {"success": True, "updated_id": companyuser.id}
@@ -70,7 +73,7 @@ async def update_company_user(companyUserId: int,
 async def delete_company_user(companyUserId: int,
                               response: Response,
                               db: Session = Depends(get_db),
-                              token: str = Depends(oauth_schema)):
+                              token: str = Depends(JWTBearer())):
     companyuser = await companyuser_service.delete_companyuser(
         db, companyUserId, get_data_from_token(token))
     return {"success": True, "deleted_id": companyuser.id}
