@@ -158,9 +158,11 @@ def generate_contact_template(name: str, title: str, email: str, message: str):
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+
 async def send_contact_email(name: str, title: str, email: str, message: str):
     send_email(email, generate_contact_template(name, title, email, message),
                'Contact')
+
 
 async def send_event_accepted_email(user: ModelUser, event_name: str):
     send_email(user.email, generate_event_accepted_template(user, event_name),
@@ -175,6 +177,3 @@ async def send_dailyhack_added_email(user: ModelUser, dailyhack_name: str):
     send_email(user.email,
                generate_dailyhack_entregat_template(user, dailyhack_name),
                'Dailyhack Added')
-
-
-
