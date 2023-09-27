@@ -42,6 +42,7 @@ async def get_user_by_email(db: Session, email: str, data: TokenData):
         user_show_private(user)
     return user
 
+
 async def get_user_by_nickname(db: Session, nickname: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -55,6 +56,7 @@ async def get_user_by_nickname(db: Session, nickname: str, data: TokenData):
         user_show_private(user)
     return user
 
+
 async def get_user_by_phone(db: Session, phone: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -67,6 +69,7 @@ async def get_user_by_phone(db: Session, phone: str, data: TokenData):
                           or data.user_id == user.id)):
         user_show_private(user)
     return user
+
 
 async def get_user_by_code(db: Session, code: str, data: TokenData):
     if not data.is_admin:
