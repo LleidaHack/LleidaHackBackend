@@ -151,6 +151,13 @@ def create_reset_password_token(user: ModelUser, db: Session):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     update_tokens(user.id, db, reset_pass_token=encoded_jwt)
 
+def generate_assistance_token(user_id:int, event_id:int, db: Session):
+    to_encode = {'user_id': user_id, 'event_id': event_id}
+    #expire in 5 days
+    expire = datetime.utcnow() + timedelta(days=5)
+    to_encode.update({"expt": expire.isoformat()})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 def get_data_from_token(token: str = Depends(oauth2_scheme),
                         refresh: bool = False,
