@@ -28,6 +28,18 @@ async def get_user(db: Session, userId: int, data: TokenData):
         user_show_private(user)
     return user
 
+async def get_user_by_email(db: Session, email: str, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    user = db.query(ModelUser).filter(ModelUser.email == email).first()
+    if user is None:
+        raise NotFoundException("User not found")
+    if data.is_admin or (data.available and
+                         (data.type == UserType.LLEIDAHACKER.value
+                          or data.user_id == user.id)):
+        user_show_private(user)
+    return user
 
 async def get_user_by_code(db: Session, code: str, data: TokenData):
     if not data.is_admin:

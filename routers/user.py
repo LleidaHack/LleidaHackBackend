@@ -13,19 +13,6 @@ router = APIRouter(
     tags=["User"],
 )
 
-# @router.post("/signup")
-# async def signup(payload: SchemaUser,
-#                  response: Response,
-#                  db: Session = Depends(get_db)):
-#     new_user = await user_service.add_user(db, payload)
-#     access_token, refresh_token = create_all_tokens(new_user, db)
-#     return {
-#         "success": True,
-#         "user_id": new_user.id,
-#         "acces_token": access_token,
-#         "refresh_token": refresh_token
-#     }
-
 
 @router.get("/all")
 async def get_users(db: Session = Depends(get_db),
@@ -33,31 +20,47 @@ async def get_users(db: Session = Depends(get_db),
     return await user_service.get_all(db)
 
 
-@router.get("/{userId}",
-            response_model_exclude=["password", "token", "refresh_token"])
+@router.get("/{userId}")
 async def get_user(userId: int,
-                   response: Response,
                    db: Session = Depends(get_db),
                    str=Depends(JWTBearer())):
     return await user_service.get_user(db, userId, get_data_from_token(str))
 
+@router.get("/email/{email}")
+async def get_user_by_email(email: str,
+                            db: Session = Depends(get_db),
+                            str=Depends(JWTBearer())):
+    return await user_service.get_user_by_email(db, email,
+                                                get_data_from_token(str))
+
+@router.get("/nickname/{nickname}")
+async def get_user_by_nickname(nickname: str,
+                                 db: Session = Depends(get_db),
+                                 str=Depends(JWTBearer())):
+     return await user_service.get_user_by_nickname(db, nickname,
+                                                    get_data_from_token(str))
+
+@router.get("/phone/{phone}")
+async def get_user_by_phone(phone: str,
+                            db: Session = Depends(get_db),
+                            str=Depends(JWTBearer())):
+    return await user_service.get_user_by_phone(db, phone,
+                                                get_data_from_token(str))
 
 @router.get("/code/{code}")
 async def get_user_by_code(code: str,
-                           response: Response,
                            db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):
     return await user_service.get_user_by_code(db, code,
                                                get_data_from_token(str))
 
 
-@router.post("/")
-async def add_user(payload: SchemaUser,
-                   response: Response,
-                   db: Session = Depends(get_db),
-                   str=Depends(JWTBearer())):
-    new_user = await user_service.add_user(db, payload)
-    return {"success": True, "user_id": new_user.id}
+# @router.post("/")
+# async def add_user(payload: SchemaUser,
+#                    db: Session = Depends(get_db),
+#                    str=Depends(JWTBearer())):
+#     new_user = await user_service.add_user(db, payload)
+#     return {"success": True, "user_id": new_user.id}
 
 
 # @router.put("/{userId}")

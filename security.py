@@ -171,6 +171,10 @@ def get_data_from_token(token: str = Depends(oauth2_scheme),
         d.email = data.get("email")
     else:
         d.expt = data.get("expt")
+        try:
+            d.event_id = data.get("event_id")
+        except:
+            pass
     if not refresh and not special:
         d.is_verified = data.get("is_verified")
         if d.type == UserType.HACKER.value:
