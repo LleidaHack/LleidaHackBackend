@@ -28,6 +28,7 @@ async def get_user(db: Session, userId: int, data: TokenData):
         user_show_private(user)
     return user
 
+
 async def get_user_by_email(db: Session, email: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
