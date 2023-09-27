@@ -182,6 +182,7 @@ async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(event)
     return event
 
+
 async def cofirm_assistance(token: str, db: Session):
     data = get_data_from_token(token, special=True)
     user = db.query(ModelHacker).filter(ModelHacker.id == data.user_id).first()
@@ -203,6 +204,7 @@ async def cofirm_assistance(token: str, db: Session):
     db.commit()
     db.refresh(user_registration)
     return user_registration
+
 
 async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                       db: Session, data: TokenData):

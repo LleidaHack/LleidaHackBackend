@@ -26,6 +26,7 @@ async def get_user(userId: int,
                    str=Depends(JWTBearer())):
     return await user_service.get_user(db, userId, get_data_from_token(str))
 
+
 @router.get("/email/{email}")
 async def get_user_by_email(email: str,
                             db: Session = Depends(get_db),
@@ -33,12 +34,14 @@ async def get_user_by_email(email: str,
     return await user_service.get_user_by_email(db, email,
                                                 get_data_from_token(str))
 
+
 @router.get("/nickname/{nickname}")
 async def get_user_by_nickname(nickname: str,
-                                 db: Session = Depends(get_db),
-                                 str=Depends(JWTBearer())):
-     return await user_service.get_user_by_nickname(db, nickname,
-                                                    get_data_from_token(str))
+                               db: Session = Depends(get_db),
+                               str=Depends(JWTBearer())):
+    return await user_service.get_user_by_nickname(db, nickname,
+                                                   get_data_from_token(str))
+
 
 @router.get("/phone/{phone}")
 async def get_user_by_phone(phone: str,
@@ -46,6 +49,7 @@ async def get_user_by_phone(phone: str,
                             str=Depends(JWTBearer())):
     return await user_service.get_user_by_phone(db, phone,
                                                 get_data_from_token(str))
+
 
 @router.get("/code/{code}")
 async def get_user_by_code(code: str,
@@ -61,7 +65,6 @@ async def get_user_by_code(code: str,
 #                    str=Depends(JWTBearer())):
 #     new_user = await user_service.add_user(db, payload)
 #     return {"success": True, "user_id": new_user.id}
-
 
 # @router.put("/{userId}")
 # async def update_user(userId: int,
