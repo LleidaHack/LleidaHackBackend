@@ -57,6 +57,7 @@ def generate_registration_confirmation_template(user: ModelUser):
              encoding='utf-8').read())
     return t.substitute(name=user.name,
                         email=user.email,
+                        days_left=5,
                         front_link=FRONT_LINK,
                         token=user.verification_token,
                         contact_mail=CONTACT_MAIL,
@@ -157,6 +158,9 @@ def generate_contact_template(name: str, title: str, email: str, message: str):
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+async def send_contact_email(name: str, title: str, email: str, message: str):
+    send_email(email, generate_contact_template(name, title, email, message),
+               'Contact')
 
 async def send_event_accepted_email(user: ModelUser, event_name: str):
     send_email(user.email, generate_event_accepted_template(user, event_name),
@@ -173,6 +177,4 @@ async def send_dailyhack_added_email(user: ModelUser, dailyhack_name: str):
                'Dailyhack Added')
 
 
-async def send_contact_email(name: str, title: str, email: str, message: str):
-    send_email(email, generate_contact_template(name, title, email, message),
-               'Contact')
+

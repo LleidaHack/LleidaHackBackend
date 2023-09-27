@@ -16,7 +16,7 @@ from models.UserType import UserType
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
-from security import get_data_from_token
+from security import get_data_from_token, generate_assistance_token
 
 from utils.service_utils import isBase64, subtract_lists
 
@@ -183,8 +183,9 @@ async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-async def cofirm_assistance(token: str, db: Session):
+async def confirm_assistance(token: str, db: Session):
     data = get_data_from_token(token, special=True)
+    # if data.expt < datetime.utcnow().isoformat():
     user = db.query(ModelHacker).filter(ModelHacker.id == data.user_id).first()
     if user is None:
         raise InvalidDataException("User not found")
@@ -246,6 +247,7 @@ async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
         raise InvalidDataException("Hacker not registered")
     if hacker in event.accepted_hackers:
         raise InvalidDataException("Hacker already accepted")
+    token = generate_assistance_token(hacker.id, event.id, db)
     event.accepted_hackers.append(hacker)
     db.commit()
     db.refresh(event)
