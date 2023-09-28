@@ -117,7 +117,7 @@ async def unregister_hacker_from_event(event_id: int,
         event, hacker, db, get_data_from_token(token))
 
 
-@router.put("/confirm-assistance")
+@router.get("/confirm-assistance")
 async def confirm_assistance(token: str, db: Session = Depends(get_db)):
     """
     Confirm assistance of a hacker to an event
