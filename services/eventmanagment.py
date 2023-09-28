@@ -16,8 +16,14 @@ from models.UserType import UserType
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
+from security import get_data_from_token, generate_assistance_token
 
 from utils.service_utils import isBase64, subtract_lists
+
+from mail import send_dailyhack_added_email
+from mail import send_event_registration_email
+from mail import send_event_accepted_email
+from mail import send_assistance_confirmation_email
 
 
 async def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
@@ -33,6 +39,8 @@ async def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
     if hacker_registration is None:
         raise NotFoundException("Hacker not registered")
     hacker_registration.dailyhack_url = url
+    hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+    await send_dailyhack_added_email(hacker)
     db.commit()
     db.refresh(hacker_registration)
     return hacker_registration
@@ -95,12 +103,19 @@ async def get_dailyhacks(eventId: int, db: Session, data: TokenData):
             raise AuthenticationException("Not authorized")
     registrations = db.query(ModelHackerRegistration).filter(
         ModelHackerRegistration.event_id == eventId).all()
+    event = db.query(ModelEvent).filter(ModelEvent.id == eventId).first()
     userid_dailyhack = []
+
     for registration in registrations:
-        userid_dailyhack.append({
-            "id": registration.user_id,
-            "dailyhack": registration.dailyhack_url
-        })
+        user = db.query(ModelHacker).filter(
+            ModelHacker.id == registration.user_id).first()
+        if user in event.accepted_hackers:
+            userid_dailyhack.append({
+                "id": registration.user_id,
+                "name": user.name,
+                "email": user.email,
+                "dailyhack": registration.dailyhack_url
+            })
     return userid_dailyhack
 
 
@@ -122,7 +137,9 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
         raise InvalidDataException("Invalid CV")
     event_registration = ModelHackerRegistration(**payload.dict(),
                                                  user_id=hacker.id,
-                                                 event_id=event.id)
+                                                 event_id=event.id,
+                                                 confirmed_assistance=False,
+                                                 confirm_assistance_token="")
     if payload.update_user:
         if hacker.cv != payload.cv:
             hacker.cv = payload.cv
@@ -146,6 +163,7 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
             hacker.how_did_you_meet_us = payload.how_did_you_meet_us
 
     db.add(event_registration)
+    await send_event_registration_email(hacker, event)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
@@ -173,6 +191,32 @@ async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     db.commit()
     db.refresh(event)
     return event
+
+
+async def confirm_assistance(token: str, db: Session):
+    data = get_data_from_token(token, special=True)
+    # if data.expt < datetime.utcnow().isoformat():
+    user = db.query(ModelHacker).filter(ModelHacker.id == data.user_id).first()
+    if user is None:
+        raise InvalidDataException("User not found")
+    event = db.query(ModelEvent).filter(ModelEvent.id == data.event_id).first()
+    if event is None:
+        raise InvalidDataException("Event not found")
+    user_registration = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == data.user_id,
+        ModelHackerRegistration.event_id == data.event_id).first()
+    if user_registration is None:
+        raise InvalidDataException("User not registered")
+    if user_registration.confirm_assistance_token != token:
+        raise InvalidDataException("Invalid token")
+    if user not in event.accepted_hackers:
+        raise InvalidDataException("User not accepted")
+    if user_registration.confirmed_assistance:
+        raise InvalidDataException("User already confirmed assistance")
+    user_registration.confirmed_assistance = True
+    db.commit()
+    db.refresh(user_registration)
+    return user_registration
 
 
 async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
@@ -215,7 +259,15 @@ async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
         raise InvalidDataException("Hacker not registered")
     if hacker in event.accepted_hackers:
         raise InvalidDataException("Hacker already accepted")
+    hacker_registration = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == hacker.id,
+        ModelHackerRegistration.event_id == event.id).first()
+    if hacker_registration is None:
+        raise InvalidDataException("Hacker not registered")
+    token = generate_assistance_token(hacker.id, event.id, db)
+    hacker_registration.confirm_assistance_token = token
     event.accepted_hackers.append(hacker)
+    await send_event_accepted_email(hacker, event, token)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
@@ -230,11 +282,11 @@ async def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
     for hacker in subtract_lists(group.members, event.accepted_hackers):
         if hacker not in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
-        event.accepted_hackers.append(hacker)
-    db.commit()
-    db.refresh(event)
-    db.refresh(group)
-    return group
+        hacker_user = db.query(ModelHacker).filter(
+            ModelHacker.id == hacker.id).first()
+        if hacker_user is None:
+            raise InvalidDataException("Hacker not registered")
+        accept_hacker_to_event(event, hacker_user, db, data)
 
 
 async def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
