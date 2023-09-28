@@ -95,7 +95,7 @@ def generate_event_registration_template(user: ModelUser, event_name: str):
     return t.substitute(name=user.name,
                         email=user.email,
                         event_name=event_name,
-                        token=user.verification_token,
+                        # token=user.verification_token,
                         front_link=FRONT_LINK,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
