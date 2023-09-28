@@ -20,10 +20,9 @@ from security import get_data_from_token, generate_assistance_token
 
 from utils.service_utils import isBase64, subtract_lists
 
-from mail import send_dailyhack_added_email
-from mail import send_event_registration_email
-from mail import send_event_accepted_email
-from mail import send_assistance_confirmation_email
+from services.mail import send_dailyhack_added_email
+from services.mail import send_event_registration_email
+from services.mail import send_event_accepted_email
 
 async def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
                         data: TokenData):
