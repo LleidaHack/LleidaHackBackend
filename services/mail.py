@@ -105,7 +105,8 @@ async def send_event_registration_email(user: ModelUser, event: ModelEvent):
                'Event Registration')
 
 
-def generate_event_accepted_template(user: ModelUser, event: ModelEvent, token: str):
+def generate_event_accepted_template(user: ModelUser, event: ModelEvent,
+                                     token: str):
     t = Template(
         open('mail_templates/correu_acceptacio_event.html',
              'r',
@@ -119,9 +120,11 @@ def generate_event_accepted_template(user: ModelUser, event: ModelEvent, token: 
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+
 async def send_event_accepted_email(user: ModelUser, event_name: str):
     send_email(user.email, generate_event_accepted_template(user, event_name),
                'Event Accepted')
+
 
 def generate_dailyhack_entregat_template(user: ModelUser):
     t = Template(
@@ -134,9 +137,9 @@ def generate_dailyhack_entregat_template(user: ModelUser):
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+
 async def send_dailyhack_added_email(user: ModelUser):
-    send_email(user.email,
-               generate_dailyhack_entregat_template(user),
+    send_email(user.email, generate_dailyhack_entregat_template(user),
                'Dailyhack Entregat')
 
 
@@ -171,8 +174,5 @@ async def send_contact_email(name: str, title: str, email: str, message: str):
                'Contact')
 
 
-
-
 # async def send_event_rejected_email(user: ModelUser, event_name: str):
 #     pass
-
