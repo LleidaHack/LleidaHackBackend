@@ -5,6 +5,8 @@ from typing import List
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from sqlalchemy.orm import deferred
+from sqlalchemy.orm import Mapped
 
 from database import Base
 
@@ -50,6 +52,7 @@ class HackerRegistration(Base):
     how_did_you_meet_us: str = Column(String, default="")
     update_user: bool = Column(Boolean, default=True)
     confirmed_assistance: bool = Column(Boolean, default=False)
+    confirmed_assistance_token: Mapped[str] = deferred(Column(String, default=""))
     # accepted: bool = Column(Boolean, default=False)
 
 

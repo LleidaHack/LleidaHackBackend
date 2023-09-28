@@ -105,45 +105,52 @@ async def send_event_registration_email(user: ModelUser, event: ModelEvent):
                'Event Registration')
 
 
-def generate_event_accepted_template(user: ModelUser, event: ModelEvent):
+def generate_event_accepted_template(user: ModelUser, event: ModelEvent, token: str):
     t = Template(
-        open('mail_templates/correu_acceptacio_hackeps.html',
+        open('mail_templates/correu_acceptacio_event.html',
              'r',
              encoding='utf-8').read())
-    raise Exception("falta definir els days left")
     return t.substitute(name=user.name,
                         email=user.email,
                         event_name=event.name,
-                        days_left=1,
+                        days_left=5,
+                        token=token,
                         front_link=FRONT_LINK,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+async def send_event_accepted_email(user: ModelUser, event_name: str):
+    send_email(user.email, generate_event_accepted_template(user, event_name),
+               'Event Accepted')
 
-def generate_dailyhack_entregat_template(user: ModelUser, dailyhack_name: str):
+def generate_dailyhack_entregat_template(user: ModelUser):
     t = Template(
         open('mail_templates/correu_entrega_dailyhack.html',
              'r',
              encoding='utf-8').read())
     return t.substitute(name=user.name,
                         email=user.email,
-                        dailyhack_name=dailyhack_name,
                         front_link=FRONT_LINK,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
+async def send_dailyhack_added_email(user: ModelUser):
+    send_email(user.email,
+               generate_dailyhack_entregat_template(user),
+               'Dailyhack Entregat')
 
-def generate_dailyhack_publicat_template(user: ModelUser, dailyhack_name: str):
-    t = Template(
-        open('mail_templates/correu_publicacio_dailyhack.html',
-             'r',
-             encoding='utf-8').read())
-    return t.substitute(name=user.name,
-                        email=user.email,
-                        dailyhack_name=dailyhack_name,
-                        front_link=FRONT_LINK,
-                        contact_mail=CONTACT_MAIL,
-                        static_folder=STATIC_FOLDER)
+
+# def generate_dailyhack_publicat_template(user: ModelUser, dailyhack_name: str):
+#     t = Template(
+#         open('mail_templates/correu_publicacio_dailyhack.html',
+#              'r',
+#              encoding='utf-8').read())
+#     return t.substitute(name=user.name,
+#                         email=user.email,
+#                         dailyhack_name=dailyhack_name,
+#                         front_link=FRONT_LINK,
+#                         contact_mail=CONTACT_MAIL,
+#                         static_folder=STATIC_FOLDER)
 
 
 def generate_contact_template(name: str, title: str, email: str, message: str):
@@ -164,16 +171,8 @@ async def send_contact_email(name: str, title: str, email: str, message: str):
                'Contact')
 
 
-async def send_event_accepted_email(user: ModelUser, event_name: str):
-    send_email(user.email, generate_event_accepted_template(user, event_name),
-               'Event Accepted')
 
 
 # async def send_event_rejected_email(user: ModelUser, event_name: str):
 #     pass
 
-
-async def send_dailyhack_added_email(user: ModelUser, dailyhack_name: str):
-    send_email(user.email,
-               generate_dailyhack_entregat_template(user, dailyhack_name),
-               'Dailyhack Added')
