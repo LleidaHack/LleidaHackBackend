@@ -16,7 +16,7 @@ from models.UserType import UserType
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
-from security import get_data_from_token, generate_assistance_token
+from security import create_all_tokens, get_data_from_token, generate_assistance_token
 
 from utils.service_utils import isBase64, subtract_lists
 
@@ -160,12 +160,12 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
             hacker.location = payload.location
         if hacker.how_did_you_meet_us != payload.how_did_you_meet_us:
             hacker.how_did_you_meet_us = payload.how_did_you_meet_us
-
+    create_all_tokens(hacker, db, verification=True)
     db.add(event_registration)
-    await send_event_registration_email(hacker, event)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
+    await send_event_registration_email(hacker, event)
     return event
 
 
