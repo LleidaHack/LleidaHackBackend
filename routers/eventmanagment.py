@@ -124,7 +124,9 @@ async def confirm_assistance(token: str, db: Session = Depends(get_db)):
     """
     await eventmanagment_service.confirm_assistance(token, db)
     #redirect to Configuration.get('OTHERS', 'FRONT_URL')
-    return Response(status_code=303, headers={"Location": Configuration.get('OTHERS', 'FRONT_URL')})
+    return Response(
+        status_code=303,
+        headers={"Location": Configuration.get('OTHERS', 'FRONT_URL')})
 
 
 @router.put("/{event_id}/participate/{hacker_code}")
