@@ -123,9 +123,11 @@ def generate_event_accepted_template(user: ModelUser, event: ModelEvent,
                         static_folder=STATIC_FOLDER)
 
 
-async def send_event_accepted_email(user: ModelUser, event: ModelEvent, token: str):
-    send_email(user.email, generate_event_accepted_template(user, event, token),
-               'Event Accepted')
+async def send_event_accepted_email(user: ModelUser, event: ModelEvent,
+                                    token: str):
+    send_email(user.email,
+               generate_event_accepted_template(user, event,
+                                                token), 'Event Accepted')
 
 
 def generate_dailyhack_entregat_template(user: ModelUser):
