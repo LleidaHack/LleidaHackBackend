@@ -22,6 +22,7 @@ class EmailSchema(BaseModel):
 
 
 FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')
+BACK_LINK = Configuration.get('OTHERS', 'BACK_URL')
 CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
 STATIC_FOLDER = Configuration.get('OTHERS',
                                   'BACK_URL') + '/' + Configuration.get(
@@ -118,6 +119,7 @@ def generate_event_accepted_template(user: ModelUser, event: ModelEvent,
                         event_name=event.name,
                         days_left=5,
                         token=token,
+                        back_link=BACK_LINK,
                         front_link=FRONT_LINK,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
