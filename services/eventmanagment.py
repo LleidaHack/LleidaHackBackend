@@ -265,10 +265,10 @@ async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     token = generate_assistance_token(hacker.id, event.id, db)
     hacker_registration.confirm_assistance_token = token
     event.accepted_hackers.append(hacker)
-    await send_event_accepted_email(hacker, event, token)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
+    await send_event_accepted_email(hacker, event, token)
     return event
 
 
