@@ -25,6 +25,7 @@ from mail import send_event_registration_email
 from mail import send_event_accepted_email
 from mail import send_assistance_confirmation_email
 
+
 async def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
                         data: TokenData):
     if not data.is_admin:
