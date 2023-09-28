@@ -160,7 +160,6 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
             hacker.location = payload.location
         if hacker.how_did_you_meet_us != payload.how_did_you_meet_us:
             hacker.how_did_you_meet_us = payload.how_did_you_meet_us
-    create_all_tokens(hacker, db, verification=True)
     db.add(event_registration)
     db.commit()
     db.refresh(event)

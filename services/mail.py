@@ -92,13 +92,14 @@ def generate_event_registration_template(user: ModelUser, event_name: str):
         open('mail_templates/correu_inscripcio_hackeps.html',
              'r',
              encoding='utf-8').read())
-    return t.substitute(name=user.name,
-                        email=user.email,
-                        event_name=event_name,
-                        token=user.verification_token,
-                        front_link=FRONT_LINK,
-                        contact_mail=CONTACT_MAIL,
-                        static_folder=STATIC_FOLDER)
+    return t.substitute(
+        name=user.name,
+        email=user.email,
+        event_name=event_name,
+        # token=user.verification_token,
+        front_link=FRONT_LINK,
+        contact_mail=CONTACT_MAIL,
+        static_folder=STATIC_FOLDER)
 
 
 async def send_event_registration_email(user: ModelUser, event: ModelEvent):
