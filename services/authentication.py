@@ -66,10 +66,10 @@ async def get_me(data: TokenData, db: Session = Depends(get_db)):
         return db.query(ModelHacker).filter(
             ModelHacker.id == data.user_id).first()
     elif data.type == UserType.LLEIDAHACKER.value:
-        return await db.query(ModelLleidaHacker).filter(
+        return db.query(ModelLleidaHacker).filter(
             ModelLleidaHacker.id == data.user_id).first()
     elif data.type == UserType.COMPANYUSER.value:
-        return await db.query(ModelCompanyUser).filter(
+        return db.query(ModelCompanyUser).filter(
             ModelCompanyUser.id == data.user_id).first()
     else:
         raise InputException("Invalid token")
