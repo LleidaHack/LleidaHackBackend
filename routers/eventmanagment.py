@@ -1,5 +1,6 @@
 from fastapi import Depends, Response, APIRouter
 from sqlalchemy.orm import Session
+from config import Configuration
 from database import get_db
 from error.NotFoundException import NotFoundException
 
@@ -121,7 +122,9 @@ async def confirm_assistance(token: str, db: Session = Depends(get_db)):
     """
     Confirm assistance of a hacker to an event
     """
-    return await eventmanagment_service.confirm_assistance(token, db)
+    await eventmanagment_service.confirm_assistance(token, db)
+    #redirect to Configuration.get('OTHERS', 'FRONT_URL')
+    return Response(status_code=303, headers={"Location": Configuration.get('OTHERS', 'FRONT_URL')})
 
 
 @router.put("/{event_id}/participate/{hacker_code}")
