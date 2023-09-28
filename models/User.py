@@ -1,7 +1,6 @@
 from datetime import date
 from sqlalchemy import Column, DateTime, Integer, String, Boolean
 from database import Base
-# from passlib import hash
 from sqlalchemy.orm import deferred
 
 from sqlalchemy.orm import Mapped
@@ -31,12 +30,9 @@ class User(Base):
     is_image_url: bool = Column(Boolean, default=False)
     code: Mapped[str] = deferred(
         Column(String, default="", unique=True, index=True))
+    terms_accepted: bool = Column(Boolean, default=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "user",
         "polymorphic_on": type,
     }
-    # __allow_unmapped__ = True
-
-    # def verify_password(self, password):
-    # return hash.verify(password, self.password)
