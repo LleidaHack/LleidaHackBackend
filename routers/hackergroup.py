@@ -100,9 +100,8 @@ async def add_hacker_to_group_by_code(group_code: str,
 @router.delete("/{groupId}/members/{hackerId}")
 async def remove_hacker_from_group(groupId: int,
                                    hackerId: int,
-                                   response: Response,
                                    db: Session = Depends(get_db),
                                    str=Depends(JWTBearer())):
     hacker_group = await hackergroup_service.remove_hacker_from_group(
-        groupId, hackerId, db)
+        groupId, hackerId, db, get_data_from_token(str))
     return {"success": True, "removed_id": hacker_group.id}
