@@ -174,8 +174,8 @@ def generate_contact_template(name: str, title: str, email: str, message: str):
 
 
 async def send_contact_email(name: str, title: str, email: str, message: str):
-    send_email(CONTACT_MAIL, generate_contact_template(name, title, email, message),
-               title)
+    send_email(CONTACT_MAIL,
+               generate_contact_template(name, title, email, message), title)
 
 
 # async def send_event_rejected_email(user: ModelUser, event_name: str):
