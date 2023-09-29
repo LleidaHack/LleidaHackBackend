@@ -170,8 +170,6 @@ def generate_contact_template(name: str, title: str, email: str, message: str):
                         email=email,
                         title=title,
                         message=message,
-                        front_link=FRONT_LINK,
-                        contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
 
 
