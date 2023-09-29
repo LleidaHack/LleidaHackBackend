@@ -84,6 +84,5 @@ async def check_token(token: str = Depends(JWTBearer())):
 async def contact(name: str,
                   title: str,
                   email: str,
-                  message: str,
-                  db: Session = Depends(get_db)):
-    return await auth_service.contact(name, title, email, message, db)
+                  message: str):
+    return await auth_service.contact(name, title, email, message)
