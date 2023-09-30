@@ -35,7 +35,7 @@ class User(BaseModel):
 
     @validator('password')
     def password_validation(cls, v):
-        if (re.search("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$", v)
+        if (re.search("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$", v)
                 is None):
             raise ValueError(
                 'must contain at least 8 characters, at least one uppercase letter, one lowercase letter and one number'
