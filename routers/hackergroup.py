@@ -26,8 +26,8 @@ async def get_hacker_groups(db: Session = Depends(get_db),
 async def get_hacker_group(groupId: int,
                            response: Response,
                            db: Session = Depends(get_db),
-                           str=Depends(JWTBearer())):
-    return await hackergroup_service.get_hacker_group(groupId, db)
+                           token: str = Depends(JWTBearer())):
+    return await hackergroup_service.get_hacker_group(groupId, db, get_data_from_token(token))
 
 
 @router.post("/")
