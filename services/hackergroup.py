@@ -29,7 +29,7 @@ async def get_group_by_code(code: str, db: Session):
     return group
 
 
-async def get_hacker_group(id: int, db: Session):
+async def get_hacker_group(id: int, db: Session, data: TokenData):
     group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id == id).first()
     if group is None:
