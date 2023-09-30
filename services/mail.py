@@ -134,7 +134,7 @@ async def send_event_accepted_email(user: ModelUser, event: ModelEvent,
 
 def generate_dailyhack_entregat_template(user: ModelUser):
     t = Template(
-        open('mail_templates/correu_entrega_dailyhack.html',
+        open('mail_templates/correu_dailyhack_entregat.html',
              'r',
              encoding='utf-8').read())
     return t.substitute(name=user.name,
