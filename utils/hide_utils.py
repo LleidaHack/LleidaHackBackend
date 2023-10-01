@@ -1,5 +1,6 @@
 from models.User import User as ModelUser
 from models.Hacker import Hacker as ModelHacker
+from models.Hacker import HackerGroup as ModelHackerGroup
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
 from models.Company import CompanyUser as ModelCompanyUser
 
@@ -40,3 +41,7 @@ def companyuser_show_private(company: ModelCompanyUser):
     company.role
     company.accepted
     company.rejected
+
+
+def hackergroup_show_private(hackergroup: ModelHackerGroup):
+    hackergroup.code
