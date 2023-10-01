@@ -143,7 +143,6 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
     if hacker not in event.registered_hackers:
         raise InvalidDataException("Hacker not registered")
     hacker_group_user = db.query(ModelHackerGroupUser).filter(
-        ModelHackerGroupUser.group_id == groupId).filter(
             ModelHackerGroupUser.hacker_id == hackerId).first()
     if hacker_group_user is not None:
         raise InvalidDataException("Hacker already in group")
