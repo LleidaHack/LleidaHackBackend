@@ -16,6 +16,7 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
+from utils.hide_utils import hackergroup_show_private
 
 async def get_all(db: Session):
     return db.query(ModelHackerGroup).all()
@@ -30,10 +31,17 @@ async def get_group_by_code(code: str, db: Session):
 
 
 async def get_hacker_group(id: int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and (data.type == UserType.LLEIDAHACKER.value
+                                    or data.type == UserType.HACKER.value)):
+            raise AuthenticationException("Not authorized")
     group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id == id).first()
     if group is None:
         raise NotFoundException("Hacker group not found")
+    members_ids = [h.id for h in group.members]
+    if data.is_admin or (data.type == UserType.HACKER.value and data.user_id in members_ids) or data.type == UserType.LLEIDAHACKER.value:
+        hackergroup_show_private(group)
     return group
 
 
@@ -125,12 +133,17 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
-    if hacker_group.members is None:
-        hacker_group.members = []
+    # if hacker_group.members is None:
+    #     hacker_group.members = []
     event = db.query(ModelEvent).filter(
         ModelEvent.id == hacker_group.event_id).first()
     if hacker not in event.registered_hackers:
         raise InvalidDataException("Hacker not registered")
+    hacker_group_user = db.query(ModelHackerGroupUser).filter(
+        ModelHackerGroupUser.group_id == groupId).filter(
+            ModelHackerGroupUser.hacker_id == hackerId).first()
+    if hacker_group_user is not None:
+        raise InvalidDataException("Hacker already in group")
     if len(hacker_group.members) >= event.max_group_size:
         raise InvalidDataException("Group is full")
     if hacker in hacker_group.members:
@@ -161,6 +174,11 @@ async def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
         ModelEvent.id == hacker_group.event_id).first()
     if hacker not in event.registered_hackers:
         raise InvalidDataException("Hacker not registered")
+    hacker_group_user = db.query(ModelHackerGroupUser).filter(
+        ModelHackerGroupUser.group_id == hacker_group.id).filter(
+            ModelHackerGroupUser.hacker_id == hackerId).first()
+    if hacker_group_user is not None:
+        raise InvalidDataException("Hacker already in group")
     if len(hacker_group.members) >= event.max_group_size:
         raise InvalidDataException("Group is full")
     if hacker in hacker_group.members:
@@ -181,14 +199,18 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
         ModelHackerGroup.id == groupId).first()
     if hacker_group is None:
         raise NotFoundException("Hacker group not found")
-    if hacker_group.leader_id == hackerId:
-        raise InvalidDataException("Cannot remove leader from group")
-    if not (data.type == UserType.HACKER.value and
-            (data.user_id == hacker_group.leader_id
-             or data.user_id == hackerId)):
-        raise AuthenticationException("Not authorized")
+    if not data.is_admin:
+        if not (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value
+                and data.user_id == hacker_group.leader_id and data.user_id != hackerId)):
+            raise InvalidDataException("Cannot remove leader from group")
     hacker = [h for h in hacker_group.members if h.id == hackerId]
     hacker_group.members.remove(hacker[0])
+    if len(hacker_group.members) == 0:
+        db.query(ModelHackerGroupUser).filter(
+            ModelHackerGroupUser.group_id == groupId).delete()
+        db.delete(hacker_group)
+    elif hacker_group.leader_id == hackerId:
+        hacker_group.leader_id = hacker_group.members[0].id
     db.commit()
     db.refresh(hacker_group)
     return hacker_group
