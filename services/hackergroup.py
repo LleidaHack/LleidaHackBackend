@@ -18,6 +18,7 @@ from error.InvalidDataException import InvalidDataException
 
 from utils.hide_utils import hackergroup_show_private
 
+
 async def get_all(db: Session):
     return db.query(ModelHackerGroup).all()
 
@@ -40,7 +41,9 @@ async def get_hacker_group(id: int, db: Session, data: TokenData):
     if group is None:
         raise NotFoundException("Hacker group not found")
     members_ids = [h.id for h in group.members]
-    if data.is_admin or (data.type == UserType.HACKER.value and data.user_id in members_ids) or data.type == UserType.LLEIDAHACKER.value:
+    if data.is_admin or (data.type == UserType.HACKER.value
+                         and data.user_id in members_ids
+                         ) or data.type == UserType.LLEIDAHACKER.value:
         hackergroup_show_private(group)
     return group
 
@@ -200,8 +203,9 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
     if hacker_group is None:
         raise NotFoundException("Hacker group not found")
     if not data.is_admin:
-        if not (data.type == UserType.LLEIDAHACKER.value or (data.type == UserType.HACKER.value
-                and data.user_id == hacker_group.leader_id and data.user_id != hackerId)):
+        if not (data.type == UserType.LLEIDAHACKER.value or
+                (data.type == UserType.HACKER.value and data.user_id
+                 == hacker_group.leader_id and data.user_id != hackerId)):
             raise InvalidDataException("Cannot remove leader from group")
     hacker = [h for h in hacker_group.members if h.id == hackerId]
     hacker_group.members.remove(hacker[0])
