@@ -68,13 +68,11 @@ def verify_token(token: str, db: Session):
 def authenticate_user(username: str, password: str, db: Session):
     user_dict = db.query(ModelUser).filter(ModelUser.email == username).first()
     if not user_dict:
-        raise AuthenticationException( 
-             "User doesn't exist")
+        return False
     if not user_dict.is_verified:
-        raise AuthenticationException( 
-             "User not verified")
-    if not verify_password(password, user_dict.password):
-        raise AuthenticationException("Mail or password incorrect")
+        return False
+    if not verify_password(password,user_dict.password):
+        return False
     return user_dict
 
 
