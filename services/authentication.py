@@ -14,8 +14,26 @@ from security import create_all_tokens, get_data_from_token
 
 from error.InputException import InputException
 from error.InvalidDataException import InvalidDataException
+from error.AuthenticationException import AuthenticationException
 
 from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
+
+
+async def login(mail, password, db: Session = Depends(get_db)):
+    user = db.query(ModelUser).filter(ModelUser.email == mail).first()
+    if user is None:
+        raise InvalidDataException("User not found")
+    if not user.check_password(password):
+        raise AuthenticationException("Incorrect password")
+    if not user.is_verified:
+        raise InvalidDataException("User not verified")
+    access_token, refresh_token = create_all_tokens(user, db)
+    return {
+        "user_id": user.id,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "Bearer"
+    }
 
 
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
@@ -66,10 +84,10 @@ async def get_me(data: TokenData, db: Session = Depends(get_db)):
         return db.query(ModelHacker).filter(
             ModelHacker.id == data.user_id).first()
     elif data.type == UserType.LLEIDAHACKER.value:
-        return await db.query(ModelLleidaHacker).filter(
+        return db.query(ModelLleidaHacker).filter(
             ModelLleidaHacker.id == data.user_id).first()
     elif data.type == UserType.COMPANYUSER.value:
-        return await db.query(ModelCompanyUser).filter(
+        return db.query(ModelCompanyUser).filter(
             ModelCompanyUser.id == data.user_id).first()
     else:
         raise InputException("Invalid token")
@@ -105,9 +123,6 @@ async def resend_verification(email: str, db: Session = Depends(get_db)):
     return {"success": True}
 
 
-async def contact(email: str,
-                  title: str,
-                  message: str,
-                  db: Session = Depends(get_db)):
-    await send_contact_email(email, title, message)
+async def contact(name: str, email: str, title: str, message: str):
+    await send_contact_email(name, email, title, message)
     return {"success": True}
