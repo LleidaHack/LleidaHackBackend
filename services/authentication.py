@@ -14,9 +14,25 @@ from security import create_all_tokens, get_data_from_token
 
 from error.InputException import InputException
 from error.InvalidDataException import InvalidDataException
+from error.AuthenticationException import AuthenticationException
 
-from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
+async def login(mail, password, db: Session = Depends(get_db)):
+    user = db.query(ModelUser).filter(ModelUser.email == mail).first()
+    if user is None:
+        raise InvalidDataException("User not found")
+    if not user.check_password(password):
+        raise AuthenticationException("Incorrect password")
+    if not user.is_verified:
+        raise InvalidDataException("User not verified")
+    access_token, refresh_token = create_all_tokens(user, db)
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user_id": user.id,
+        "token_type": "Bearer"
+    }
 
+    
 
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
