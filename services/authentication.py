@@ -18,6 +18,7 @@ from error.AuthenticationException import AuthenticationException
 
 from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
 
+
 async def login(mail, password, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == mail).first()
     if user is None:
