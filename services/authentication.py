@@ -16,6 +16,7 @@ from error.InputException import InputException
 from error.InvalidDataException import InvalidDataException
 from error.AuthenticationException import AuthenticationException
 
+
 async def login(mail, password, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == mail).first()
     if user is None:
@@ -32,7 +33,6 @@ async def login(mail, password, db: Session = Depends(get_db)):
         "token_type": "Bearer"
     }
 
-    
 
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
