@@ -203,14 +203,17 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
         raise NotFoundException("Hacker group not found")
     if not data.is_admin:
         if not (data.type == UserType.LLEIDAHACKER.value or
-                (data.type == UserType.HACKER.value and data.user_id
-                 == hacker_group.leader_id and data.user_id != hackerId)):
-            raise InvalidDataException("Cannot remove leader from group")
+                (data.type == UserType.HACKER.value and
+                 (data.user_id == hackerId
+                  and data.user_id != hacker_group.leader_id) or
+                 (data.user_id == hacker_group.leader_id))):
+            raise InvalidDataException(
+                "Cannot remove user from group other than you")
     hacker = [h for h in hacker_group.members if h.id == hackerId]
     hacker_group.members.remove(hacker[0])
     if len(hacker_group.members) == 0:
-        db.query(ModelHackerGroupUser).filter(
-            ModelHackerGroupUser.group_id == groupId).delete()
+        # db.query(ModelHackerGroupUser).filter(
+        # ModelHackerGroupUser.group_id == groupId).delete()
         db.delete(hacker_group)
     elif hacker_group.leader_id == hackerId:
         hacker_group.leader_id = hacker_group.members[0].id

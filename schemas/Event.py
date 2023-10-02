@@ -22,18 +22,6 @@ class Event(BaseModel):
 
     # start_time: Time = Column(Time, default=func.now())
 
-    @validator('start_date')
-    def start_date_validation(cls, v):
-        if v > date.today():
-            raise ValueError('must be a valid date')
-        return v
-
-    @validator('end_date')
-    def end_date_validation(cls, v):
-        if v < date.today():
-            raise ValueError('must be a valid date')
-        return v
-
     @validator('max_participants')
     def max_participants_validation(cls, v):
         if v < 0:
