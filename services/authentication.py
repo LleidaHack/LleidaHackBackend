@@ -34,7 +34,6 @@ async def login(mail, password, db: Session = Depends(get_db)):
         "token_type": "Bearer"
     }
 
-    
 
 async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
