@@ -5,7 +5,7 @@ from fastapi import Depends
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.orm import Session
 
-from security import authenticate_user, get_data_from_token, sec, create_all_tokens
+from security import get_data_from_token, sec, create_all_tokens
 from database import get_db
 from error.AuthenticationException import AuthenticationException
 from services import authentication as auth_service
