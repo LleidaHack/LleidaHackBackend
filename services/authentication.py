@@ -10,7 +10,7 @@ from models.Hacker import Hacker as ModelHacker
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
 from models.Company import CompanyUser as ModelCompanyUser
 
-from security import create_all_tokens, get_data_from_token
+from security import create_all_tokens, get_data_from_token, verify_password
 
 from error.InputException import InputException
 from error.InvalidDataException import InvalidDataException
@@ -19,11 +19,11 @@ from error.AuthenticationException import AuthenticationException
 from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
 
 
-async def login(mail, password, db: Session = Depends(get_db)):
+async def login(mail: str, password: str, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == mail).first()
     if user is None:
         raise InvalidDataException("User not found")
-    if not user.check_password(password):
+    if not verify_password(password, user.password):
         raise AuthenticationException("Incorrect password")
     if not user.is_verified:
         raise InvalidDataException("User not verified")
