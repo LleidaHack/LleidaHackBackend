@@ -65,17 +65,6 @@ def verify_token(token: str, db: Session):
     return True
 
 
-def authenticate_user(username: str, password: str, db: Session):
-    user_dict = db.query(ModelUser).filter(ModelUser.email == username).first()
-    if not user_dict:
-        return False
-    if not user_dict.is_verified:
-        return False
-    if not verify_password(password, user_dict.password):
-        return False
-    return user_dict
-
-
 def update_tokens(user_id: int,
                   db: Session,
                   access_token: str = None,
@@ -152,6 +141,15 @@ def create_reset_password_token(user: ModelUser, db: Session):
     update_tokens(user.id, db, reset_pass_token=encoded_jwt)
 
 
+def generate_assistance_token(user_id: int, event_id: int, db: Session):
+    to_encode = {'user_id': user_id, 'event_id': event_id}
+    #expire in 5 days
+    expire = datetime.utcnow() + timedelta(days=5)
+    to_encode.update({"expt": expire.isoformat()})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
 def get_data_from_token(token: str = Depends(oauth2_scheme),
                         refresh: bool = False,
                         special: bool = False):
@@ -171,6 +169,10 @@ def get_data_from_token(token: str = Depends(oauth2_scheme),
         d.email = data.get("email")
     else:
         d.expt = data.get("expt")
+        try:
+            d.event_id = data.get("event_id")
+        except:
+            pass
     if not refresh and not special:
         d.is_verified = data.get("is_verified")
         if d.type == UserType.HACKER.value:

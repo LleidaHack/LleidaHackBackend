@@ -5,7 +5,7 @@ from fastapi import Depends
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.orm import Session
 
-from security import authenticate_user, get_data_from_token, sec, create_all_tokens
+from security import get_data_from_token, sec, create_all_tokens
 from database import get_db
 from error.AuthenticationException import AuthenticationException
 from services import authentication as auth_service
@@ -30,17 +30,7 @@ async def login(credentials: HTTPBasicCredentials = Depends(sec),
                 db: Session = Depends(get_db)):
     username = credentials.username
     password = credentials.password
-    user = authenticate_user(username, password, db)
-    if not user:
-        raise AuthenticationException(
-            "Incorrect username or password, or user not verified")
-    access_token, refresh_token = create_all_tokens(user, db)
-    return {
-        "user_id": user.id,
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
+    return await auth_service.login(username, password, db)
 
 
 @router.post("/reset-password")
@@ -81,9 +71,5 @@ async def check_token(token: str = Depends(JWTBearer())):
 
 
 @router.get("/contact")
-async def contact(name: str,
-                  title: str,
-                  email: str,
-                  message: str,
-                  db: Session = Depends(get_db)):
-    return await auth_service.contact(name, title, email, message, db)
+async def contact(name: str, title: str, email: str, message: str):
+    return await auth_service.contact(name, title, email, message)

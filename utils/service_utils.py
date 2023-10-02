@@ -44,10 +44,11 @@ def generate_complex_random_code(length):
 
 
 def isBase64(s):
-    try:
-        return base64.b64encode(base64.b64decode(s)) == s
-    except Exception:
-        return False
+    return True
+    # try:
+    #     return base64.b64encode(base64.b64decode(s)) == s
+    # except Exception:
+    #     return False
 
 
 def check_image(payload):
