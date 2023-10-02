@@ -210,8 +210,8 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
     hacker = [h for h in hacker_group.members if h.id == hackerId]
     hacker_group.members.remove(hacker[0])
     if len(hacker_group.members) == 0:
-        db.query(ModelHackerGroupUser).filter(
-            ModelHackerGroupUser.group_id == groupId).delete()
+        # db.query(ModelHackerGroupUser).filter(
+            # ModelHackerGroupUser.group_id == groupId).delete()
         db.delete(hacker_group)
     elif hacker_group.leader_id == hackerId:
         hacker_group.leader_id = hacker_group.members[0].id
