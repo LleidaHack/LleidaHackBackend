@@ -13,6 +13,10 @@ router = APIRouter(
     tags=["User"],
 )
 
+@router.get("/count")
+async def count_users(db: Session = Depends(get_db),
+                      token: str = Depends(JWTBearer())):
+    return await user_service.count_users(db)
 
 @router.get("/all")
 async def get_users(db: Session = Depends(get_db),
