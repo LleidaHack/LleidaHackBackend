@@ -17,6 +17,8 @@ from utils.hide_utils import user_show_private
 async def get_all(db: Session):
     return db.query(ModelUser).all()
 
+async def count_users(db: Session):
+    return db.query(ModelUser).count()
 
 async def get_user(db: Session, userId: int, data: TokenData):
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
