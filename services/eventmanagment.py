@@ -316,6 +316,9 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 
 async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
                                      data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
     # Extract hacker IDs from registered_hackers
     pending_hackers = subtract_lists(event.registered_hackers,
                                      event.accepted_hackers)
