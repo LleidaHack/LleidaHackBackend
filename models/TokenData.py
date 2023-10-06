@@ -1,4 +1,5 @@
 class TokenData:
+    type: str = ''
     user_id: int = 0
     user_type: str = ''
     email: str = ''
