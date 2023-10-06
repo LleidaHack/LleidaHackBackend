@@ -15,7 +15,7 @@ class User(BaseModel):
     email: str
     telephone: str
     address: str
-    shirt_size: str
+    shirt_size: Optional[str]
     image: Optional[str]
     is_image_url: Optional[bool]
 
