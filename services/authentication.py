@@ -70,7 +70,7 @@ async def confirm_reset_password(token: str,
     user = db.query(ModelUser).filter(ModelUser.id == data["user_id"]).first()
     if user is None:
         raise InvalidDataException("User not found")
-    if not (token == user.reset_password_token):
+    if not (token == user.rest_password_token):
         raise InvalidDataException("Invalid token")
     user.password = get_password_hash(password)
     user.rest_password_token = None
