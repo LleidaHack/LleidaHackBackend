@@ -79,7 +79,7 @@ def update_tokens(user_id: int,
     if verification_token is not None:
         user.verification_token = verification_token
     if reset_pass_token is not None:
-        user.reset_password_token = reset_pass_token
+        user.rest_password_token = reset_pass_token
     db.commit()
     db.refresh(user)
 
