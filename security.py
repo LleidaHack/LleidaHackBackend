@@ -164,11 +164,11 @@ def get_data_from_token(token: str = Depends(oauth2_scheme),
         return d
     data = decode_token(token)
     d.user_id = data.get("user_id")
-    d.type = data.get("type")
+    d.expt = data.get("expt")
     if not special:
+        d.type = data.get("type")
         d.email = data.get("email")
     else:
-        d.expt = data.get("expt")
         try:
             d.event_id = data.get("event_id")
         except:
