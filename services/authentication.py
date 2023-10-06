@@ -10,7 +10,7 @@ from models.Hacker import Hacker as ModelHacker
 from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
 from models.Company import CompanyUser as ModelCompanyUser
 
-from security import create_all_tokens, get_data_from_token, verify_password
+from security import create_all_tokens, get_data_from_token, get_password_hash, verify_password
 
 from error.InputException import InputException
 from error.InvalidDataException import InvalidDataException
@@ -72,8 +72,8 @@ async def confirm_reset_password(token: str,
         raise InvalidDataException("User not found")
     if not (token == user.reset_password_token):
         raise InvalidDataException("Invalid token")
-    user.password = password
-    user.reset_password_token = None
+    user.password = get_password_hash(password)
+    user.rest_password_token = None
     db.commit()
     db.refresh(user)
     return {"success": True}
