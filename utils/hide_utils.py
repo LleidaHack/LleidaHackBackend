@@ -7,7 +7,7 @@ from models.Company import CompanyUser as ModelCompanyUser
 
 def user_show_private(user: ModelUser):
     # user.password
-    # user.token
+    user.rest_password_token
     # user.refresh_token
     user.email
     user.telephone
