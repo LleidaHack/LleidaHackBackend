@@ -165,8 +165,8 @@ def get_data_from_token(token: str = Depends(oauth2_scheme),
     data = decode_token(token)
     d.user_id = data.get("user_id")
     d.expt = data.get("expt")
+    d.type = data.get("type")
     if not special:
-        d.type = data.get("type")
         d.email = data.get("email")
     else:
         try:
