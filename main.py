@@ -75,7 +75,8 @@ app = FastAPI(title="LleidaHack API",
               redoc_url='/redoc',
               openapi_url='/openapi.json',
               openapi_tags=tags_metadata,
-              debug=True)
+              debug=True,
+              swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"})
 
 app.add_middleware(
     CORSMiddleware,

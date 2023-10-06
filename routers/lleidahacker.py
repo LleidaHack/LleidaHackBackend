@@ -3,6 +3,7 @@ from schemas.LleidaHacker import LleidaHackerUpdate as SchemaLleidaHackerUpdate
 
 from database import get_db
 from security import create_all_tokens, get_data_from_token
+from services.mail import send_registration_confirmation_email
 from utils.auth_bearer import JWTBearer
 
 from sqlalchemy.orm import Session
@@ -22,6 +23,7 @@ async def signup(payload: SchemaLleidaHacker,
                  db: Session = Depends(get_db)):
     new_lleidahacker = await lleidahacker_service.add_lleidahacker(payload, db)
     access_token, refresh_token = create_all_tokens(new_lleidahacker, db)
+    await send_registration_confirmation_email(new_lleidahacker)
     return {
         "success": True,
         "user_id": new_lleidahacker.id,
