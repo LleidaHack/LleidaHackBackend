@@ -19,6 +19,10 @@ class HackerPublic(UserPublic):
 class HackerUpdate(UserUpdate):
     github: Optional[str]
     linkedin: Optional[str]
+    studies: Optional[str]
+    study_center: Optional[str]
+    location: Optional[str]
+    how_did_you_meet_usp[str]
 
 
 class HackerGroup(BaseModel):
