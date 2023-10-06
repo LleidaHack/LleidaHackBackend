@@ -22,7 +22,7 @@ class HackerUpdate(UserUpdate):
     studies: Optional[str]
     study_center: Optional[str]
     location: Optional[str]
-    how_did_you_meet_usp[str]
+    how_did_you_meet_us: Optional[str]
 
 
 class HackerGroup(BaseModel):
