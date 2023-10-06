@@ -67,7 +67,7 @@ async def confirm_reset_password(token: str,
         raise InvalidDataException("Invalid token")
     if data.expt < datetime.utcnow().isoformat():
         raise InvalidDataException("Token expired")
-    user = db.query(ModelUser).filter(ModelUser.id == data["user_id"]).first()
+    user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
     if user is None:
         raise InvalidDataException("User not found")
     if not (token == user.rest_password_token):
