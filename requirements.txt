@@ -5,7 +5,7 @@ fastapi-sqlalchemy
 starlette==0.27.0
 pydantic==1.10.11
 alembic
-sqlalchemy
+sqlalchemy == 1.4.25
 sqlalchemy-utils
 gunicorn
 python-jose[cryptography]
@@ -16,4 +16,4 @@ aiofiles
 glob2
 fastapi==0.79.0
 fastapi-mail==1.1.4
-dateutil
+python-dateutil

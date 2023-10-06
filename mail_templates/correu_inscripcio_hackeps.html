@@ -1,0 +1,118 @@
+<html>
+<head>
+    <style>
+        
+        body {
+            font-family: monospace;
+            margin: 0;
+            padding: 0;
+            background-color: #f5dca2;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            background-color: #f0f0f0;
+        }
+
+        .header {
+            min-height: 250px;
+            text-align: center;
+            color: white;
+            background-image: url('$static_folder/fondo_groc.png');
+            background-size: cover;
+            background-position: center;
+            position: relative; 
+        }
+
+        .logo {
+            max-width: 400px; 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+        }
+
+        .content {
+            padding: 30px 50px;
+            text-align: justify;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #EDAB11; 
+            color: white;
+            text-decoration: none;
+            
+        }
+
+        .button:hover {
+            background-color: #7a5704; 
+        }
+
+        .button a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .button a:hover {
+            color: white;
+            text-decoration: none;
+        }
+    
+
+        .social-icons-container {
+            text-align: center; 
+            font-size: 12px;
+        }
+
+        .social-icon {
+            height: 30px; 
+            cursor: pointer; 
+            margin: 10px 5px;
+        }
+
+        
+        a {
+            color: #EDAB11; 
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #727272; 
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+        </div>
+        <div class="content">
+            <p>Benvingut/da <b>$name</b></p>
+            <p>La teva inscripció a la <b>HackEPS</b> ha estat realitzada correctament.</p>
+            <p>En els pròxims dies revisarem la teva inscripció i rebràs un correu per a confirmar la teva assistència.</p>
+            <p>De mentre, et recomanem donar un cop d'ull a la <b>FAQ</b> de la nostra web per resoldre les preguntes que puguin sorgir sobre l'esdeveniment.</p>
+            <div class="button">
+                <a href="$front_link/faq"><b>Web HackEPS 2023</b></a>
+            </div>
+            <p>Si tens dubtes ens pots contactar a través de <a href="mailto:$contact_mail">$contact_mail</a>.</p>
+            <p>Esperem veure't a la HackEPS 2023!</p>
+            <p><b>Equip de LleidaHack</b></p>
+            <br><br><br>
+            <div class="social-icons-container">
+                <p>Si has rebut aquest correu és perquè t'has inscrit a la HackEPS 2023.</p>
+                <p>Si creus que és un error, si us plau envia'ns un correu a <a href="mailto:$contact_mail">$contact_mail</a></p>
+                <a href="https://twitter.com/hackeps"><img class="social-icon" src="$static_folder/x_gris.png" alt="x"><a>
+                <a href="https://www.linkedin.com/company/hackeps/"><img class="social-icon" src="$static_folder/linkedin_gris.png" alt="Linkedin"><a>
+                <a href="https://www.instagram.com/hackeps_/"><img class="social-icon" src="$static_folder/instagram_gris.png" alt="Instagram"><a>
+                <a href="https://www.youtube.com/@LleidaHack"><img class="social-icon" src="$static_folder/youtube_gris.png" alt="Youtube"><a>
+                <a href="https://www.twitch.tv/lleidahack"><img class="social-icon" src="$static_folder/twitch_gris.png" alt="Twitch"><a>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

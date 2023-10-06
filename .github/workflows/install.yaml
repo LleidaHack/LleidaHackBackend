@@ -1,0 +1,53 @@
+name: install enviroment
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
+        id: extract_branch
+      - uses: actions/checkout@v3
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%H:%M_%d-%m-%Y')"
+      - name: Clone rpository
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            mkdir ${{ secrets.PROJECT_PATH }}/${{ steps.extract_branch.outputs.branch }}
+            cd ${{ secrets.PROJECT_PATH }}
+            git clone https://github.com/${GITHUB_REPOSITORY} ${{ steps.extract_branch.outputs.branch }}
+            cd ${{ steps.extract_branch.outputs.branch }}
+            git fetch
+            git checkout ${{ steps.extract_branch.outputs.branch }}
+            git pull
+            if [ ! -f install/install.sh ]; then
+              ./install.sh
+            fi
+      - name: start server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            cd /etc/systemd/system
+            echo >> 
+      - name: check server status
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            systemctl status Backend.${{ steps.extract_branch.outputs.branch }}.service

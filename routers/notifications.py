@@ -1,5 +1,5 @@
 from database import get_db
-from security import oauth_schema
+from utils.auth_bearer import JWTBearer
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
@@ -13,11 +13,20 @@ router = APIRouter(
     tags=["Notification"],
 )
 
+
 @router.get("/{userId}")
-async def get_notifications(userId: int, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
+async def get_notifications(userId: int,
+                            response: Response,
+                            db: Session = Depends(get_db),
+                            str=Depends(JWTBearer())):
     return notifications_service.get_notifications(userId, db)
 
+
 @router.post("/")
-async def add_notification(payload:SchemaNotification, response: Response, db: Session = Depends(get_db), str = Depends(oauth_schema)):
-    new_notification = await notifications_service.add_notification(payload, db)
-    return {"success": True, "created_id": new_notification.id}
+async def add_notification(payload: SchemaNotification,
+                           response: Response,
+                           db: Session = Depends(get_db),
+                           str=Depends(JWTBearer())):
+    new_notification = await notifications_service.add_notification(
+        payload, db)
+    return {"success": True, "user_id": new_notification.id}
