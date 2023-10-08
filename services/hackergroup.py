@@ -238,7 +238,9 @@ async def set_hacker_group_leader(groupId: int, hackerId: int, db: Session,
         raise InvalidDataException("Cannot set leader to current leader")
     group_members_ids = [member.id for member in hacker_group.members]
     if not data.is_admin:
-        if not (data.type == UserType.LLEIDAHCKER or (data.type == UserType.HACKER.value and data.user_id in group_members_ids)):
+        if not (data.type == UserType.LLEIDAHCKER or
+                (data.type == UserType.HACKER.value
+                 and data.user_id in group_members_ids)):
             raise AuthenticationException("hacker not in group")
     hacker_group.leader_id = hacker.id
     db.commit()
