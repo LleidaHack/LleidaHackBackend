@@ -192,6 +192,7 @@ async def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
 
 async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
                                    data: TokenData):
+    deleted = False
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
@@ -211,13 +212,13 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
     hacker = [h for h in hacker_group.members if h.id == hackerId]
     hacker_group.members.remove(hacker[0])
     if len(hacker_group.members) == 0:
-        # db.query(ModelHackerGroupUser).filter(
-        # ModelHackerGroupUser.group_id == groupId).delete()
         db.delete(hacker_group)
+        deleted = True
     elif hacker_group.leader_id == hackerId:
         hacker_group.leader_id = hacker_group.members[0].id
     db.commit()
-    db.refresh(hacker_group)
+    if not deleted:
+        db.refresh(hacker_group)
     return hacker_group
 
 
@@ -238,7 +239,7 @@ async def set_hacker_group_leader(groupId: int, hackerId: int, db: Session,
         raise InvalidDataException("Cannot set leader to current leader")
     group_members_ids = [member.id for member in hacker_group.members]
     if not data.is_admin:
-        if not (data.type == UserType.LLEIDAHCKER or
+        if not (data.type == UserType.LLEIDAHACKER or
                 (data.type == UserType.HACKER.value
                  and data.user_id in group_members_ids)):
             raise AuthenticationException("hacker not in group")
