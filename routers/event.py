@@ -19,8 +19,7 @@ router = APIRouter(
 
 
 @router.get("/get_hackeps")
-async def get_hackeps(db: Session = Depends(get_db),
-                      token: str = Depends(JWTBearer())):
+async def get_hackeps(db: Session = Depends(get_db)):
     #get the current year
     year = datetime.now().year
     return await event_service.get_hackeps(int(year), db)
