@@ -106,3 +106,14 @@ async def remove_hacker_from_group(groupId: int,
     hacker_group = await hackergroup_service.remove_hacker_from_group(
         groupId, hackerId, db, get_data_from_token(str))
     return {"success": True, "removed_id": hacker_group.id}
+
+@router.put("/{groupId}/leader/{hackerId}")
+async def set_hacker_group_leader(groupId: int,
+                                  hackerId: int,
+                                  db: Session = Depends(get_db),
+                                  str=Depends(JWTBearer())):
+    hacker_group = await hackergroup_service.set_hacker_group_leader(
+        groupId, hackerId, db, get_data_from_token(str))
+    return {"success": True, "new_leader_id": hacker_group.leader_id}
+
+
