@@ -301,5 +301,5 @@ async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
     hackers = []
     for h in event.accepted_hackers:
         hacker_show_private(h)
-        hackers.add(h)
+        hackers.append(h)
     return hackers
