@@ -290,6 +290,7 @@ async def remove_hacker_group(id: int, hacker_group_id: int, db: Session,
     db.refresh(event)
     return event
 
+
 async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -302,5 +303,3 @@ async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
         hacker_show_private(h)
         hackers.add(h)
     return hackers
-
-
