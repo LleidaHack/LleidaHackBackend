@@ -298,7 +298,7 @@ async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == event_id).first()
     if event is None:
         raise Exception("Event not found")
-    hackers =[]
+    hackers = []
     for h in event.accepted_hackers:
         hacker_show_private(h)
         hackers.add(h)
