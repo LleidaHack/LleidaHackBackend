@@ -185,7 +185,7 @@ async def get_hacker_group(eventId: int,
 async def get_accepted_hackers(eventId: int,
                                db: Session = Depends(get_db),
                                token: str = Depends(JWTBearer())):
-    return await event_service.get_approved_hackers(eventId, db,
+    return await event_service.get_accepted_hackers(eventId, db,
                                                     get_data_from_token(token))
 
 

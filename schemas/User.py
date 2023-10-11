@@ -18,6 +18,7 @@ class User(BaseModel):
     shirt_size: Optional[str]
     image: Optional[str]
     is_image_url: Optional[bool]
+    recive_mails: bool
 
     @validator('email')
     def email_validation(cls, v):
@@ -58,15 +59,6 @@ class User(BaseModel):
         orm_mode = True
 
 
-class UserPublic(BaseModel):
-    id: int
-    name: str
-    nickname: str
-    birthdate: date
-    image: Optional[str]
-    is_image_url: Optional[bool]
-
-
 class UserUpdate(BaseModel):
     name: Optional[str]
     nickname: Optional[str]
@@ -79,3 +71,4 @@ class UserUpdate(BaseModel):
     shirt_size: Optional[str]
     image: Optional[str]
     is_image_url: Optional[bool]
+    recive_mails: Optional[bool]
