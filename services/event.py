@@ -15,6 +15,7 @@ from models.TokenData import TokenData
 from models.UserType import UserType
 
 from utils.service_utils import set_existing_data, check_image
+from utils.hide_utils import hacker_show_private
 
 from error.AuthenticationException import AuthenticationException
 from error.ValidationException import ValidationException
@@ -296,7 +297,10 @@ async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == event_id).first()
     if event is None:
         raise Exception("Event not found")
-    accepted_hackers = [hacker for hacker in event.hackers if hacker.accepted]
-    return accepted_hackers
+    hackers =[]
+    for h in event.accepted_hackers:
+        hacker_show_private(h)
+        hackers.add(h)
+    return hackers
 
 
