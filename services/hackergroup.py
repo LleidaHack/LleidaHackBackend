@@ -177,7 +177,7 @@ async def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
     if hacker not in event.registered_hackers:
         raise InvalidDataException("Hacker not registered")
     hacker_group_user = db.query(ModelHackerGroupUser).filter(
-            ModelHackerGroupUser.hacker_id == hackerId).first()
+        ModelHackerGroupUser.hacker_id == hackerId).first()
     if hacker_group_user is not None:
         raise InvalidDataException("Hacker already in group")
     if len(hacker_group.members) >= event.max_group_size:
