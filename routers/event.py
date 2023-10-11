@@ -181,13 +181,13 @@ async def get_hacker_group(eventId: int,
     return await event_service.get_hacker_group(eventId, hackerId, db,
                                                 get_data_from_token(token))
 
+
 @router.get("/{eventId}/get_approved_hackers")
 async def get_accepted_hackers(eventId: int,
                                db: Session = Depends(get_db),
                                token: str = Depends(JWTBearer())):
     return await event_service.get_approved_hackers(eventId, db,
                                                     get_data_from_token(token))
-
 
 
 # @router.put("/{id}/group/{group_id}")
