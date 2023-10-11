@@ -288,3 +288,15 @@ async def remove_hacker_group(id: int, hacker_group_id: int, db: Session,
     db.refresh(hacker_group)
     db.refresh(event)
     return event
+
+async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise Exception("Not authorized")
+    event = db.query(ModelEvent).filter(ModelEvent.id == event_id).first()
+    if event is None:
+        raise Exception("Event not found")
+    accepted_hackers = [hacker for hacker in event.hackers if hacker.accepted]
+    return accepted_hackers
+
+
