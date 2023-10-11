@@ -31,6 +31,7 @@ class User(Base):
     code: Mapped[str] = deferred(
         Column(String, default="", unique=True, index=True))
     terms_accepted: bool = Column(Boolean, default=True)
+    recive_mails: bool = Column(Boolean, default=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "user",
