@@ -296,8 +296,7 @@ async def get_rejected_hackers(event_id: int,
 
 @router.get("/{event_id}/status")
 async def get_event_status(event_id: int,
-                           db: Session = Depends(get_db),
-                           token: str = Depends(JWTBearer())):
+                           db: Session = Depends(get_db)):
     """
     Get the status of an event
     """
