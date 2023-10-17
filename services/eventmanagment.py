@@ -398,6 +398,7 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
 async def get_event_status(event: ModelEvent, db: Session):
     data = {
         'registratedUsers': len(event.registered_hackers),
+        'groups': len(event.groups),
         'acceptedUsers': len(event.accepted_hackers),
         'rejectedUsers': len(event.rejected_hackers),
         'participatingUsers': len(event.participants),
