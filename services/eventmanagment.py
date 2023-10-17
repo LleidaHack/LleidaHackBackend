@@ -226,11 +226,18 @@ async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
         raise InvalidDataException("Hacker already participating")
     if not hacker in event.accepted_hackers:
         raise InvalidDataException("Hacker not accepted")
+    user_registration = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == data.user_id,
+        ModelHackerRegistration.event_id == data.event_id).first()
+    if user_registration is None:
+        raise InvalidDataException("User not registered")
+    if not user_registration.confirmed_assistance:
+        raise InvalidDataException("User not confirmed assitence")
     event.participants.append(hacker)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
-    return event
+    return user_registration
 
 
 async def unparticipate_hacker_from_event(event: ModelEvent,
@@ -398,7 +405,7 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
 async def get_event_status(event: ModelEvent, db: Session):
     data = {
         'registratedUsers': len(event.registered_hackers),
-        'groups': len(event.groups)
+        'groups': len(event.groups),
         'acceptedUsers': len(event.accepted_hackers),
         'rejectedUsers': len(event.rejected_hackers),
         'participatingUsers': len(event.participants),
