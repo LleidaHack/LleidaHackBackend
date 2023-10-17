@@ -143,14 +143,15 @@ async def participate_hacker_to_event(event_id: int,
     hacker = await hacker_service.get_hacker_by_code(hacker_code, db)
     if hacker is None:
         raise NotFoundException("Hacker not found")
-    await eventmanagment_service.participate_hacker_to_event(
+    reg = await eventmanagment_service.participate_hacker_to_event(
         event, hacker, db, get_data_from_token(token))
     return {
         'success': True,
         'event_id': event.id,
         'hacker_id': hacker.id,
         'hacker_name': hacker.name,
-        'hacker_shirt_size': hacker.shirt_size
+        'hacker_shirt_size': reg.shirt_size,
+        'food_restrictions': reg.food_restrictions,
     }
 
 
