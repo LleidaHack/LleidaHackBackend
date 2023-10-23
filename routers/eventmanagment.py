@@ -131,7 +131,7 @@ async def confirm_assistance(token: str, db: Session = Depends(get_db)):
 
 @router.put("/{event_id}/participate/{hacker_code}")
 async def participate_hacker_to_event(event_id: int,
-                                      hacker_code: int,
+                                      hacker_code: str,
                                       db: Session = Depends(get_db),
                                       token: str = Depends(JWTBearer())):
     """
