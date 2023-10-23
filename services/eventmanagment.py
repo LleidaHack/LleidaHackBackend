@@ -228,7 +228,7 @@ async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
         raise InvalidDataException("Hacker not accepted")
     user_registration = db.query(ModelHackerRegistration).filter(
         ModelHackerRegistration.user_id == hacker.user_id,
-        ModelHackerRegistration.event_id == data.event_id).first()
+        ModelHackerRegistration.event_id == event.event_id).first()
     if user_registration is None:
         raise InvalidDataException("User not registered")
     if not user_registration.confirmed_assistance:
