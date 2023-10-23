@@ -84,7 +84,7 @@ async def get_dailyhacks(event_id: int,
 
 @router.put("/{event_id}/register/{hacker_id}")
 async def register_hacker_to_event(event_id: int,
-                                   hacker_id: int,
+                                   hacker_id: str,
                                    registration: SchemaEventRegistration,
                                    db: Session = Depends(get_db),
                                    token: str = Depends(JWTBearer())):
