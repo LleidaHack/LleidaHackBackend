@@ -430,20 +430,3 @@ async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
     db.commit()
     db.refresh(event)
     return event
-
-
-async def get_food_restrictions(eventId: int, db: Session, data: TokenData):
-    if not data.is_admin:
-        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
-            raise AuthenticationException("Not authorized")
-    event = db.query(ModelEvent).filter(ModelEvent.id == eventId).first()
-    if event is None:
-        raise NotFoundException("Event not found")
-    users = event.participants + event.accepted_hackers + event.organizers
-    restrictions = []
-    for user in users:
-        if user.food_restrictions is not None or user.food_restrictions != "" or user.food_restrictions != " ":
-            restrictions += user.food_restrictions
-    #remove duplicates
-    restrictions = list(dict.fromkeys(restrictions))
-    return restrictions
