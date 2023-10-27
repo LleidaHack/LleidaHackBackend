@@ -407,6 +407,15 @@ async def get_event_status(event: ModelEvent, db: Session):
         data[meal.name] = len(meal.users)
     return data
 
+async def get_food_restrictions(event: ModelEvent, db: Session):
+    users = event.participants + event.accepted_hackers + event.registered_hackers
+    restrictions = []
+    for user in users:
+        if user.food_restrictions is not None and user.food_restrictions.strip() != "" and user.food_restrictions.strip() != 'no':
+            restrictions.append(user.food_restrictions)
+    # remove duplicates
+    restrictions = list(set(restrictions))
+    return restrictions
 
 async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
               db: Session, data: TokenData):
