@@ -84,7 +84,7 @@ async def get_dailyhacks(event_id: int,
 
 @router.put("/{event_id}/register/{hacker_id}")
 async def register_hacker_to_event(event_id: int,
-                                   hacker_id: int,
+                                   hacker_id: str,
                                    registration: SchemaEventRegistration,
                                    db: Session = Depends(get_db),
                                    token: str = Depends(JWTBearer())):
@@ -306,6 +306,12 @@ async def get_event_status(event_id: int,
         raise NotFoundException("Event not found")
     return await eventmanagment_service.get_event_status(event, db)
 
+@router.get("/{event_id}/food_restrictions")
+async def get_food_restrictions(event_id: int, db: Session = Depends(get_db)):
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return await eventmanagment_service.get_food_restrictions(event, db)
 
 @router.put("/{event_id}/eat/{meal_id}/{hacker_code}")
 async def eat(event_id: int,
