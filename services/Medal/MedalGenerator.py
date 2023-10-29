@@ -7,7 +7,7 @@ from models.Event import Event
     # for each user get its data and analyze if will recive medal
     # send medal
 
-# condition= $user.creation_dat < 1 
+# condition= Date( $user.creation_dat ) < Date().year 
     #Events={evntid:((name, winner?))}
 def meets(medal: Medal, user: User, events: List):
     fields=[f for f in medal.condition.split(' ') if f[0]=='$']
