@@ -297,6 +297,7 @@ async def get_rejected_hackers(event_id: int,
         'hackers': event.rejected_hackers
     }
 
+
 @router.get("/{event_id}/foodrestrictions")
 async def get_food_restrictions(event_id: int,
                                 db: Session = Depends(get_db),
@@ -304,18 +305,15 @@ async def get_food_restrictions(event_id: int,
     """
     Get the food restrictions of an event
     """
-    event = await eventmanagment_service.get_food_restrictions(event_id, db, token)
+    event = await eventmanagment_service.get_food_restrictions(
+        event_id, db, token)
     if event is None:
         raise NotFoundException("Event not found")
-    return {
-        'size': len(event),
-        'restrictions': event
-    }
+    return {'size': len(event), 'restrictions': event}
 
 
 @router.get("/{event_id}/status")
-async def get_event_status(event_id: int,
-                           db: Session = Depends(get_db)):
+async def get_event_status(event_id: int, db: Session = Depends(get_db)):
     """
     Get the status of an event
     """
@@ -324,12 +322,14 @@ async def get_event_status(event_id: int,
         raise NotFoundException("Event not found")
     return await eventmanagment_service.get_event_status(event, db)
 
+
 @router.get("/{event_id}/food_restrictions")
 async def get_food_restrictions(event_id: int, db: Session = Depends(get_db)):
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
     return await eventmanagment_service.get_food_restrictions(event, db)
+
 
 @router.put("/{event_id}/eat/{meal_id}/{hacker_code}")
 async def eat(event_id: int,
@@ -350,6 +350,7 @@ async def eat(event_id: int,
     return await eventmanagment_service.eat(event, meal, hacker, db,
                                             get_data_from_token(token))
 
+
 @router.post("/{event_id}/send_remember")
 async def send_remember(event_id: int,
                         db: Session = Depends(get_db),
@@ -364,10 +365,11 @@ async def send_remember(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    users=subtract_lists(all,event.registered_hackers)
+    users = subtract_lists(all, event.registered_hackers)
     for u in users:
         await mail_service.send_reminder_email(u)
     return True
+
 
 @router.post("/{event_id}/send_dailyhack")
 async def send_dailyhack(event_id: int,
