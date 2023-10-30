@@ -170,3 +170,11 @@ async def get_hacker_groups(hackerId: int, db: Session):
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return hacker.groups
+
+async def update_all_codes(data: TokenData, db: Session):
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    hackers = db.query(ModelHacker).all()
+    for hacker in hackers:
+        hacker.code = generate_user_code(db)  # Assuming generate_new_code() is a function that generates a new code
+    db.commit()
