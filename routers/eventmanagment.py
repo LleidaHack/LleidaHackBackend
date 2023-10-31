@@ -350,9 +350,11 @@ async def eat(event_id: int,
     return await eventmanagment_service.eat(event, meal, hacker, db,
                                             get_data_from_token(token))
 
+
 def test(lst):
     for i in lst:
         mail_service.send_reminder_email(i)
+
 
 @router.post("/{event_id}/send_remember")
 async def send_remember(event_id: int,
@@ -371,8 +373,8 @@ async def send_remember(event_id: int,
         raise NotFoundException("Event not found")
     users = subtract_lists(all, event.registered_hackers)
     # for u in users:
-        # await mail_service.send_reminder_email(u)
-        # background_tasks.add_task(mail_service.send_reminder_email, u)
+    # await mail_service.send_reminder_email(u)
+    # background_tasks.add_task(mail_service.send_reminder_email, u)
     background_tasks.add_task(test, users)
     return len(users)
 
