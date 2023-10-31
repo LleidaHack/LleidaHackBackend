@@ -371,7 +371,7 @@ async def send_remember(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    users = subtract_lists(all, event.registered_hackers)[users:100]
+    users = subtract_lists(all, event.registered_hackers)[:100]
     # for u in users:
     # await mail_service.send_reminder_email(u)
     # background_tasks.add_task(mail_service.send_reminder_email, u)
