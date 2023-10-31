@@ -23,7 +23,7 @@ class EmailSchema(BaseModel):
 
 FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')
 BACK_LINK = Configuration.get('OTHERS', 'BACK_URL')
-CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
+CONTACT_MAIL = Configuration.get('OTHERS', 'CONTACT_MAIL')
 STATIC_FOLDER = Configuration.get('OTHERS',
                                   'BACK_URL') + '/' + Configuration.get(
                                       'OTHERS', 'STATIC_FOLDER') + '/images'
@@ -160,6 +160,21 @@ async def send_dailyhack_added_email(user: ModelUser):
 #                         front_link=FRONT_LINK,
 #                         contact_mail=CONTACT_MAIL,
 #                         static_folder=STATIC_FOLDER)
+
+
+def generate_reminder_template(user: ModelUser):
+    t = Template(
+        open('mail_templates/correu_recordatory.html', 'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        email=user.email,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+
+async def send_reminder_email(user: ModelUser):
+    send_email(user.email, generate_reminder_template(user), 'Reminder')
 
 
 def generate_contact_template(name: str, title: str, email: str, message: str):
