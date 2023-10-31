@@ -1,4 +1,4 @@
-from fastapi import Depends, Response, APIRouter
+from fastapi import BackgroundTasks, Depends, Response, APIRouter
 from sqlalchemy.orm import Session
 from config import Configuration
 from database import get_db
@@ -353,6 +353,7 @@ async def eat(event_id: int,
 
 @router.post("/{event_id}/send_remember")
 async def send_remember(event_id: int,
+                        background_tasks: BackgroundTasks,
                         db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
     """
@@ -367,12 +368,14 @@ async def send_remember(event_id: int,
         raise NotFoundException("Event not found")
     users = subtract_lists(all, event.registered_hackers)
     for u in users:
-        await mail_service.send_reminder_email(u)
+        # await mail_service.send_reminder_email(u)
+        background_tasks.add_task(mail_service.send_reminder_email, u)
     return len(users)
 
 
 @router.post("/{event_id}/send_dailyhack")
 async def send_dailyhack(event_id: int,
+                         background_tasks: BackgroundTasks,
                          db: Session = Depends(get_db),
                          token: str = Depends(JWTBearer())):
     """
@@ -385,5 +388,6 @@ async def send_dailyhack(event_id: int,
     if event is None:
         raise NotFoundException("Event not found")
     for u in event.registered_hackers:
-        await mail_service.send_dailyhack_email(u)
+        background_tasks.add_task(mail_service.send_dailyhack_email, u)
+        # await mail_service.send_dailyhack_email(u)
     return len(event.registered_hackers)
