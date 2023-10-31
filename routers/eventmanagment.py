@@ -361,14 +361,14 @@ async def send_remember(event_id: int,
     data = get_data_from_token(token)
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
-    all = await hacker_service.get_all()
+    all = await hacker_service.get_all(db)
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
     users = subtract_lists(all, event.registered_hackers)
     for u in users:
         await mail_service.send_reminder_email(u)
-    return True
+    return len(users)
 
 
 @router.post("/{event_id}/send_dailyhack")
@@ -386,4 +386,4 @@ async def send_dailyhack(event_id: int,
         raise NotFoundException("Event not found")
     for u in event.registered_hackers:
         await mail_service.send_dailyhack_email(u)
-    return True
+    return len(event.registered_hackers)
