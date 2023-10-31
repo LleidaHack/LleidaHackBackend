@@ -161,10 +161,10 @@ async def send_dailyhack_added_email(user: ModelUser):
 #                         contact_mail=CONTACT_MAIL,
 #                         static_folder=STATIC_FOLDER)
 
+
 def generate_reminder_template(user: ModelUser):
     t = Template(
-        open('mail_templates/correu_recordatory.html',
-             'r',
+        open('mail_templates/correu_recordatory.html', 'r',
              encoding='utf-8').read())
     return t.substitute(name=user.name,
                         email=user.email,
@@ -174,8 +174,7 @@ def generate_reminder_template(user: ModelUser):
 
 
 async def send_reminder_email(user: ModelUser):
-    send_email(user.email, generate_reminder_template(user),
-               'Reminder')
+    send_email(user.email, generate_reminder_template(user), 'Reminder')
 
 
 def generate_contact_template(name: str, title: str, email: str, message: str):
