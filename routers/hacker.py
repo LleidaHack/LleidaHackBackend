@@ -121,3 +121,10 @@ async def get_hacker_groups(userId: int,
                             db: Session = Depends(get_db),
                             token: str = Depends(JWTBearer())):
     return await hacker_service.get_hacker_groups(userId, db)
+
+
+@router.post("/update_all_codes")
+async def update_all_codes(db: Session = Depends(get_db),
+                           token: str = Depends(JWTBearer())):
+    return await hacker_service.update_all_codes(get_data_from_token(token),
+                                                 db)
