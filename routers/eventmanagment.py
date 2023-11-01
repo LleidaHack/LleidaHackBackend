@@ -351,6 +351,7 @@ async def eat(event_id: int,
     return await eventmanagment_service.eat(event, meal, hacker, db,
                                             get_data_from_token(token))
 
+
 # def test(lst, background_tasks: BackgroundTasks):
 #     for u in lst:
 #         background_tasks.add_task(mail_service.send_reminder_email, u)
