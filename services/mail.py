@@ -154,7 +154,7 @@ async def send_dailyhack_added_email(user: ModelUser):
 
 def generate_dailyhack_obert_template(user: ModelUser):
     t = Template(
-        open('mail_templates/correu_dailyhack_publicatt.html',
+        open('mail_templates/correu_dailyhack_publicat.html',
              'r',
              encoding='utf-8').read())
     return t.substitute(name=user.name,
