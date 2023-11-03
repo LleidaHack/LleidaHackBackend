@@ -52,7 +52,7 @@ async def get_last(db: Session, data: TokenData):
         raise AuthenticationException("Not authorized")
     last_unsent_mail = db.query(ModelMailQueue).filter(
         ModelMailQueue.sent == False).order_by(
-            ModelMailQueue.id.desc()).first()
+            ModelMailQueue.id.asc()).first()
     return last_unsent_mail
 
 
