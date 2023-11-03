@@ -75,7 +75,7 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     hacker_groups_ids = [group.group_id for group in hacker_groups_ids]
     hacker_groups = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id.in_(hacker_groups_ids)).all()
-    
+
     event_regs = db.query(ModelHackerRegistration).filter(
         ModelHackerRegistration.user_id == hackerId).all()
     for event_reg in event_regs:
@@ -93,7 +93,7 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
         # hacker_group_user = db.query(ModelHackerGroupUser).filter(
         #     ModelHackerGroupUser.hacker_id == hackerId
         #     and ModelHackerGroupUser.group_id == group.id).first()
-        if len(group.members) == 1:
+        if len(group.members) <= 1:
             db.delete(group)
         else:
             if group.leader_id == hackerId:

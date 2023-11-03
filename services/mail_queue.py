@@ -17,6 +17,8 @@ CONTACT_MAIL = Configuration.get('OTHERS', 'CONTACT_MAIL')
 STATIC_FOLDER = Configuration.get('OTHERS',
                                   'BACK_URL') + '/' + Configuration.get(
                                       'OTHERS', 'STATIC_FOLDER') + '/images'
+
+
 def send_email(email: str,
                template: str,
                subject: str,
@@ -39,15 +41,20 @@ def send_email(email: str,
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 def set_sent(mail, db: Session):
-    mail.sent=True
+    mail.sent = True
     db.commit(mail)
+
 
 async def get_last(db: Session, data: TokenData):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
-    last_unsent_mail = db.query(ModelMailQueue).filter(ModelMailQueue.sent == False).order_by(ModelMailQueue.id.desc()).first()
+    last_unsent_mail = db.query(ModelMailQueue).filter(
+        ModelMailQueue.sent == False).order_by(
+            ModelMailQueue.id.desc()).first()
     return last_unsent_mail
+
 
 async def get_by_id(db: Session, id: int, data: TokenData):
     if not data.is_admin:
@@ -55,8 +62,10 @@ async def get_by_id(db: Session, id: int, data: TokenData):
     mail = db.query(ModelMailQueue).filter(ModelMailQueue.id == id).first()
     return mail
 
+
 async def count_unsent(db: Session, data: TokenData):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
-    unsent_count = db.query(ModelMailQueue).filter(ModelMailQueue.sent == False).count()
+    unsent_count = db.query(ModelMailQueue).filter(
+        ModelMailQueue.sent == False).count()
     return unsent_count

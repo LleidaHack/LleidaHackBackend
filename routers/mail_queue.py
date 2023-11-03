@@ -14,6 +14,7 @@ router = APIRouter(
     tags=["MailQueue"],
 )
 
+
 @router.post("/send_mail")
 async def send_mail(db: Session = Depends(get_db),
                     token: str = Depends(JWTBearer())):
@@ -29,10 +30,11 @@ async def send_mail(db: Session = Depends(get_db),
     mail_queue_service.set_sent(mail, db)
     return mail_queue_service.count_unsent(db, data)
 
+
 @router.post("/send_mail_by_id")
-async def send_mail_by_id(id: int, 
-                    db: Session = Depends(get_db),
-                    token: str = Depends(JWTBearer())):
+async def send_mail_by_id(id: int,
+                          db: Session = Depends(get_db),
+                          token: str = Depends(JWTBearer())):
     """
     Send a mail to all users
     """
