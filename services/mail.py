@@ -152,17 +152,33 @@ async def send_dailyhack_added_email(user: ModelUser):
                'Dailyhack Entregat')
 
 
-# def generate_dailyhack_publicat_template(user: ModelUser, dailyhack_name: str):
-#     t = Template(
-#         open('mail_templates/correu_publicacio_dailyhack.html',
-#              'r',
-#              encoding='utf-8').read())
-#     return t.substitute(name=user.name,
-#                         email=user.email,
-#                         dailyhack_name=dailyhack_name,
-#                         front_link=FRONT_LINK,
-#                         contact_mail=CONTACT_MAIL,
-#                         static_folder=STATIC_FOLDER)
+def generate_dailyhack_obert_template(user: ModelUser):
+    t = Template(
+        open('mail_templates/correu_dailyhack_publicatt.html',
+             'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+
+async def send_dailyhack_open_email(user: ModelUser):
+    send_email(user.email, generate_dailyhack_obert_template(user),
+               'Dailyhack Obert', True)
+
+
+async def send_all_dailyhack_mails(lst: List):
+    out = []
+    for u in lst:
+        m = ModelMailQueue()
+        m.user_id = u.id
+        m.subject = 'Dailyhack Obert'
+        m.body = generate_dailyhack_obert_template(u)
+        out.append(m)
+    # return out
+    send_bulk_mails(out)
+    return len(out)
 
 
 def generate_reminder_template(user: ModelUser):
@@ -176,6 +192,10 @@ def generate_reminder_template(user: ModelUser):
                         static_folder=STATIC_FOLDER)
 
 
+async def send_reminder_email(user: ModelUser):
+    send_email(user.email, generate_reminder_template(user), 'Reminder', True)
+
+
 async def send_all_reminder_mails(lst: List):
     out = []
     for u in lst:
@@ -187,10 +207,6 @@ async def send_all_reminder_mails(lst: List):
     # return out
     send_bulk_mails(out)
     return len(out)
-
-
-async def send_reminder_email(user: ModelUser):
-    send_email(user.email, generate_reminder_template(user), 'Reminder', True)
 
 
 def generate_contact_template(name: str, title: str, email: str, message: str):

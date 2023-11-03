@@ -190,6 +190,14 @@ async def get_accepted_hackers(eventId: int,
                                                     get_data_from_token(token))
 
 
+@router.get("/{eventId}/get_approved_hackers_mails")
+async def get_accepted_hackers_mails(eventId: int,
+                               db: Session = Depends(get_db),
+                               token: str = Depends(JWTBearer())):
+    return await event_service.get_accepted_hackers_mails(eventId, db,
+                                                    get_data_from_token(token))
+
+
 # @router.put("/{id}/group/{group_id}")
 # async def add_event_group(id: int,
 #                           group_id: int,

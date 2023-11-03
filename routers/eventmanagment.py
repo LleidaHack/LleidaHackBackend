@@ -377,12 +377,6 @@ async def send_remember(
         raise NotFoundException("Event not found")
     users = subtract_lists(all, event.registered_hackers)
     return await mail_service.send_all_reminder_mails(users)
-    # for u in users:
-    # await mail_service.send_reminder_email(u)
-    #     time.sleep(10)
-    # background_tasks.add_task(mail_service.send_reminder_email, u)
-    # background_tasks.add_task(test, users, background_tasks)
-    return len(users)
 
 
 @router.post("/{event_id}/send_dailyhack")
@@ -399,7 +393,4 @@ async def send_dailyhack(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    for u in event.registered_hackers:
-        background_tasks.add_task(mail_service.send_dailyhack_email, u)
-        # await mail_service.send_dailyhack_email(u)
-    return len(event.registered_hackers)
+    return await mail_service.send_all_dailyhack_mails(event.registered_hackers)

@@ -26,6 +26,8 @@ async def send_mail(db: Session = Depends(get_db),
         raise AuthenticationException("Not authorized")
     mail = await mail_queue_service.get_last(db, data)
     # send
+    if mail is None:
+        raise Exception("No mail to send")
     mail_queue_service.send_email(mail.user.email, mail.body, mail.subject)
     mail_queue_service.set_sent(mail, db)
     return await mail_queue_service.count_unsent(db, data)
@@ -49,7 +51,7 @@ async def send_mail_by_id(id: int,
     return mail_queue_service.count_unsent(db, data)
 
 
-@router.get("count")
+@router.get("/count")
 async def count(db: Session = Depends(get_db),
                 token: str = Depends(JWTBearer())):
     return await mail_queue_service.count_unsent(db,
