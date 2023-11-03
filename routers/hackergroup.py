@@ -1,6 +1,5 @@
 from typing import List
 from schemas.Hacker import HackerGroup as SchemaHackerGroup
-from schemas.Hacker import HackerPublic as SchemaHackerPublic
 
 from database import get_db
 from security import get_data_from_token

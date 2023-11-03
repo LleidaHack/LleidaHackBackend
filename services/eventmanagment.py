@@ -226,11 +226,18 @@ async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
         raise InvalidDataException("Hacker already participating")
     if not hacker in event.accepted_hackers:
         raise InvalidDataException("Hacker not accepted")
+    user_registration = db.query(ModelHackerRegistration).filter(
+        ModelHackerRegistration.user_id == hacker.user_id,
+        ModelHackerRegistration.event_id == event.id).first()
+    if user_registration is None:
+        raise InvalidDataException("User not registered")
+    if not user_registration.confirmed_assistance:
+        raise InvalidDataException("User not confirmed assitence")
     event.participants.append(hacker)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
-    return event
+    return user_registration
 
 
 async def unparticipate_hacker_from_event(event: ModelEvent,
@@ -407,15 +414,18 @@ async def get_event_status(event: ModelEvent, db: Session):
         data[meal.name] = len(meal.users)
     return data
 
+
 async def get_food_restrictions(event: ModelEvent, db: Session):
     users = event.participants + event.accepted_hackers + event.registered_hackers
     restrictions = []
     for user in users:
-        if user.food_restrictions is not None and user.food_restrictions.strip() != "" and user.food_restrictions.strip() != 'no':
+        if user.food_restrictions is not None and user.food_restrictions.strip(
+        ) != "" and user.food_restrictions.strip() != 'no':
             restrictions.append(user.food_restrictions)
     # remove duplicates
     restrictions = list(set(restrictions))
     return restrictions
+
 
 async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
               db: Session, data: TokenData):
