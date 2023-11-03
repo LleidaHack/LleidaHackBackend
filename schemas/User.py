@@ -18,7 +18,7 @@ class User(BaseModel):
     shirt_size: Optional[str]
     image: Optional[str]
     is_image_url: Optional[bool]
-    recive_mails: bool
+    recive_mails: Optional[bool]
 
     @validator('email')
     def email_validation(cls, v):

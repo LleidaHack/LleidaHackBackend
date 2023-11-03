@@ -358,7 +358,7 @@ def test(lst, background_tasks: BackgroundTasks):
         # background_tasks.add_task(mail_service.send_reminder_email, u)
 @router.post("/{event_id}/send_remember")
 async def send_remember(event_id: int,
-                        background_tasks: BackgroundTasks,
+                        # background_tasks: BackgroundTasks,
                         db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
     """
@@ -371,12 +371,12 @@ async def send_remember(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    users = subtract_lists(all, event.registered_hackers)[:100]
-    # for u in users:
-    #     await mail_service.send_reminder_email(u)
+    users = subtract_lists(all, event.registered_hackers)
+    for u in users:
+        await mail_service.send_reminder_email(u)
     #     time.sleep(10)
         # background_tasks.add_task(mail_service.send_reminder_email, u)
-    background_tasks.add_task(test, users, background_tasks)
+    # background_tasks.add_task(test, users, background_tasks)
     return len(users)
 
 
