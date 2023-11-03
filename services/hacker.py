@@ -86,7 +86,7 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
                 members_ids = [h.id for h in group.members]
                 members_ids.remove(hackerId)
                 group.leader_id = members_ids[0]
-            db.delete(hacker_group_user)
+            #db.delete(hacker_group_user)
     event_regs = db.query(ModelHackerRegistration).filter(
         ModelHackerRegistration.user_id == hackerId).all()
     for event_reg in event_regs:
