@@ -180,7 +180,7 @@ async def send_all_reminder_mails(lst: List):
         m.user_id = u.id
         m.subject = 'Reminder'
         m.body = generate_reminder_template(u)
-        lst.append(m)
+        out.append(m)
     # return out
     send_bulk_mails(out)
     return len(out)
