@@ -351,10 +351,13 @@ async def eat(event_id: int,
     return await eventmanagment_service.eat(event, meal, hacker, db,
                                             get_data_from_token(token))
 
-def test(lst, background_tasks: BackgroundTasks):
-    for u in lst:
-        mail_service.send_reminder_email(u)
-        time.sleep(10)
+
+# def test(lst, background_tasks: BackgroundTasks):
+#     for u in lst:
+#         mail_service.send_reminder_email(u)
+#         time.sleep(10)
+
+
         # background_tasks.add_task(mail_service.send_reminder_email, u)
 @router.post("/{event_id}/send_remember")
 async def send_remember(event_id: int,
