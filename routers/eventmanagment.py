@@ -1,7 +1,9 @@
-from fastapi import Depends, Response, APIRouter
+import time
+from fastapi import BackgroundTasks, Depends, Response, APIRouter
 from sqlalchemy.orm import Session
 from config import Configuration
 from database import get_db
+from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 
 from security import get_data_from_token
@@ -11,6 +13,8 @@ import services.event as event_service
 import services.hacker as hacker_service
 import services.hackergroup as hackergroup_service
 import services.eventmanagment as eventmanagment_service
+import services.mail as mail_service
+import services.hacker as hacker_service
 
 from utils.auth_bearer import JWTBearer
 from utils.service_utils import subtract_lists
@@ -84,7 +88,7 @@ async def get_dailyhacks(event_id: int,
 
 @router.put("/{event_id}/register/{hacker_id}")
 async def register_hacker_to_event(event_id: int,
-                                   hacker_id: int,
+                                   hacker_id: str,
                                    registration: SchemaEventRegistration,
                                    db: Session = Depends(get_db),
                                    token: str = Depends(JWTBearer())):
@@ -295,6 +299,20 @@ async def get_rejected_hackers(event_id: int,
     }
 
 
+@router.get("/{event_id}/foodrestrictions")
+async def get_food_restrictions(event_id: int,
+                                db: Session = Depends(get_db),
+                                token: str = Depends(JWTBearer())):
+    """
+    Get the food restrictions of an event
+    """
+    event = await eventmanagment_service.get_food_restrictions(
+        event_id, db, token)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return {'size': len(event), 'restrictions': event}
+
+
 @router.get("/{event_id}/status")
 async def get_event_status(event_id: int, db: Session = Depends(get_db)):
     """
@@ -304,6 +322,14 @@ async def get_event_status(event_id: int, db: Session = Depends(get_db)):
     if event is None:
         raise NotFoundException("Event not found")
     return await eventmanagment_service.get_event_status(event, db)
+
+
+@router.get("/{event_id}/food_restrictions")
+async def get_food_restrictions(event_id: int, db: Session = Depends(get_db)):
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return await eventmanagment_service.get_food_restrictions(event, db)
 
 
 @router.put("/{event_id}/eat/{meal_id}/{hacker_code}")
@@ -324,3 +350,48 @@ async def eat(event_id: int,
     meal = [meal for meal in event.meals if meal.id == meal_id][0]
     return await eventmanagment_service.eat(event, meal, hacker, db,
                                             get_data_from_token(token))
+
+
+# def test(lst, background_tasks: BackgroundTasks):
+#     for u in lst:
+#         mail_service.send_reminder_email(u)
+#         time.sleep(10)
+
+
+# background_tasks.add_task(mail_service.send_reminder_email, u)
+@router.post("/{event_id}/send_remember")
+async def send_remember(
+    event_id: int,
+    # background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    token: str = Depends(JWTBearer())):
+    """
+    Send a remember notification to all attendees of an event
+    """
+    data = get_data_from_token(token)
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    all = await hacker_service.get_all(db)
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    users = subtract_lists(all, event.registered_hackers)
+    return await mail_service.send_all_reminder_mails(users)
+
+
+@router.post("/{event_id}/send_dailyhack")
+async def send_dailyhack(event_id: int,
+                         background_tasks: BackgroundTasks,
+                         db: Session = Depends(get_db),
+                         token: str = Depends(JWTBearer())):
+    """
+    Send a daily hack notification to all attendees of an event
+    """
+    data = get_data_from_token(token)
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return await mail_service.send_all_dailyhack_mails(event.registered_hackers
+                                                       )

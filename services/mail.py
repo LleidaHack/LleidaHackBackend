@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from starlette.responses import JSONResponse
 from pydantic import EmailStr, BaseModel
 from typing import List
+from database import db_get
 from models.UserType import UserType
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException
@@ -12,9 +13,12 @@ from pydantic import BaseModel
 from smtplib import SMTP_SSL
 from email.mime.text import MIMEText
 from string import Template
+from sqlalchemy.orm import Session
 
 from models.User import User as ModelUser
 from models.Event import Event as ModelEvent
+from models.MailQueue import MailQueue as ModelMailQueue
+from services import mail_queue as mail_queue_service
 
 
 class EmailSchema(BaseModel):
@@ -23,33 +27,32 @@ class EmailSchema(BaseModel):
 
 FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')
 BACK_LINK = Configuration.get('OTHERS', 'BACK_URL')
-CONTACT_MAIL = Configuration.get('MAIL', 'MAIL_FROM')
+CONTACT_MAIL = Configuration.get('OTHERS', 'CONTACT_MAIL')
 STATIC_FOLDER = Configuration.get('OTHERS',
                                   'BACK_URL') + '/' + Configuration.get(
                                       'OTHERS', 'STATIC_FOLDER') + '/images'
 
 
-def send_email(email: str,
-               template: str,
-               subject: str,
-               attachments: List = []):
-    msg = MIMEMultipart('related')
-    msg['Subject'] = subject
-    msg['From'] = Configuration.get('MAIL', 'MAIL_FROM')
-    msg['To'] = email
+def send_bulk_mails(lst: List):
+    db = db_get()
+    db.bulk_save_objects(lst)
+    db.commit()
 
-    try:
-        with SMTP_SSL(Configuration.get('MAIL', 'MAIL_SERVER'),
-                      Configuration.get('MAIL', 'MAIL_PORT')) as server:
-            server.login(Configuration.get('MAIL', 'MAIL_USERNAME'),
-                         Configuration.get('MAIL', 'MAIL_PASSWORD'))
-            #send multipart mail adding images withn add_image_attachment and the html
-            html = MIMEText(template, 'html')
-            msg.attach(html)
-            server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
-                            msg.as_string())
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+
+def send_email(user, body: str, subject: str, queue: bool = False):
+    mail = user
+    if not queue:
+        if type(user) is ModelUser:
+            mail = user.email
+        mail_queue_service.send_email(mail, body, subject)
+    else:
+        db = db_get()
+        mail = ModelMailQueue()
+        mail.user_id = user.id
+        mail.subject = subject
+        mail.body = body
+        db.add(mail)
+        db.commit()
 
 
 def generate_registration_confirmation_template(user: ModelUser):
@@ -66,7 +69,7 @@ def generate_registration_confirmation_template(user: ModelUser):
 
 
 async def send_registration_confirmation_email(user: ModelUser):
-    send_email(user.email, generate_registration_confirmation_template(user),
+    send_email(user, generate_registration_confirmation_template(user),
                'Registration Confirmation')
 
 
@@ -149,17 +152,61 @@ async def send_dailyhack_added_email(user: ModelUser):
                'Dailyhack Entregat')
 
 
-# def generate_dailyhack_publicat_template(user: ModelUser, dailyhack_name: str):
-#     t = Template(
-#         open('mail_templates/correu_publicacio_dailyhack.html',
-#              'r',
-#              encoding='utf-8').read())
-#     return t.substitute(name=user.name,
-#                         email=user.email,
-#                         dailyhack_name=dailyhack_name,
-#                         front_link=FRONT_LINK,
-#                         contact_mail=CONTACT_MAIL,
-#                         static_folder=STATIC_FOLDER)
+def generate_dailyhack_obert_template(user: ModelUser):
+    t = Template(
+        open('mail_templates/correu_dailyhack_publicat.html',
+             'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+
+async def send_dailyhack_open_email(user: ModelUser):
+    send_email(user.email, generate_dailyhack_obert_template(user),
+               'Dailyhack Obert', True)
+
+
+async def send_all_dailyhack_mails(lst: List):
+    out = []
+    for u in lst:
+        m = ModelMailQueue()
+        m.user_id = u.id
+        m.subject = 'Dailyhack Obert'
+        m.body = generate_dailyhack_obert_template(u)
+        out.append(m)
+    # return out
+    send_bulk_mails(out)
+    return len(out)
+
+
+def generate_reminder_template(user: ModelUser):
+    t = Template(
+        open('mail_templates/correu_recordatory.html', 'r',
+             encoding='utf-8').read())
+    return t.substitute(name=user.name,
+                        email=user.email,
+                        front_link=FRONT_LINK,
+                        contact_mail=CONTACT_MAIL,
+                        static_folder=STATIC_FOLDER)
+
+
+async def send_reminder_email(user: ModelUser):
+    send_email(user.email, generate_reminder_template(user), 'Reminder', True)
+
+
+async def send_all_reminder_mails(lst: List):
+    out = []
+    for u in lst:
+        m = ModelMailQueue()
+        m.user_id = u.id
+        m.subject = 'Reminder'
+        m.body = generate_reminder_template(u)
+        out.append(m)
+    # return out
+    send_bulk_mails(out)
+    return len(out)
 
 
 def generate_contact_template(name: str, title: str, email: str, message: str):
