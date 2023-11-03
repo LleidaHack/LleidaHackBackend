@@ -39,9 +39,12 @@ def send_bulk_mails(lst: List):
     db.commit()
 
 
-def send_email(user: ModelUser, body: str, subject: str, queue: bool = False):
+def send_email(user, body: str, subject: str, queue: bool = False):
+    mail = user
     if not queue:
-        mail_queue_service.send_email(user.email, body, subject)
+        if type(user) is ModelUser:
+            mail=user.email
+        mail_queue_service.send_email(mail, body, subject)
     else:
         db = db_get()
         mail = ModelMailQueue()

@@ -58,8 +58,7 @@ async def get_last(db: Session, data: TokenData):
 async def get_by_id(db: Session, id: int, data: TokenData):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
-    mail = db.query(ModelMailQueue).filter(ModelMailQueue.id == id).first()
-    return mail
+    return db.query(ModelMailQueue).filter(ModelMailQueue.id == id).first()
 
 
 async def count_unsent(db: Session, data: TokenData):
