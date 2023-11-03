@@ -42,11 +42,15 @@ async def send_mail_by_id(id: int,
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     mail = await mail_queue_service.get_by_id(id)
+    return mail
     # send
     mail_queue_service.send_email(mail.user.email, mail.body, mail.subject)
     mail_queue_service.set_sent(mail, db)
     return mail_queue_service.count_unsent(db, data)
 
+
 @router.get("count")
-async def count(db: Session = Depends(get_db), token: str = Depends(JWTBearer())):
-    return await mail_queue_service.count_unsent(db, get_data_from_token(token))
+async def count(db: Session = Depends(get_db),
+                token: str = Depends(JWTBearer())):
+    return await mail_queue_service.count_unsent(db,
+                                                 get_data_from_token(token))
