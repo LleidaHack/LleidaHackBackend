@@ -20,6 +20,7 @@ from models.Event import Event as ModelEvent
 from models.MailQueue import MailQueue as ModelMailQueue
 from services import mail_queue as mail_queue_service
 
+
 class EmailSchema(BaseModel):
     email: List[EmailStr]
 
@@ -30,6 +31,7 @@ CONTACT_MAIL = Configuration.get('OTHERS', 'CONTACT_MAIL')
 STATIC_FOLDER = Configuration.get('OTHERS',
                                   'BACK_URL') + '/' + Configuration.get(
                                       'OTHERS', 'STATIC_FOLDER') + '/images'
+
 
 def send_email(user: ModelUser, body: str, subject: str, queue: bool = False):
     if not queue:
@@ -42,6 +44,7 @@ def send_email(user: ModelUser, body: str, subject: str, queue: bool = False):
         mail.body = body
         db.add(mail)
         db.commit()
+
 
 def generate_registration_confirmation_template(user: ModelUser):
     t = Template(

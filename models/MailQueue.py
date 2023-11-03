@@ -6,6 +6,7 @@ from database import Base
 from sqlalchemy.orm import deferred
 from sqlalchemy.orm import Mapped
 
+
 class MailQueue(Base):
     __tablename__ = "mail_queue"
 
@@ -17,5 +18,3 @@ class MailQueue(Base):
     sent = Column(Boolean, default=False)
 
     user = relationship("User", back_populates="mail_queue")
-
-
