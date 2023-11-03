@@ -441,6 +441,7 @@ async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
     db.refresh(event)
     return event
 
+
 async def get_sizes(event: ModelEvent, db: Session):
     sizes = {}
     for user in event.registered_hackers:
@@ -450,4 +451,3 @@ async def get_sizes(event: ModelEvent, db: Session):
             else:
                 sizes[user.shirt_size] = 1
     return sizes
-

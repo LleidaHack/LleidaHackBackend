@@ -396,10 +396,9 @@ async def send_dailyhack(event_id: int,
     return await mail_service.send_all_dailyhack_mails(event.registered_hackers
                                                        )
 
+
 @router.get("/{event_id}/get_sizes")
-async def get_sizes(
-    event_id: int,
-    db: Session = Depends(get_db)):
+async def get_sizes(event_id: int, db: Session = Depends(get_db)):
     """
     Get the sizes of all the shirts of the registered hackers
     """
