@@ -24,7 +24,7 @@ async def send_mail(db: Session = Depends(get_db),
     data = get_data_from_token(token)
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
-    mail = mail_queue_service.get_last(db, data)
+    mail = await mail_queue_service.get_last(db, data)
     return mail.subject
     # send
     mail_queue_service.send_email(mail.user.email, mail.body, mail.subject)
