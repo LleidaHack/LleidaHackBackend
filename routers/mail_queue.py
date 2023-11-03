@@ -47,6 +47,9 @@ async def send_mail_by_id(id: int,
     mail_queue_service.set_sent(mail, db)
     return mail_queue_service.count_unsent(db, data)
 
+
 @router.get("count")
-async def count(db: Session = Depends(get_db), token: str = Depends(JWTBearer())):
-    return await mail_queue_service.count_unsent(db, get_data_from_token(token))
+async def count(db: Session = Depends(get_db),
+                token: str = Depends(JWTBearer())):
+    return await mail_queue_service.count_unsent(db,
+                                                 get_data_from_token(token))
