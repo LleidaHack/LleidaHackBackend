@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from starlette.responses import JSONResponse
 from pydantic import EmailStr, BaseModel
 from typing import List
+from database import db_get
 from models.UserType import UserType
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException
@@ -12,10 +13,12 @@ from pydantic import BaseModel
 from smtplib import SMTP_SSL
 from email.mime.text import MIMEText
 from string import Template
+from sqlalchemy.orm import Session
 
 from models.User import User as ModelUser
 from models.Event import Event as ModelEvent
-
+from models.MailQueue import MailQueue as ModelMailQueue
+from services import mail_queue as mail_queue_service
 
 class EmailSchema(BaseModel):
     email: List[EmailStr]
@@ -28,29 +31,17 @@ STATIC_FOLDER = Configuration.get('OTHERS',
                                   'BACK_URL') + '/' + Configuration.get(
                                       'OTHERS', 'STATIC_FOLDER') + '/images'
 
-
-def send_email(email: str,
-               template: str,
-               subject: str,
-               attachments: List = []):
-    msg = MIMEMultipart('related')
-    msg['Subject'] = subject
-    msg['From'] = Configuration.get('MAIL', 'MAIL_FROM')
-    msg['To'] = email
-
-    try:
-        with SMTP_SSL(Configuration.get('MAIL', 'MAIL_SERVER'),
-                      Configuration.get('MAIL', 'MAIL_PORT')) as server:
-            server.login(Configuration.get('MAIL', 'MAIL_USERNAME'),
-                         Configuration.get('MAIL', 'MAIL_PASSWORD'))
-            #send multipart mail adding images withn add_image_attachment and the html
-            html = MIMEText(template, 'html')
-            msg.attach(html)
-            server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
-                            msg.as_string())
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+def send_email(user: ModelUser, body: str, subject: str, queue: bool = False):
+    if not queue:
+        mail_queue_service.send_email(user.email, body, subject)
+    else:
+        db = db_get()
+        mail = ModelMailQueue()
+        mail.user_id = user.id
+        mail.subject = subject
+        mail.body = body
+        db.add(mail)
+        db.commit()
 
 def generate_registration_confirmation_template(user: ModelUser):
     t = Template(
@@ -66,7 +57,7 @@ def generate_registration_confirmation_template(user: ModelUser):
 
 
 async def send_registration_confirmation_email(user: ModelUser):
-    send_email(user.email, generate_registration_confirmation_template(user),
+    send_email(user, generate_registration_confirmation_template(user),
                'Registration Confirmation')
 
 
@@ -174,7 +165,7 @@ def generate_reminder_template(user: ModelUser):
 
 
 async def send_reminder_email(user: ModelUser):
-    send_email(user.email, generate_reminder_template(user), 'Reminder')
+    send_email(user.email, generate_reminder_template(user), 'Reminder', True)
 
 
 def generate_contact_template(name: str, title: str, email: str, message: str):
