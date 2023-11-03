@@ -393,4 +393,5 @@ async def send_dailyhack(event_id: int,
     event = await event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    return await mail_service.send_all_dailyhack_mails(event.registered_hackers)
+    return await mail_service.send_all_dailyhack_mails(event.registered_hackers
+                                                       )
