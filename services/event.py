@@ -15,6 +15,7 @@ from models.TokenData import TokenData
 from models.UserType import UserType
 
 from utils.service_utils import set_existing_data, check_image
+from utils.hide_utils import hacker_show_private
 
 from error.AuthenticationException import AuthenticationException
 from error.ValidationException import ValidationException
@@ -288,3 +289,31 @@ async def remove_hacker_group(id: int, hacker_group_id: int, db: Session,
     db.refresh(hacker_group)
     db.refresh(event)
     return event
+
+
+async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise Exception("Not authorized")
+    event = db.query(ModelEvent).filter(ModelEvent.id == event_id).first()
+    if event is None:
+        raise Exception("Event not found")
+    hackers = []
+    for h in event.accepted_hackers:
+        hacker_show_private(h)
+        hackers.append(h)
+    return hackers
+
+
+async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise Exception("Not authorized")
+    event = db.query(ModelEvent).filter(ModelEvent.id == event_id).first()
+    if event is None:
+        raise Exception("Event not found")
+    hackers = []
+    for h in event.accepted_hackers:
+        hacker_show_private(h)
+        hackers.append(h.email)
+    return hackers

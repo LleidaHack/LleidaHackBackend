@@ -75,18 +75,7 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     hacker_groups_ids = [group.group_id for group in hacker_groups_ids]
     hacker_groups = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.id.in_(hacker_groups_ids)).all()
-    for group in hacker_groups:
-        hacker_group_user = db.query(ModelHackerGroupUser).filter(
-            ModelHackerGroupUser.hacker_id == hackerId
-            and ModelHackerGroupUser.group_id == group.id).first()
-        if len(group.members) == 1:
-            db.delete(group)
-        else:
-            if group.leader_id == hackerId:
-                members_ids = [h.id for h in group.members]
-                members_ids.remove(hackerId)
-                group.leader_id = members_ids[0]
-            db.delete(hacker_group_user)
+
     event_regs = db.query(ModelHackerRegistration).filter(
         ModelHackerRegistration.user_id == hackerId).all()
     for event_reg in event_regs:
@@ -100,6 +89,18 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     for event_acc in event_accs:
         db.delete(event_acc)
     db.delete(hacker)
+    for group in hacker_groups:
+        # hacker_group_user = db.query(ModelHackerGroupUser).filter(
+        #     ModelHackerGroupUser.hacker_id == hackerId
+        #     and ModelHackerGroupUser.group_id == group.id).first()
+        if len(group.members) <= 1:
+            db.delete(group)
+        else:
+            if group.leader_id == hackerId:
+                members_ids = [h.id for h in group.members]
+                members_ids.remove(hackerId)
+                group.leader_id = members_ids[0]
+            # db.delete(hacker_group_user)
     db.commit()
     return hacker
 
@@ -170,3 +171,14 @@ async def get_hacker_groups(hackerId: int, db: Session):
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return hacker.groups
+
+
+async def update_all_codes(data: TokenData, db: Session):
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    hackers = db.query(ModelHacker).all()
+    for hacker in hackers:
+        hacker.code = generate_user_code(
+            db
+        )  # Assuming generate_new_code() is a function that generates a new code
+    db.commit()
