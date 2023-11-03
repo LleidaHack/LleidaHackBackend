@@ -20,6 +20,7 @@ from models.Event import Event as ModelEvent
 from models.MailQueue import MailQueue as ModelMailQueue
 from services import mail_queue as mail_queue_service
 
+
 class EmailSchema(BaseModel):
     email: List[EmailStr]
 
@@ -35,6 +36,7 @@ def send_bulk_mails(lst:List):
     db.bulk_save_objects(lst)
     db.commit()
 
+
 def send_email(user: ModelUser, body: str, subject: str, queue: bool = False):
     if not queue:
         mail_queue_service.send_email(user.email, body, subject)
@@ -46,6 +48,7 @@ def send_email(user: ModelUser, body: str, subject: str, queue: bool = False):
         mail.body = body
         db.add(mail)
         db.commit()
+
 
 def generate_registration_confirmation_template(user: ModelUser):
     t = Template(

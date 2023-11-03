@@ -358,12 +358,13 @@ async def eat(event_id: int,
 #         time.sleep(10)
 
 
-        # background_tasks.add_task(mail_service.send_reminder_email, u)
+# background_tasks.add_task(mail_service.send_reminder_email, u)
 @router.post("/{event_id}/send_remember")
-async def send_remember(event_id: int,
-                        # background_tasks: BackgroundTasks,
-                        db: Session = Depends(get_db),
-                        token: str = Depends(JWTBearer())):
+async def send_remember(
+    event_id: int,
+    # background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    token: str = Depends(JWTBearer())):
     """
     Send a remember notification to all attendees of an event
     """
@@ -379,7 +380,7 @@ async def send_remember(event_id: int,
     # for u in users:
         # await mail_service.send_reminder_email(u)
     #     time.sleep(10)
-        # background_tasks.add_task(mail_service.send_reminder_email, u)
+    # background_tasks.add_task(mail_service.send_reminder_email, u)
     # background_tasks.add_task(test, users, background_tasks)
     return len(users)
 
