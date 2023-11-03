@@ -28,7 +28,7 @@ async def send_mail(db: Session = Depends(get_db),
     # send
     mail_queue_service.send_email(mail.user.email, mail.body, mail.subject)
     mail_queue_service.set_sent(mail, db)
-    return mail_queue_service.count_unsent(db, data)
+    return await mail_queue_service.count_unsent(db, data)
 
 
 @router.post("/send_mail_by_id")
