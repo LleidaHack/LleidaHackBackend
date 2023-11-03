@@ -33,6 +33,12 @@ STATIC_FOLDER = Configuration.get('OTHERS',
                                       'OTHERS', 'STATIC_FOLDER') + '/images'
 
 
+def send_bulk_mails(lst: List):
+    db = db_get()
+    db.bulk_save_objects(lst)
+    db.commit()
+
+
 def send_email(user: ModelUser, body: str, subject: str, queue: bool = False):
     if not queue:
         mail_queue_service.send_email(user.email, body, subject)
@@ -165,6 +171,18 @@ def generate_reminder_template(user: ModelUser):
                         front_link=FRONT_LINK,
                         contact_mail=CONTACT_MAIL,
                         static_folder=STATIC_FOLDER)
+
+
+async def send_all_reminder_mails(lst: List):
+    lst = []
+    for u in lst:
+        m = ModelMailQueue()
+        m.user_id = u.id
+        m.subject = 'Reminder'
+        m.body = generate_reminder_template(u)
+        lst.append(m)
+    send_bulk_mails(lst)
+    return len(lst)
 
 
 async def send_reminder_email(user: ModelUser):
