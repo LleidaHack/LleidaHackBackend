@@ -303,3 +303,17 @@ async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
         hacker_show_private(h)
         hackers.append(h)
     return hackers
+
+
+async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise Exception("Not authorized")
+    event = db.query(ModelEvent).filter(ModelEvent.id == event_id).first()
+    if event is None:
+        raise Exception("Event not found")
+    hackers = []
+    for h in event.accepted_hackers:
+        hacker_show_private(h)
+        hackers.append(h.email)
+    return hackers
