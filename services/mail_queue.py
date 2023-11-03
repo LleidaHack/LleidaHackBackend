@@ -44,7 +44,7 @@ def send_email(email: str,
 
 def set_sent(mail, db: Session):
     mail.sent = True
-    db.commit(mail)
+    db.commit()
 
 
 async def get_last(db: Session, data: TokenData):
