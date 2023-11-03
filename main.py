@@ -18,6 +18,7 @@ from routers import event
 from routers import meal
 from routers import eventmanagment
 from routers import authentication
+from routers import mail_queue
 
 from error import error_handler as eh
 from error.AuthenticationException import AuthenticationException
@@ -106,6 +107,7 @@ app.include_router(company.router)
 app.include_router(companyuser.router)
 app.include_router(event.router)
 app.include_router(meal.router)
+app.include_router(mail_queue.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 
