@@ -17,4 +17,4 @@ class MailQueue(Base):
     body = Column(String, index=True)
     sent = Column(Boolean, default=False)
 
-    user = relationship("User", back_populates="mail_queue")
+    user = relationship("User")
