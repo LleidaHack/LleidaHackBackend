@@ -119,7 +119,6 @@ async def resend_verification(email: str, db: Session = Depends(get_db)):
     if user.is_verified:
         raise InvalidDataException("User already verified")
     create_all_tokens(user, db, verification=True)
-    return {"success": True}
     await send_registration_confirmation_email(user)
     return {"success": True}
 
