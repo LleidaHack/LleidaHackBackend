@@ -44,9 +44,9 @@ def send_email(user, body: str, subject: str, queue: bool = False):
     if not queue:
         if type(user) is ModelUser:
             mail = user.email
+        return {"success": True}
         mail_queue_service.send_email(mail, body, subject)
     else:
-        return {"success": True}
         db = db_get()
         mail = ModelMailQueue()
         mail.user_id = user.id
