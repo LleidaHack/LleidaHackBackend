@@ -40,13 +40,13 @@ def send_bulk_mails(lst: List):
 
 
 def send_email(user, body: str, subject: str, queue: bool = False):
-    return {"success": True}
     mail = user
     if not queue:
         if type(user) is ModelUser:
             mail = user.email
         mail_queue_service.send_email(mail, body, subject)
     else:
+        return {"success": True}
         db = db_get()
         mail = ModelMailQueue()
         mail.user_id = user.id
