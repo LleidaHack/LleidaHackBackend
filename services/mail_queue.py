@@ -36,9 +36,9 @@ def send_email(email: str,
             #send multipart mail adding images withn add_image_attachment and the html
             html = MIMEText(template, 'html')
             msg.attach(html)
-            return {"success": True}
             server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
                             msg.as_string())
+            return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
