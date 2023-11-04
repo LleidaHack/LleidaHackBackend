@@ -38,7 +38,6 @@ def send_email(email: str,
             msg.attach(html)
             server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
                             msg.as_string())
-            return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
