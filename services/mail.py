@@ -42,7 +42,7 @@ def send_bulk_mails(lst: List):
 def send_email(user, body: str, subject: str, queue: bool = False):
     mail = user
     if not queue:
-        if type(user) is ModelUser:
+        if user.email:
             mail = user.email
         mail_queue_service.send_email(mail, body, subject)
     else:
