@@ -196,6 +196,23 @@ async def accept_hacker_to_event(event_id: int,
     return await eventmanagment_service.accept_hacker_to_event(
         event, hacker, db, get_data_from_token(token))
 
+@router.put("/{event_id}/unaccept/{hacker_email}")
+async def unaccept_hacker_from_event_by_email(event_id: int,
+                                              hacker_email: str,
+                                              db: Session = Depends(get_db),
+                                              token: str = Depends(JWTBearer())):
+    """
+    Unaccept a hacker from an event by email
+    """
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    hacker = await hacker_service.get_hacker_by_email(hacker_email, db)
+    if hacker is None:
+        raise NotFoundException("Hacker not found")
+    return await eventmanagment_service.unaccept_hacker_to_event(
+        event, hacker, db, get_data_from_token(token))
+
 
 @router.put("/{event_id}/acceptgroup/{group_id}")
 async def accept_group_to_event(event_id: int,
@@ -297,20 +314,6 @@ async def get_rejected_hackers(event_id: int,
         'size': len(event.rejected_hackers),
         'hackers': event.rejected_hackers
     }
-
-
-@router.get("/{event_id}/foodrestrictions")
-async def get_food_restrictions(event_id: int,
-                                db: Session = Depends(get_db),
-                                token: str = Depends(JWTBearer())):
-    """
-    Get the food restrictions of an event
-    """
-    event = await eventmanagment_service.get_food_restrictions(
-        event_id, db, token)
-    if event is None:
-        raise NotFoundException("Event not found")
-    return {'size': len(event), 'restrictions': event}
 
 
 @router.get("/{event_id}/status")
