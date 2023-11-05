@@ -17,6 +17,7 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 from security import create_all_tokens, get_data_from_token, generate_assistance_token
+from utils.hide_utils import hacker_show_private
 
 from utils.service_utils import isBase64, subtract_lists
 
@@ -486,7 +487,10 @@ async def get_accepted_and_confirmed(event: ModelEvent, db: Session):
 
 async def get_hackers_unregistered(event: ModelEvent, db: Session):
     hackers = db.query(ModelHacker).all()
-    return subtract_lists(hackers, event.registered_hackers) 
+    out= subtract_lists(hackers, event.registered_hackers) 
+    for u in out:
+        hacker_show_private(u)
+    return out
 
 async def count_hackers_unregistered(event: ModelEvent, db: Session):
     return len(get_hackers_unregistered(event, db))
