@@ -57,6 +57,7 @@ async def count(db: Session = Depends(get_db),
     return await mail_queue_service.count_unsent(db,
                                                  get_data_from_token(token))
 
+
 @router.post("/clear_queue")
 async def clear_queue(db: Session = Depends(get_db),
                       token: str = Depends(JWTBearer())):
