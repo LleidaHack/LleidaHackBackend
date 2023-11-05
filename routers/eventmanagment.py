@@ -196,11 +196,13 @@ async def accept_hacker_to_event(event_id: int,
     return await eventmanagment_service.accept_hacker_to_event(
         event, hacker, db, get_data_from_token(token))
 
+
 @router.put("/{event_id}/unaccept/{hacker_email}")
 async def unaccept_hacker_from_event_by_email(event_id: int,
                                               hacker_email: str,
                                               db: Session = Depends(get_db),
-                                              token: str = Depends(JWTBearer())):
+                                              token: str = Depends(
+                                                  JWTBearer())):
     """
     Unaccept a hacker from an event by email
     """
