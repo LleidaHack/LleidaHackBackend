@@ -488,11 +488,11 @@ async def get_accepted_and_confirmed(event: ModelEvent, db: Session):
 
 async def get_hackers_unregistered(event: ModelEvent, db: Session):
     hackers = db.query(ModelHacker).all()
-    out= subtract_lists(hackers, event.registered_hackers) 
+    out = subtract_lists(hackers, event.registered_hackers)
     for u in out:
         hacker_show_private(u)
     return out
 
 
 async def count_hackers_unregistered(event: ModelEvent, db: Session):
-    return len(get_hackers_unregistered(event, db))
+    return len(await get_hackers_unregistered(event, db))
