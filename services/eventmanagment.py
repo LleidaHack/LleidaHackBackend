@@ -254,6 +254,7 @@ async def unparticipate_hacker_from_event(event: ModelEvent,
     db.refresh(hacker)
     return event
 
+
 async def unaccept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                    db: Session, data: TokenData):
     if not data.is_admin:
@@ -417,12 +418,18 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
 
 async def get_event_status(event: ModelEvent, db: Session):
     data = {
-        'registratedUsers': len(event.registered_hackers),
-        'groups': len(event.groups),
-        'acceptedUsers': len(event.accepted_hackers),
-        'rejectedUsers': len(event.rejected_hackers),
-        'participatingUsers': len(event.participants),
-        'acceptedAndConfirmedUsers': len(await get_accepted_and_confirmed(event, db)),
+        'registratedUsers':
+        len(event.registered_hackers),
+        'groups':
+        len(event.groups),
+        'acceptedUsers':
+        len(event.accepted_hackers),
+        'rejectedUsers':
+        len(event.rejected_hackers),
+        'participatingUsers':
+        len(event.participants),
+        'acceptedAndConfirmedUsers':
+        len(await get_accepted_and_confirmed(event, db)),
     }
     for meal in event.meals:
         data[meal.name] = len(meal.users)
@@ -466,6 +473,7 @@ async def get_sizes(event: ModelEvent, db: Session):
                 sizes[user.shirt_size] = 1
     return sizes
 
+
 async def get_accepted_and_confirmed(event: ModelEvent, db: Session):
     accepted_and_confirmed = []
     for user in event.accepted_hackers:
@@ -475,3 +483,12 @@ async def get_accepted_and_confirmed(event: ModelEvent, db: Session):
         if user_registration and user_registration.confirmed_assistance:
             accepted_and_confirmed.append(user)
     return accepted_and_confirmed
+
+
+async def get_hackers_unregistered(event: ModelEvent, db: Session):
+    hackers = db.query(ModelHacker).all()
+    return subtract_lists(hackers, event.registered_hackers)
+
+
+async def count_hackers_unregistered(event: ModelEvent, db: Session):
+    return len(get_hackers_unregistered(event, db))
