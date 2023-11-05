@@ -409,3 +409,35 @@ async def get_sizes(event_id: int, db: Session = Depends(get_db)):
     if event is None:
         raise NotFoundException("Event not found")
     return await eventmanagment_service.get_sizes(event, db)
+
+@router.get("/{event_id}/get_unregistered_hackers")
+async def get_unregistered_hackers(
+    event_id: int,
+    db: Session = Depends(get_db),
+    token: str = Depends(JWTBearer())):
+    """
+    Get the hackers who are not registered for the event
+    """
+    data = get_data_from_token(token)
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return await eventmanagment_service.get_hackers_unregistered(event, db)
+
+@router.get("/{event_id}/count_unregistered_hackers")
+async def count_unregistered_hackers(
+    event_id: int,
+    db: Session = Depends(get_db),
+    token: str = Depends(JWTBearer())):
+    """
+    Get the count of hackers who are not registered for the event
+    """
+    data = get_data_from_token(token)
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return await eventmanagment_service.count_hackers_unregistered(event, db)
