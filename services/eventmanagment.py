@@ -495,4 +495,4 @@ async def get_hackers_unregistered(event: ModelEvent, db: Session):
 
 
 async def count_hackers_unregistered(event: ModelEvent, db: Session):
-    return len(get_hackers_unregistered(event, db))
+    return len(await get_hackers_unregistered(event, db))
