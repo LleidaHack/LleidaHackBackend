@@ -67,3 +67,9 @@ async def count_unsent(db: Session, data: TokenData):
     unsent_count = db.query(ModelMailQueue).filter(
         ModelMailQueue.sent == False).count()
     return unsent_count
+
+async def clear_queue(db: Session, data: TokenData):
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    db.query(ModelMailQueue).delete()
+    db.commit()
