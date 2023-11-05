@@ -56,3 +56,15 @@ async def count(db: Session = Depends(get_db),
                 token: str = Depends(JWTBearer())):
     return await mail_queue_service.count_unsent(db,
                                                  get_data_from_token(token))
+
+@router.post("/clear_queue")
+async def clear_queue(db: Session = Depends(get_db),
+                      token: str = Depends(JWTBearer())):
+    """
+    Clear the mail queue
+    """
+    data = get_data_from_token(token)
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    await mail_queue_service.clear_queue(db, data)
+    return {"message": "Mail queue cleared"}
