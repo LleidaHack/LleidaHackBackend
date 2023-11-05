@@ -254,6 +254,19 @@ async def unparticipate_hacker_from_event(event: ModelEvent,
     db.refresh(hacker)
     return event
 
+async def unaccept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
+                                   db: Session, data: TokenData):
+    if not data.is_admin:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            raise AuthenticationException("Not authorized")
+    if not hacker in event.accepted_hackers:
+        raise InvalidDataException("Hacker not accepted")
+    event.accepted_hackers.remove(hacker)
+    db.commit()
+    db.refresh(event)
+    db.refresh(hacker)
+    return event
+
 
 async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                  db: Session, data: TokenData):
@@ -409,6 +422,7 @@ async def get_event_status(event: ModelEvent, db: Session):
         'acceptedUsers': len(event.accepted_hackers),
         'rejectedUsers': len(event.rejected_hackers),
         'participatingUsers': len(event.participants),
+        'acceptedAndConfirmedUsers': len(await get_accepted_and_confirmed(event, db)),
     }
     for meal in event.meals:
         data[meal.name] = len(meal.users)
@@ -451,3 +465,13 @@ async def get_sizes(event: ModelEvent, db: Session):
             else:
                 sizes[user.shirt_size] = 1
     return sizes
+
+async def get_accepted_and_confirmed(event: ModelEvent, db: Session):
+    accepted_and_confirmed = []
+    for user in event.accepted_hackers:
+        user_registration = db.query(ModelHackerRegistration).filter(
+            ModelHackerRegistration.user_id == user.id,
+            ModelHackerRegistration.event_id == event.id).first()
+        if user_registration and user_registration.confirmed_assistance:
+            accepted_and_confirmed.append(user)
+    return accepted_and_confirmed
