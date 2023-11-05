@@ -196,11 +196,13 @@ async def accept_hacker_to_event(event_id: int,
     return await eventmanagment_service.accept_hacker_to_event(
         event, hacker, db, get_data_from_token(token))
 
+
 @router.put("/{event_id}/unaccept/{hacker_email}")
 async def unaccept_hacker_from_event_by_email(event_id: int,
                                               hacker_email: str,
                                               db: Session = Depends(get_db),
-                                              token: str = Depends(JWTBearer())):
+                                              token: str = Depends(
+                                                  JWTBearer())):
     """
     Unaccept a hacker from an event by email
     """
@@ -409,3 +411,35 @@ async def get_sizes(event_id: int, db: Session = Depends(get_db)):
     if event is None:
         raise NotFoundException("Event not found")
     return await eventmanagment_service.get_sizes(event, db)
+
+
+@router.get("/{event_id}/get_unregistered_hackers")
+async def get_unregistered_hackers(event_id: int,
+                                   db: Session = Depends(get_db),
+                                   token: str = Depends(JWTBearer())):
+    """
+    Get the hackers who are not registered for the event
+    """
+    data = get_data_from_token(token)
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return await eventmanagment_service.get_hackers_unregistered(event, db)
+
+
+@router.get("/{event_id}/count_unregistered_hackers")
+async def count_unregistered_hackers(event_id: int,
+                                     db: Session = Depends(get_db),
+                                     token: str = Depends(JWTBearer())):
+    """
+    Get the count of hackers who are not registered for the event
+    """
+    data = get_data_from_token(token)
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    event = await event_service.get_event(event_id, db)
+    if event is None:
+        raise NotFoundException("Event not found")
+    return await eventmanagment_service.count_hackers_unregistered(event, db)

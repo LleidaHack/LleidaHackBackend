@@ -47,6 +47,7 @@ async def get_hacker_by_code(code: str, db: Session):
         raise NotFoundException("Hacker not found")
     return user
 
+
 async def get_hacker_by_email(email: str, db: Session):
     user = db.query(ModelHacker).filter(ModelHacker.email == email).first()
     if user is None:
