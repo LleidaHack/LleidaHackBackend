@@ -47,6 +47,12 @@ async def get_hacker_by_code(code: str, db: Session):
         raise NotFoundException("Hacker not found")
     return user
 
+async def get_hacker_by_email(email: str, db: Session):
+    user = db.query(ModelHacker).filter(ModelHacker.email == email).first()
+    if user is None:
+        raise NotFoundException("Hacker not found")
+    return user
+
 
 async def add_hacker(payload: SchemaHacker, db: Session):
     await check_user(db, payload.email, payload.nickname, payload.telephone)
