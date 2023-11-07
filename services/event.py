@@ -305,7 +305,7 @@ async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
     return hackers
 
 
-async def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
+async def get_accepted_hackers_mails(event_id: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise Exception("Not authorized")
