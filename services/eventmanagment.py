@@ -109,7 +109,7 @@ async def get_dailyhacks(eventId: int, db: Session, data: TokenData):
     for registration in registrations:
         user = db.query(ModelHacker).filter(
             ModelHacker.id == registration.user_id).first()
-        if user in event.accepted_hackers and len(user)>0:
+        if user in event.accepted_hackers and len(registration.dailyhack_url)>0:
             userid_dailyhack.append({
                 "id": registration.user_id,
                 "name": user.name,
