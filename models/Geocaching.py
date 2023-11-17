@@ -10,10 +10,12 @@ from sqlalchemy.orm import Mapped
 
 from database import Base
 
+
 class UserGeocaching(Base):
     __tablename__ = 'user_geocaching'
     user_code = Column(String, ForeignKey('user.code'), primary_key=True)
     code = Column(String, ForeignKey('geocaching.code'), primary_key=True)
+
 
 class Geocaching(Base):
     __tablename__ = 'geocaching'
