@@ -3,19 +3,22 @@ from models.Geocaching import Geocaching as ModelGeocaching
 from models.Geocaching import UserGeocaching as ModelUserGeocaching
 from models.TokenData import TokenData
 from models.User import User as ModelUser
+
+
 # from schemas.Geocaching import Geocaching as SchemaGeocaching
-
-
 async def get_all_geocachings(db: Session):
     return db.query(ModelGeocaching).all()
 
 
 async def get_geocaching(db: Session, code: str):
-    return db.query(ModelGeocaching).filter(ModelGeocaching.code == code).first()
+    return db.query(ModelGeocaching).filter(
+        ModelGeocaching.code == code).first()
 
 
 async def get_all_hacker_geocaching(db: Session, user_code: str):
-    return db.query(ModelUserGeocaching).filter(ModelUserGeocaching.user_code == user_code).all()
+    return db.query(ModelUserGeocaching).filter(
+        ModelUserGeocaching.user_code == user_code).all()
+
 
 async def add_user_geocaching(db: Session, user_code: str, code: str):
     user_geocaching = ModelUserGeocaching(user_code=user_code, code=code)
@@ -23,6 +26,7 @@ async def add_user_geocaching(db: Session, user_code: str, code: str):
     db.commit()
     db.refresh(user_geocaching)
     return user_geocaching
+
 
 async def claim_lleidacoins(db: Session, user_code: str):
     hacker = db.query(ModelUser).filter(ModelUser.code == user_code).first()
@@ -36,4 +40,3 @@ async def claim_lleidacoins(db: Session, user_code: str):
     db.commit()
     db.refresh(hacker)
     return hacker
-
