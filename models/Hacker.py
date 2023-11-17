@@ -26,7 +26,7 @@ class Hacker(User):
     groups = relationship('HackerGroup', secondary='hacker_group_user')
     # is_leader: bool = Column(Integer, default=0)
     events = relationship('Event', secondary='hacker_event_participation')
-
+    
     __mapper_args__ = {
         "polymorphic_identity": UserType.HACKER.value,
     }
