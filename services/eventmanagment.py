@@ -235,7 +235,7 @@ async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
         raise InvalidDataException("User not registered")
     # user_registration.confirmed_assistance = True
     # if not user_registration.confirmed_assistance:
-        # raise InvalidDataException("User not confirmed assitence")
+    # raise InvalidDataException("User not confirmed assitence")
     event.participants.append(hacker)
     db.commit()
     db.refresh(event)
