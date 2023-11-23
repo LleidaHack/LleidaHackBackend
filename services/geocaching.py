@@ -25,7 +25,7 @@ def add_user_geocaching(db: Session, user_code: str, code: str):
     db.add(user_geocaching)
     db.commit()
     db.refresh(user_geocaching)
-    return user_geocaching
+    return 'point cached'
 
 
 def claim_lleidacoins(db: Session, user_code: str):
@@ -39,4 +39,4 @@ def claim_lleidacoins(db: Session, user_code: str):
     hacker.lleidacoins_claimed = True
     db.commit()
     db.refresh(hacker)
-    return hacker
+    return 'claimed succesfully'

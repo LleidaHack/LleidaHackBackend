@@ -221,6 +221,7 @@ async def confirm_assistance(token: str, db: Session):
 
 async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                       db: Session, data: TokenData):
+    message = ''
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -233,13 +234,15 @@ async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
         ModelHackerRegistration.event_id == event.id).first()
     if user_registration is None:
         raise InvalidDataException("User not registered")
+    # user_registration.confirmed_assistance = True
     if not user_registration.confirmed_assistance:
-        raise InvalidDataException("User not confirmed assitence")
+        message = "user haven't confirmed so we frced confirmation"
+        # raise InvalidDataException("User not confirmed assitence")
     event.participants.append(hacker)
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
-    return user_registration
+    return {"commment": message, "registration": user_registration}
 
 
 async def unparticipate_hacker_from_event(event: ModelEvent,
