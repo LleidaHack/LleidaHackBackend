@@ -242,7 +242,7 @@ async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
-    return {"commment": message, "registration": user_registration}
+    return message, user_registration
 
 
 async def unparticipate_hacker_from_event(event: ModelEvent,
