@@ -1,19 +1,9 @@
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
 from config import Configuration
-from fastapi import FastAPI
-from starlette.responses import JSONResponse
 from pydantic import EmailStr, BaseModel
 from typing import List
 from database import db_get
-from models.UserType import UserType
-from fastapi import FastAPI
-from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
-from smtplib import SMTP_SSL
-from email.mime.text import MIMEText
 from string import Template
-from sqlalchemy.orm import Session
 
 from models.User import User as ModelUser
 from models.Event import Event as ModelEvent
