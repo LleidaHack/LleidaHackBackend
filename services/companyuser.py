@@ -1,9 +1,9 @@
 from datetime import datetime as date
-from models.Company import CompanyUser as ModelCompanyUser
-from models import TokenData
-from models.UserType import UserType
-from schemas.Company import CompanyUser as SchemaCompanyUser
-from schemas.Company import CompanyUserUpdate as SchemaCompanyUserUpdate
+from src.Company.model import CompanyUser as ModelCompanyUser
+from src.Utils import TokenData
+from src.Utils.UserType import UserType
+from src.Company.schema import CompanyUser as SchemaCompanyUser
+from src.Company.schema import CompanyUserUpdate as SchemaCompanyUserUpdate
 
 from sqlalchemy.orm import Session
 

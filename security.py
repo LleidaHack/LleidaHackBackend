@@ -9,10 +9,10 @@ from jose import JWTError, jwt
 from passlib.hash import pbkdf2_sha256
 import os
 
-from models.User import User as ModelUser
-from models.UserType import UserType
-from schemas.Token import TokenData
-from models.TokenData import TokenData as TD
+from src.User.model import User as ModelUser
+from src.Utils.UserType import UserType
+from utils.Token import TokenData
+from src.Utils.TokenData import TokenData as TD
 from config import Configuration
 
 from error import AuthenticationException, NotFoundException

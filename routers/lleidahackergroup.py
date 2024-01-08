@@ -1,4 +1,4 @@
-from schemas.LleidaHacker import LleidaHackerGroup as SchemaLleidaHackerGroup
+from src.LleidaHacker.schema import LleidaHackerGroup as SchemaLleidaHackerGroup
 
 from database import get_db
 from utils.auth_bearer import JWTBearer

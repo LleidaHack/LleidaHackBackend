@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from schemas.Company import CompanyUser as SchemaCompanyUser
-from schemas.Company import CompanyUserUpdate as SchemaCompanyUserUpdate
+from src.Company.schema import CompanyUser as SchemaCompanyUser
+from src.Company.schema import CompanyUserUpdate as SchemaCompanyUserUpdate
 
 import services.companyuser as companyuser_service
 

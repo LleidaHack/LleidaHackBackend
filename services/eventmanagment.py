@@ -1,22 +1,21 @@
 from multiprocessing import Event
 from sqlalchemy.orm import Session
-from fastapi import Depends, Response, APIRouter
 
-from schemas.Event import HackerEventRegistration as SchemaEventRegistration
+from src.Event.Event import HackerEventRegistration as SchemaEventRegistration
 
-from models.Event import Event as ModelEvent
-from models.Event import HackerRegistration as ModelHackerRegistration
-from models.Meal import Meal as ModelMeal
-from models.Hacker import HackerGroupUser as ModelHackerGroupUser
-from models.Hacker import Hacker as ModelHacker
-from models.Hacker import HackerGroup as ModelHackerGroup
-from models.TokenData import TokenData
-from models.UserType import UserType
+from src.Event.model import Event as ModelEvent
+from src.Event.model import HackerRegistration as ModelHackerRegistration
+from src.Meal.model import Meal as ModelMeal
+from src.Hacker.model import HackerGroupUser as ModelHackerGroupUser
+from src.Hacker.model import Hacker as ModelHacker
+from src.Hacker.model import HackerGroup as ModelHackerGroup
+from src.Utils.TokenData import TokenData
+from src.Utils.UserType import UserType
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
-from security import create_all_tokens, get_data_from_token, generate_assistance_token
+from security import get_data_from_token, generate_assistance_token
 from utils.hide_utils import hacker_show_private
 
 from utils.service_utils import isBase64, subtract_lists

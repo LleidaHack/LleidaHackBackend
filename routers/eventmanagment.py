@@ -7,14 +7,14 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 
 from security import get_data_from_token
-from schemas.Event import HackerEventRegistration as SchemaEventRegistration
-from schemas.Event import HackerEventRegistrationUpdate as SchemaEventRegistrationUpdate
-import services.event as event_service
-import services.hacker as hacker_service
+from src.Event.Event import HackerEventRegistration as SchemaEventRegistration
+from src.Event.Event import HackerEventRegistrationUpdate as SchemaEventRegistrationUpdate
+import src.Event.service as event_service
+import src.Hacker.service as hacker_service
 import services.hackergroup as hackergroup_service
 import services.eventmanagment as eventmanagment_service
 import services.mail as mail_service
-import services.hacker as hacker_service
+import src.Hacker.service as hacker_service
 
 from utils.auth_bearer import JWTBearer
 from utils.service_utils import subtract_lists

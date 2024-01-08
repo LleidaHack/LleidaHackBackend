@@ -2,13 +2,13 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import Depends
 from database import get_db
-from models.User import User as ModelUser
-from models.TokenData import TokenData
-from models.UserType import UserType
+from src.User.model import User as ModelUser
+from src.Utils.TokenData import TokenData
+from src.Utils.UserType import UserType
 
-from models.Hacker import Hacker as ModelHacker
-from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
-from models.Company import CompanyUser as ModelCompanyUser
+from src.Hacker.model import Hacker as ModelHacker
+from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
+from src.Company.model import CompanyUser as ModelCompanyUser
 
 from security import create_all_tokens, get_data_from_token, get_password_hash, verify_password
 

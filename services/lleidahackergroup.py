@@ -1,10 +1,10 @@
-from models.LleidaHacker import LleidaHackerGroup as ModelLleidaHackerGroup
-from models.LleidaHacker import LleidaHacker as ModelLleidaHacker
-from models.TokenData import TokenData
-from models.UserType import UserType
+from src.LleidaHacker.model import LleidaHackerGroup as ModelLleidaHackerGroup
+from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
+from src.Utils.TokenData import TokenData
+from src.Utils.UserType import UserType
 
-from schemas.LleidaHacker import LleidaHackerGroup as SchemaLleidaHackerGroup
-from schemas.LleidaHacker import LleidaHackerGroupUpdate as SchemaLleidaHackerGroupUpdate
+from src.LleidaHacker.schema import LleidaHackerGroup as SchemaLleidaHackerGroup
+from src.LleidaHacker.schema import LleidaHackerGroupUpdate as SchemaLleidaHackerGroupUpdate
 
 from utils.service_utils import set_existing_data
 

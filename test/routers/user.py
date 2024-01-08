@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 from main import app
-from schemas.User import User as SchemaUser
-from models.User import User as ModelUser
+from src.User.schema import User as SchemaUser
+from src.User.model import User as ModelUser
 import random
 import string
 import base64

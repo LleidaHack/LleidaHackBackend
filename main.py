@@ -7,18 +7,18 @@ from logging.config import dictConfig
 import logging
 from log_config import LogConfig
 
-from routers import user
-from routers import hacker
+from src.User import user
+from src.Hacker import router
 from routers import hackergroup
-from routers import lleidahacker
+from src.LleidaHacker import router
 from routers import lleidahackergroup
-from routers import company
+from src.Company import company
 from routers import companyuser
-from routers import event
-from routers import meal
+from src.Event import router
+from src.Meal import router
 from routers import eventmanagment
 from routers import authentication
-from routers import mail_queue
+from src.MailQueue import router
 from routers import geocaching
 
 from error import error_handler as eh
@@ -100,15 +100,15 @@ app.add_exception_handler(InputException, eh.input_exception_handler)
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
 app.include_router(user.router)
-app.include_router(hacker.router)
+app.include_router(router.router)
 app.include_router(hackergroup.router)
-app.include_router(lleidahacker.router)
+app.include_router(router.router)
 app.include_router(lleidahackergroup.router)
 app.include_router(company.router)
 app.include_router(companyuser.router)
-app.include_router(event.router)
-app.include_router(meal.router)
-app.include_router(mail_queue.router)
+app.include_router(router.router)
+app.include_router(router.router)
+app.include_router(router.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(geocaching.router)

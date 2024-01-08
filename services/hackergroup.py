@@ -1,12 +1,12 @@
-from models.Hacker import HackerGroup as ModelHackerGroup
-from models.Hacker import HackerGroupUser as ModelHackerGroupUser
-from models.Hacker import Hacker as ModelHacker
-from models.TokenData import TokenData
-from models.UserType import UserType
-from models.Event import Event as ModelEvent
+from src.Hacker.model import HackerGroup as ModelHackerGroup
+from src.Hacker.model import HackerGroupUser as ModelHackerGroupUser
+from src.Hacker.model import Hacker as ModelHacker
+from src.Utils.TokenData import TokenData
+from src.Utils.UserType import UserType
+from src.Event.model import Event as ModelEvent
 
-from schemas.Hacker import HackerGroup as SchemaHackerGroup
-from schemas.Hacker import HackerGroupUpdate as SchemaHackerGroupUpdate
+from src.Hacker.schema import HackerGroup as SchemaHackerGroup
+from src.Hacker.schema import HackerGroupUpdate as SchemaHackerGroupUpdate
 
 from sqlalchemy.orm import Session
 

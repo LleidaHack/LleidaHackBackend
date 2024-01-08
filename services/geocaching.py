@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from models.Geocaching import Geocaching as ModelGeocaching
-from models.Geocaching import UserGeocaching as ModelUserGeocaching
-from models.TokenData import TokenData
-from models.User import User as ModelUser
+from src.maybe_to_delete.Geocaching import Geocaching as ModelGeocaching
+from src.maybe_to_delete.Geocaching import UserGeocaching as ModelUserGeocaching
+from src.Utils.TokenData import TokenData
+from src.User.model import User as ModelUser
 
 
 # from schemas.Geocaching import Geocaching as SchemaGeocaching
