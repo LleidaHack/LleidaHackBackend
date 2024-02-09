@@ -1,4 +1,4 @@
-from models.User import User as ModelUser
+from src.User.model import User as ModelUser
 from Hacker.model import Hacker as ModelHacker
 
 from src.Hacker.schema import Hacker as SchemaHacker
