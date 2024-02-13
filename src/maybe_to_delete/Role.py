@@ -2,7 +2,7 @@ from typing import List
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Enum
 from sqlalchemy.orm import relationship
 
-from models.User import User as ModelUser
+from src.User.model import User as ModelUser
 
 from database import Base
 import enum

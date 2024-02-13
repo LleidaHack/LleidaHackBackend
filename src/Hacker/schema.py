@@ -1,15 +1,25 @@
-from src.User.schema import User, UserUpdate
+from src.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 from pydantic import BaseModel
 from typing import Optional
 
-
-class Hacker(User):
+class HackerCreate(UserCreate):
     github: str
     linkedin: str
+    study_center: Optional[str]
+    location: Optional[str]
+    how_did_you_meet_us: Optional[str]
+    cv: Optional[str]
 
-    class Config:
-        orm_mode = True
+class HackerGet(UserGet):
+    github: str
+    linkedin: str
+    study_center: str
+    location: str
+    how_did_you_meet_us: str
+    cv: str
 
+class HackerGetAll(UserGetAll, HackerGet):
+    pass
 
 class HackerUpdate(UserUpdate):
     github: Optional[str]
@@ -19,19 +29,3 @@ class HackerUpdate(UserUpdate):
     location: Optional[str]
     how_did_you_meet_us: Optional[str]
     cv: Optional[str]
-
-
-class HackerGroup(BaseModel):
-    name: str
-    description: str
-    leader_id: int
-    event_id: int
-
-    class Config:
-        orm_mode = True
-
-
-class HackerGroupUpdate(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
-    leader_id: Optional[int]

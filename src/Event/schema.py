@@ -5,7 +5,7 @@ from pydantic import BaseModel, validator
 from typing import Optional
 
 
-class Event(BaseModel):
+class EventCreate(BaseModel):
     name: str
     description: str
     start_date: date
@@ -43,6 +43,23 @@ class Event(BaseModel):
     class Config:
         orm_mode = True
 
+class EventGet(BaseModel):
+    name: str
+    description: str
+    start_date: date
+    end_date: date
+    location: str
+    archived: bool
+    price: int
+    max_participants: int
+    max_group_size: int
+    max_sponsors: int
+    status: int
+    image: Optional[str]
+    is_image_url: Optional[bool]
+
+class EventGetAll(EventGet):
+    pass
 
 class EventUpdate(BaseModel):
     name: Optional[str]

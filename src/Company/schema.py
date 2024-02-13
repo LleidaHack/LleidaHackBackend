@@ -1,9 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
-from src.User.schema import User, UserUpdate
 
 
-class Company(BaseModel):
+class CompanyGet(BaseModel):
     name: str
     description: str
     website: str
@@ -13,9 +12,8 @@ class Company(BaseModel):
     linkdin: str
     telephone: str
 
-    # class Config:
-    #     orm_mode = True
-
+class CompanyGetAll(CompanyGet):
+    pass
 
 class CompanyUpdate(BaseModel):
     name: Optional[str]
@@ -26,16 +24,3 @@ class CompanyUpdate(BaseModel):
     address: Optional[str]
     linkdin: Optional[str]
     telephone: Optional[str]
-
-
-class CompanyUser(User):
-    role: str
-    company_id: int
-
-    # class Config:
-    #     orm_mode = True
-
-
-class CompanyUserUpdate(UserUpdate):
-    role: Optional[str]
-    company_id: Optional[int]

@@ -6,7 +6,7 @@ from typing import Optional
 import re
 
 
-class User(BaseModel):
+class UserCreate(BaseModel):
     name: str
     nickname: str
     password: str
@@ -58,6 +58,21 @@ class User(BaseModel):
     class Config:
         orm_mode = True
 
+class UserGet(BaseModel):
+    name: str
+    nickname: str
+    birthdate: date
+    email: str
+    image: Optional[str]
+    is_image_url: Optional[bool]
+    recive_mails: Optional[bool]
+
+class UserGetAll(UserGet):
+    password: str
+    food_restrictions: str
+    telephone: str
+    address: str
+    shirt_size: Optional[str]
 
 class UserUpdate(BaseModel):
     name: Optional[str]

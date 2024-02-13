@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 from typing import Optional
-from src.User.schema import User, UserUpdate
+from src.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
 
-class LleidaHacker(User):
+class LleidaHackerCreate(UserCreate):
     role: str
     nif: str
     student: bool
@@ -16,26 +16,20 @@ class LleidaHacker(User):
         orm_mode = True
 
 
+class LleidaHackerGet(UserGet):
+    role: str
+    nif: str
+    student: bool
+    active: bool
+    github: str
+
+
+class LleidaHackerGetAll(UserGetAll, LleidaHackerGet):
+    pass
+
 class LleidaHackerUpdate(UserUpdate):
     role: Optional[str]
     nif: Optional[str]
     student: Optional[bool]
     active: Optional[bool]
     github: Optional[str]
-
-
-class LleidaHackerGroup(BaseModel):
-    name: str
-    description: str
-
-    # leader: int
-
-    class Config:
-        orm_mode = True
-
-
-class LleidaHackerGroupUpdate(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
-
-    # leader: Optional[int]
