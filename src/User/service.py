@@ -14,15 +14,15 @@ from error.NotFoundException import NotFoundException
 from utils.hide_utils import user_show_private
 
 
-async def get_all(db: Session):
+def get_all(db: Session):
     return db.query(ModelUser).all()
 
 
-async def count_users(db: Session):
+def count_users(db: Session):
     return db.query(ModelUser).count()
 
 
-async def get_user(db: Session, userId: int, data: TokenData):
+def get_user(db: Session, userId: int, data: TokenData):
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
     if user is None:
         raise NotFoundException("User not found")
@@ -33,7 +33,7 @@ async def get_user(db: Session, userId: int, data: TokenData):
     return user
 
 
-async def get_user_by_email(db: Session, email: str, data: TokenData):
+def get_user_by_email(db: Session, email: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -47,7 +47,7 @@ async def get_user_by_email(db: Session, email: str, data: TokenData):
     return user
 
 
-async def get_user_by_nickname(db: Session, nickname: str, data: TokenData):
+def get_user_by_nickname(db: Session, nickname: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -61,7 +61,7 @@ async def get_user_by_nickname(db: Session, nickname: str, data: TokenData):
     return user
 
 
-async def get_user_by_phone(db: Session, phone: str, data: TokenData):
+def get_user_by_phone(db: Session, phone: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -75,7 +75,7 @@ async def get_user_by_phone(db: Session, phone: str, data: TokenData):
     return user
 
 
-async def get_user_by_code(db: Session, code: str, data: TokenData):
+def get_user_by_code(db: Session, code: str, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -85,7 +85,7 @@ async def get_user_by_code(db: Session, code: str, data: TokenData):
     return user
 
 
-async def add_user(db: Session, payload: SchemaUser):
+def add_user(db: Session, payload: SchemaUser):
     new_user = ModelUser(**payload.dict())
     if payload.image is not None:
         payload = check_image(payload)
@@ -95,11 +95,11 @@ async def add_user(db: Session, payload: SchemaUser):
     return new_user
 
 
-async def delete_user(db: Session, userId: int):
-    return await db.query(ModelUser).filter(ModelUser.id == userId).delete()
+def delete_user(db: Session, userId: int):
+    return db.query(ModelUser).filter(ModelUser.id == userId).delete()
 
 
-async def update_user(db: Session, userId: int, payload: SchemaUser):
+def update_user(db: Session, userId: int, payload: SchemaUser):
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
     user.name = payload.name
     user.password = payload.password
@@ -115,7 +115,7 @@ async def update_user(db: Session, userId: int, payload: SchemaUser):
     return user
 
 
-async def set_user_token(db: Session, userId: int, token: str,
+def set_user_token(db: Session, userId: int, token: str,
                          refresh_token: str):
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
     user.token = token

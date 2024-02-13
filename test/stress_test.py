@@ -7,7 +7,7 @@ from aiohttp import ClientSession
 fault = 0
 
 
-async def signup_hacker(session):
+def signup_hacker(session):
     #url = "http://localhost:8000/hacker/signup"
     url = "https://backend.integration.lleidahack.dev/hacker/signup"
     hacker = {
@@ -42,15 +42,15 @@ async def signup_hacker(session):
         "string"
     }
     #print(hacker['email'])
-    async with session.post(url, json=hacker) as response:
+    with session.post(url, json=hacker) as response:
         #assert response.status == 200, "Request failed"
-        return await response.read()
+        return response.read()
 
 
-async def main():
-    async with ClientSession() as session:
+def main():
+    with ClientSession() as session:
         tasks = [signup_hacker(session) for _ in range(100)]
-        responses = await asyncio.gather(*tasks)
+        responses = asyncio.gather(*tasks)
         global fault
         for response in responses:
             print(response)

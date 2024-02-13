@@ -18,11 +18,11 @@ from utils.hide_utils import companyuser_show_private
 from utils.service_utils import check_user
 
 
-async def get_all(db: Session):
+def get_all(db: Session):
     return db.query(ModelCompanyUser).all()
 
 
-async def get_company_user(companyUserId: int, db: Session, data: TokenData):
+def get_company_user(companyUserId: int, db: Session, data: TokenData):
     user = db.query(ModelCompanyUser).filter(
         ModelCompanyUser.id == companyUserId).first()
     if user is None:
@@ -35,7 +35,7 @@ async def get_company_user(companyUserId: int, db: Session, data: TokenData):
     return user
 
 
-async def add_company_user(payload: SchemaCompanyUser, db: Session):
+def add_company_user(payload: SchemaCompanyUser, db: Session):
     check_user(db, payload.email, payload.nickname, payload.telephone)
     new_company_user = ModelCompanyUser(**payload.dict(),
                                         code=generate_user_code(db))
@@ -48,7 +48,7 @@ async def add_company_user(payload: SchemaCompanyUser, db: Session):
     return new_company_user
 
 
-async def update_company_user(payload: SchemaCompanyUserUpdate,
+def update_company_user(payload: SchemaCompanyUserUpdate,
                               companyUserId: int, db: Session,
                               data: TokenData):
     if not data.is_admin:
@@ -73,7 +73,7 @@ async def update_company_user(payload: SchemaCompanyUserUpdate,
     return company_user, updated
 
 
-async def delete_company_user(companyUserId: int, db: Session,
+def delete_company_user(companyUserId: int, db: Session,
                               data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or

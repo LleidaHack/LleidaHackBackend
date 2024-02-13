@@ -15,15 +15,15 @@ from error.NotFoundException import NotFoundException
 from error.ValidationException import ValidationException
 
 
-async def get_all(db: Session):
+def get_all(db: Session):
     return db.query(ModelCompany).all()
 
 
-async def get_company(db: Session, companyId: int):
+def get_company(db: Session, companyId: int):
     return db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
 
 
-async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
+def add_company(db: Session, payload: SchemaCompany, data: TokenData):
     if not data.is_admin:
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):
@@ -40,7 +40,7 @@ async def add_company(db: Session, payload: SchemaCompany, data: TokenData):
     return new_company
 
 
-async def update_company(db: Session, companyId: int,
+def update_company(db: Session, companyId: int,
                          payload: SchemaCompanyUpdate, data: TokenData):
     if not data.is_admin:
         if not (data.available and
@@ -64,7 +64,7 @@ async def update_company(db: Session, companyId: int,
     return company, updated
 
 
-async def delete_company(db: Session, companyId: int, data: TokenData):
+def delete_company(db: Session, companyId: int, data: TokenData):
     if not data.is_admin:
         if not (data.available and
                 (data.user_type == UserType.LLEIDAHACKER.value
@@ -83,7 +83,7 @@ async def delete_company(db: Session, companyId: int, data: TokenData):
     return company
 
 
-async def get_company_users(db: Session, companyId: int, data: TokenData):
+def get_company_users(db: Session, companyId: int, data: TokenData):
     company = db.query(ModelCompany).filter(
         ModelCompany.id == companyId).first()
     if company is None:
@@ -91,7 +91,7 @@ async def get_company_users(db: Session, companyId: int, data: TokenData):
     return company.users
 
 
-async def add_company_user(db: Session, companyId: int, userId: int,
+def add_company_user(db: Session, companyId: int, userId: int,
                            data: TokenData):
     if not data.is_admin:
         if not (data.available and
@@ -117,7 +117,7 @@ async def add_company_user(db: Session, companyId: int, userId: int,
     return company
 
 
-async def delete_company_user(db: Session, companyId: int, userId: int,
+def delete_company_user(db: Session, companyId: int, userId: int,
                               data: TokenData):
     if not data.is_admin:
         if not (data.available and
@@ -139,7 +139,7 @@ async def delete_company_user(db: Session, companyId: int, userId: int,
     return company
 
 
-async def get_company_events(db: Session, companyId: int):
+def get_company_events(db: Session, companyId: int):
     company = db.query(ModelCompany).filter(
         ModelCompany.id == companyId).first()
     if company is None:

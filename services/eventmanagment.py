@@ -25,7 +25,7 @@ from services.mail import send_event_registration_email
 from services.mail import send_event_accepted_email
 
 
-async def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
+def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
                         data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -39,13 +39,13 @@ async def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
         raise NotFoundException("Hacker not registered")
     hacker_registration.dailyhack_url = url
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
-    await send_dailyhack_added_email(hacker)
+    send_dailyhack_added_email(hacker)
     db.commit()
     db.refresh(hacker_registration)
     return hacker_registration
 
 
-async def get_dailyhack(eventId: int, hackerId: int, db: Session,
+def get_dailyhack(eventId: int, hackerId: int, db: Session,
                         data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -60,7 +60,7 @@ async def get_dailyhack(eventId: int, hackerId: int, db: Session,
     return hacker_registration.dailyhack_url
 
 
-async def update_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
+def update_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
                            data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -78,7 +78,7 @@ async def update_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
     return hacker_registration
 
 
-async def delete_dailyhack(eventId: int, hackerId: int, db: Session,
+def delete_dailyhack(eventId: int, hackerId: int, db: Session,
                            data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -96,7 +96,7 @@ async def delete_dailyhack(eventId: int, hackerId: int, db: Session,
     return hacker_registration
 
 
-async def get_dailyhacks(eventId: int, db: Session, data: TokenData):
+def get_dailyhacks(eventId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -119,7 +119,7 @@ async def get_dailyhacks(eventId: int, db: Session, data: TokenData):
     return userid_dailyhack
 
 
-async def register_hacker_to_event(payload: SchemaEventRegistration,
+def register_hacker_to_event(payload: SchemaEventRegistration,
                                    event: ModelEvent, hacker: ModelHacker,
                                    db: Session, data: TokenData):
     if not data.is_admin:
@@ -165,11 +165,11 @@ async def register_hacker_to_event(payload: SchemaEventRegistration,
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
-    await send_event_registration_email(hacker, event)
+    send_event_registration_email(hacker, event)
     return event
 
 
-async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
+def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                                        db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -192,7 +192,7 @@ async def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-async def confirm_assistance(token: str, db: Session):
+def confirm_assistance(token: str, db: Session):
     data = get_data_from_token(token, special=True)
     # if data.expt < datetime.utcnow().isoformat():
     user = db.query(ModelHacker).filter(ModelHacker.id == data.user_id).first()
@@ -218,7 +218,7 @@ async def confirm_assistance(token: str, db: Session):
     return user_registration
 
 
-async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
+def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                       db: Session, data: TokenData):
     message = ''
     if not data.is_admin:
@@ -244,7 +244,7 @@ async def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     return message, user_registration
 
 
-async def unparticipate_hacker_from_event(event: ModelEvent,
+def unparticipate_hacker_from_event(event: ModelEvent,
                                           hacker: ModelHacker, db: Session,
                                           data: TokenData):
     if not data.is_admin:
@@ -259,7 +259,7 @@ async def unparticipate_hacker_from_event(event: ModelEvent,
     return event
 
 
-async def unaccept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
+def unaccept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                    db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -273,7 +273,7 @@ async def unaccept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
+def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
                                  db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -293,11 +293,11 @@ async def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
     db.commit()
     db.refresh(event)
     db.refresh(hacker)
-    await send_event_accepted_email(hacker, event, token)
+    send_event_accepted_email(hacker, event, token)
     return event
 
 
-async def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
+def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
                                 db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -312,7 +312,7 @@ async def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
         accept_hacker_to_event(event, hacker_user, db, data)
 
 
-async def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
+def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
                                   db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -323,7 +323,7 @@ async def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
         event.rejected_hackers.append(hacker)
 
 
-async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
+def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
                                    db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -339,7 +339,7 @@ async def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
+def get_pending_hackers_gruped(event: ModelEvent, db: Session,
                                      data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -398,7 +398,7 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
     return {"groups": output_data, "nogroup": nogroup_data}
 
 
-# async def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: TokenData):
+# def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: TokenData):
 #     if not data.is_admin:
 #         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
 #             raise AuthenticationException("Not authorized")
@@ -420,7 +420,7 @@ async def get_pending_hackers_gruped(event: ModelEvent, db: Session,
 #     return out
 
 
-async def get_event_status(event: ModelEvent, db: Session):
+def get_event_status(event: ModelEvent, db: Session):
     data = {
         'registratedUsers':
         len(event.registered_hackers),
@@ -433,14 +433,14 @@ async def get_event_status(event: ModelEvent, db: Session):
         'participatingUsers':
         len(event.participants),
         'acceptedAndConfirmedUsers':
-        len(await get_accepted_and_confirmed(event, db)),
+        len(get_accepted_and_confirmed(event, db)),
     }
     for meal in event.meals:
         data[meal.name] = len(meal.users)
     return data
 
 
-async def get_food_restrictions(event: ModelEvent, db: Session):
+def get_food_restrictions(event: ModelEvent, db: Session):
     users = event.participants + event.accepted_hackers + event.registered_hackers
     restrictions = []
     for user in users:
@@ -452,7 +452,7 @@ async def get_food_restrictions(event: ModelEvent, db: Session):
     return restrictions
 
 
-async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
+def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
               db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -467,7 +467,7 @@ async def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker,
     return event
 
 
-async def get_sizes(event: ModelEvent, db: Session):
+def get_sizes(event: ModelEvent, db: Session):
     sizes = {}
     for user in event.registered_hackers:
         if user.shirt_size is not None and user.shirt_size.strip() != "":
@@ -478,7 +478,7 @@ async def get_sizes(event: ModelEvent, db: Session):
     return sizes
 
 
-async def get_accepted_and_confirmed(event: ModelEvent, db: Session):
+def get_accepted_and_confirmed(event: ModelEvent, db: Session):
     accepted_and_confirmed = []
     for user in event.accepted_hackers:
         user_registration = db.query(ModelHackerRegistration).filter(
@@ -489,7 +489,7 @@ async def get_accepted_and_confirmed(event: ModelEvent, db: Session):
     return accepted_and_confirmed
 
 
-async def get_hackers_unregistered(event: ModelEvent, db: Session):
+def get_hackers_unregistered(event: ModelEvent, db: Session):
     hackers = db.query(ModelHacker).all()
     out = subtract_lists(hackers, event.registered_hackers)
     for u in out:
@@ -497,5 +497,5 @@ async def get_hackers_unregistered(event: ModelEvent, db: Session):
     return out
 
 
-async def count_hackers_unregistered(event: ModelEvent, db: Session):
-    return len(await get_hackers_unregistered(event, db))
+def count_hackers_unregistered(event: ModelEvent, db: Session):
+    return len(get_hackers_unregistered(event, db))

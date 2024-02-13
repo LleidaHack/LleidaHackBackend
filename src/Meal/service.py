@@ -13,18 +13,18 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 
 
-async def get_meals(id: int, db: Session, token: TokenData):
+def get_meals(id: int, db: Session, token: TokenData):
     return db.query(ModelMeal).filter(ModelMeal.event_id == id).all()
 
 
-async def get_meal(id: int, meal_id: int, db: Session, token: TokenData):
+def get_meal(id: int, meal_id: int, db: Session, token: TokenData):
     meal = db.query(ModelMeal).filter(ModelMeal.id == meal_id).first()
     if meal is None:
         raise NotFoundException("Meal not found")
     return meal
 
 
-async def add_meal(meal: SchemaMeal, db: Session, data: TokenData):
+def add_meal(meal: SchemaMeal, db: Session, data: TokenData):
     if not data.is_admin:
         if not data.type == UserType.LLEIDAHACKER.value:
             raise AuthenticationException("You are not allowed to add meals")
@@ -35,7 +35,7 @@ async def add_meal(meal: SchemaMeal, db: Session, data: TokenData):
     return db_meal
 
 
-async def update_meal(id: int, meal_id: int, meal: SchemaMealUpdate,
+def update_meal(id: int, meal_id: int, meal: SchemaMealUpdate,
                       db: Session, data: TokenData):
     if not data.is_admin:
         if not data.type == UserType.LLEIDAHACKER.value:
@@ -50,7 +50,7 @@ async def update_meal(id: int, meal_id: int, meal: SchemaMealUpdate,
     return db_meal
 
 
-async def delete_meal(id: int, meal_id: int, db: Session, data: TokenData):
+def delete_meal(id: int, meal_id: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not data.type == UserType.LLEIDAHACKER.value:
             raise AuthenticationException(

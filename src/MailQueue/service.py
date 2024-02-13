@@ -47,7 +47,7 @@ def set_sent(mail, db: Session):
     db.commit()
 
 
-async def get_last(db: Session, data: TokenData):
+def get_last(db: Session, data: TokenData):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     return db.query(ModelMailQueue).filter(
@@ -55,13 +55,13 @@ async def get_last(db: Session, data: TokenData):
             ModelMailQueue.id.asc()).first()
 
 
-async def get_by_id(db: Session, id: int, data: TokenData):
+def get_by_id(db: Session, id: int, data: TokenData):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     return db.query(ModelMailQueue).filter(ModelMailQueue.id == id).first()
 
 
-async def count_unsent(db: Session, data: TokenData):
+def count_unsent(db: Session, data: TokenData):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     unsent_count = db.query(ModelMailQueue).filter(
@@ -69,7 +69,7 @@ async def count_unsent(db: Session, data: TokenData):
     return unsent_count
 
 
-async def clear_queue(db: Session, data: TokenData):
+def clear_queue(db: Session, data: TokenData):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     db.query(ModelMailQueue).delete()

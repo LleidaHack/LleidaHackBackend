@@ -19,11 +19,11 @@ from error.InvalidDataException import InvalidDataException
 from utils.hide_utils import hackergroup_show_private
 
 
-async def get_all(db: Session):
+def get_all(db: Session):
     return db.query(ModelHackerGroup).all()
 
 
-async def get_group_by_code(code: str, db: Session):
+def get_group_by_code(code: str, db: Session):
     group = db.query(ModelHackerGroup).filter(
         ModelHackerGroup.code == code).first()
     if group is None:
@@ -31,7 +31,7 @@ async def get_group_by_code(code: str, db: Session):
     return group
 
 
-async def get_hacker_group(id: int, db: Session, data: TokenData):
+def get_hacker_group(id: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
@@ -48,7 +48,7 @@ async def get_hacker_group(id: int, db: Session, data: TokenData):
     return group
 
 
-async def add_hacker_group(payload: SchemaHackerGroup, db: Session,
+def add_hacker_group(payload: SchemaHackerGroup, db: Session,
                            data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
@@ -82,7 +82,7 @@ async def add_hacker_group(payload: SchemaHackerGroup, db: Session,
     return new_hacker_group
 
 
-async def update_hacker_group(id: int, payload: SchemaHackerGroupUpdate,
+def update_hacker_group(id: int, payload: SchemaHackerGroupUpdate,
                               db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
@@ -104,7 +104,7 @@ async def update_hacker_group(id: int, payload: SchemaHackerGroupUpdate,
     return hacker_group, updated
 
 
-async def delete_hacker_group(id: int, db: Session, data: TokenData):
+def delete_hacker_group(id: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
@@ -123,7 +123,7 @@ async def delete_hacker_group(id: int, db: Session, data: TokenData):
     return hacker_group
 
 
-async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
+def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
                               data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
@@ -156,7 +156,7 @@ async def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
     return hacker_group
 
 
-async def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
+def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
                                       data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -190,7 +190,7 @@ async def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
     return hacker_group
 
 
-async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
+def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
                                    data: TokenData):
     deleted = False
     if not data.is_admin:
@@ -222,7 +222,7 @@ async def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
     return hacker_group
 
 
-async def set_hacker_group_leader(groupId: int, hackerId: int, db: Session,
+def set_hacker_group_leader(groupId: int, hackerId: int, db: Session,
                                   data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value

@@ -15,11 +15,11 @@ from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
 
-async def get_all(db: Session):
+def get_all(db: Session):
     return db.query(ModelLleidaHackerGroup).all()
 
 
-async def get_lleidahackergroup(groupId: int, db: Session):
+def get_lleidahackergroup(groupId: int, db: Session):
     group = db.query(ModelLleidaHackerGroup).filter(
         ModelLleidaHackerGroup.id == groupId).first()
     if group is None:
@@ -27,7 +27,7 @@ async def get_lleidahackergroup(groupId: int, db: Session):
     return group
 
 
-async def add_lleidahackergroup(payload: SchemaLleidaHackerGroup, db: Session,
+def add_lleidahackergroup(payload: SchemaLleidaHackerGroup, db: Session,
                                 data: TokenData):
     if not data.is_admin:
         if not (data.available
@@ -45,7 +45,7 @@ async def add_lleidahackergroup(payload: SchemaLleidaHackerGroup, db: Session,
     return new_lleidahacker_group
 
 
-async def update_lleidahackergroup(groupId: int,
+def update_lleidahackergroup(groupId: int,
                                    payload: SchemaLleidaHackerGroupUpdate,
                                    db: Session, data: TokenData):
     if not data.is_admin:
@@ -65,7 +65,7 @@ async def update_lleidahackergroup(groupId: int,
     return lleidahacker_group, updated
 
 
-async def delete_lleidahackergroup(groupId: int, db: Session, data: TokenData):
+def delete_lleidahackergroup(groupId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):
@@ -82,7 +82,7 @@ async def delete_lleidahackergroup(groupId: int, db: Session, data: TokenData):
     return lleidahacker_group
 
 
-async def add_lleidahacker_to_group(groupId: int, lleidahackerId: int,
+def add_lleidahacker_to_group(groupId: int, lleidahackerId: int,
                                     db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available
@@ -105,7 +105,7 @@ async def add_lleidahacker_to_group(groupId: int, lleidahackerId: int,
     return lleidahacker_group
 
 
-async def remove_lleidahacker_from_group(groupId: int, lleidahackerId: int,
+def remove_lleidahacker_from_group(groupId: int, lleidahackerId: int,
                                          db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available
@@ -130,7 +130,7 @@ async def remove_lleidahacker_from_group(groupId: int, lleidahackerId: int,
     return lleidahacker_group
 
 
-async def set_lleidahacker_group_leader(groupId: int, lleidahackerId: int,
+def set_lleidahacker_group_leader(groupId: int, lleidahackerId: int,
                                         db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available

@@ -9,35 +9,35 @@ from error.InputException import InputException
 
 
 # @app.exception_handler(AuthenticationException)
-async def authentication_exception_handler(request, exc):
+def authentication_exception_handler(request, exc):
     return JSONResponse(
         status_code=401,
         content={"message": exc.message},
     )
 
 
-async def not_found_exception_handler(request, exc):
+def not_found_exception_handler(request, exc):
     return JSONResponse(
         status_code=404,
         content={"message": exc.message},
     )
 
 
-async def validation_exception_handler(request, exc):
+def validation_exception_handler(request, exc):
     return JSONResponse(
         status_code=400,
         content={"message": exc.message},
     )
 
 
-async def invalid_data_exception_handler(request, exc):
+def invalid_data_exception_handler(request, exc):
     return JSONResponse(
         status_code=400,
         content={"message": exc.message},
     )
 
 
-async def input_exception_handler(request, exc):
+def input_exception_handler(request, exc):
     return JSONResponse(
         status_code=400,
         content={"message": exc.message},

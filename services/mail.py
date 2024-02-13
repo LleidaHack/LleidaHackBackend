@@ -60,7 +60,7 @@ def generate_registration_confirmation_template(user: ModelUser):
                         static_folder=STATIC_FOLDER)
 
 
-async def send_registration_confirmation_email(user: ModelUser):
+def send_registration_confirmation_email(user: ModelUser):
     send_email(user, generate_registration_confirmation_template(user),
                'Registration Confirmation')
 
@@ -78,7 +78,7 @@ def generate_password_reset_template(user: ModelUser):
                         static_folder=STATIC_FOLDER)
 
 
-async def send_password_reset_email(user: ModelUser):
+def send_password_reset_email(user: ModelUser):
     send_email(user.email, generate_password_reset_template(user),
                'Password Reset')
 
@@ -98,7 +98,7 @@ def generate_event_registration_template(user: ModelUser, event_name: str):
         static_folder=STATIC_FOLDER)
 
 
-async def send_event_registration_email(user: ModelUser, event: ModelEvent):
+def send_event_registration_email(user: ModelUser, event: ModelEvent):
     send_email(user.email, generate_event_registration_template(user, event),
                'Event Registration')
 
@@ -120,7 +120,7 @@ def generate_event_accepted_template(user: ModelUser, event: ModelEvent,
                         static_folder=STATIC_FOLDER)
 
 
-async def send_event_accepted_email(user: ModelUser, event: ModelEvent,
+def send_event_accepted_email(user: ModelUser, event: ModelEvent,
                                     token: str):
     send_email(user.email,
                generate_event_accepted_template(user, event,
@@ -139,7 +139,7 @@ def generate_dailyhack_entregat_template(user: ModelUser):
                         static_folder=STATIC_FOLDER)
 
 
-async def send_dailyhack_added_email(user: ModelUser):
+def send_dailyhack_added_email(user: ModelUser):
     send_email(user.email, generate_dailyhack_entregat_template(user),
                'Dailyhack Entregat')
 
@@ -155,12 +155,12 @@ def generate_dailyhack_obert_template(user: ModelUser):
                         static_folder=STATIC_FOLDER)
 
 
-async def send_dailyhack_open_email(user: ModelUser):
+def send_dailyhack_open_email(user: ModelUser):
     send_email(user.email, generate_dailyhack_obert_template(user),
                'Dailyhack Obert', True)
 
 
-async def send_all_dailyhack_mails(lst: List):
+def send_all_dailyhack_mails(lst: List):
     out = []
     for u in lst:
         m = ModelMailQueue()
@@ -184,11 +184,11 @@ def generate_reminder_template(user: ModelUser):
                         static_folder=STATIC_FOLDER)
 
 
-async def send_reminder_email(user: ModelUser):
+def send_reminder_email(user: ModelUser):
     send_email(user.email, generate_reminder_template(user), 'Reminder', True)
 
 
-async def send_all_reminder_mails(lst: List):
+def send_all_reminder_mails(lst: List):
     out = []
     for u in lst:
         m = ModelMailQueue()
@@ -212,10 +212,10 @@ def generate_contact_template(name: str, title: str, email: str, message: str):
                         static_folder=STATIC_FOLDER)
 
 
-async def send_contact_email(name: str, title: str, email: str, message: str):
+def send_contact_email(name: str, title: str, email: str, message: str):
     send_email(CONTACT_MAIL,
                generate_contact_template(name, title, email, message), title)
 
 
-# async def send_event_rejected_email(user: ModelUser, event_name: str):
+# def send_event_rejected_email(user: ModelUser, event_name: str):
 #     pass

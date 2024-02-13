@@ -19,7 +19,7 @@ from error.AuthenticationException import AuthenticationException
 from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
 
 
-async def login(mail: str, password: str, db: Session = Depends(get_db)):
+def login(mail: str, password: str, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == mail).first()
     if user is None:
         raise InvalidDataException("User not found")
@@ -36,7 +36,7 @@ async def login(mail: str, password: str, db: Session = Depends(get_db)):
     }
 
 
-async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(refresh_token, True)
     if data is None:
         raise InvalidDataException("Invalid token")
@@ -48,18 +48,18 @@ async def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
     return create_all_tokens(user, db)
 
 
-async def reset_password(email: str, db: Session = Depends(get_db)):
+def reset_password(email: str, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == email).first()
     if user is None:
         raise InvalidDataException("User not found")
     if not user.is_verified:
         raise InvalidDataException("User not verified")
     create_all_tokens(user, db, True)
-    await send_password_reset_email(user)
+    send_password_reset_email(user)
     return {"success": True}
 
 
-async def confirm_reset_password(token: str,
+def confirm_reset_password(token: str,
                                  password: str,
                                  db: Session = Depends(get_db)):
     data = get_data_from_token(token, special=True)
@@ -79,7 +79,7 @@ async def confirm_reset_password(token: str,
     return {"success": True}
 
 
-async def get_me(data: TokenData, db: Session = Depends(get_db)):
+def get_me(data: TokenData, db: Session = Depends(get_db)):
     if data.type == UserType.HACKER.value:
         return db.query(ModelHacker).filter(
             ModelHacker.id == data.user_id).first()
@@ -93,7 +93,7 @@ async def get_me(data: TokenData, db: Session = Depends(get_db)):
         raise InputException("Invalid token")
 
 
-async def verify_user(token: str, db: Session = Depends(get_db)):
+def verify_user(token: str, db: Session = Depends(get_db)):
     data = get_data_from_token(token, special=True)
     user = db.query(ModelUser).filter(ModelUser.id == data.user_id).first()
     if user is None:
@@ -111,7 +111,7 @@ async def verify_user(token: str, db: Session = Depends(get_db)):
     return {"success": True}
 
 
-async def resend_verification(email: str, db: Session = Depends(get_db)):
+def resend_verification(email: str, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == email).first()
     # return user
     if user is None:
@@ -119,10 +119,10 @@ async def resend_verification(email: str, db: Session = Depends(get_db)):
     if user.is_verified:
         raise InvalidDataException("User already verified")
     create_all_tokens(user, db, verification=True)
-    await send_registration_confirmation_email(user)
+    send_registration_confirmation_email(user)
     return {"success": True}
 
 
-async def contact(name: str, email: str, title: str, message: str):
-    await send_contact_email(name, email, title, message)
+def contact(name: str, email: str, title: str, message: str):
+    send_contact_email(name, email, title, message)
     return {"success": True}

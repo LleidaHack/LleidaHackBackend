@@ -15,42 +15,42 @@ router = APIRouter(
 
 
 @router.get("/{id}/all")
-async def get_meals(id: int,
+def get_meals(id: int,
                     db: Session = Depends(get_db),
                     token: str = Depends(JWTBearer())):
-    return await meal_service.get_meals(id, db, get_data_from_token(token))
+    return meal_service.get_meals(id, db, get_data_from_token(token))
 
 
 @router.get("/{id}/{meal_id}")
-async def get_meal(id: int,
+def get_meal(id: int,
                    meal_id: int,
                    db: Session = Depends(get_db),
                    token: str = Depends(JWTBearer())):
-    return await meal_service.get_meal(id, meal_id, db,
+    return meal_service.get_meal(id, meal_id, db,
                                        get_data_from_token(token))
 
 
 @router.post("/")
-async def create_meal(meal: SchemaMeal,
+def create_meal(meal: SchemaMeal,
                       db: Session = Depends(get_db),
                       token: str = Depends(JWTBearer())):
-    return await meal_service.add_meal(meal, db, get_data_from_token(token))
+    return meal_service.add_meal(meal, db, get_data_from_token(token))
 
 
 @router.put("/{id}/{meal_id}")
-async def update_meal(id: int,
+def update_meal(id: int,
                       meal_id: int,
                       meal: SchemaMeal,
                       db: Session = Depends(get_db),
                       token: str = Depends(JWTBearer())):
-    return await meal_service.update_meal(id, meal_id, meal, db,
+    return meal_service.update_meal(id, meal_id, meal, db,
                                           get_data_from_token(token))
 
 
 @router.delete("/{id}/{meal_id}")
-async def delete_meal(id: int,
+def delete_meal(id: int,
                       meal_id: int,
                       db: Session = Depends(get_db),
                       token: str = Depends(JWTBearer())):
-    return await meal_service.delete_meal(id, meal_id, db,
+    return meal_service.delete_meal(id, meal_id, db,
                                           get_data_from_token(token))

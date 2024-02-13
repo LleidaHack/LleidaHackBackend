@@ -19,197 +19,197 @@ router = APIRouter(
 
 
 @router.get("/get_hackeps")
-async def get_hackeps(db: Session = Depends(get_db)):
+def get_hackeps(db: Session = Depends(get_db)):
     #get the current year
     year = datetime.now().year
-    return await event_service.get_hackeps(int(year), db)
+    return event_service.get_hackeps(int(year), db)
 
 
 @router.get("/all")
-async def get_events(db: Session = Depends(get_db),
+def get_events(db: Session = Depends(get_db),
                      token: str = Depends(JWTBearer())):
-    return await event_service.get_all(db)
+    return event_service.get_all(db)
 
 
 @router.get("/{id}")
-async def get_event(id: int,
+def get_event(id: int,
                     db: Session = Depends(get_db),
                     token: str = Depends(JWTBearer())):
-    return await event_service.get_event(id, db)
+    return event_service.get_event(id, db)
 
 
 @router.post("/")
-async def create_event(event: SchemaEvent,
+def create_event(event: SchemaEvent,
                        db: Session = Depends(get_db),
                        token: str = Depends(JWTBearer())):
-    new_event = await event_service.add_event(event, db,
+    new_event = event_service.add_event(event, db,
                                               get_data_from_token(token))
     return {'success': True, 'event_id': new_event.id}
 
 
 @router.put("/{id}")
-async def update_event(id: int,
+def update_event(id: int,
                        event: SchemaEventUpdate,
                        db: Session = Depends(get_db),
                        token: str = Depends(JWTBearer())):
-    new_event, updated = await event_service.update_event(
+    new_event, updated = event_service.update_event(
         id, event, db, get_data_from_token(token))
     return {'success': True, 'event_id': new_event.id, 'updated': updated}
 
 
 @router.delete("/{id}")
-async def delete_event(id: int,
+def delete_event(id: int,
                        db: Session = Depends(get_db),
                        token: str = Depends(JWTBearer())):
-    event = await event_service.delete_event(id, db,
+    event = event_service.delete_event(id, db,
                                              get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
 
 @router.get("/{id}/is_registered/{hacker_id}")
-async def is_registered(id: int,
+def is_registered(id: int,
                         hacker_id: int,
                         db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
-    return await event_service.is_registered(id, hacker_id, db,
+    return event_service.is_registered(id, hacker_id, db,
                                              get_data_from_token(token))
 
 
 @router.get("/{id}/is_accepted/{hacker_id}")
-async def is_accepted(id: int,
+def is_accepted(id: int,
                       hacker_id: int,
                       db: Session = Depends(get_db),
                       token: str = Depends(JWTBearer())):
-    return await event_service.is_accepted(id, hacker_id, db,
+    return event_service.is_accepted(id, hacker_id, db,
                                            get_data_from_token(token))
 
 
 @router.get("/{id}/meals")
-async def get_event_meals(id: int,
+def get_event_meals(id: int,
                           db: Session = Depends(get_db),
                           token: str = Depends(JWTBearer())):
-    return await event_service.get_event_meals(id, db,
+    return event_service.get_event_meals(id, db,
                                                get_data_from_token(token))
 
 
 @router.get("/{id}/participants")
-async def get_event_participants(id: int,
+def get_event_participants(id: int,
                                  db: Session = Depends(get_db),
                                  token: str = Depends(JWTBearer())):
-    return await event_service.get_event_participants(
+    return event_service.get_event_participants(
         id, db, get_data_from_token(token))
 
 
 @router.get("/{id}/sponsors")
-async def get_event_sponsors(id: int, db: Session = Depends(get_db)):
-    return await event_service.get_event_sponsors(id, db)
+def get_event_sponsors(id: int, db: Session = Depends(get_db)):
+    return event_service.get_event_sponsors(id, db)
 
 
 @router.get("/{id}/groups")
-async def get_event_groups(id: int,
+def get_event_groups(id: int,
                            db: Session = Depends(get_db),
                            token: str = Depends(JWTBearer())):
-    event = await event_service.get_event_groups(id, db,
+    event = event_service.get_event_groups(id, db,
                                                  get_data_from_token(token))
     return {'success': True, 'groups': event}
 
 
 @router.put("/{id}/groups/{group_id}")
-async def add_event_group(id: int,
+def add_event_group(id: int,
                           group_id: int,
                           db: Session = Depends(get_db),
                           token: str = Depends(JWTBearer())):
-    event = await event_service.add_hacker_group(id, group_id, db,
+    event = event_service.add_hacker_group(id, group_id, db,
                                                  get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
 
 @router.delete("/{id}/groups/{group_id}")
-async def remove_event_group(id: int,
+def remove_event_group(id: int,
                              group_id: int,
                              db: Session = Depends(get_db),
                              token: str = Depends(JWTBearer())):
-    event = await event_service.remove_hacker_group(id, group_id, db,
+    event = event_service.remove_hacker_group(id, group_id, db,
                                                     get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
 
 # @router.put("/{id}/participants/{hacker_id}")
-# async def add_event_participant(id: int,
+# def add_event_participant(id: int,
 #                                 hacker_id: int,
 #                                 db: Session = Depends(get_db),
 #                                 token: str = Depends(JWTBearer())):
-#     event = await event_service.add_hacker(id, hacker_id, db,
+#     event = event_service.add_hacker(id, hacker_id, db,
 #                                            get_data_from_token(token))
 #     return {'success': True, 'event_id': event.id}
 
 # @router.delete("/{id}/participants/{hacker_id}")
-# async def remove_event_participant(id: int,
+# def remove_event_participant(id: int,
 #                                    hacker_id: int,
 #                                    db: Session = Depends(get_db),
 #                                    token: str = Depends(JWTBearer())):
-#     event = await event_service.remove_hacker(id, hacker_id, db,
+#     event = event_service.remove_hacker(id, hacker_id, db,
 #                                               get_data_from_token(token))
 #     return {'success': True, 'event_id': event.id}
 
 
 @router.put("/{id}/sponsors/{company_id}")
-async def add_event_sponsor(id: int,
+def add_event_sponsor(id: int,
                             company_id: int,
                             db: Session = Depends(get_db),
                             token: str = Depends(JWTBearer())):
-    event = await event_service.add_company(id, company_id, db,
+    event = event_service.add_company(id, company_id, db,
                                             get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
 
 @router.delete("/{id}/sponsors/{company_id}")
-async def remove_event_sponsor(id: int,
+def remove_event_sponsor(id: int,
                                company_id: int,
                                db: Session = Depends(get_db),
                                token: str = Depends(JWTBearer())):
-    event = await event_service.remove_company(id, company_id, db,
+    event = event_service.remove_company(id, company_id, db,
                                                get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
 
 @router.get("/{eventId}/get_hacker_group/{hackerId}")
-async def get_hacker_group(eventId: int,
+def get_hacker_group(eventId: int,
                            hackerId: int,
                            db: Session = Depends(get_db),
                            token: str = Depends(JWTBearer())):
-    return await event_service.get_hacker_group(eventId, hackerId, db,
+    return event_service.get_hacker_group(eventId, hackerId, db,
                                                 get_data_from_token(token))
 
 
 @router.get("/{eventId}/get_approved_hackers")
-async def get_accepted_hackers(eventId: int,
+def get_accepted_hackers(eventId: int,
                                db: Session = Depends(get_db),
                                token: str = Depends(JWTBearer())):
-    return await event_service.get_accepted_hackers(eventId, db,
+    return event_service.get_accepted_hackers(eventId, db,
                                                     get_data_from_token(token))
 
 
 @router.get("/{eventId}/get_approved_hackers_mails")
-async def get_accepted_hackers_mails(eventId: int,
+def get_accepted_hackers_mails(eventId: int,
                                      db: Session = Depends(get_db),
                                      token: str = Depends(JWTBearer())):
-    return await event_service.get_accepted_hackers_mails(
+    return event_service.get_accepted_hackers_mails(
         eventId, db, get_data_from_token(token))
 
 
 # @router.put("/{id}/group/{group_id}")
-# async def add_event_group(id: int,
+# def add_event_group(id: int,
 #                           group_id: int,
 #                           db: Session = Depends(get_db),
 #                           token: str = Depends(JWTBearer())):
-#     event = await event_service.add_group(id, group_id, db)
+#     event = event_service.add_group(id, group_id, db)
 #     return {'success': True, 'event_id': event.id}
 
 # @router.delete("/{id}/group/{group_id}")
-# async def remove_event_group(id: int,
+# def remove_event_group(id: int,
 #                              group_id: int,
 #                              db: Session = Depends(get_db),
 #                              token: str = Depends(JWTBearer())):
-#     event = await event_service.remove_group(id, group_id, db)
+#     event = event_service.remove_group(id, group_id, db)
 #     return {'success': True, 'event_id': event.id}

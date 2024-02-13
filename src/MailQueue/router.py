@@ -16,7 +16,7 @@ router = APIRouter(
 
 
 @router.post("/send_mail")
-async def send_mail(db: Session = Depends(get_db),
+def send_mail(db: Session = Depends(get_db),
                     token: str = Depends(JWTBearer())):
     """
     Send a mail to all users
@@ -24,17 +24,17 @@ async def send_mail(db: Session = Depends(get_db),
     data = get_data_from_token(token)
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
-    mail = await mail_queue_service.get_last(db, data)
+    mail = mail_queue_service.get_last(db, data)
     # send
     if mail is None:
         raise Exception("No mail to send")
     mail_queue_service.send_email(mail.user.email, mail.body, mail.subject)
     mail_queue_service.set_sent(mail, db)
-    return await mail_queue_service.count_unsent(db, data)
+    return mail_queue_service.count_unsent(db, data)
 
 
 @router.post("/send_mail_by_id")
-async def send_mail_by_id(id: int,
+def send_mail_by_id(id: int,
                           db: Session = Depends(get_db),
                           token: str = Depends(JWTBearer())):
     """
@@ -43,7 +43,7 @@ async def send_mail_by_id(id: int,
     data = get_data_from_token(token)
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
-    mail = await mail_queue_service.get_by_id(id)
+    mail = mail_queue_service.get_by_id(id)
     return mail
     # send
     mail_queue_service.send_email(mail.user.email, mail.body, mail.subject)
@@ -52,14 +52,14 @@ async def send_mail_by_id(id: int,
 
 
 @router.get("/count")
-async def count(db: Session = Depends(get_db),
+def count(db: Session = Depends(get_db),
                 token: str = Depends(JWTBearer())):
-    return await mail_queue_service.count_unsent(db,
+    return mail_queue_service.count_unsent(db,
                                                  get_data_from_token(token))
 
 
 @router.post("/clear_queue")
-async def clear_queue(db: Session = Depends(get_db),
+def clear_queue(db: Session = Depends(get_db),
                       token: str = Depends(JWTBearer())):
     """
     Clear the mail queue
@@ -67,5 +67,5 @@ async def clear_queue(db: Session = Depends(get_db),
     data = get_data_from_token(token)
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
-    await mail_queue_service.clear_queue(db, data)
+    mail_queue_service.clear_queue(db, data)
     return {"message": "Mail queue cleared"}

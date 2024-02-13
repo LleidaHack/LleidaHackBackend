@@ -21,10 +21,10 @@ router = APIRouter(
 
 
 @router.post("/signup")
-async def signup(payload: SchemaCompanyUser,
+def signup(payload: SchemaCompanyUser,
                  response: Response,
                  db: Session = Depends(get_db)):
-    new_companyuser = await companyuser_service.add_company_user(payload, db)
+    new_companyuser = companyuser_service.add_company_user(payload, db)
     access_token, refresh_token = create_all_tokens(new_companyuser, db)
     return {
         "success": True,
@@ -35,13 +35,13 @@ async def signup(payload: SchemaCompanyUser,
 
 
 @router.get("/all")
-async def get_company_users(db: Session = Depends(get_db),
+def get_company_users(db: Session = Depends(get_db),
                             token: str = Depends(JWTBearer())):
     return companyuser_service.get_companyusers(db)
 
 
 @router.get("/{companyUserId}")
-async def get_company_user(companyUserId: int,
+def get_company_user(companyUserId: int,
                            response: Response,
                            db: Session = Depends(get_db),
                            token: str = Depends(JWTBearer())):
@@ -50,30 +50,30 @@ async def get_company_user(companyUserId: int,
 
 
 # @router.post("/")
-# async def add_company_user(payload: SchemaCompanyUser,
+# def add_company_user(payload: SchemaCompanyUser,
 #                            response: Response,
 #                            db: Session = Depends(get_db),
 #                            token: str = Depends(JWTBearer())):
-#     new_companyuser = await companyuser_service.add_company_user(db, payload)
+#     new_companyuser = companyuser_service.add_company_user(db, payload)
 #     return {"success": True, "user_id": new_companyuser.id}
 
 
 @router.put("/{companyUserId}")
-async def update_company_user(companyUserId: int,
+def update_company_user(companyUserId: int,
                               payload: SchemaCompanyUserUpdate,
                               response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(JWTBearer())):
-    companyuser = await companyuser_service.update_companyuser(
+    companyuser = companyuser_service.update_companyuser(
         db, companyUserId, payload, get_data_from_token(token))
     return {"success": True, "updated_id": companyuser.id}
 
 
 @router.delete("/{companyUserId}")
-async def delete_company_user(companyUserId: int,
+def delete_company_user(companyUserId: int,
                               response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(JWTBearer())):
-    companyuser = await companyuser_service.delete_companyuser(
+    companyuser = companyuser_service.delete_companyuser(
         db, companyUserId, get_data_from_token(token))
     return {"success": True, "deleted_id": companyuser.id}

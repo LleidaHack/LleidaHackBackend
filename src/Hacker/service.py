@@ -25,11 +25,11 @@ from utils.hide_utils import hacker_show_private
 from utils.service_utils import check_user
 
 
-async def get_all(db: Session):
+def get_all(db: Session):
     return db.query(ModelHacker).all()
 
 
-async def get_hacker(hackerId: int, db: Session, data: TokenData):
+def get_hacker(hackerId: int, db: Session, data: TokenData):
     user = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if user is None:
         raise NotFoundException("Hacker not found")
@@ -41,22 +41,22 @@ async def get_hacker(hackerId: int, db: Session, data: TokenData):
     return user
 
 
-async def get_hacker_by_code(code: str, db: Session):
+def get_hacker_by_code(code: str, db: Session):
     user = db.query(ModelHacker).filter(ModelHacker.code == code).first()
     if user is None:
         raise NotFoundException("Hacker not found")
     return user
 
 
-async def get_hacker_by_email(email: str, db: Session):
+def get_hacker_by_email(email: str, db: Session):
     user = db.query(ModelHacker).filter(ModelHacker.email == email).first()
     if user is None:
         raise NotFoundException("Hacker not found")
     return user
 
 
-async def add_hacker(payload: SchemaHacker, db: Session):
-    await check_user(db, payload.email, payload.nickname, payload.telephone)
+def add_hacker(payload: SchemaHacker, db: Session):
+    check_user(db, payload.email, payload.nickname, payload.telephone)
     new_hacker = ModelHacker(**payload.dict(), code=generate_user_code(db))
     if payload.image is not None:
         payload = check_image(payload)
@@ -68,7 +68,7 @@ async def add_hacker(payload: SchemaHacker, db: Session):
     return new_hacker
 
 
-async def remove_hacker(hackerId: int, db: Session, data: TokenData):
+def remove_hacker(hackerId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and
                 (data.type == UserType.LLEIDAHACKER.value or
@@ -112,7 +112,7 @@ async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     return hacker
 
 
-async def update_hacker(hackerId: int, payload: SchemaHackerUpdate,
+def update_hacker(hackerId: int, payload: SchemaHackerUpdate,
                         db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -134,7 +134,7 @@ async def update_hacker(hackerId: int, payload: SchemaHackerUpdate,
     return hacker, updated
 
 
-async def ban_hacker(hackerId: int, db: Session, data: TokenData):
+def ban_hacker(hackerId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -149,7 +149,7 @@ async def ban_hacker(hackerId: int, db: Session, data: TokenData):
     return hacker
 
 
-async def unban_hacker(hackerId: int, db: Session, data: TokenData):
+def unban_hacker(hackerId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -165,7 +165,7 @@ async def unban_hacker(hackerId: int, db: Session, data: TokenData):
 
 
 #TODO: #34 Check if token validation is correct
-async def get_hacker_events(hackerId: int, db: Session):
+def get_hacker_events(hackerId: int, db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
@@ -173,14 +173,14 @@ async def get_hacker_events(hackerId: int, db: Session):
 
 
 #TODO: #34 Check if token validation is correct
-async def get_hacker_groups(hackerId: int, db: Session):
+def get_hacker_groups(hackerId: int, db: Session):
     hacker = db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return hacker.groups
 
 
-async def update_all_codes(data: TokenData, db: Session):
+def update_all_codes(data: TokenData, db: Session):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     hackers = db.query(ModelHacker).all()

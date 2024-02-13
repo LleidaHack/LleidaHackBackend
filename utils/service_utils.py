@@ -18,7 +18,7 @@ def get_user_by_telephone(db, telephone):
     return db.query(User).filter(User.telephone == telephone).first()
 
 
-async def check_user(db, email, nickname, telephone):
+def check_user(db, email, nickname, telephone):
     if get_user_by_mail(db, email) is not None:
         raise ValidationException("Email already exists")
     if get_user_by_nickname(db, nickname) is not None:

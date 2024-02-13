@@ -190,7 +190,7 @@ def decode_token(token):
                       algorithms=[ALGORITHM])
 
 
-# async def check_permissions(token: str, permission: List):
+# def check_permissions(token: str, permission: List):
 #     if token.credentials == SERVICE_TOKEN:
 #         return True
 #     jwt_token = jwt.decode(token.credentials.encode('utf-8'),

@@ -20,11 +20,11 @@ from utils.hide_utils import lleidahacker_show_private
 from utils.service_utils import check_user
 
 
-async def get_all(db: Session):
+def get_all(db: Session):
     return db.query(ModelLleidaHacker).all()
 
 
-async def get_lleidahacker(userId: int, db: Session, data: TokenData):
+def get_lleidahacker(userId: int, db: Session, data: TokenData):
     user = db.query(ModelLleidaHacker).filter(
         ModelLleidaHacker.id == userId).first()
     if user is None:
@@ -36,7 +36,7 @@ async def get_lleidahacker(userId: int, db: Session, data: TokenData):
     return user
 
 
-async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
+def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     check_user(db, payload.email, payload.nickname, payload.telephone)
     if payload.image is not None:
         payload = check_image(payload)
@@ -49,7 +49,7 @@ async def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     return new_lleidahacker
 
 
-async def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
+def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
                               db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
@@ -71,7 +71,7 @@ async def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
     return lleidahacker, updated
 
 
-async def delete_lleidahacker(userId: int, db: Session, data: TokenData):
+def delete_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     and data.user_id == userId)):
@@ -85,7 +85,7 @@ async def delete_lleidahacker(userId: int, db: Session, data: TokenData):
     return lleidahacker
 
 
-async def accept_lleidahacker(userId: int, db: Session, data: TokenData):
+def accept_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -101,7 +101,7 @@ async def accept_lleidahacker(userId: int, db: Session, data: TokenData):
     return lleidahacker
 
 
-async def reject_lleidahacker(userId: int, db: Session, data: TokenData):
+def reject_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -117,7 +117,7 @@ async def reject_lleidahacker(userId: int, db: Session, data: TokenData):
     return lleidahacker
 
 
-async def activate_lleidahacker(userId: int, db: Session, data: TokenData):
+def activate_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -131,7 +131,7 @@ async def activate_lleidahacker(userId: int, db: Session, data: TokenData):
     return lleidahacker
 
 
-async def deactivate_lleidahacker(userId: int, db: Session, data: TokenData):
+def deactivate_lleidahacker(userId: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
