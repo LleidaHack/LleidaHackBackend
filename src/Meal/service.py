@@ -17,7 +17,7 @@ def get_meals(id: int, db: Session, token: TokenData):
     return db.query(ModelMeal).filter(ModelMeal.event_id == id).all()
 
 
-def get_meal(id: int, meal_id: int, db: Session, token: TokenData):
+def get_meal(id: int, db: Session, token: TokenData):
     meal = db.query(ModelMeal).filter(ModelMeal.id == meal_id).first()
     if meal is None:
         raise NotFoundException("Meal not found")

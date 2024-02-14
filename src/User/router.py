@@ -1,12 +1,17 @@
-from sqlalchemy.orm import Session
+from typing import List, Union
 from fastapi import Depends, APIRouter
+from sqlalchemy.orm import Session
 
 from database import get_db
 from security import get_data_from_token
-import src.User.service as user_service
 from utils.auth_bearer import JWTBearer
 
-from src.User.schema import User as SchemaUser
+import src.User.service as user_service
+
+from User.schema import UserGet as UserGetSchema
+from User.schema import UserGetAll as UserGetAllSchema
+# from User.schema import UserCreate as UserCreateSchema
+# from User.schema import UserCreate as UserCreateSchema
 
 router = APIRouter(
     prefix="/user",
@@ -20,20 +25,20 @@ def count_users(db: Session = Depends(get_db),
     return user_service.count_users(db)
 
 
-@router.get("/all")
+@router.get("/all", response_model=List[UserGetSchema])
 def get_users(db: Session = Depends(get_db),
                     token: str = Depends(JWTBearer())):
     return user_service.get_all(db)
 
 
-@router.get("/{userId}")
+@router.get("/{userId}", response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user(userId: int,
                    db: Session = Depends(get_db),
                    str=Depends(JWTBearer())):
     return user_service.get_user(db, userId, get_data_from_token(str))
 
 
-@router.get("/email/{email}")
+@router.get("/email/{email}", response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user_by_email(email: str,
                             db: Session = Depends(get_db),
                             str=Depends(JWTBearer())):
@@ -41,7 +46,7 @@ def get_user_by_email(email: str,
                                                 get_data_from_token(str))
 
 
-@router.get("/nickname/{nickname}")
+@router.get("/nickname/{nickname}", response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user_by_nickname(nickname: str,
                                db: Session = Depends(get_db),
                                str=Depends(JWTBearer())):
@@ -49,7 +54,7 @@ def get_user_by_nickname(nickname: str,
                                                    get_data_from_token(str))
 
 
-@router.get("/phone/{phone}")
+@router.get("/phone/{phone}", response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user_by_phone(phone: str,
                             db: Session = Depends(get_db),
                             str=Depends(JWTBearer())):
@@ -57,7 +62,7 @@ def get_user_by_phone(phone: str,
                                                 get_data_from_token(str))
 
 
-@router.get("/code/{code}")
+@router.get("/code/{code}", response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user_by_code(code: str,
                            db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):

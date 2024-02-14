@@ -1,15 +1,17 @@
-from src.LleidaHacker.schema import LleidaHacker as SchemaLleidaHacker
-from src.LleidaHacker.schema import LleidaHackerUpdate as SchemaLleidaHackerUpdate
+from typing import List, Union
+from fastapi import Depends, Response, APIRouter
+from sqlalchemy.orm import Session
 
 from database import get_db
 from security import create_all_tokens, get_data_from_token
 from services.mail import send_registration_confirmation_email
+import src.LleidaHacker.service as lleidahacker_service
 from utils.auth_bearer import JWTBearer
 
-from sqlalchemy.orm import Session
-from fastapi import Depends, Response, APIRouter
-
-import src.LleidaHacker.service as lleidahacker_service
+from LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
+from LleidaHacker.schema import LleidaHackerGetAll as LleidaHackerGetAllSchema
+from LleidaHacker.schema import LleidaHackerCreate as LleidaHackerCreateSchema
+from LleidaHacker.schema import LleidaHackerUpdate as LleidaHackerUpdateSchema
 
 router = APIRouter(
     prefix="/lleidahacker",
@@ -18,8 +20,7 @@ router = APIRouter(
 
 
 @router.post("/signup")
-def signup(payload: SchemaLleidaHacker,
-                 response: Response,
+def signup(payload: LleidaHackerCreateSchema,
                  db: Session = Depends(get_db)):
     new_lleidahacker = lleidahacker_service.add_lleidahacker(payload, db)
     access_token, refresh_token = create_all_tokens(new_lleidahacker, db)
@@ -32,15 +33,14 @@ def signup(payload: SchemaLleidaHacker,
     }
 
 
-@router.get("/all")
+@router.get("/all", response_model=List[LleidaHackerGetSchema])
 def get_lleidahacker(db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):
     return lleidahacker_service.get_all(db)
 
 
-@router.get("/{userId}")
+@router.get("/{userId}", response_model=Union[LleidaHackerGetSchema, LleidaHackerGetAllSchema])
 def get_lleidahacker(userId: int,
-                           response: Response,
                            db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):
     return lleidahacker_service.get_lleidahacker(
@@ -58,7 +58,6 @@ def get_lleidahacker(userId: int,
 
 @router.delete("/{userId}")
 def delete_lleidahacker(userId: int,
-                              response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.delete_lleidahacker(
@@ -68,8 +67,7 @@ def delete_lleidahacker(userId: int,
 
 @router.put("/{userId}")
 def update_lleidahacker(userId: int,
-                              payload: SchemaLleidaHackerUpdate,
-                              response: Response,
+                              payload: LleidaHackerUpdateSchema,
                               db: Session = Depends(get_db),
                               token: str = Depends(JWTBearer())):
     lleidahacker, updated = lleidahacker_service.update_lleidahacker(
@@ -79,7 +77,6 @@ def update_lleidahacker(userId: int,
 
 @router.post("/{userId}/accept")
 def accept_lleidahacker(userId: int,
-                              response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.accept_lleidahacker(
@@ -89,7 +86,6 @@ def accept_lleidahacker(userId: int,
 
 @router.post("/{userId}/reject")
 def reject_lleidahacker(userId: int,
-                              response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.reject_lleidahacker(
@@ -99,7 +95,6 @@ def reject_lleidahacker(userId: int,
 
 @router.post("/{userId}/activate")
 def activate_lleidahacker(userId: int,
-                                response: Response,
                                 db: Session = Depends(get_db),
                                 token: str = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.activate_lleidahacker(
@@ -109,7 +104,6 @@ def activate_lleidahacker(userId: int,
 
 @router.post("/{userId}/deactivate")
 def deactivate_lleidahacker(userId: int,
-                                  response: Response,
                                   db: Session = Depends(get_db),
                                   token: str = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.deactivate_lleidahacker(

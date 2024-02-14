@@ -2,12 +2,22 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class CompanyGet(BaseModel):
+class CompanyCreate(BaseModel):
     name: str
     description: str
     website: str
     image: Optional[str]
     is_image_url: Optional[bool]
+    address: str
+    linkdin: str
+    telephone: str
+
+class CompanyGet(BaseModel):
+    name: str
+    description: str
+    website: str
+    image: str
+    is_image_url: bool
     address: str
     linkdin: str
     telephone: str

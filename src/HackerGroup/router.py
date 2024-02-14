@@ -1,13 +1,18 @@
-from typing import List
-from schemas.Hacker import HackerGroup as SchemaHackerGroup
+from typing import List, Union
+from fastapi import Depends, Response, APIRouter
+from sqlalchemy.orm import Session
 
 from database import get_db
 from security import get_data_from_token
 from utils.auth_bearer import JWTBearer
-from sqlalchemy.orm import Session
-from fastapi import Depends, Response, APIRouter
 
 import services.hackergroup as hackergroup_service
+
+from Hacker.schema import HackerGet as HackerGetSchema
+from HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
+from HackerGroup.schema import HackerGroupGetAll as HackerGroupGetAllSchema
+from HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema
+from HackerGroup.schema import HackerGroupUpdate as HackerGroupUpdateSchema
 
 router = APIRouter(
     prefix="/hacker/group",
@@ -15,15 +20,14 @@ router = APIRouter(
 )
 
 
-@router.get("/all")
+@router.get("/all", response_model=List[HackerGroupGetSchema])
 def get_hacker_groups(db: Session = Depends(get_db),
                             str=Depends(JWTBearer())):
     return hackergroup_service.get_all(db)
 
 
-@router.get("/{groupId}")
+@router.get("/{groupId}", response_model=Union[HackerGroupGetSchema, HackerGroupGetAllSchema])
 def get_hacker_group(groupId: int,
-                           response: Response,
                            db: Session = Depends(get_db),
                            token: str = Depends(JWTBearer())):
     return hackergroup_service.get_hacker_group(
@@ -31,8 +35,7 @@ def get_hacker_group(groupId: int,
 
 
 @router.post("/")
-def add_hacker_group(payload: SchemaHackerGroup,
-                           response: Response,
+def add_hacker_group(payload: HackerGroupCreateSchema,
                            db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):
     new_hacker_group = hackergroup_service.add_hacker_group(
@@ -48,8 +51,7 @@ def add_hacker_group(payload: SchemaHackerGroup,
 
 @router.put("/{groupId}")
 def update_hacker_group(groupId: int,
-                              payload: SchemaHackerGroup,
-                              response: Response,
+                              payload: HackerGroupUpdateSchema,
                               db: Session = Depends(get_db),
                               str=Depends(JWTBearer())):
     hacker_group = hackergroup_service.update_hacker_group(
@@ -59,16 +61,14 @@ def update_hacker_group(groupId: int,
 
 @router.delete("/{groupId}")
 def delete_hacker_group(groupId: int,
-                              response: Response,
                               db: Session = Depends(get_db),
                               str=Depends(JWTBearer())):
     hacker_group = hackergroup_service.delete_hacker_group(groupId, db)
     return {"success": True, "deleted_id": hacker_group.id}
 
 
-@router.get("/{groupId}/members")
+@router.get("/{groupId}/members", response_model=List[HackerGetSchema])
 def get_hacker_group_members(groupId: int,
-                                   response: Response,
                                    db: Session = Depends(get_db),
                                    str=Depends(JWTBearer())):
     hacker_group = hackergroup_service.get_hacker_group(groupId, db)
@@ -78,7 +78,6 @@ def get_hacker_group_members(groupId: int,
 @router.post("/{groupId}/members/{hackerId}")
 def add_hacker_to_group(groupId: int,
                               hackerId: int,
-                              response: Response,
                               db: Session = Depends(get_db),
                               str=Depends(JWTBearer())):
     hacker_group = hackergroup_service.add_hacker_to_group(
@@ -89,7 +88,6 @@ def add_hacker_to_group(groupId: int,
 @router.post("/{group_code}/members_by_code/{hacker_id}")
 def add_hacker_to_group_by_code(group_code: str,
                                       hacker_id: int,
-                                      response: Response,
                                       db: Session = Depends(get_db),
                                       str=Depends(JWTBearer())):
     hacker_group = hackergroup_service.add_hacker_to_group_by_code(

@@ -24,18 +24,3 @@ class Company(Base):
     leader_id: int = Column(Integer, ForeignKey('user.id'))
     users = relationship('User', secondary='company_user')
     events = relationship('Event', secondary='company_event_participation')
-
-
-class CompanyUser(User):
-    __tablename__ = 'company_user'
-    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
-    company = relationship('Company', back_populates='users')
-    active: Mapped[bool] = deferred(Column(Integer))
-    role: Mapped[str] = deferred(Column(String))
-    accepted: Mapped[bool] = deferred(Column(Boolean, default=False))
-    rejected: Mapped[bool] = deferred(Column(Boolean, default=False))
-
-    __mapper_args__ = {
-        "polymorphic_identity": UserType.COMPANYUSER.value,
-    }

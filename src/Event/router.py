@@ -1,12 +1,19 @@
 from datetime import datetime
+from typing import List, Union
 from database import get_db
 from security import get_data_from_token
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter
 
-from src.Event.Event import Event as SchemaEvent
-from src.Event.Event import EventUpdate as SchemaEventUpdate
+from src.Event.schema import EventGet as EventGetSchema
+from src.Event.schema import EventGetAll as EventGetAllSchema
+from src.Event.schema import EventCreate as EventCreateSchema
+from src.Event.schema import EventUpdate as EventUpdateSchema
+from src.Meal.schema import MealGet as MealGetSchema
+from src.Hacker.schema import HackerGet as HackerGetSchema
+from src.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
+from src.Company.schema import CompanyGet as CompanyGetSchema
 
 import src.Event.service as event_service
 
@@ -18,20 +25,20 @@ router = APIRouter(
 )
 
 
-@router.get("/get_hackeps")
+@router.get("/get_hackeps", response_model=EventGetSchema)
 def get_hackeps(db: Session = Depends(get_db)):
     #get the current year
     year = datetime.now().year
     return event_service.get_hackeps(int(year), db)
 
 
-@router.get("/all")
+@router.get("/all", response_model=List[EventGetSchema])
 def get_events(db: Session = Depends(get_db),
                      token: str = Depends(JWTBearer())):
     return event_service.get_all(db)
 
 
-@router.get("/{id}")
+@router.get("/{id}", response_model=Union[EventGetSchema, EventGetAllSchema])
 def get_event(id: int,
                     db: Session = Depends(get_db),
                     token: str = Depends(JWTBearer())):
@@ -39,7 +46,7 @@ def get_event(id: int,
 
 
 @router.post("/")
-def create_event(event: SchemaEvent,
+def create_event(event: EventCreateSchema,
                        db: Session = Depends(get_db),
                        token: str = Depends(JWTBearer())):
     new_event = event_service.add_event(event, db,
@@ -49,7 +56,7 @@ def create_event(event: SchemaEvent,
 
 @router.put("/{id}")
 def update_event(id: int,
-                       event: SchemaEventUpdate,
+                       event: EventUpdateSchema,
                        db: Session = Depends(get_db),
                        token: str = Depends(JWTBearer())):
     new_event, updated = event_service.update_event(
@@ -84,7 +91,7 @@ def is_accepted(id: int,
                                            get_data_from_token(token))
 
 
-@router.get("/{id}/meals")
+@router.get("/{id}/meals", response_model=List[MealGetSchema])
 def get_event_meals(id: int,
                           db: Session = Depends(get_db),
                           token: str = Depends(JWTBearer())):
@@ -92,7 +99,7 @@ def get_event_meals(id: int,
                                                get_data_from_token(token))
 
 
-@router.get("/{id}/participants")
+@router.get("/{id}/participants", response_model=List[HackerGetSchema])
 def get_event_participants(id: int,
                                  db: Session = Depends(get_db),
                                  token: str = Depends(JWTBearer())):
@@ -100,12 +107,12 @@ def get_event_participants(id: int,
         id, db, get_data_from_token(token))
 
 
-@router.get("/{id}/sponsors")
+@router.get("/{id}/sponsors", response_model=List[CompanyGetSchema])
 def get_event_sponsors(id: int, db: Session = Depends(get_db)):
     return event_service.get_event_sponsors(id, db)
 
 
-@router.get("/{id}/groups")
+@router.get("/{id}/groups", response_model=List[HackerGroupGetSchema])
 def get_event_groups(id: int,
                            db: Session = Depends(get_db),
                            token: str = Depends(JWTBearer())):
@@ -173,16 +180,16 @@ def remove_event_sponsor(id: int,
     return {'success': True, 'event_id': event.id}
 
 
-@router.get("/{eventId}/get_hacker_group/{hackerId}")
-def get_hacker_group(eventId: int,
-                           hackerId: int,
-                           db: Session = Depends(get_db),
-                           token: str = Depends(JWTBearer())):
-    return event_service.get_hacker_group(eventId, hackerId, db,
-                                                get_data_from_token(token))
+# @router.get("/{eventId}/get_hacker_group/{hackerId}")
+# def get_hacker_group(eventId: int,
+#                            hackerId: int,
+#                            db: Session = Depends(get_db),
+#                            token: str = Depends(JWTBearer())):
+#     return event_service.get_hacker_group(eventId, hackerId, db,
+#                                                 get_data_from_token(token))
 
 
-@router.get("/{eventId}/get_approved_hackers")
+@router.get("/{eventId}/get_approved_hackers", response_model=List[HackerGetSchema])
 def get_accepted_hackers(eventId: int,
                                db: Session = Depends(get_db),
                                token: str = Depends(JWTBearer())):
@@ -196,20 +203,3 @@ def get_accepted_hackers_mails(eventId: int,
                                      token: str = Depends(JWTBearer())):
     return event_service.get_accepted_hackers_mails(
         eventId, db, get_data_from_token(token))
-
-
-# @router.put("/{id}/group/{group_id}")
-# def add_event_group(id: int,
-#                           group_id: int,
-#                           db: Session = Depends(get_db),
-#                           token: str = Depends(JWTBearer())):
-#     event = event_service.add_group(id, group_id, db)
-#     return {'success': True, 'event_id': event.id}
-
-# @router.delete("/{id}/group/{group_id}")
-# def remove_event_group(id: int,
-#                              group_id: int,
-#                              db: Session = Depends(get_db),
-#                              token: str = Depends(JWTBearer())):
-#     event = event_service.remove_group(id, group_id, db)
-#     return {'success': True, 'event_id': event.id}

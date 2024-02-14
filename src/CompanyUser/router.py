@@ -1,10 +1,13 @@
+from typing import List, Union
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from src.Company.schema import CompanyUser as SchemaCompanyUser
-from src.Company.schema import CompanyUserUpdate as SchemaCompanyUserUpdate
+from CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
+from CompanyUser.schema import CompanyUserGetAll as CompanyUserGetAllSchema
+from CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
+from CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
 
-import services.companyuser as companyuser_service
+import CompanyUser.service as companyuser_service
 
 from database import get_db
 
@@ -21,7 +24,7 @@ router = APIRouter(
 
 
 @router.post("/signup")
-def signup(payload: SchemaCompanyUser,
+def signup(payload: CompanyUserCreateSchema,
                  response: Response,
                  db: Session = Depends(get_db)):
     new_companyuser = companyuser_service.add_company_user(payload, db)
@@ -34,15 +37,14 @@ def signup(payload: SchemaCompanyUser,
     }
 
 
-@router.get("/all")
+@router.get("/all", response_model=List[CompanyUserGetSchema])
 def get_company_users(db: Session = Depends(get_db),
                             token: str = Depends(JWTBearer())):
     return companyuser_service.get_companyusers(db)
 
 
-@router.get("/{companyUserId}")
+@router.get("/{companyUserId}", response_model=Union[CompanyUserGetSchema, CompanyUserGetAllSchema])
 def get_company_user(companyUserId: int,
-                           response: Response,
                            db: Session = Depends(get_db),
                            token: str = Depends(JWTBearer())):
     return companyuser_service.get_companyuser(db, companyUserId,
@@ -60,8 +62,7 @@ def get_company_user(companyUserId: int,
 
 @router.put("/{companyUserId}")
 def update_company_user(companyUserId: int,
-                              payload: SchemaCompanyUserUpdate,
-                              response: Response,
+                              payload: CompanyUserUpdateSchema,
                               db: Session = Depends(get_db),
                               token: str = Depends(JWTBearer())):
     companyuser = companyuser_service.update_companyuser(
@@ -71,7 +72,6 @@ def update_company_user(companyUserId: int,
 
 @router.delete("/{companyUserId}")
 def delete_company_user(companyUserId: int,
-                              response: Response,
                               db: Session = Depends(get_db),
                               token: str = Depends(JWTBearer())):
     companyuser = companyuser_service.delete_companyuser(
