@@ -5,8 +5,8 @@ from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
 from src.Utils import TokenData
 from src.Utils.UserType import UserType
 
-from src.LleidaHacker.schema import LleidaHacker as SchemaLleidaHacker
-from src.LleidaHacker.schema import LleidaHackerUpdate as SchemaLleidaHackerUpdate
+from src.LleidaHacker.schema import LleidaHackerCreate as LleidaHackerCreateSchema
+from src.LleidaHacker.schema import LleidaHackerUpdate as LleidaHackerUpdateSchema
 
 from security import get_password_hash
 
@@ -36,7 +36,7 @@ def get_lleidahacker(userId: int, db: Session, data: TokenData):
     return user
 
 
-def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
+def add_lleidahacker(payload: LleidaHackerCreateSchema, db: Session):
     check_user(db, payload.email, payload.nickname, payload.telephone)
     if payload.image is not None:
         payload = check_image(payload)
@@ -49,7 +49,7 @@ def add_lleidahacker(payload: SchemaLleidaHacker, db: Session):
     return new_lleidahacker
 
 
-def update_lleidahacker(userId: int, payload: SchemaLleidaHackerUpdate,
+def update_lleidahacker(userId: int, payload: LleidaHackerUpdateSchema,
                               db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value

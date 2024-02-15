@@ -7,7 +7,7 @@ from security import get_data_from_token
 import src.MailQueue.service as mail_queue_service
 from utils.auth_bearer import JWTBearer
 
-from src.User.schema import User as SchemaUser
+from src.User.schema import UserGet as SchemaUser
 
 router = APIRouter(
     prefix="/mail_queue",

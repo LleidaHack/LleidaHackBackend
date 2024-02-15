@@ -8,10 +8,10 @@ from services.mail import send_registration_confirmation_email
 import src.LleidaHacker.service as lleidahacker_service
 from utils.auth_bearer import JWTBearer
 
-from LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
-from LleidaHacker.schema import LleidaHackerGetAll as LleidaHackerGetAllSchema
-from LleidaHacker.schema import LleidaHackerCreate as LleidaHackerCreateSchema
-from LleidaHacker.schema import LleidaHackerUpdate as LleidaHackerUpdateSchema
+from src.LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
+from src.LleidaHacker.schema import LleidaHackerGetAll as LleidaHackerGetAllSchema
+from src.LleidaHacker.schema import LleidaHackerCreate as LleidaHackerCreateSchema
+from src.LleidaHacker.schema import LleidaHackerUpdate as LleidaHackerUpdateSchema
 
 router = APIRouter(
     prefix="/lleidahacker",

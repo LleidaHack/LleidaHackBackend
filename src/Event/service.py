@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from src.Event.Event import Event as SchemaEvent
-from src.Event.Event import EventUpdate as SchemaEventUpdate
+from src.Event.schema import EventCreate as EventCreateSchema
+from src.Event.schema import EventUpdate as EventUpdateSchema
 
 from src.Event.model import Event as ModelEvent
 from src.Company.model import Company as ModelCompany
@@ -57,7 +57,7 @@ def get_event(id: int, db: Session):
     return db.query(ModelEvent).filter(ModelEvent.id == id).first()
 
 
-def add_event(payload: SchemaEvent, db: Session, data: TokenData):
+def add_event(payload: EventCreateSchema, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -70,7 +70,7 @@ def add_event(payload: SchemaEvent, db: Session, data: TokenData):
     return db_event
 
 
-def update_event(id: int, event: SchemaEventUpdate, db: Session,
+def update_event(id: int, event: EventUpdateSchema, db: Session,
                        data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from models.User import User as ModelUser
+from src.User.model import User as ModelUser
 from fastapi import Depends, APIRouter
 from fastapi import Depends
 from fastapi.security import HTTPBasicCredentials

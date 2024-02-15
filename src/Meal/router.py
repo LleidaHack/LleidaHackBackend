@@ -8,10 +8,10 @@ from utils.auth_bearer import JWTBearer
 
 import src.Meal.service as meal_service
 
-from Meal.schema import MealGet as MealGetSchema
-from Meal.schema import MealGetAll as MealGetAllSchema
-from Meal.schema import MealCreate as MealCreateSchema
-from Meal.schema import MealUpdate as MealUpdateSchema
+from src.Meal.schema import MealGet as MealGetSchema
+from src.Meal.schema import MealGetAll as MealGetAllSchema
+from src.Meal.schema import MealCreate as MealCreateSchema
+from src.Meal.schema import MealUpdate as MealUpdateSchema
 
 
 router = APIRouter(

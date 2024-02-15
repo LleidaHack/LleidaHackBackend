@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class LleidaHackerGroup(BaseModel):
+class LleidaHackerGroupCreate(BaseModel):
     name: str
     description: str
 
@@ -9,6 +9,12 @@ class LleidaHackerGroup(BaseModel):
     class Config:
         orm_mode = True
 
+class LleidaHackerGroupGet(BaseModel):
+    name: str
+    description: str
+
+class LleidaHackerGroupGetAll(BaseModel):
+    pass
 
 class LleidaHackerGroupUpdate(BaseModel):
     name: Optional[str]

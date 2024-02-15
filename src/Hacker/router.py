@@ -7,7 +7,7 @@ from security import create_all_tokens, get_data_from_token
 from utils.auth_bearer import JWTBearer
 
 from services.mail import send_registration_confirmation_email
-import Hacker.service as hacker_service
+import src.Hacker.service as hacker_service
 
 from src.User.model import User as ModelUser
 from src.Hacker.model import Hacker as ModelHacker

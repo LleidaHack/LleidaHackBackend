@@ -1,7 +1,7 @@
 from multiprocessing import Event
 from sqlalchemy.orm import Session
 
-from src.Event.Event import HackerEventRegistration as SchemaEventRegistration
+from src.Event.schema import HackerEventRegistration as EventRegistrationSchema
 
 from src.Event.model import Event as ModelEvent
 from src.Event.model import HackerRegistration as ModelHackerRegistration
@@ -44,6 +44,7 @@ def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
     db.refresh(hacker_registration)
     return hacker_registration
 
+# A PARTIR D'ARA EL SENYOR LOLO A.K.A LUFI ES DIRA LO-FI
 
 def get_dailyhack(eventId: int, hackerId: int, db: Session,
                         data: TokenData):
@@ -119,7 +120,7 @@ def get_dailyhacks(eventId: int, db: Session, data: TokenData):
     return userid_dailyhack
 
 
-def register_hacker_to_event(payload: SchemaEventRegistration,
+def register_hacker_to_event(payload: EventRegistrationSchema,
                                    event: ModelEvent, hacker: ModelHacker,
                                    db: Session, data: TokenData):
     if not data.is_admin:

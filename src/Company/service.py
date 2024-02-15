@@ -3,8 +3,8 @@ from src.Company.model import Company as ModelCompany
 from src.Utils.TokenData import TokenData
 from src.Utils.UserType import UserType
 
-from src.Company.schema import Company as SchemaCompany
-from src.Company.schema import CompanyUpdate as SchemaCompanyUpdate
+from src.Company.schema import CompanyCreate as CompanyCreateSchema
+from src.Company.schema import CompanyUpdate as CompanyUpdateSchema
 
 from sqlalchemy.orm import Session
 
@@ -23,7 +23,7 @@ def get_company(db: Session, companyId: int):
     return db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
 
 
-def add_company(db: Session, payload: SchemaCompany, data: TokenData):
+def add_company(db: Session, payload: CompanyCreateSchema, data: TokenData):
     if not data.is_admin:
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):
@@ -41,7 +41,7 @@ def add_company(db: Session, payload: SchemaCompany, data: TokenData):
 
 
 def update_company(db: Session, companyId: int,
-                         payload: SchemaCompanyUpdate, data: TokenData):
+                         payload: CompanyUpdateSchema, data: TokenData):
     if not data.is_admin:
         if not (data.available and
                 (data.user_type == UserType.COMPANYUSER.value

@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 from src.User.model import User
 from src.Utils.UserType import UserType
-from src.Event.Event import Event
+# from src.Event.model import Event
 
 from sqlalchemy.orm import deferred
 from sqlalchemy.orm import Mapped

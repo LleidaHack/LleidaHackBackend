@@ -2,7 +2,7 @@ from src.User.model import User as ModelUser
 from src.Hacker.model import Hacker as ModelHacker
 from src.Hacker.model import HackerGroup as ModelHackerGroup
 from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
-from src.Company.model import CompanyUser as ModelCompanyUser
+from src.CompanyUser.model import CompanyUser as ModelCompanyUser
 
 
 def user_show_private(user: ModelUser):

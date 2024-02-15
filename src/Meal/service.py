@@ -2,8 +2,8 @@ from src.Meal.model import Meal as ModelMeal
 from src.Utils.TokenData import TokenData
 from src.Utils.UserType import UserType
 
-from src.Meal.schema import Meal as SchemaMeal
-from src.Meal.schema import MealUpdate as SchemaMealUpdate
+from src.Meal.schema import MealCreate as MealCreateSchema
+from src.Meal.schema import MealUpdate as MealUpdateSchema
 
 from sqlalchemy.orm import Session
 
@@ -18,13 +18,13 @@ def get_meals(id: int, db: Session, token: TokenData):
 
 
 def get_meal(id: int, db: Session, token: TokenData):
-    meal = db.query(ModelMeal).filter(ModelMeal.id == meal_id).first()
+    meal = db.query(ModelMeal).filter(ModelMeal.id == id).first()
     if meal is None:
         raise NotFoundException("Meal not found")
     return meal
 
 
-def add_meal(meal: SchemaMeal, db: Session, data: TokenData):
+def add_meal(meal: MealCreateSchema, db: Session, data: TokenData):
     if not data.is_admin:
         if not data.type == UserType.LLEIDAHACKER.value:
             raise AuthenticationException("You are not allowed to add meals")
@@ -35,7 +35,7 @@ def add_meal(meal: SchemaMeal, db: Session, data: TokenData):
     return db_meal
 
 
-def update_meal(id: int, meal_id: int, meal: SchemaMealUpdate,
+def update_meal(id: int, meal_id: int, meal: MealUpdateSchema,
                       db: Session, data: TokenData):
     if not data.is_admin:
         if not data.type == UserType.LLEIDAHACKER.value:

@@ -61,7 +61,7 @@ def verify_token(token: str, db: Session):
         raise AuthenticationException("Invalid token")
     # Here your code for verifying the token or whatever you use
     if parser.parse(dict["expt"]) < datetime.utcnow():
-        raise HTTPException(status_code=401, detail="Token expired")
+        raise HTTPException(status_code=401, message="Token expired")
     return True
 
 
@@ -200,7 +200,7 @@ def decode_token(token):
 #             jwt_token['expt']) < datetime.utcnow():
 #         raise HTTPException(
 #             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Insufficient permissions",
+#             message="Insufficient permissions",
 #             headers={"WWW-Authenticate": "Bearer"},
 #         )
 

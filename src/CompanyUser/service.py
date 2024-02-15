@@ -1,9 +1,9 @@
 from datetime import datetime as date
-from src.Company.model import CompanyUser as ModelCompanyUser
+from src.CompanyUser.model import CompanyUser as ModelCompanyUser
 from src.Utils import TokenData
 from src.Utils.UserType import UserType
-from src.Company.schema import CompanyUser as SchemaCompanyUser
-from src.Company.schema import CompanyUserUpdate as SchemaCompanyUserUpdate
+from src.CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
+from src.CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
 
 from sqlalchemy.orm import Session
 
@@ -35,7 +35,7 @@ def get_company_user(companyUserId: int, db: Session, data: TokenData):
     return user
 
 
-def add_company_user(payload: SchemaCompanyUser, db: Session):
+def add_company_user(payload: CompanyUserCreateSchema, db: Session):
     check_user(db, payload.email, payload.nickname, payload.telephone)
     new_company_user = ModelCompanyUser(**payload.dict(),
                                         code=generate_user_code(db))
@@ -48,7 +48,7 @@ def add_company_user(payload: SchemaCompanyUser, db: Session):
     return new_company_user
 
 
-def update_company_user(payload: SchemaCompanyUserUpdate,
+def update_company_user(payload: CompanyUserUpdateSchema,
                               companyUserId: int, db: Session,
                               data: TokenData):
     if not data.is_admin:

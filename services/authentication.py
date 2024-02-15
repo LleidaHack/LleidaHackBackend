@@ -8,7 +8,7 @@ from src.Utils.UserType import UserType
 
 from src.Hacker.model import Hacker as ModelHacker
 from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
-from src.Company.model import CompanyUser as ModelCompanyUser
+from src.CompanyUser.model import CompanyUser as ModelCompanyUser
 
 from security import create_all_tokens, get_data_from_token, get_password_hash, verify_password
 

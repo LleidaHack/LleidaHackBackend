@@ -7,8 +7,8 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 
 from security import get_data_from_token
-from src.Event.Event import HackerEventRegistration as SchemaEventRegistration
-from src.Event.Event import HackerEventRegistrationUpdate as SchemaEventRegistrationUpdate
+from src.Event.schema import HackerEventRegistration as EventRegistrationSchema
+from src.Event.schema import HackerEventRegistrationUpdate as EventRegistrationUpdateSchema
 import src.Event.service as event_service
 import src.Hacker.service as hacker_service
 import services.hackergroup as hackergroup_service
@@ -89,7 +89,7 @@ def get_dailyhacks(event_id: int,
 @router.put("/{event_id}/register/{hacker_id}")
 def register_hacker_to_event(event_id: int,
                                    hacker_id: str,
-                                   registration: SchemaEventRegistration,
+                                   registration: EventRegistrationSchema,
                                    db: Session = Depends(get_db),
                                    token: str = Depends(JWTBearer())):
     """

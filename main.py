@@ -8,17 +8,18 @@ import logging
 from log_config import LogConfig
 
 from src.User import user
-from src.Hacker import router
-from routers import hackergroup
-from src.LleidaHacker import router
-from routers import lleidahackergroup
-from src.Company import company
-from routers import companyuser
-from src.Event import router
-from src.Meal import router
+from src.Hacker import router as Hacker
+from src.HackerGroup import router as HackerGroup
+from src.LleidaHacker import router as LleidaHacker
+from src.LleidaHackerGroup import router as LleidaHackerGroup
+# from src.CompanyUser.model import CompanyUser
+from src.Company import router as Company
+from src.CompanyUser import router as CompanyUser
+from src.Event import router as Event
+from src.Meal import router as Meal
 from routers import eventmanagment
 from routers import authentication
-from src.MailQueue import router
+from src.MailQueue import router as MailQueue
 from routers import geocaching
 
 from error import error_handler as eh
@@ -100,15 +101,15 @@ app.add_exception_handler(InputException, eh.input_exception_handler)
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
 app.include_router(user.router)
-app.include_router(router.router)
-app.include_router(hackergroup.router)
-app.include_router(router.router)
-app.include_router(lleidahackergroup.router)
-app.include_router(company.router)
-app.include_router(companyuser.router)
-app.include_router(router.router)
-app.include_router(router.router)
-app.include_router(router.router)
+app.include_router(Hacker.router)
+app.include_router(HackerGroup.router)
+app.include_router(LleidaHacker.router)
+app.include_router(LleidaHackerGroup.router)
+app.include_router(Company.router)
+app.include_router(CompanyUser.router)
+app.include_router(MailQueue.router)
+app.include_router(Meal.router)
+app.include_router(Event.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(geocaching.router)

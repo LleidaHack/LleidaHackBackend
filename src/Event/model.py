@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import date
 from typing import List
 
@@ -10,7 +11,7 @@ from sqlalchemy.orm import Mapped
 
 from database import Base
 
-from src.Hacker.model import Hacker as ModelHacker
+# from src.Hacker.model import Hacker as ModelHacker
 from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
 from src.Company.model import Company as ModelCompany
 from src.Hacker.model import HackerGroup as ModelHackerGroup

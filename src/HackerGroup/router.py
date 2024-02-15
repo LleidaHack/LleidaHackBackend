@@ -8,11 +8,11 @@ from utils.auth_bearer import JWTBearer
 
 import services.hackergroup as hackergroup_service
 
-from Hacker.schema import HackerGet as HackerGetSchema
-from HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
-from HackerGroup.schema import HackerGroupGetAll as HackerGroupGetAllSchema
-from HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema
-from HackerGroup.schema import HackerGroupUpdate as HackerGroupUpdateSchema
+from src.Hacker.schema import HackerGet as HackerGetSchema
+from src.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
+from src.HackerGroup.schema import HackerGroupGetAll as HackerGroupGetAllSchema
+from src.HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema
+from src.HackerGroup.schema import HackerGroupUpdate as HackerGroupUpdateSchema
 
 router = APIRouter(
     prefix="/hacker/group",

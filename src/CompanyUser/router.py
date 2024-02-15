@@ -2,12 +2,12 @@ from typing import List, Union
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
-from CompanyUser.schema import CompanyUserGetAll as CompanyUserGetAllSchema
-from CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
-from CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
+from src.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
+from src.CompanyUser.schema import CompanyUserGetAll as CompanyUserGetAllSchema
+from src.CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
+from src.CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
 
-import CompanyUser.service as companyuser_service
+import src.CompanyUser.service as companyuser_service
 
 from database import get_db
 

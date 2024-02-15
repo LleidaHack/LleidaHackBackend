@@ -5,12 +5,13 @@ from sqlalchemy.orm import deferred
 from sqlalchemy.orm import Mapped
 
 from src.User.model import User
+from src.Company.model import Company
 from src.Utils.UserType import UserType
 
 class CompanyUser(User):
     __tablename__ = 'company_user'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    company_id = Column(Integer, ForeignKey('company.id'), primary_key=True)
+    company_id = Column(Integer, ForeignKey(Company.id), primary_key=True)
     company = relationship('Company', back_populates='users')
     active: Mapped[bool] = deferred(Column(Integer))
     role: Mapped[str] = deferred(Column(String))

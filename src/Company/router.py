@@ -1,7 +1,7 @@
 from typing import List, Union
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
-from CompanyUser.schema import CompanyUserGet
+# from src.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
 
 from database import get_db
 from security import get_data_from_token
@@ -9,12 +9,12 @@ from utils.auth_bearer import JWTBearer
 from src.Company import service as company_service
 
 
-from Company.schema import CompanyGet as CompanyGetSchema
-from Company.schema import CompanyGetAll as CompanyGetAllSchema
-from Company.schema import CompanyCreate as CompanyCreateSchema
-from Company.schema import CompanyUpdate as CompanyUpdateSchema
-from CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
-from Event.schema import EventGet as EventGetSchema
+from src.Company.schema import CompanyGet as CompanyGetSchema
+from src.Company.schema import CompanyGetAll as CompanyGetAllSchema
+from src.Company.schema import CompanyCreate as CompanyCreateSchema
+from src.Company.schema import CompanyUpdate as CompanyUpdateSchema
+from src.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
+from src.Event.schema import EventGet as EventGetSchema
 
 
 router = APIRouter(

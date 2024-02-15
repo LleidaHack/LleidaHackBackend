@@ -2,12 +2,12 @@ from __future__ import annotations
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
-from src.User.model import User
-from src.Utils.UserType import UserType
-from src.Event.Event import Event
+# from User.model import User
+# from Utils.UserType import UserType
+# from Event.model import Event
 
-from sqlalchemy.orm import deferred
-from sqlalchemy.orm import Mapped
+# from sqlalchemy.orm import deferred
+# from sqlalchemy.orm import Mapped
 
 
 class Company(Base):

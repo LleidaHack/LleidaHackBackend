@@ -1,16 +1,16 @@
 from datetime import datetime as date
 
-from Hacker.model import Hacker as ModelHacker
-from Hacker.model import HackerGroup as ModelHackerGroup
-from Hacker.model import HackerGroupUser as ModelHackerGroupUser
+from src.Hacker.model import Hacker as ModelHacker
+from src.Hacker.model import HackerGroup as ModelHackerGroup
+from src.Hacker.model import HackerGroupUser as ModelHackerGroupUser
 from src.Event.model import HackerRegistration as ModelHackerRegistration
 from src.Event.model import HackerParticipation as ModelHackerParticipation
 from src.Event.model import HackerAccepted as ModelHackerAccepted
 from src.Utils.TokenData import TokenData
 from src.Utils.UserType import UserType
 
-from src.Hacker.schema import Hacker as SchemaHacker
-from src.Hacker.schema import HackerUpdate as SchemaHackerUpdate
+from src.Hacker.schema import HackerGet as HackerCreateSchema
+from src.Hacker.schema import HackerUpdate as HackerUpdateSchema
 
 from sqlalchemy.orm import Session
 
@@ -55,7 +55,7 @@ def get_hacker_by_email(email: str, db: Session):
     return user
 
 
-def add_hacker(payload: SchemaHacker, db: Session):
+def add_hacker(payload: HackerCreateSchema, db: Session):
     check_user(db, payload.email, payload.nickname, payload.telephone)
     new_hacker = ModelHacker(**payload.dict(), code=generate_user_code(db))
     if payload.image is not None:
@@ -112,7 +112,7 @@ def remove_hacker(hackerId: int, db: Session, data: TokenData):
     return hacker
 
 
-def update_hacker(hackerId: int, payload: SchemaHackerUpdate,
+def update_hacker(hackerId: int, payload: HackerUpdateSchema,
                         db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or

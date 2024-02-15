@@ -5,7 +5,7 @@ from src.User.model import User as ModelUser
 from src.Utils.UserType import UserType
 from src.Utils.TokenData import TokenData
 
-from src.User.schema import User as SchemaUser
+from src.User.schema import UserGet as SchemaUser
 
 from utils.service_utils import check_image
 from error.AuthenticationException import AuthenticationException
