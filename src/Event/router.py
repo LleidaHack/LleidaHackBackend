@@ -1,10 +1,11 @@
+from fastapi import Depends, APIRouter
+from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List, Union
+
 from database import get_db
 from security import get_data_from_token
-
-from sqlalchemy.orm import Session
-from fastapi import Depends, APIRouter
+from utils.auth_bearer import JWTBearer
 
 from src.Event.schema import EventGet as EventGetSchema
 from src.Event.schema import EventGetAll as EventGetAllSchema
@@ -17,7 +18,6 @@ from src.Company.schema import CompanyGet as CompanyGetSchema
 
 import src.Event.service as event_service
 
-from utils.auth_bearer import JWTBearer
 
 router = APIRouter(
     prefix="/event",

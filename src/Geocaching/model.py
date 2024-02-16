@@ -1,12 +1,5 @@
 from datetime import date
-from typing import List
-
-# from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from sqlalchemy.orm import deferred
-from sqlalchemy.orm import Mapped
+from sqlalchemy import Column, ForeignKey, String
 
 from database import Base
 

@@ -1,3 +1,4 @@
+from typing import List, Union
 from sqlalchemy.orm import Session
 from fastapi import Depends, APIRouter
 
@@ -6,7 +7,8 @@ from security import get_data_from_token
 import src.User.service as user_service
 from utils.auth_bearer import JWTBearer
 
-from src.User.model import User as SchemaUser
+from src.User.schema import UserGet as UserGetSchema
+from src.User.schema import UserGetAll as UserGetAllSchema
 
 router = APIRouter(
     prefix="/user",
@@ -20,13 +22,13 @@ def count_users(db: Session = Depends(get_db),
     return user_service.count_users(db)
 
 
-@router.get("/all")
+@router.get("/all", response_model=List[UserGetSchema])
 def get_users(db: Session = Depends(get_db),
                     token: str = Depends(JWTBearer())):
     return user_service.get_all(db)
 
 
-@router.get("/{userId}")
+@router.get("/{userId}", response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user(userId: int,
                    db: Session = Depends(get_db),
                    str=Depends(JWTBearer())):

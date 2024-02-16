@@ -1,6 +1,6 @@
 from src.User.model import User as ModelUser
 from src.Hacker.model import Hacker as ModelHacker
-from src.Hacker.model import HackerGroup as ModelHackerGroup
+from src.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
 from src.CompanyUser.model import CompanyUser as ModelCompanyUser
 

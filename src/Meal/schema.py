@@ -1,14 +1,13 @@
-from datetime import date
-from pydantic import BaseModel
+from utils.BaseSchema import BaseSchema
 from typing import Optional
 
 
-class MealCreate(BaseModel):
+class MealCreate(BaseSchema):
     name: str
     description: str
     event_id: int
 
-class MealGet(BaseModel):
+class MealGet(BaseSchema):
     name: str
     description: str
     event_id: int
@@ -17,6 +16,6 @@ class MealGetAll(MealGet):
     pass
 
 
-class MealUpdate(BaseModel):
+class MealUpdate(BaseSchema):
     name: Optional[str]
     description: Optional[str]

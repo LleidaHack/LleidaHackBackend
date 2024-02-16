@@ -3,8 +3,8 @@ from fastapi import Depends, Response, APIRouter
 from sqlalchemy.orm import Session
 
 from database import get_db
-from security import create_all_tokens, get_data_from_token
 from utils.auth_bearer import JWTBearer
+from security import create_all_tokens, get_data_from_token
 
 from services.mail import send_registration_confirmation_email
 import src.Hacker.service as hacker_service

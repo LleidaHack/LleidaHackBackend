@@ -4,17 +4,15 @@ from typing import List
 
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, deferred, Mapped
 from sqlalchemy.sql import func
-from sqlalchemy.orm import deferred
-from sqlalchemy.orm import Mapped
 
 from database import Base
 
 # from src.Hacker.model import Hacker as ModelHacker
-from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
-from src.Company.model import Company as ModelCompany
-from src.Hacker.model import HackerGroup as ModelHackerGroup
+# from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
+# from src.Company.model import Company as ModelCompany
+# from src.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.Meal.model import Meal as ModelMeal
 
 

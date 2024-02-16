@@ -1,6 +1,7 @@
 from typing import Optional
 from src.User.schema import UserGet, UserGetAll, UserCreate, UserUpdate
 
+
 class CompanyUserCreate(UserCreate):
     role: str
     company_id: int

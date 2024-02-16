@@ -1,17 +1,19 @@
 from typing import List, Union
-from fastapi import Depends, Response, APIRouter
+from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
 
 from database import get_db
 from security import create_all_tokens, get_data_from_token
-from services.mail import send_registration_confirmation_email
-import src.LleidaHacker.service as lleidahacker_service
 from utils.auth_bearer import JWTBearer
 
 from src.LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
 from src.LleidaHacker.schema import LleidaHackerGetAll as LleidaHackerGetAllSchema
 from src.LleidaHacker.schema import LleidaHackerCreate as LleidaHackerCreateSchema
 from src.LleidaHacker.schema import LleidaHackerUpdate as LleidaHackerUpdateSchema
+
+import src.LleidaHacker.service as lleidahacker_service
+from services.mail import send_registration_confirmation_email
+
 
 router = APIRouter(
     prefix="/lleidahacker",

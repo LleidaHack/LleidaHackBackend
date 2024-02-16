@@ -1,23 +1,24 @@
 from datetime import datetime as date
+from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
-from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
+from security import get_password_hash
 from src.Utils import TokenData
 from src.Utils.UserType import UserType
-
-from src.LleidaHacker.schema import LleidaHackerCreate as LleidaHackerCreateSchema
-from src.LleidaHacker.schema import LleidaHackerUpdate as LleidaHackerUpdateSchema
-
-from security import get_password_hash
-
 from utils.service_utils import set_existing_data, check_image, generate_user_code
+from utils.hide_utils import lleidahacker_show_private
+from utils.service_utils import check_user
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
-from utils.hide_utils import lleidahacker_show_private
-from utils.service_utils import check_user
+from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
+
+from src.LleidaHacker.schema import LleidaHackerCreate as LleidaHackerCreateSchema
+from src.LleidaHacker.schema import LleidaHackerUpdate as LleidaHackerUpdateSchema
+from src.LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
+from src.LleidaHacker.schema import LleidaHackerGetAll as LleidaHackerGetAllSchema
 
 
 def get_all(db: Session):
@@ -32,8 +33,8 @@ def get_lleidahacker(userId: int, db: Session, data: TokenData):
     if data.is_admin or (data.available and
                          (data.type == UserType.LLEIDAHACKER.value
                           and data.user_id == userId)):
-        lleidahacker_show_private(user)
-    return user
+        return parse_obj_as(LleidaHackerGetAllSchema, user)
+    return parse_obj_as(LleidaHackerGetSchema, user)
 
 
 def add_lleidahacker(payload: LleidaHackerCreateSchema, db: Session):

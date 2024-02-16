@@ -1,22 +1,19 @@
-from pydantic import BaseModel
+from utils.BaseSchema import BaseSchema
 from typing import Optional
 
-class LleidaHackerGroupCreate(BaseModel):
+class LleidaHackerGroupCreate(BaseSchema):
     name: str
     description: str
-
     # leader: int
-    class Config:
-        orm_mode = True
 
-class LleidaHackerGroupGet(BaseModel):
+class LleidaHackerGroupGet(BaseSchema):
     name: str
     description: str
 
-class LleidaHackerGroupGetAll(BaseModel):
+class LleidaHackerGroupGetAll(BaseSchema):
     pass
 
-class LleidaHackerGroupUpdate(BaseModel):
+class LleidaHackerGroupUpdate(BaseSchema):
     name: Optional[str]
     description: Optional[str]
     # leader: Optional[int]

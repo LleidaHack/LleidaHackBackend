@@ -1,21 +1,19 @@
 from datetime import datetime as date
-from src.CompanyUser.model import CompanyUser as ModelCompanyUser
-from src.Utils import TokenData
-from src.Utils.UserType import UserType
-from src.CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
-from src.CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
-
 from sqlalchemy.orm import Session
 
 from security import get_password_hash
-from utils.service_utils import set_existing_data, check_image, generate_user_code
+from src.Utils import TokenData
+from src.Utils.UserType import UserType
+from utils.hide_utils import companyuser_show_private
+from utils.service_utils import set_existing_data, check_image, generate_user_code,  check_user
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.ValidationException import ValidationException
 
-from utils.hide_utils import companyuser_show_private
-from utils.service_utils import check_user
+from src.CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
+from src.CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
+from src.CompanyUser.model import CompanyUser as ModelCompanyUser
 
 
 def get_all(db: Session):

@@ -1,5 +1,5 @@
-from pydantic import BaseModel
 from typing import Optional
+
 from src.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
 

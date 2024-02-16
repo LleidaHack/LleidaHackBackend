@@ -1,13 +1,11 @@
 from __future__ import annotations
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, deferred, Mapped
+
 from database import Base
 
 from src.User.model import User
 from src.Utils.UserType import UserType
-
-from sqlalchemy.orm import deferred
-from sqlalchemy.orm import Mapped
 
 
 class LleidaHacker(User):

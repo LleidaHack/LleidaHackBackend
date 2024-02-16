@@ -1,18 +1,18 @@
-from src.User.model import User as ModelUser
-from src.Company.model import Company as ModelCompany
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
-
-from src.Company.schema import CompanyCreate as CompanyCreateSchema
-from src.Company.schema import CompanyUpdate as CompanyUpdateSchema
-
 from sqlalchemy.orm import Session
 
+from src.Utils.TokenData import TokenData
+from src.Utils.UserType import UserType
 from utils.service_utils import set_existing_data, check_image
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.ValidationException import ValidationException
+
+from src.User.model import User as ModelUser
+from src.Company.model import Company as ModelCompany
+
+from src.Company.schema import CompanyCreate as CompanyCreateSchema
+from src.Company.schema import CompanyUpdate as CompanyUpdateSchema
 
 
 def get_all(db: Session):

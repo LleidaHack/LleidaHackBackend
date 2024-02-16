@@ -1,11 +1,10 @@
 from sqlalchemy.orm import Session
-from src.maybe_to_delete.Geocaching import Geocaching as ModelGeocaching
-from src.maybe_to_delete.Geocaching import UserGeocaching as ModelUserGeocaching
-from src.Utils.TokenData import TokenData
+
 from src.User.model import User as ModelUser
+from src.Geocaching.model import Geocaching as ModelGeocaching
+from src.Geocaching.model import UserGeocaching as ModelUserGeocaching
 
 
-# from schemas.Geocaching import Geocaching as SchemaGeocaching
 def get_all_geocachings(db: Session):
     return db.query(ModelGeocaching).all()
 

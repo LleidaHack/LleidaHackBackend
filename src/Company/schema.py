@@ -1,8 +1,9 @@
-from pydantic import BaseModel
 from typing import Optional
 
+from utils.BaseSchema import BaseSchema
 
-class CompanyCreate(BaseModel):
+
+class CompanyCreate(BaseSchema):
     name: str
     description: str
     website: str
@@ -12,7 +13,7 @@ class CompanyCreate(BaseModel):
     linkdin: str
     telephone: str
 
-class CompanyGet(BaseModel):
+class CompanyGet(BaseSchema):
     name: str
     description: str
     website: str
@@ -25,7 +26,7 @@ class CompanyGet(BaseModel):
 class CompanyGetAll(CompanyGet):
     pass
 
-class CompanyUpdate(BaseModel):
+class CompanyUpdate(BaseSchema):
     name: Optional[str]
     description: Optional[str]
     website: Optional[str]

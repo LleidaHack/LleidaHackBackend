@@ -1,8 +1,7 @@
-from src.User.schema import UserGet, UserGetAll, UserUpdate
-from pydantic import BaseModel
+from utils.BaseSchema import BaseSchema
 from typing import Optional
 
-class HackerGroupCreate(BaseModel):
+class HackerGroupCreate(BaseSchema):
     name: str
     description: str
     leader_id: int
@@ -11,7 +10,7 @@ class HackerGroupCreate(BaseModel):
     class Config:
         orm_mode = True
 
-class HackerGroupGet(BaseModel):
+class HackerGroupGet(BaseSchema):
     name: str
     description: str
     leader_id: int
@@ -20,7 +19,7 @@ class HackerGroupGet(BaseModel):
 class HackerGroupGetAll(HackerGroupGet):
     pass
 
-class HackerGroupUpdate(BaseModel):
+class HackerGroupUpdate(BaseSchema):
     name: Optional[str]
     description: Optional[str]
     leader_id: Optional[int]

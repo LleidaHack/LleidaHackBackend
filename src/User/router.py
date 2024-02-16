@@ -1,5 +1,6 @@
 from typing import List, Union
 from fastapi import Depends, APIRouter
+from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -8,8 +9,8 @@ from utils.auth_bearer import JWTBearer
 
 import src.User.service as user_service
 
-from User.schema import UserGet as UserGetSchema
-from User.schema import UserGetAll as UserGetAllSchema
+from src.User.schema import UserGet as UserGetSchema
+from src.User.schema import UserGetAll as UserGetAllSchema
 # from User.schema import UserCreate as UserCreateSchema
 # from User.schema import UserCreate as UserCreateSchema
 
@@ -31,7 +32,7 @@ def get_users(db: Session = Depends(get_db),
     return user_service.get_all(db)
 
 
-@router.get("/{userId}", response_model=Union[UserGetSchema, UserGetAllSchema])
+@router.get("/{userId}")#, response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user(userId: int,
                    db: Session = Depends(get_db),
                    str=Depends(JWTBearer())):

@@ -1,17 +1,4 @@
 from datetime import datetime as date
-
-from src.Hacker.model import Hacker as ModelHacker
-from src.Hacker.model import HackerGroup as ModelHackerGroup
-from src.Hacker.model import HackerGroupUser as ModelHackerGroupUser
-from src.Event.model import HackerRegistration as ModelHackerRegistration
-from src.Event.model import HackerParticipation as ModelHackerParticipation
-from src.Event.model import HackerAccepted as ModelHackerAccepted
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
-
-from src.Hacker.schema import HackerGet as HackerCreateSchema
-from src.Hacker.schema import HackerUpdate as HackerUpdateSchema
-
 from sqlalchemy.orm import Session
 
 from security import get_password_hash
@@ -23,6 +10,18 @@ from error.InvalidDataException import InvalidDataException
 
 from utils.hide_utils import hacker_show_private
 from utils.service_utils import check_user
+from src.Utils.TokenData import TokenData
+from src.Utils.UserType import UserType
+
+from src.Hacker.model import Hacker as ModelHacker
+from src.HackerGroup.model import HackerGroup as ModelHackerGroup
+from src.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.Event.model import HackerRegistration as ModelHackerRegistration
+from src.Event.model import HackerParticipation as ModelHackerParticipation
+from src.Event.model import HackerAccepted as ModelHackerAccepted
+
+from src.Hacker.schema import HackerGet as HackerCreateSchema
+from src.Hacker.schema import HackerUpdate as HackerUpdateSchema
 
 
 def get_all(db: Session):

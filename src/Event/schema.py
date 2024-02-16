@@ -1,11 +1,12 @@
 # from __future__ import annotations
-
-from datetime import date
-from pydantic import BaseModel, validator
 from typing import Optional
+from datetime import date
+from pydantic import validator
+
+from utils.BaseSchema import BaseSchema
 
 
-class EventCreate(BaseModel):
+class EventCreate(BaseSchema):
     name: str
     description: str
     start_date: date
@@ -40,10 +41,7 @@ class EventCreate(BaseModel):
             raise ValueError('must be a valid number')
         return v
 
-    class Config:
-        orm_mode = True
-
-class EventGet(BaseModel):
+class EventGet(BaseSchema):
     name: str
     description: str
     start_date: date
@@ -61,7 +59,7 @@ class EventGet(BaseModel):
 class EventGetAll(EventGet):
     pass
 
-class EventUpdate(BaseModel):
+class EventUpdate(BaseSchema):
     name: Optional[str]
     description: Optional[str]
     start_date: Optional[date]
@@ -79,7 +77,7 @@ class EventUpdate(BaseModel):
 
 
     # start_time: Time = Column(Time, default=func.now())
-class HackerEventRegistration(BaseModel):
+class HackerEventRegistration(BaseSchema):
     shirt_size: str
     food_restrictions: str
     cv: Optional[str]
@@ -100,7 +98,7 @@ class HackerEventRegistration(BaseModel):
         return v
 
 
-class HackerEventRegistrationUpdate(BaseModel):
+class HackerEventRegistrationUpdate(BaseSchema):
     shirt_size: Optional[str]
     food_restrictions: Optional[str]
     cv: Optional[str]

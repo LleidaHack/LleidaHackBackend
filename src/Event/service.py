@@ -1,15 +1,5 @@
 from sqlalchemy.orm import Session
 
-from src.Event.schema import EventCreate as EventCreateSchema
-from src.Event.schema import EventUpdate as EventUpdateSchema
-
-from src.Event.model import Event as ModelEvent
-from src.Company.model import Company as ModelCompany
-from src.Hacker.model import Hacker as ModelHacker
-from src.Hacker.model import HackerGroup as ModelHackerGroup
-from src.Hacker.model import HackerGroupUser as ModelHackerGroupUser
-from src.Hacker.model import HackerGroup as ModelHackerGroup
-
 from src.Utils.TokenData import TokenData
 from src.Utils.UserType import UserType
 
@@ -18,6 +8,16 @@ from utils.hide_utils import hacker_show_private
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
+
+from src.Event.schema import EventCreate as EventCreateSchema
+from src.Event.schema import EventUpdate as EventUpdateSchema
+
+from src.Event.model import Event as ModelEvent
+from src.Company.model import Company as ModelCompany
+from src.Hacker.model import Hacker as ModelHacker
+from src.HackerGroup.model import HackerGroup as ModelHackerGroup
+from src.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+
 
 
 def get_all(db: Session):

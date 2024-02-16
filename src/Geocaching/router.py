@@ -1,11 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from fastapi import Depends, Response
+
 from database import get_db
-from services import geocaching as geocaching_service
+from src.Geocaching import service as geocaching_service
+
 
 router = APIRouter()
-
 
 @router.get("/geocaching")
 def get_all_geocachings():

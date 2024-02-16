@@ -1,13 +1,13 @@
 from typing import List, Union
-from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
+from sqlalchemy.orm import Session
 # from src.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
 
 from database import get_db
 from security import get_data_from_token
 from utils.auth_bearer import JWTBearer
-from src.Company import service as company_service
 
+from src.Company import service as company_service
 
 from src.Company.schema import CompanyGet as CompanyGetSchema
 from src.Company.schema import CompanyGetAll as CompanyGetAllSchema

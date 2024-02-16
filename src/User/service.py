@@ -1,3 +1,5 @@
+from typing import List
+from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 from security import get_password_hash
 
@@ -5,7 +7,8 @@ from src.User.model import User as ModelUser
 from src.Utils.UserType import UserType
 from src.Utils.TokenData import TokenData
 
-from src.User.schema import UserGet as SchemaUser
+from src.User.schema import UserGet as UserGetSchema
+from src.User.schema import UserGetAll as UserGetAllSchema
 
 from utils.service_utils import check_image
 from error.AuthenticationException import AuthenticationException
@@ -29,8 +32,9 @@ def get_user(db: Session, userId: int, data: TokenData):
     if data.is_admin or (data.available and
                          (data.type == UserType.LLEIDAHACKER.value
                           or data.user_id == userId)):
-        user_show_private(user)
-    return user
+        # user_show_private(user)
+        return parse_obj_as(UserGetAllSchema, user)
+    return parse_obj_as(UserGetSchema, user)
 
 
 def get_user_by_email(db: Session, email: str, data: TokenData):
@@ -85,34 +89,34 @@ def get_user_by_code(db: Session, code: str, data: TokenData):
     return user
 
 
-def add_user(db: Session, payload: SchemaUser):
-    new_user = ModelUser(**payload.dict())
-    if payload.image is not None:
-        payload = check_image(payload)
-    new_user.password = get_password_hash(payload.password)
-    db.add(new_user)
-    db.commit()
-    return new_user
+# def add_user(db: Session, payload: SchemaUser):
+#     new_user = ModelUser(**payload.dict())
+#     if payload.image is not None:
+#         payload = check_image(payload)
+#     new_user.password = get_password_hash(payload.password)
+#     db.add(new_user)
+#     db.commit()
+#     return new_user
 
 
 def delete_user(db: Session, userId: int):
     return db.query(ModelUser).filter(ModelUser.id == userId).delete()
 
 
-def update_user(db: Session, userId: int, payload: SchemaUser):
-    user = db.query(ModelUser).filter(ModelUser.id == userId).first()
-    user.name = payload.name
-    user.password = payload.password
-    user.nickname = payload.nickname
-    user.birthdate = payload.birthdate
-    user.food_restrictions = payload.food_restrictions
-    user.telephone = payload.telephone
-    user.address = payload.address
-    user.shirt_size = payload.shirt_size
-    user.image_id = payload.image_id
-    db.commit()
-    db.refresh(user)
-    return user
+# def update_user(db: Session, userId: int, payload: UserUpdateSchema):
+#     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
+#     user.name = payload.name
+#     user.password = payload.password
+#     user.nickname = payload.nickname
+#     user.birthdate = payload.birthdate
+#     user.food_restrictions = payload.food_restrictions
+#     user.telephone = payload.telephone
+#     user.address = payload.address
+#     user.shirt_size = payload.shirt_size
+#     user.image_id = payload.image_id
+#     db.commit()
+#     db.refresh(user)
+#     return user
 
 
 def set_user_token(db: Session, userId: int, token: str,

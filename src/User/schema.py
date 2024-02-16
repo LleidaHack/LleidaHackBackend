@@ -1,12 +1,11 @@
-# from __future__ import annotations
-
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import validator
 from datetime import date
 from typing import Optional
 import re
+from utils.BaseSchema import BaseSchema
 
 
-class UserCreate(BaseModel):
+class UserCreate(BaseSchema):
     name: str
     nickname: str
     password: str
@@ -55,10 +54,7 @@ class UserCreate(BaseModel):
             raise ValueError('must be a valid shirt size')
         return v
 
-    class Config:
-        orm_mode = True
-
-class UserGet(BaseModel):
+class UserGet(BaseSchema):
     name: str
     nickname: str
     birthdate: date
@@ -74,7 +70,7 @@ class UserGetAll(UserGet):
     address: str
     shirt_size: Optional[str]
 
-class UserUpdate(BaseModel):
+class UserUpdate(BaseSchema):
     name: Optional[str]
     nickname: Optional[str]
     password: Optional[str]

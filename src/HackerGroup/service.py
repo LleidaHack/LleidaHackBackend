@@ -1,22 +1,21 @@
-from src.Hacker.model import HackerGroup as ModelHackerGroup
-from src.Hacker.model import HackerGroupUser as ModelHackerGroupUser
-from src.Hacker.model import Hacker as ModelHacker
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
-from src.Event.model import Event as ModelEvent
-
-from src.Hacker.schema import HackerGroup as SchemaHackerGroup
-from src.Hacker.schema import HackerGroupUpdate as SchemaHackerGroupUpdate
-
 from sqlalchemy.orm import Session
 
+from src.Utils.UserType import UserType
 from utils.service_utils import generate_random_code, set_existing_data
+from utils.hide_utils import hackergroup_show_private
+
+from src.HackerGroup.model import HackerGroup as ModelHackerGroup
+from src.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.Hacker.model import Hacker as ModelHacker
+from src.Utils.TokenData import TokenData
+from src.Event.model import Event as ModelEvent
+
+from src.HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema
+from src.HackerGroup.schema import HackerGroupUpdate as HackerGroupUpdateSchema
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
-
-from utils.hide_utils import hackergroup_show_private
 
 
 def get_all(db: Session):
@@ -48,7 +47,7 @@ def get_hacker_group(id: int, db: Session, data: TokenData):
     return group
 
 
-def add_hacker_group(payload: SchemaHackerGroup, db: Session,
+def add_hacker_group(payload: HackerGroupCreateSchema, db: Session,
                            data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
@@ -82,7 +81,7 @@ def add_hacker_group(payload: SchemaHackerGroup, db: Session,
     return new_hacker_group
 
 
-def update_hacker_group(id: int, payload: SchemaHackerGroupUpdate,
+def update_hacker_group(id: int, payload: HackerGroupUpdateSchema,
                               db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value

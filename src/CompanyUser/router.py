@@ -1,21 +1,20 @@
 from typing import List, Union
-from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
+from sqlalchemy.orm import Session
+
+from security import create_all_tokens
+from security import create_refresh_token
+from security import get_data_from_token
+from database import get_db
+from utils.auth_bearer import JWTBearer
+
+import src.CompanyUser.service as companyuser_service
 
 from src.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
 from src.CompanyUser.schema import CompanyUserGetAll as CompanyUserGetAllSchema
 from src.CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
 from src.CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
 
-import src.CompanyUser.service as companyuser_service
-
-from database import get_db
-
-from security import create_all_tokens
-from security import create_refresh_token
-from security import get_data_from_token
-
-from utils.auth_bearer import JWTBearer
 
 router = APIRouter(
     prefix="/company/user",

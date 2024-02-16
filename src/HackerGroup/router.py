@@ -6,7 +6,7 @@ from database import get_db
 from security import get_data_from_token
 from utils.auth_bearer import JWTBearer
 
-import services.hackergroup as hackergroup_service
+import src.HackerGroup.service as hackergroup_service
 
 from src.Hacker.schema import HackerGet as HackerGetSchema
 from src.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema

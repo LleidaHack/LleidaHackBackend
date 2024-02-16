@@ -1,13 +1,13 @@
-from pydantic import BaseModel
+from utils.BaseSchema import BaseSchema
 from typing import Optional
 
 
-class Notification(BaseModel):
+class Notification(BaseSchema):
     message: str
 
     class Config:
         orm_mode = True
 
 
-class NotificationUpdate(BaseModel):
+class NotificationUpdate(BaseSchema):
     message: Optional[str]
