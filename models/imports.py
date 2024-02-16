@@ -8,3 +8,4 @@ from models import Role
 from models import User
 from models import MailQueue
 from models import Geocaching
+from models import UserConfig

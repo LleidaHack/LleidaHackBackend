@@ -6,25 +6,32 @@ from typing import Optional
 
 
 class UserConfigCreate(BaseModel):
+    user_id:int
     reciveNotifications: bool
     defaultLang: str
     comercialNotifications: bool
+    class Config:
+        orm_mode = True
     
 
 class UserConfigGet(BaseModel):
-    reciveNotifications: bool
+    user_id:int
     defaultLang: str
-    comercialNotifications: bool
+    class Config:
+        orm_mode = True
 
 
 
 class UserConfigGetAll(UserConfigGet):
-    pass
-
+    id:int
+    comercialNotifications: bool
+    reciveNotifications: bool
 
 
 class UserConfigUpdate(BaseModel):
     reciveNotifications: Optional[bool]
     defaultLang: Optional[str]
     comercialNotifications: Optional[bool]
+    class Config:
+        orm_mode = True
     

@@ -2,7 +2,7 @@ from datetime import date
 from sqlalchemy import Column, DateTime, Integer, String, Boolean
 from database import Base
 from sqlalchemy.orm import deferred
-
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 
 
@@ -33,6 +33,7 @@ class User(Base):
     terms_accepted: bool = Column(Boolean, default=True)
     recive_mails: bool = Column(Boolean, default=True)
     lleidacoins_claimed: Boolean = Column(Boolean, default=False)
+    ##config = relationship('user-config', backref = 'user')
     __mapper_args__ = {
         "polymorphic_identity": "user",
         "polymorphic_on": type,
