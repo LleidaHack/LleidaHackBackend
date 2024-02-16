@@ -18,8 +18,8 @@ import src.Event.service as event_service
 import src.Hacker.service as hacker_service
 import src.HackerGroup.service as hackergroup_service
 import src.EventManagment.service as eventmanagment_service
-import services.mail as mail_service
 import src.Hacker.service as hacker_service
+import services.mail as mail_service
 
 
 router = APIRouter(

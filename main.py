@@ -12,7 +12,6 @@ from src.Hacker import router as Hacker
 from src.HackerGroup import router as HackerGroup
 from src.LleidaHacker import router as LleidaHacker
 from src.LleidaHackerGroup import router as LleidaHackerGroup
-# from src.CompanyUser.model import CompanyUser
 from src.Company import router as Company
 from src.CompanyUser import router as CompanyUser
 from src.Event import router as Event

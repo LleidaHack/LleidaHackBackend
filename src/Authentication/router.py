@@ -9,7 +9,6 @@ from database import get_db
 from error.AuthenticationException import AuthenticationException
 from utils.auth_bearer import JWTBearer
 
-from src.User.model import User as ModelUser
 from src.Authentication import service as auth_service
 
 router = APIRouter(
