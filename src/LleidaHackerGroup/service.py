@@ -28,7 +28,7 @@ def get_lleidahackergroup(groupId: int, db: Session):
 
 
 def add_lleidahackergroup(payload: LleidaHackerGroupCreateSchema, db: Session,
-                                data: TokenData):
+                          data: TokenData):
     if not data.is_admin:
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):
@@ -46,8 +46,8 @@ def add_lleidahackergroup(payload: LleidaHackerGroupCreateSchema, db: Session,
 
 
 def update_lleidahackergroup(groupId: int,
-                                   payload: LleidaHackerGroupUpdateSchema,
-                                   db: Session, data: TokenData):
+                             payload: LleidaHackerGroupUpdateSchema,
+                             db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):
@@ -82,8 +82,8 @@ def delete_lleidahackergroup(groupId: int, db: Session, data: TokenData):
     return lleidahacker_group
 
 
-def add_lleidahacker_to_group(groupId: int, lleidahackerId: int,
-                                    db: Session, data: TokenData):
+def add_lleidahacker_to_group(groupId: int, lleidahackerId: int, db: Session,
+                              data: TokenData):
     if not data.is_admin:
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):
@@ -106,7 +106,7 @@ def add_lleidahacker_to_group(groupId: int, lleidahackerId: int,
 
 
 def remove_lleidahacker_from_group(groupId: int, lleidahackerId: int,
-                                         db: Session, data: TokenData):
+                                   db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):
@@ -131,7 +131,7 @@ def remove_lleidahacker_from_group(groupId: int, lleidahackerId: int,
 
 
 def set_lleidahacker_group_leader(groupId: int, lleidahackerId: int,
-                                        db: Session, data: TokenData):
+                                  db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available
                 and data.user_type == UserType.LLEIDAHACKER.value):

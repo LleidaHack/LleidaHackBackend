@@ -18,7 +18,6 @@ from src.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 
 
-
 def get_all(db: Session):
     return db.query(ModelEvent).all()
 
@@ -34,7 +33,7 @@ def get_hackeps(year: int, db: Session):
 
 
 def get_hacker_group(event_id: int, hacker_id: int, db: Session,
-                           data: TokenData):
+                     data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == event_id).first()
     if event is None:
         raise NotFoundException("Event not found")
@@ -70,7 +69,7 @@ def add_event(payload: EventCreateSchema, db: Session, data: TokenData):
 
 
 def update_event(id: int, event: EventUpdateSchema, db: Session,
-                       data: TokenData):
+                 data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -185,7 +184,7 @@ def add_company(id: int, company_id: int, db: Session, data: TokenData):
 
 
 def add_hacker_group(id: int, hacker_group_id: int, db: Session,
-                           data: TokenData):
+                     data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
@@ -212,8 +211,7 @@ def add_hacker_group(id: int, hacker_group_id: int, db: Session,
     return event
 
 
-def remove_company(id: int, company_id: int, db: Session,
-                         data: TokenData):
+def remove_company(id: int, company_id: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise Exception("Not authorized")
@@ -263,7 +261,7 @@ def remove_company(id: int, company_id: int, db: Session,
 
 
 def remove_hacker_group(id: int, hacker_group_id: int, db: Session,
-                              data: TokenData):
+                        data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
@@ -302,8 +300,7 @@ def get_accepted_hackers(event_id: int, db: Session, data: TokenData):
     return hackers
 
 
-def get_accepted_hackers_mails(event_id: int, db: Session,
-                                     data: TokenData):
+def get_accepted_hackers_mails(event_id: int, db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise Exception("Not authorized")

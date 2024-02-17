@@ -21,7 +21,6 @@ import src.EventManagment.service as eventmanagment_service
 import src.Hacker.service as hacker_service
 import services.mail as mail_service
 
-
 router = APIRouter(
     prefix="/eventmanagment",
     tags=["EventManagment"],
@@ -30,86 +29,87 @@ router = APIRouter(
 
 @router.post("/{event_id}/add_dailyhack/{hacker_id}")
 def add_dailyhack(event_id: int,
-                        hacker_id: int,
-                        url: str,
-                        db: Session = Depends(get_db),
-                        token: str = Depends(JWTBearer())):
+                  hacker_id: int,
+                  url: str,
+                  db: Session = Depends(get_db),
+                  token: str = Depends(JWTBearer())):
     """
     Add a dailyhack to an event
     """
-    return eventmanagment_service.add_dailyhack(
-        event_id, hacker_id, url, db, get_data_from_token(token))
+    return eventmanagment_service.add_dailyhack(event_id, hacker_id, url, db,
+                                                get_data_from_token(token))
 
 
 @router.put("/{event_id}/update_dailyhack/{hacker_id}")
 def update_dailyhack(event_id: int,
-                           hacker_id: int,
-                           url: str,
-                           db: Session = Depends(get_db),
-                           token: str = Depends(JWTBearer())):
+                     hacker_id: int,
+                     url: str,
+                     db: Session = Depends(get_db),
+                     token: str = Depends(JWTBearer())):
     """
     Update a dailyhack to an event
     """
-    return eventmanagment_service.update_dailyhack(
-        event_id, hacker_id, url, db, get_data_from_token(token))
+    return eventmanagment_service.update_dailyhack(event_id, hacker_id, url,
+                                                   db,
+                                                   get_data_from_token(token))
 
 
 @router.get("/{event_id}/dailyhack/{hacker_id}")
 def get_dailyhack(event_id: int,
-                        hacker_id: int,
-                        db: Session = Depends(get_db),
-                        token: str = Depends(JWTBearer())):
+                  hacker_id: int,
+                  db: Session = Depends(get_db),
+                  token: str = Depends(JWTBearer())):
     """
     Get a dailyhack from an event
     """
-    return eventmanagment_service.get_dailyhack(
-        event_id, hacker_id, db, get_data_from_token(token))
+    return eventmanagment_service.get_dailyhack(event_id, hacker_id, db,
+                                                get_data_from_token(token))
 
 
 @router.delete("/{event_id}/dailyhack/{hacker_id}")
 def delete_dailyhack(event_id: int,
-                           hacker_id: int,
-                           db: Session = Depends(get_db),
-                           token: str = Depends(JWTBearer())):
+                     hacker_id: int,
+                     db: Session = Depends(get_db),
+                     token: str = Depends(JWTBearer())):
     """
      Delete a dailyhack from an event
      """
-    return eventmanagment_service.delete_dailyhack(
-        event_id, hacker_id, db, get_data_from_token(token))
+    return eventmanagment_service.delete_dailyhack(event_id, hacker_id, db,
+                                                   get_data_from_token(token))
 
 
 @router.get("/{event_id}/dailyhacks")
 def get_dailyhacks(event_id: int,
-                         db: Session = Depends(get_db),
-                         token: str = Depends(JWTBearer())):
+                   db: Session = Depends(get_db),
+                   token: str = Depends(JWTBearer())):
     """
     Get all dailyhacks from an event
     """
-    return eventmanagment_service.get_dailyhacks(
-        event_id, db, get_data_from_token(token))
+    return eventmanagment_service.get_dailyhacks(event_id, db,
+                                                 get_data_from_token(token))
 
 
 @router.put("/{event_id}/register/{hacker_id}")
 def register_hacker_to_event(event_id: int,
-                                   hacker_id: str,
-                                   registration: EventRegistrationSchema,
-                                   db: Session = Depends(get_db),
-                                   token: str = Depends(JWTBearer())):
+                             hacker_id: str,
+                             registration: EventRegistrationSchema,
+                             db: Session = Depends(get_db),
+                             token: str = Depends(JWTBearer())):
     """
     Register a hacker to an event
     """
     event = event_service.get_event(event_id, db)
     hacker = hacker_service.get_hacker(hacker_id, db,
-                                             get_data_from_token(token))
+                                       get_data_from_token(token))
     return eventmanagment_service.register_hacker_to_event(
         registration, event, hacker, db, get_data_from_token(token))
 
 
 @router.put("/{event_id}/unregister/{hacker_id}")
 def unregister_hacker_from_event(event_id: int,
-                                       hacker_id: int,
-                                       db: Session = Depends(get_db),
-                                       token: str = Depends(JWTBearer())):
+                                 hacker_id: int,
+                                 db: Session = Depends(get_db),
+                                 token: str = Depends(JWTBearer())):
     """
     Unregister a hacker from an event
     """
@@ -117,7 +117,7 @@ def unregister_hacker_from_event(event_id: int,
     if event is None:
         raise NotFoundException("Event not found")
     hacker = hacker_service.get_hacker(hacker_id, db,
-                                             get_data_from_token(token))
+                                       get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return eventmanagment_service.unregister_hacker_from_event(
@@ -138,9 +138,9 @@ def confirm_assistance(token: str, db: Session = Depends(get_db)):
 
 @router.put("/{event_id}/participate/{hacker_code}")
 def participate_hacker_to_event(event_id: int,
-                                      hacker_code: str,
-                                      db: Session = Depends(get_db),
-                                      token: str = Depends(JWTBearer())):
+                                hacker_code: str,
+                                db: Session = Depends(get_db),
+                                token: str = Depends(JWTBearer())):
     """
     Participate a hacker to an event
     """
@@ -165,9 +165,9 @@ def participate_hacker_to_event(event_id: int,
 
 @router.put("/{event_id}/unparticipate/{hacker_id}")
 def unparticipate_hacker_from_event(event_id: int,
-                                          hacker_id: int,
-                                          db: Session = Depends(get_db),
-                                          token: str = Depends(JWTBearer())):
+                                    hacker_id: int,
+                                    db: Session = Depends(get_db),
+                                    token: str = Depends(JWTBearer())):
     """
     Unparticipate a hacker from an event
     """
@@ -175,7 +175,7 @@ def unparticipate_hacker_from_event(event_id: int,
     if event is None:
         raise NotFoundException("Event not found")
     hacker = hacker_service.get_hacker(hacker_id, db,
-                                             get_data_from_token(token))
+                                       get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     eventmanagment_service.unparticipate_hacker_from_event(
@@ -184,9 +184,9 @@ def unparticipate_hacker_from_event(event_id: int,
 
 @router.put("/{event_id}/accept/{hacker_id}")
 def accept_hacker_to_event(event_id: int,
-                                 hacker_id: int,
-                                 db: Session = Depends(get_db),
-                                 token: str = Depends(JWTBearer())):
+                           hacker_id: int,
+                           db: Session = Depends(get_db),
+                           token: str = Depends(JWTBearer())):
     """
         Accept a hacker to an event
         """
@@ -194,7 +194,7 @@ def accept_hacker_to_event(event_id: int,
     if event is None:
         raise NotFoundException("Event not found")
     hacker = hacker_service.get_hacker(hacker_id, db,
-                                             get_data_from_token(token))
+                                       get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return eventmanagment_service.accept_hacker_to_event(
@@ -203,10 +203,9 @@ def accept_hacker_to_event(event_id: int,
 
 @router.put("/{event_id}/unaccept/{hacker_email}")
 def unaccept_hacker_from_event_by_email(event_id: int,
-                                              hacker_email: str,
-                                              db: Session = Depends(get_db),
-                                              token: str = Depends(
-                                                  JWTBearer())):
+                                        hacker_email: str,
+                                        db: Session = Depends(get_db),
+                                        token: str = Depends(JWTBearer())):
     """
     Unaccept a hacker from an event by email
     """
@@ -222,9 +221,9 @@ def unaccept_hacker_from_event_by_email(event_id: int,
 
 @router.put("/{event_id}/acceptgroup/{group_id}")
 def accept_group_to_event(event_id: int,
-                                group_id: int,
-                                db: Session = Depends(get_db),
-                                token: str = Depends(JWTBearer())):
+                          group_id: int,
+                          db: Session = Depends(get_db),
+                          token: str = Depends(JWTBearer())):
     """
             Accept a group to an event
             """
@@ -240,9 +239,9 @@ def accept_group_to_event(event_id: int,
 
 @router.put("/{event_id}/reject/{hacker_id}")
 def reject_hacker_from_event(event_id: int,
-                                   hacker_id: int,
-                                   db: Session = Depends(get_db),
-                                   token: str = Depends(JWTBearer())):
+                             hacker_id: int,
+                             db: Session = Depends(get_db),
+                             token: str = Depends(JWTBearer())):
     """
         Reject a hacker from an event
         """
@@ -250,7 +249,7 @@ def reject_hacker_from_event(event_id: int,
     if event is None:
         raise NotFoundException("Event not found")
     hacker = hacker_service.get_hacker(hacker_id, db,
-                                             get_data_from_token(token))
+                                       get_data_from_token(token))
     if hacker is None:
         raise NotFoundException("Hacker not found")
     return eventmanagment_service.reject_hacker_from_event(
@@ -259,9 +258,9 @@ def reject_hacker_from_event(event_id: int,
 
 @router.put("/{event_id}/rejectgroup/{group_id}")
 def reject_group_from_event(event_id: int,
-                                  group_id: int,
-                                  db: Session = Depends(get_db),
-                                  token: str = Depends(JWTBearer())):
+                            group_id: int,
+                            db: Session = Depends(get_db),
+                            token: str = Depends(JWTBearer())):
     """
           Reject a group from an event
           """
@@ -277,8 +276,8 @@ def reject_group_from_event(event_id: int,
 
 @router.get("/{event_id}/pending")
 def get_pending_hackers(event_id: int,
-                              db: Session = Depends(get_db),
-                              token: str = Depends(JWTBearer())):
+                        db: Session = Depends(get_db),
+                        token: str = Depends(JWTBearer())):
     """
     Get the pending hackers of an event
     """
@@ -294,8 +293,8 @@ def get_pending_hackers(event_id: int,
 
 @router.get("/{event_id}/pendinggruped")
 def get_pending_hackers_gruped(event_id: int,
-                                     db: Session = Depends(get_db),
-                                     token: str = Depends(JWTBearer())):
+                               db: Session = Depends(get_db),
+                               token: str = Depends(JWTBearer())):
     """
         Get the pending hackers of an event
         """
@@ -308,8 +307,8 @@ def get_pending_hackers_gruped(event_id: int,
 
 @router.get("/{event_id}/rejected")
 def get_rejected_hackers(event_id: int,
-                               db: Session = Depends(get_db),
-                               token: str = Depends(JWTBearer())):
+                         db: Session = Depends(get_db),
+                         token: str = Depends(JWTBearer())):
     """
         Get the rejected hackers of an event
         """
@@ -343,10 +342,10 @@ def get_food_restrictions(event_id: int, db: Session = Depends(get_db)):
 
 @router.put("/{event_id}/eat/{meal_id}/{hacker_code}")
 def eat(event_id: int,
-              meal_id: int,
-              hacker_code: str,
-              db: Session = Depends(get_db),
-              token: str = Depends(JWTBearer())):
+        meal_id: int,
+        hacker_code: str,
+        db: Session = Depends(get_db),
+        token: str = Depends(JWTBearer())):
     """
     Register a hacker to an event
     """
@@ -358,7 +357,7 @@ def eat(event_id: int,
         raise NotFoundException("Hacker not found")
     meal = [meal for meal in event.meals if meal.id == meal_id][0]
     return eventmanagment_service.eat(event, meal, hacker, db,
-                                            get_data_from_token(token))
+                                      get_data_from_token(token))
 
 
 # def test(lst, background_tasks: BackgroundTasks):
@@ -390,9 +389,9 @@ def send_remember(
 
 @router.post("/{event_id}/send_dailyhack")
 def send_dailyhack(event_id: int,
-                         background_tasks: BackgroundTasks,
-                         db: Session = Depends(get_db),
-                         token: str = Depends(JWTBearer())):
+                   background_tasks: BackgroundTasks,
+                   db: Session = Depends(get_db),
+                   token: str = Depends(JWTBearer())):
     """
     Send a daily hack notification to all attendees of an event
     """
@@ -402,8 +401,7 @@ def send_dailyhack(event_id: int,
     event = event_service.get_event(event_id, db)
     if event is None:
         raise NotFoundException("Event not found")
-    return mail_service.send_all_dailyhack_mails(event.registered_hackers
-                                                       )
+    return mail_service.send_all_dailyhack_mails(event.registered_hackers)
 
 
 @router.get("/{event_id}/get_sizes")
@@ -419,8 +417,8 @@ def get_sizes(event_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{event_id}/get_unregistered_hackers")
 def get_unregistered_hackers(event_id: int,
-                                   db: Session = Depends(get_db),
-                                   token: str = Depends(JWTBearer())):
+                             db: Session = Depends(get_db),
+                             token: str = Depends(JWTBearer())):
     """
     Get the hackers who are not registered for the event
     """
@@ -435,8 +433,8 @@ def get_unregistered_hackers(event_id: int,
 
 @router.get("/{event_id}/count_unregistered_hackers")
 def count_unregistered_hackers(event_id: int,
-                                     db: Session = Depends(get_db),
-                                     token: str = Depends(JWTBearer())):
+                               db: Session = Depends(get_db),
+                               token: str = Depends(JWTBearer())):
     """
     Get the count of hackers who are not registered for the event
     """

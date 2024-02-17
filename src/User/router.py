@@ -22,53 +22,55 @@ router = APIRouter(
 
 @router.get("/count")
 def count_users(db: Session = Depends(get_db),
-                      token: str = Depends(JWTBearer())):
+                token: str = Depends(JWTBearer())):
     return user_service.count_users(db)
 
 
 @router.get("/all", response_model=List[UserGetSchema])
 def get_users(db: Session = Depends(get_db),
-                    token: str = Depends(JWTBearer())):
+              token: str = Depends(JWTBearer())):
     return user_service.get_all(db)
 
 
-@router.get("/{userId}")#, response_model=Union[UserGetSchema, UserGetAllSchema])
+@router.get(
+    "/{userId}")  #, response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user(userId: int,
-                   db: Session = Depends(get_db),
-                   str=Depends(JWTBearer())):
+             db: Session = Depends(get_db),
+             str=Depends(JWTBearer())):
     return user_service.get_user(db, userId, get_data_from_token(str))
 
 
-@router.get("/email/{email}", response_model=Union[UserGetSchema, UserGetAllSchema])
+@router.get("/email/{email}",
+            response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user_by_email(email: str,
-                            db: Session = Depends(get_db),
-                            str=Depends(JWTBearer())):
-    return user_service.get_user_by_email(db, email,
-                                                get_data_from_token(str))
+                      db: Session = Depends(get_db),
+                      str=Depends(JWTBearer())):
+    return user_service.get_user_by_email(db, email, get_data_from_token(str))
 
 
-@router.get("/nickname/{nickname}", response_model=Union[UserGetSchema, UserGetAllSchema])
+@router.get("/nickname/{nickname}",
+            response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user_by_nickname(nickname: str,
-                               db: Session = Depends(get_db),
-                               str=Depends(JWTBearer())):
+                         db: Session = Depends(get_db),
+                         str=Depends(JWTBearer())):
     return user_service.get_user_by_nickname(db, nickname,
-                                                   get_data_from_token(str))
+                                             get_data_from_token(str))
 
 
-@router.get("/phone/{phone}", response_model=Union[UserGetSchema, UserGetAllSchema])
+@router.get("/phone/{phone}",
+            response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user_by_phone(phone: str,
-                            db: Session = Depends(get_db),
-                            str=Depends(JWTBearer())):
-    return user_service.get_user_by_phone(db, phone,
-                                                get_data_from_token(str))
+                      db: Session = Depends(get_db),
+                      str=Depends(JWTBearer())):
+    return user_service.get_user_by_phone(db, phone, get_data_from_token(str))
 
 
-@router.get("/code/{code}", response_model=Union[UserGetSchema, UserGetAllSchema])
+@router.get("/code/{code}",
+            response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user_by_code(code: str,
-                           db: Session = Depends(get_db),
-                           str=Depends(JWTBearer())):
-    return user_service.get_user_by_code(db, code,
-                                               get_data_from_token(str))
+                     db: Session = Depends(get_db),
+                     str=Depends(JWTBearer())):
+    return user_service.get_user_by_code(db, code, get_data_from_token(str))
 
 
 # @router.post("/")

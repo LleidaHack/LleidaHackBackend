@@ -51,7 +51,7 @@ def add_lleidahacker(payload: LleidaHackerCreateSchema, db: Session):
 
 
 def update_lleidahacker(userId: int, payload: LleidaHackerUpdateSchema,
-                              db: Session, data: TokenData):
+                        db: Session, data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     and data.user_id == userId)):

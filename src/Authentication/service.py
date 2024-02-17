@@ -60,8 +60,8 @@ def reset_password(email: str, db: Session = Depends(get_db)):
 
 
 def confirm_reset_password(token: str,
-                                 password: str,
-                                 db: Session = Depends(get_db)):
+                           password: str,
+                           db: Session = Depends(get_db)):
     data = get_data_from_token(token, special=True)
     if data is None:
         raise InvalidDataException("Invalid token")

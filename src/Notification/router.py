@@ -16,17 +16,16 @@ router = APIRouter(
 
 @router.get("/{userId}")
 def get_notifications(userId: int,
-                            response: Response,
-                            db: Session = Depends(get_db),
-                            str=Depends(JWTBearer())):
+                      response: Response,
+                      db: Session = Depends(get_db),
+                      str=Depends(JWTBearer())):
     return notifications_service.get_notifications(userId, db)
 
 
 @router.post("/")
 def add_notification(payload: SchemaNotification,
-                           response: Response,
-                           db: Session = Depends(get_db),
-                           str=Depends(JWTBearer())):
-    new_notification = notifications_service.add_notification(
-        payload, db)
+                     response: Response,
+                     db: Session = Depends(get_db),
+                     str=Depends(JWTBearer())):
+    new_notification = notifications_service.add_notification(payload, db)
     return {"success": True, "user_id": new_notification.id}

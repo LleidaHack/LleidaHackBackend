@@ -35,8 +35,8 @@ def add_meal(meal: MealCreateSchema, db: Session, data: TokenData):
     return db_meal
 
 
-def update_meal(id: int, meal_id: int, meal: MealUpdateSchema,
-                      db: Session, data: TokenData):
+def update_meal(id: int, meal_id: int, meal: MealUpdateSchema, db: Session,
+                data: TokenData):
     if not data.is_admin:
         if not data.type == UserType.LLEIDAHACKER.value:
             raise AuthenticationException(

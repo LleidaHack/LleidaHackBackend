@@ -78,7 +78,6 @@ def generate_password_reset_template(user: ModelUser):
                         static_folder=STATIC_FOLDER)
 
 
-
 def send_password_reset_email(user: ModelUser):
     send_email(user.email, generate_password_reset_template(user),
                'Password Reset')
@@ -97,7 +96,6 @@ def generate_event_registration_template(user: ModelUser, event_name: str):
         front_link=FRONT_LINK,
         contact_mail=CONTACT_MAIL,
         static_folder=STATIC_FOLDER)
-
 
 
 def send_event_registration_email(user: ModelUser, event: ModelEvent):
@@ -122,8 +120,7 @@ def generate_event_accepted_template(user: ModelUser, event: ModelEvent,
                         static_folder=STATIC_FOLDER)
 
 
-def send_event_accepted_email(user: ModelUser, event: ModelEvent,
-                                    token: str):
+def send_event_accepted_email(user: ModelUser, event: ModelEvent, token: str):
     send_email(user.email,
                generate_event_accepted_template(user, event,
                                                 token), 'Event Accepted')

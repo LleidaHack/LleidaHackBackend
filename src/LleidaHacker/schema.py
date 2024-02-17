@@ -27,6 +27,7 @@ class LleidaHackerGet(UserGet):
 class LleidaHackerGetAll(UserGetAll, LleidaHackerGet):
     pass
 
+
 class LleidaHackerUpdate(UserUpdate):
     role: Optional[str]
     nif: Optional[str]

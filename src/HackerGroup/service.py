@@ -48,7 +48,7 @@ def get_hacker_group(id: int, db: Session, data: TokenData):
 
 
 def add_hacker_group(payload: HackerGroupCreateSchema, db: Session,
-                           data: TokenData):
+                     data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
@@ -81,8 +81,8 @@ def add_hacker_group(payload: HackerGroupCreateSchema, db: Session,
     return new_hacker_group
 
 
-def update_hacker_group(id: int, payload: HackerGroupUpdateSchema,
-                              db: Session, data: TokenData):
+def update_hacker_group(id: int, payload: HackerGroupUpdateSchema, db: Session,
+                        data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
@@ -123,7 +123,7 @@ def delete_hacker_group(id: int, db: Session, data: TokenData):
 
 
 def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
-                              data: TokenData):
+                        data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):
@@ -156,7 +156,7 @@ def add_hacker_to_group(groupId: int, hackerId: int, db: Session,
 
 
 def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
-                                      data: TokenData):
+                                data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -190,7 +190,7 @@ def add_hacker_to_group_by_code(code: str, hackerId: int, db: Session,
 
 
 def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
-                                   data: TokenData):
+                             data: TokenData):
     deleted = False
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
@@ -222,7 +222,7 @@ def remove_hacker_from_group(groupId: int, hackerId: int, db: Session,
 
 
 def set_hacker_group_leader(groupId: int, hackerId: int, db: Session,
-                                  data: TokenData):
+                            data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                     or data.type == UserType.HACKER.value)):

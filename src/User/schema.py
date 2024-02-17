@@ -54,6 +54,7 @@ class UserCreate(BaseSchema):
             raise ValueError('must be a valid shirt size')
         return v
 
+
 class UserGet(BaseSchema):
     name: str
     nickname: str
@@ -63,12 +64,14 @@ class UserGet(BaseSchema):
     is_image_url: Optional[bool]
     recive_mails: Optional[bool]
 
+
 class UserGetAll(UserGet):
     password: str
     food_restrictions: str
     telephone: str
     address: str
     shirt_size: Optional[str]
+
 
 class UserUpdate(BaseSchema):
     name: Optional[str]

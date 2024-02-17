@@ -13,6 +13,7 @@ class CompanyCreate(BaseSchema):
     linkdin: str
     telephone: str
 
+
 class CompanyGet(BaseSchema):
     name: str
     description: str
@@ -23,8 +24,10 @@ class CompanyGet(BaseSchema):
     linkdin: str
     telephone: str
 
+
 class CompanyGetAll(CompanyGet):
     pass
+
 
 class CompanyUpdate(BaseSchema):
     name: Optional[str]

@@ -8,6 +8,7 @@ from src.User.model import User
 from src.Company.model import Company
 from src.Utils.UserType import UserType
 
+
 class CompanyUser(User):
     __tablename__ = 'company_user'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)

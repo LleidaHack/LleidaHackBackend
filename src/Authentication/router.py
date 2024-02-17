@@ -27,7 +27,7 @@ router = APIRouter(
 
 @router.get("/login")
 def login(credentials: HTTPBasicCredentials = Depends(sec),
-                db: Session = Depends(get_db)):
+          db: Session = Depends(get_db)):
     username = credentials.username
     password = credentials.password
     return auth_service.login(username, password, db)
@@ -40,8 +40,8 @@ def reset_password(email: str, db: Session = Depends(get_db)):
 
 @router.post("/confirm-reset-password")
 def confirm_reset_password(token: str,
-                                 password: str,
-                                 db: Session = Depends(get_db)):
+                           password: str,
+                           db: Session = Depends(get_db)):
     return auth_service.confirm_reset_password(token, password, db)
 
 

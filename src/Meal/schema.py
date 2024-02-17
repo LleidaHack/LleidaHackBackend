@@ -7,10 +7,12 @@ class MealCreate(BaseSchema):
     description: str
     event_id: int
 
+
 class MealGet(BaseSchema):
     name: str
     description: str
     event_id: int
+
 
 class MealGetAll(MealGet):
     pass

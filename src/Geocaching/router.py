@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from database import get_db
 from src.Geocaching import service as geocaching_service
 
-
 router = APIRouter()
+
 
 @router.get("/geocaching")
 def get_all_geocachings():

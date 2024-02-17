@@ -111,8 +111,8 @@ def remove_hacker(hackerId: int, db: Session, data: TokenData):
     return hacker
 
 
-def update_hacker(hackerId: int, payload: HackerUpdateSchema,
-                        db: Session, data: TokenData):
+def update_hacker(hackerId: int, payload: HackerUpdateSchema, db: Session,
+                  data: TokenData):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value

@@ -11,6 +11,7 @@ class HackerCreate(UserCreate):
     how_did_you_meet_us: Optional[str]
     cv: Optional[str]
 
+
 class HackerGet(UserGet):
     github: str
     linkedin: str
@@ -19,8 +20,10 @@ class HackerGet(UserGet):
     how_did_you_meet_us: str
     cv: str
 
+
 class HackerGetAll(UserGetAll, HackerGet):
     pass
+
 
 class HackerUpdate(UserUpdate):
     github: Optional[str]

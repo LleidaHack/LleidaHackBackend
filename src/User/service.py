@@ -119,8 +119,7 @@ def delete_user(db: Session, userId: int):
 #     return user
 
 
-def set_user_token(db: Session, userId: int, token: str,
-                         refresh_token: str):
+def set_user_token(db: Session, userId: int, token: str, refresh_token: str):
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
     user.token = token
     user.refresh_token = refresh_token

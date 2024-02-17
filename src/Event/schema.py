@@ -41,6 +41,7 @@ class EventCreate(BaseSchema):
             raise ValueError('must be a valid number')
         return v
 
+
 class EventGet(BaseSchema):
     name: str
     description: str
@@ -56,8 +57,10 @@ class EventGet(BaseSchema):
     image: Optional[str]
     is_image_url: Optional[bool]
 
+
 class EventGetAll(EventGet):
     pass
+
 
 class EventUpdate(BaseSchema):
     name: Optional[str]
