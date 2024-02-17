@@ -4,7 +4,6 @@ from src.Utils.TokenData import TokenData
 from src.Utils.UserType import UserType
 
 from utils.service_utils import set_existing_data, check_image
-from utils.hide_utils import hacker_show_private
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException

@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from security import get_password_hash
 from src.Utils import TokenData
 from src.Utils.UserType import UserType
-from utils.hide_utils import companyuser_show_private
 from utils.service_utils import set_existing_data, check_image, generate_user_code,  check_user
 
 from error.AuthenticationException import AuthenticationException
