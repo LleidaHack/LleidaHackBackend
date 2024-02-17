@@ -1,9 +1,12 @@
+from pydantic import parse_obj_as
 from src.Meal.model import Meal as ModelMeal
 from src.Utils.TokenData import TokenData
 from src.Utils.UserType import UserType
 
 from src.Meal.schema import MealCreate as MealCreateSchema
 from src.Meal.schema import MealUpdate as MealUpdateSchema
+from src.Meal.schema import MealGet as MealGetSchema
+from src.Meal.schema import MealGetAll as MealGetAllSchema
 
 from sqlalchemy.orm import Session
 
@@ -17,16 +20,18 @@ def get_meals(id: int, db: Session, token: TokenData):
     return db.query(ModelMeal).filter(ModelMeal.event_id == id).all()
 
 
-def get_meal(id: int, db: Session, token: TokenData):
+def get_meal(id: int, db: Session, data: TokenData):
     meal = db.query(ModelMeal).filter(ModelMeal.id == id).first()
     if meal is None:
         raise NotFoundException("Meal not found")
-    return meal
+    if data.is_admin or (data.available and data.type == UserType.LLEIDAHACKER.value):
+        return parse_obj_as(MealGetAllSchema, meal)
+    return parse_obj_as(MealGetSchema, meal)
 
 
 def add_meal(meal: MealCreateSchema, db: Session, data: TokenData):
     if not data.is_admin:
-        if not data.type == UserType.LLEIDAHACKER.value:
+        if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("You are not allowed to add meals")
     db_meal = ModelMeal(**meal.dict())
     db.add(db_meal)

@@ -1,3 +1,4 @@
+from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from src.Utils.TokenData import TokenData
@@ -10,6 +11,8 @@ from error.NotFoundException import NotFoundException
 
 from src.Event.schema import EventCreate as EventCreateSchema
 from src.Event.schema import EventUpdate as EventUpdateSchema
+from src.Event.schema import EventGet as EventGetSchema
+from src.Event.schema import EventGetAll as EventGetAllSchema
 
 from src.Event.model import Event as ModelEvent
 from src.Company.model import Company as ModelCompany
@@ -51,8 +54,11 @@ def get_hacker_group(event_id: int, hacker_id: int, db: Session,
     return group
 
 
-def get_event(id: int, db: Session):
-    return db.query(ModelEvent).filter(ModelEvent.id == id).first()
+def get_event(id: int, db: Session, data:TokenData):
+    event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
+    if data.is_admin or (data.available and data.type == UserType.LLEIDAHACKER.value):
+        return parse_obj_as(EventGetAllSchema, event)
+    return parse_obj_as(EventGetSchema, event)
 
 
 def add_event(payload: EventCreateSchema, db: Session, data: TokenData):

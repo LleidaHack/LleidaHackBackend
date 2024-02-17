@@ -1,4 +1,5 @@
 from datetime import datetime as date
+from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from security import get_password_hash
@@ -12,6 +13,8 @@ from error.ValidationException import ValidationException
 
 from src.CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
 from src.CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
+from src.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
+from src.CompanyUser.schema import CompanyUserGetAll as CompanyUserGetAllSchema
 from src.CompanyUser.model import CompanyUser as ModelCompanyUser
 
 
@@ -28,8 +31,8 @@ def get_company_user(companyUserId: int, db: Session, data: TokenData):
                          (data.type == UserType.LLEIDAHACKER.value or
                           (data.type == UserType.COMPANYUSER.value
                            and data.user_id == companyUserId))):
-        companyuser_show_private(user)
-    return user
+        return parse_obj_as(CompanyUserGetAllSchema, user)
+    return parse_obj_as(CompanyUserGetSchema, user)
 
 
 def add_company_user(payload: CompanyUserCreateSchema, db: Session):

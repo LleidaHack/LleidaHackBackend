@@ -14,8 +14,6 @@ from utils.service_utils import check_image
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 
-from utils.hide_utils import user_show_private
-
 
 def get_all(db: Session):
     return db.query(ModelUser).all()
@@ -32,7 +30,6 @@ def get_user(db: Session, userId: int, data: TokenData):
     if data.is_admin or (data.available and
                          (data.type == UserType.LLEIDAHACKER.value
                           or data.user_id == userId)):
-        # user_show_private(user)
         return parse_obj_as(UserGetAllSchema, user)
     return parse_obj_as(UserGetSchema, user)
 
@@ -47,8 +44,8 @@ def get_user_by_email(db: Session, email: str, data: TokenData):
     if data.is_admin or (data.available and
                          (data.type == UserType.LLEIDAHACKER.value
                           or data.user_id == user.id)):
-        user_show_private(user)
-    return user
+        return parse_obj_as(UserGetAllSchema, user)
+    return parse_obj_as(UserGetSchema, user)
 
 
 def get_user_by_nickname(db: Session, nickname: str, data: TokenData):
@@ -61,8 +58,8 @@ def get_user_by_nickname(db: Session, nickname: str, data: TokenData):
     if data.is_admin or (data.available and
                          (data.type == UserType.LLEIDAHACKER.value
                           or data.user_id == user.id)):
-        user_show_private(user)
-    return user
+        return parse_obj_as(UserGetAllSchema, user)
+    return parse_obj_as(UserGetSchema, user)
 
 
 def get_user_by_phone(db: Session, phone: str, data: TokenData):
@@ -75,8 +72,8 @@ def get_user_by_phone(db: Session, phone: str, data: TokenData):
     if data.is_admin or (data.available and
                          (data.type == UserType.LLEIDAHACKER.value
                           or data.user_id == user.id)):
-        user_show_private(user)
-    return user
+        return parse_obj_as(UserGetAllSchema, user)
+    return parse_obj_as(UserGetSchema, user)
 
 
 def get_user_by_code(db: Session, code: str, data: TokenData):
@@ -86,7 +83,11 @@ def get_user_by_code(db: Session, code: str, data: TokenData):
     user = db.query(ModelUser).filter(ModelUser.code == code).first()
     if user is None:
         raise NotFoundException("User not found")
-    return user
+    if data.is_admin or (data.available and
+                         (data.type == UserType.LLEIDAHACKER.value
+                          or data.user_id == user.id)):
+        return parse_obj_as(UserGetAllSchema, user)
+    return parse_obj_as(UserGetSchema, user)
 
 
 # def add_user(db: Session, payload: SchemaUser):

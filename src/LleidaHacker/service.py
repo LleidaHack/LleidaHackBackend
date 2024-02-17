@@ -6,7 +6,6 @@ from security import get_password_hash
 from src.Utils import TokenData
 from src.Utils.UserType import UserType
 from utils.service_utils import set_existing_data, check_image, generate_user_code
-from utils.hide_utils import lleidahacker_show_private
 from utils.service_utils import check_user
 
 from error.AuthenticationException import AuthenticationException

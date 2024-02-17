@@ -33,7 +33,7 @@ def get_users(db: Session = Depends(get_db),
 
 
 @router.get(
-    "/{userId}")  #, response_model=Union[UserGetSchema, UserGetAllSchema])
+    "/{userId}", response_model=Union[UserGetSchema, UserGetAllSchema])
 def get_user(userId: int,
              db: Session = Depends(get_db),
              str=Depends(JWTBearer())):

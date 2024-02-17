@@ -1,3 +1,4 @@
+from pydantic import parse_obj_as
 from src.LleidaHacker.model import LleidaHackerGroup as ModelLleidaHackerGroup
 from src.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
 from src.Utils.TokenData import TokenData
@@ -5,6 +6,8 @@ from src.Utils.UserType import UserType
 
 from src.LleidaHackerGroup.schema import LleidaHackerGroupCreate as LleidaHackerGroupCreateSchema
 from src.LleidaHackerGroup.schema import LleidaHackerGroupUpdate as LleidaHackerGroupUpdateSchema
+from src.LleidaHackerGroup.schema import LleidaHackerGroupGet as LleidaHackerGroupGetSchema
+from src.LleidaHackerGroup.schema import LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
 
 from utils.service_utils import set_existing_data
 
@@ -19,12 +22,15 @@ def get_all(db: Session):
     return db.query(ModelLleidaHackerGroup).all()
 
 
-def get_lleidahackergroup(groupId: int, db: Session):
+def get_lleidahackergroup(groupId: int, db: Session, data: TokenData):
     group = db.query(ModelLleidaHackerGroup).filter(
         ModelLleidaHackerGroup.id == groupId).first()
     if group is None:
         raise NotFoundException("LleidaHacker group not found")
-    return group
+    users_ids=[u.id for u in group.members]
+    if data.is_admin or (data.available and data.type == UserType.LLEIDAHACKER.value and data.user_id in users_ids):
+        return parse_obj_as(LleidaHackerGroupGetAllSchema, group)
+    return parse_obj_as(LleidaHackerGroupGetSchema, group)
 
 
 def add_lleidahackergroup(payload: LleidaHackerGroupCreateSchema, db: Session,

@@ -1,4 +1,5 @@
 from typing import List, Union
+from security import get_data_from_token
 from src.LleidaHackerGroup.schema import LleidaHackerGroupCreate as LleidaHackerGroupCreateSchema
 from src.LleidaHackerGroup.schema import LleidaHackerGroupGet as LleidaHackerGroupGetSchema
 from src.LleidaHackerGroup.schema import LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
@@ -31,7 +32,7 @@ def get_lleidahacker_groups(db: Session = Depends(get_db),
 def get_lleidahacker_group(groupId: int,
                            db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):
-    return lleidahackergroup_service.get_lleidahackergroup(groupId, db)
+    return lleidahackergroup_service.get_lleidahackergroup(groupId, db, get_data_from_token(str))
 
 
 @router.post("/")

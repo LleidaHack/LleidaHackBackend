@@ -1,8 +1,8 @@
+from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from src.Utils.UserType import UserType
 from utils.service_utils import generate_random_code, set_existing_data
-from utils.hide_utils import hackergroup_show_private
 
 from src.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
@@ -12,6 +12,8 @@ from src.Event.model import Event as ModelEvent
 
 from src.HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema
 from src.HackerGroup.schema import HackerGroupUpdate as HackerGroupUpdateSchema
+from src.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
+from src.HackerGroup.schema import HackerGroupGetAll as HackerGroupGetAllSchema
 
 from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
@@ -43,8 +45,8 @@ def get_hacker_group(id: int, db: Session, data: TokenData):
     if data.is_admin or (data.type == UserType.HACKER.value
                          and data.user_id in members_ids
                          ) or data.type == UserType.LLEIDAHACKER.value:
-        hackergroup_show_private(group)
-    return group
+        return parse_obj_as(HackerGroupGetAllSchema, group)
+    return parse_obj_as(HackerGroupGetSchema, group)
 
 
 def add_hacker_group(payload: HackerGroupCreateSchema, db: Session,

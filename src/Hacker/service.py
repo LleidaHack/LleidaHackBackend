@@ -1,4 +1,5 @@
 from datetime import datetime as date
+from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from security import get_password_hash
@@ -8,7 +9,6 @@ from error.AuthenticationException import AuthenticationException
 from error.NotFoundException import NotFoundException
 from error.InvalidDataException import InvalidDataException
 
-from utils.hide_utils import hacker_show_private
 from utils.service_utils import check_user
 from src.Utils.TokenData import TokenData
 from src.Utils.UserType import UserType
@@ -22,6 +22,8 @@ from src.Event.model import HackerAccepted as ModelHackerAccepted
 
 from src.Hacker.schema import HackerGet as HackerCreateSchema
 from src.Hacker.schema import HackerUpdate as HackerUpdateSchema
+from src.Hacker.schema import HackerGet as HackerGetSchema
+from src.Hacker.schema import HackerGetAll as HackerGetAllSchema
 
 
 def get_all(db: Session):
@@ -36,8 +38,8 @@ def get_hacker(hackerId: int, db: Session, data: TokenData):
             data.available and
         (data.type == UserType.LLEIDAHACKER.value or
          (data.type == UserType.HACKER.value and data.user_id == hackerId))):
-        hacker_show_private(user)
-    return user
+        return parse_obj_as(HackerGetAllSchema, user)
+    return parse_obj_as(HackerGetSchema, user)
 
 
 def get_hacker_by_code(code: str, db: Session):

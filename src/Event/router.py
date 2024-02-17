@@ -41,7 +41,7 @@ def get_events(db: Session = Depends(get_db),
 def get_event(id: int,
               db: Session = Depends(get_db),
               token: str = Depends(JWTBearer())):
-    return event_service.get_event(id, db)
+    return event_service.get_event(id, db, get_data_from_token(token))
 
 
 @router.post("/")
