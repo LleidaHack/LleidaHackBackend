@@ -10,6 +10,7 @@ from error.InputException import InputException
 
 # @app.exception_handler(AuthenticationException)
 def authentication_exception_handler(request, exc):
+
     return JSONResponse(
         status_code=401,
         content={"message": exc.message},
