@@ -24,7 +24,8 @@ def get_meal(id: int, db: Session, data: TokenData):
     meal = db.query(ModelMeal).filter(ModelMeal.id == id).first()
     if meal is None:
         raise NotFoundException("Meal not found")
-    if data.is_admin or (data.available and data.type == UserType.LLEIDAHACKER.value):
+    if data.is_admin or (data.available
+                         and data.type == UserType.LLEIDAHACKER.value):
         return parse_obj_as(MealGetAllSchema, meal)
     return parse_obj_as(MealGetSchema, meal)
 

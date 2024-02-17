@@ -54,9 +54,10 @@ def get_hacker_group(event_id: int, hacker_id: int, db: Session,
     return group
 
 
-def get_event(id: int, db: Session, data:TokenData):
+def get_event(id: int, db: Session, data: TokenData):
     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    if data.is_admin or (data.available and data.type == UserType.LLEIDAHACKER.value):
+    if data.is_admin or (data.available
+                         and data.type == UserType.LLEIDAHACKER.value):
         return parse_obj_as(EventGetAllSchema, event)
     return parse_obj_as(EventGetSchema, event)
 

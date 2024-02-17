@@ -32,7 +32,8 @@ def get_lleidahacker_groups(db: Session = Depends(get_db),
 def get_lleidahacker_group(groupId: int,
                            db: Session = Depends(get_db),
                            str=Depends(JWTBearer())):
-    return lleidahackergroup_service.get_lleidahackergroup(groupId, db, get_data_from_token(str))
+    return lleidahackergroup_service.get_lleidahackergroup(
+        groupId, db, get_data_from_token(str))
 
 
 @router.post("/")

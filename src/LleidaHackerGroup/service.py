@@ -27,8 +27,10 @@ def get_lleidahackergroup(groupId: int, db: Session, data: TokenData):
         ModelLleidaHackerGroup.id == groupId).first()
     if group is None:
         raise NotFoundException("LleidaHacker group not found")
-    users_ids=[u.id for u in group.members]
-    if data.is_admin or (data.available and data.type == UserType.LLEIDAHACKER.value and data.user_id in users_ids):
+    users_ids = [u.id for u in group.members]
+    if data.is_admin or (data.available
+                         and data.type == UserType.LLEIDAHACKER.value
+                         and data.user_id in users_ids):
         return parse_obj_as(LleidaHackerGroupGetAllSchema, group)
     return parse_obj_as(LleidaHackerGroupGetSchema, group)
 
