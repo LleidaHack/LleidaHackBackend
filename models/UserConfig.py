@@ -12,7 +12,7 @@ class UserConfig(Base):
     __tablename__ = 'user-config'
     id: int = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    ##TODO:user = relationship('user', backref = 'config')
+    user = relationship('user', backref = 'config') ##TODO comprobar despres
     reciveNotifications = Column(Boolean, default=True)
     defaultLang = Column(String, default="ca-CA")
     comercialNotifications = Column(Boolean, default=True)

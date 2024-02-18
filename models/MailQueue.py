@@ -9,12 +9,9 @@ from sqlalchemy.orm import Mapped
 
 class MailQueue(Base):
     __tablename__ = "mail_queue"
-
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id"))
-
     subject = Column(String, index=True)
     body = Column(String, index=True)
     sent = Column(Boolean, default=False)
-
     user = relationship("User")

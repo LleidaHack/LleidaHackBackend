@@ -20,6 +20,7 @@ from routers import eventmanagment
 from routers import authentication
 from routers import mail_queue
 from routers import geocaching
+from routers import userconfig
 
 from error import error_handler as eh
 from error.AuthenticationException import AuthenticationException
@@ -68,6 +69,9 @@ tags_metadata = [
         "name": "Authentication",
         "description": "Authentication related endpoints"
     },
+    {   "name":"UserConfig",
+        "description":"UserConfig related endpoints"
+    }
 ]
 
 app = FastAPI(title="LleidaHack API",
@@ -112,6 +116,7 @@ app.include_router(mail_queue.router)
 app.include_router(eventmanagment.router)
 app.include_router(authentication.router)
 app.include_router(geocaching.router)
+app.include_router(userconfig.router)
 
 
 @app.get("/")

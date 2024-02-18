@@ -46,7 +46,6 @@ async def add_user_config(db: Session, payload: SchemaUserConfig):
 
 
 async def update_user_config(db: Session, userId: int, payload: SchemaUserConfigUpdate, data:TokenData):
-    ##TODO:FET/COMPROBAR  -   Comprobar si es ell mateix, lleidahacker o admin
     userConfig = db.query(ModelUserConfig).filter(ModelUserConfig.user_id == userId).first()
     if userConfig is None:
             raise NotFoundException("User not found")
