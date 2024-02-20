@@ -20,6 +20,7 @@ router = APIRouter(
 
 company_service = CompanyService()
 
+
 @router.get("/all", response_model=List[CompanyGetSchema])
 def get_companies():
     return company_service.get_all()
@@ -49,8 +50,7 @@ def update_company(companyId: int,
 
 
 @router.delete("/{companyId}")
-def delete_company(companyId: int,
-                   token: str = Depends(JWTBearer())):
+def delete_company(companyId: int, token: str = Depends(JWTBearer())):
     company = company_service.delete_company(companyId,
                                              get_data_from_token(token))
     return {"success": True, "deleted_id": company.id}
@@ -59,8 +59,7 @@ def delete_company(companyId: int,
 # TODO: check
 # #################################################################
 @router.get("/{companyId}/users", response_model=List[CompanyUserGetSchema])
-def get_company_users(companyId: int,
-                      str=Depends(JWTBearer())):
+def get_company_users(companyId: int, str=Depends(JWTBearer())):
     return company_service.get_company_users(companyId,
                                              get_data_from_token(str))
 

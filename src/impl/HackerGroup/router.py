@@ -18,16 +18,16 @@ router = APIRouter(
 
 hackergroup_service = HackerGroupService()
 
+
 @router.get("/all", response_model=List[HackerGroupGetSchema])
-def get_hacker_groups( str=Depends(JWTBearer())):
+def get_hacker_groups(str=Depends(JWTBearer())):
     return hackergroup_service.get_all()
 
 
 @router.get("/{groupId}",
             response_model=Union[HackerGroupGetSchema,
                                  HackerGroupGetAllSchema])
-def get_hacker_group(groupId: int,
-                     token: str = Depends(JWTBearer())):
+def get_hacker_group(groupId: int, token: str = Depends(JWTBearer())):
     return hackergroup_service.get_hacker_group(groupId,
                                                 get_data_from_token(token))
 
@@ -56,23 +56,19 @@ def update_hacker_group(groupId: int,
 
 
 @router.delete("/{groupId}")
-def delete_hacker_group(groupId: int,
-                        str=Depends(JWTBearer())):
+def delete_hacker_group(groupId: int, str=Depends(JWTBearer())):
     hacker_group = hackergroup_service.delete_hacker_group(groupId, db)
     return {"success": True, "deleted_id": hacker_group.id}
 
 
 @router.get("/{groupId}/members", response_model=List[HackerGetSchema])
-def get_hacker_group_members(groupId: int,
-                             str=Depends(JWTBearer())):
+def get_hacker_group_members(groupId: int, str=Depends(JWTBearer())):
     hacker_group = hackergroup_service.get_hacker_group(groupId, db)
     return {"success": True, "members": hacker_group.members}
 
 
 @router.post("/{groupId}/members/{hackerId}")
-def add_hacker_to_group(groupId: int,
-                        hackerId: int,
-                        str=Depends(JWTBearer())):
+def add_hacker_to_group(groupId: int, hackerId: int, str=Depends(JWTBearer())):
     hacker_group = hackergroup_service.add_hacker_to_group(
         groupId, hackerId, get_data_from_token(str))
     return {"success": True, "added_id": hacker_group.id}

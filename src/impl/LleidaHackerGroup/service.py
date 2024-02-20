@@ -10,18 +10,17 @@ from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGet as LleidaHack
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
 from utils.BaseService import BaseService
 
-
 from utils.service_utils import set_existing_data
-
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
 
+
 class LleidaHackerGroupService(BaseService):
+
     def get_all(self):
         return self.db.query(ModelLleidaHackerGroup).all()
-
 
     def get_lleidahackergroup(self, groupId: int, data: TokenData):
         group = self.db.query(ModelLleidaHackerGroup).filter(
@@ -30,14 +29,13 @@ class LleidaHackerGroupService(BaseService):
             raise NotFoundException("LleidaHacker group not found")
         users_ids = [u.id for u in group.members]
         if data.is_admin or (data.available
-                            and data.type == UserType.LLEIDAHACKER.value
-                            and data.user_id in users_ids):
+                             and data.type == UserType.LLEIDAHACKER.value
+                             and data.user_id in users_ids):
             return parse_obj_as(LleidaHackerGroupGetAllSchema, group)
         return parse_obj_as(LleidaHackerGroupGetSchema, group)
 
-
     def add_lleidahackergroup(self, payload: LleidaHackerGroupCreateSchema,
-                            data: TokenData):
+                              data: TokenData):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -53,10 +51,9 @@ class LleidaHackerGroupService(BaseService):
         self.db.refresh(new_lleidahacker_group)
         return new_lleidahacker_group
 
-
     def update_lleidahackergroup(self, groupId: int,
-                                payload: LleidaHackerGroupUpdateSchema,
-                                data: TokenData):
+                                 payload: LleidaHackerGroupUpdateSchema,
+                                 data: TokenData):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -72,7 +69,6 @@ class LleidaHackerGroupService(BaseService):
         self.db.commit()
         self.db.refresh(lleidahacker_group)
         return lleidahacker_group, updated
-
 
     def delete_lleidahackergroup(self, groupId: int, data: TokenData):
         if not data.is_admin:
@@ -90,9 +86,8 @@ class LleidaHackerGroupService(BaseService):
         self.db.commit()
         return lleidahacker_group
 
-
     def add_lleidahacker_to_group(self, groupId: int, lleidahackerId: int,
-                                data: TokenData):
+                                  data: TokenData):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -113,9 +108,8 @@ class LleidaHackerGroupService(BaseService):
         self.db.refresh(lleidahacker_group)
         return lleidahacker_group
 
-
     def remove_lleidahacker_from_group(self, groupId: int, lleidahackerId: int,
-                                    data: TokenData):
+                                       data: TokenData):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -138,9 +132,8 @@ class LleidaHackerGroupService(BaseService):
         self.db.refresh(lleidahacker_group)
         return lleidahacker_group
 
-
     def set_lleidahacker_group_leader(self, groupId: int, lleidahackerId: int,
-                                    data: TokenData):
+                                      data: TokenData):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):

@@ -18,34 +18,37 @@ router = APIRouter(
 
 lleidahackergroup_service = LleidaHackerGroupService()
 
+
 @router.get("/all", response_model=List[LleidaHackerGroupGetSchema])
 def get_lleidahacker_groups(str=Depends(JWTBearer())):
     return lleidahackergroup_service.get_all()
 
 
-@router.get("/{groupId}", response_model=Union[LleidaHackerGroupGetSchema, LleidaHackerGroupGetAllSchema])
-def get_lleidahacker_group(groupId: int,
-                           str=Depends(JWTBearer())):
-    return lleidahackergroup_service.get_lleidahackergroup(groupId, get_data_from_token(str))
+@router.get("/{groupId}",
+            response_model=Union[LleidaHackerGroupGetSchema,
+                                 LleidaHackerGroupGetAllSchema])
+def get_lleidahacker_group(groupId: int, str=Depends(JWTBearer())):
+    return lleidahackergroup_service.get_lleidahackergroup(
+        groupId, get_data_from_token(str))
 
 
 @router.post("/")
 def add_lleidahacker_group(payload: LleidaHackerGroupCreateSchema,
                            str=Depends(JWTBearer())):
-    new_lleidahacker_group = lleidahackergroup_service.add_lleidahackergroup(payload)
+    new_lleidahacker_group = lleidahackergroup_service.add_lleidahackergroup(
+        payload)
     return {"success": True, "user_id": new_lleidahacker_group.id}
 
 
 @router.delete("/{groupId}")
-def delete_lleidahacker_group(groupId: int,
-                              str=Depends(JWTBearer())):
-    lleidahacker_group = lleidahackergroup_service.delete_lleidahackergroup(groupId)
+def delete_lleidahacker_group(groupId: int, str=Depends(JWTBearer())):
+    lleidahacker_group = lleidahackergroup_service.delete_lleidahackergroup(
+        groupId)
     return {"success": True, "deleted_id": lleidahacker_group.id}
 
 
 @router.get("/{groupId}/members", response_model=List[LleidaHackerGetSchema])
-def get_lleidahacker_group_members(groupId: int,
-                                   str=Depends(JWTBearer())):
+def get_lleidahacker_group_members(groupId: int, str=Depends(JWTBearer())):
     lleidahacker_group = lleidahackergroup_service.get_lleidahackergroup(
         groupId)
     return lleidahacker_group.members

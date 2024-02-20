@@ -26,40 +26,42 @@ from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 
+
 class HackerService(BaseService):
+
     def get_all(self):
         return self.db.query(ModelHacker).all()
 
-
     def get_hacker(self, hackerId: int, data: TokenData):
-        user = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        user = self.db.query(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if user is None:
             raise NotFoundException("Hacker not found")
-        if data.is_admin or (
-                data.available and
-            (data.type == UserType.LLEIDAHACKER.value or
-            (data.type == UserType.HACKER.value and data.user_id == hackerId))):
+        if data.is_admin or (data.available and
+                             (data.type == UserType.LLEIDAHACKER.value or
+                              (data.type == UserType.HACKER.value
+                               and data.user_id == hackerId))):
             return parse_obj_as(HackerGetAllSchema, user)
         return parse_obj_as(HackerGetSchema, user)
 
-
     def get_hacker_by_code(self, code: str):
-        user = self.db.query(ModelHacker).filter(ModelHacker.code == code).first()
+        user = self.db.query(ModelHacker).filter(
+            ModelHacker.code == code).first()
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
-
 
     def get_hacker_by_email(self, email: str):
-        user = self.db.query(ModelHacker).filter(ModelHacker.email == email).first()
+        user = self.db.query(ModelHacker).filter(
+            ModelHacker.email == email).first()
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
-
 
     def add_hacker(self, payload: HackerCreateSchema):
         check_user(self.db, payload.email, payload.nickname, payload.telephone)
-        new_hacker = ModelHacker(**payload.dict(), code=generate_user_code(self.db))
+        new_hacker = ModelHacker(**payload.dict(),
+                                 code=generate_user_code(self.db))
         if payload.image is not None:
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)
@@ -69,14 +71,15 @@ class HackerService(BaseService):
         self.db.refresh(new_hacker)
         return new_hacker
 
-
     def remove_hacker(self, hackerId: int, data: TokenData):
         if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value or
-                    (data.type == UserType.HACKER and data.user_id == hackerId))):
+            if not (
+                    data.available and
+                (data.type == UserType.LLEIDAHACKER.value or
+                 (data.type == UserType.HACKER and data.user_id == hackerId))):
                 raise AuthenticationException("Not authorized")
-        hacker = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.db.query(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if not hacker:
             raise NotFoundException("Hacker not found")
         hacker_groups_ids = self.db.query(ModelHackerGroupUser).filter(
@@ -113,15 +116,16 @@ class HackerService(BaseService):
         self.db.commit()
         return hacker
 
-
     def update_hacker(self, hackerId: int, payload: HackerUpdateSchema,
-                    data: TokenData):
+                      data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                        (data.type == UserType.HACKER.value
-                                        and data.user_id == hackerId))):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value or
+                     (data.type == UserType.HACKER.value
+                      and data.user_id == hackerId))):
                 raise AuthenticationException("Not authorized")
-        hacker = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.db.query(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         if payload.image is not None:
@@ -135,12 +139,13 @@ class HackerService(BaseService):
         self.db.refresh(hacker)
         return hacker, updated
 
-
     def ban_hacker(self, hackerId: int, data: TokenData):
         if not data.is_admin:
-            if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            if not (data.available
+                    and data.type == UserType.LLEIDAHACKER.value):
                 raise AuthenticationException("Not authorized")
-        hacker = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.db.query(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         if hacker.banned:
@@ -150,12 +155,13 @@ class HackerService(BaseService):
         self.db.refresh(hacker)
         return hacker
 
-
     def unban_hacker(self, hackerId: int, data: TokenData):
         if not data.is_admin:
-            if not (data.available and data.type == UserType.LLEIDAHACKER.value):
+            if not (data.available
+                    and data.type == UserType.LLEIDAHACKER.value):
                 raise AuthenticationException("Not authorized")
-        hacker = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.db.query(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         if not hacker.banned:
@@ -165,22 +171,21 @@ class HackerService(BaseService):
         self.db.refresh(hacker)
         return hacker
 
-
     #TODO: #34 Check if token validation is correct
     def get_hacker_events(self, hackerId: int):
-        hacker = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.db.query(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         return hacker.events
 
-
     #TODO: #34 Check if token validation is correct
     def get_hacker_groups(self, hackerId: int):
-        hacker = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.db.query(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         return hacker.groups
-
 
     # def update_all_codes(data: TokenData):
     #     if not data.is_admin:

@@ -23,6 +23,7 @@ router = APIRouter(
 
 hacker_service = HackerService()
 
+
 @router.post("/signup")
 def signup(payload: HackerCreateSchema = Depends(get_db)):
     new_hacker = hacker_service.add_hacker(payload)
@@ -47,8 +48,7 @@ def get_hackers(token: str = Depends(JWTBearer())):
 
 @router.get("/{hackerId}",
             response_model=Union[HackerGetSchema, HackerGetAllSchema])
-def get_hacker(hackerId: int,
-               token: str = Depends(JWTBearer())):
+def get_hacker(hackerId: int, token: str = Depends(JWTBearer())):
     return hacker_service.get_hacker(hackerId, get_data_from_token(token))
 
 
@@ -72,31 +72,26 @@ def update_hacker(hackerId: int,
 
 
 @router.post("/{userId}/ban")
-def ban_hacker(userId: int,
-               token: str = Depends(JWTBearer())):
+def ban_hacker(userId: int, token: str = Depends(JWTBearer())):
     hacker = hacker_service.ban_hacker(userId, get_data_from_token(token))
     return {"success": True, "banned_id": hacker.id}
 
 
 @router.post("/{userId}/unban")
-def unban_hacker(userId: int,
-                 token: str = Depends(JWTBearer())):
-    hacker = hacker_service.unban_hacker(userId,
-                                         get_data_from_token(token))
+def unban_hacker(userId: int, token: str = Depends(JWTBearer())):
+    hacker = hacker_service.unban_hacker(userId, get_data_from_token(token))
     return {"success": True, "unbanned_id": hacker.id}
 
 
 @router.delete("/{userId}")
-def delete_hacker(userId: int,
-                  token: str = Depends(JWTBearer())):
+def delete_hacker(userId: int, token: str = Depends(JWTBearer())):
     hacker = hacker_service.remove_hacker(userId, get_data_from_token(token))
     return {"success": True, "deleted_id": hacker.id}
     # return hacker
 
 
 @router.get("/{userId}/events", response_model=List[EventGetSchema])
-def get_hacker_events(userId: int,
-                      token: str = Depends(JWTBearer())):
+def get_hacker_events(userId: int, token: str = Depends(JWTBearer())):
     return hacker_service.get_hacker_events(userId)
 
 

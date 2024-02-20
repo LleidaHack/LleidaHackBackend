@@ -27,7 +27,6 @@ router = APIRouter(
 )
 
 
-
 @router.put("/{event_id}/register/{hacker_id}")
 def register_hacker_to_event(event_id: int,
                              hacker_id: str,

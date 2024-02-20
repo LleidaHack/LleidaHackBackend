@@ -19,11 +19,11 @@ from src.impl.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
 from src.impl.CompanyUser.schema import CompanyUserGetAll as CompanyUserGetAllSchema
 from src.impl.CompanyUser.model import CompanyUser as ModelCompanyUser
 
+
 class CompanyUserService(BaseService):
-    
+
     def get_all(self):
         return self.db.query(ModelCompanyUser).all()
-
 
     def get_company_user(self, companyUserId: int, data: TokenData):
         user = self.db.query(ModelCompanyUser).filter(
@@ -31,12 +31,11 @@ class CompanyUserService(BaseService):
         if user is None:
             raise NotFoundException("Company user not found")
         if data.is_admin or (data.available and
-                            (data.type == UserType.LLEIDAHACKER.value or
-                            (data.type == UserType.COMPANYUSER.value
-                            and data.user_id == companyUserId))):
+                             (data.type == UserType.LLEIDAHACKER.value or
+                              (data.type == UserType.COMPANYUSER.value
+                               and data.user_id == companyUserId))):
             return parse_obj_as(CompanyUserGetAllSchema, user)
         return parse_obj_as(CompanyUserGetSchema, user)
-
 
     def add_company_user(self, payload: CompanyUserCreateSchema):
         check_user(self.db, payload.email, payload.nickname, payload.telephone)
@@ -50,12 +49,13 @@ class CompanyUserService(BaseService):
         self.db.refresh(new_company_user)
         return new_company_user
 
-
-    def update_company_user(self, payload: CompanyUserUpdateSchema, companyUserId: int, data: TokenData):
+    def update_company_user(self, payload: CompanyUserUpdateSchema,
+                            companyUserId: int, data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                        (data.type == UserType.COMPANYUSER.value
-                                        and data.user_id != companyUserId))):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value or
+                     (data.type == UserType.COMPANYUSER.value
+                      and data.user_id != companyUserId))):
                 raise AuthenticationException("Not authorized")
         company_user = self.db.query(ModelCompanyUser).filter(
             ModelCompanyUser.id == companyUserId).first()
@@ -73,12 +73,12 @@ class CompanyUserService(BaseService):
         self.db.refresh(company_user)
         return company_user, updated
 
-
     def delete_company_user(self, companyUserId: int, data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                        (data.type == UserType.COMPANYUSER.value
-                                        and data.user_id != companyUserId))):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value or
+                     (data.type == UserType.COMPANYUSER.value
+                      and data.user_id != companyUserId))):
                 raise AuthenticationException("Not authorized")
         company_user = self.db.query(ModelCompanyUser).filter(
             ModelCompanyUser.id == companyUserId).first()

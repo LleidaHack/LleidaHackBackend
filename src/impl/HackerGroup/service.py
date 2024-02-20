@@ -21,11 +21,11 @@ from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
 
+
 class HackerGroupService(BaseService):
 
     def get_all(self):
         return self.dbquery(ModelHackerGroup).all()
-
 
     def get_group_by_code(self, code: str):
         group = self.dbquery(ModelHackerGroup).filter(
@@ -34,11 +34,11 @@ class HackerGroupService(BaseService):
             raise NotFoundException("Hacker group not found")
         return group
 
-
     def get_hacker_group(self, id: int, data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                        or data.type == UserType.HACKER.value)):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value
+                     or data.type == UserType.HACKER.value)):
                 raise AuthenticationException("Not authorized")
         group = self.dbquery(ModelHackerGroup).filter(
             ModelHackerGroup.id == id).first()
@@ -46,17 +46,17 @@ class HackerGroupService(BaseService):
             raise NotFoundException("Hacker group not found")
         members_ids = [h.id for h in group.members]
         if data.is_admin or (data.type == UserType.HACKER.value
-                            and data.user_id in members_ids
-                            ) or data.type == UserType.LLEIDAHACKER.value:
+                             and data.user_id in members_ids
+                             ) or data.type == UserType.LLEIDAHACKER.value:
             return parse_obj_as(HackerGroupGetAllSchema, group)
         return parse_obj_as(HackerGroupGetSchema, group)
 
-
     def add_hacker_group(self, payload: HackerGroupCreateSchema,
-                        data: TokenData):
+                         data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                        or data.type == UserType.HACKER.value)):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value
+                     or data.type == UserType.HACKER.value)):
                 raise AuthenticationException("Not authorized")
         members = []
         event_exists = self.dbquery(ModelEvent).filter(
@@ -85,12 +85,12 @@ class HackerGroupService(BaseService):
         self.dbrefresh(new_hacker_group)
         return new_hacker_group
 
-
     def update_hacker_group(self, id: int, payload: HackerGroupUpdateSchema,
                             data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                        or data.type == UserType.HACKER.value)):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value
+                     or data.type == UserType.HACKER.value)):
                 raise AuthenticationException("Not authorized")
         event_exists = self.dbquery(ModelEvent).filter(
             ModelEvent.id == payload.event_id).first()
@@ -107,11 +107,11 @@ class HackerGroupService(BaseService):
         self.dbcommit()
         return hacker_group, updated
 
-
     def delete_hacker_group(self, id: int, data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                        or data.type == UserType.HACKER.value)):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value
+                     or data.type == UserType.HACKER.value)):
                 raise AuthenticationException("Not authorized")
         hacker_group = self.dbquery(ModelHackerGroup).filter(
             ModelHackerGroup.id == id).first()
@@ -126,18 +126,19 @@ class HackerGroupService(BaseService):
         self.dbcommit()
         return hacker_group
 
-
     def add_hacker_to_group(self, groupId: int, hackerId: int,
                             data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                        or data.type == UserType.HACKER.value)):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value
+                     or data.type == UserType.HACKER.value)):
                 raise AuthenticationException("Not authorized")
         hacker_group = self.dbquery(ModelHackerGroup).filter(
             ModelHackerGroup.id == groupId).first()
         if hacker_group is None:
             raise NotFoundException("Hacker group not found")
-        hacker = self.dbquery(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.dbquery(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         # if hacker_group.members is None:
@@ -159,19 +160,20 @@ class HackerGroupService(BaseService):
         self.dbrefresh(hacker_group)
         return hacker_group
 
-
     def add_hacker_to_group_by_code(self, code: str, hackerId: int,
                                     data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                        (data.type == UserType.HACKER.value
-                                        and data.user_id == hackerId))):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value or
+                     (data.type == UserType.HACKER.value
+                      and data.user_id == hackerId))):
                 raise AuthenticationException("Not authorized")
         hacker_group = self.dbquery(ModelHackerGroup).filter(
             ModelHackerGroup.code == code).first()
         if hacker_group is None:
             raise NotFoundException("Hacker group not found")
-        hacker = self.dbquery(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.dbquery(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         if hacker_group.members is None:
@@ -193,13 +195,13 @@ class HackerGroupService(BaseService):
         self.dbrefresh(hacker_group)
         return hacker_group
 
-
     def remove_hacker_from_group(self, groupId: int, hackerId: int,
-                                data: TokenData):
+                                 data: TokenData):
         deleted = False
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                        or data.type == UserType.HACKER.value)):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value
+                     or data.type == UserType.HACKER.value)):
                 raise AuthenticationException("Not authorized")
         hacker_group = self.dbquery(ModelHackerGroup).filter(
             ModelHackerGroup.id == groupId).first()
@@ -208,9 +210,9 @@ class HackerGroupService(BaseService):
         if not data.is_admin:
             if not (data.type == UserType.LLEIDAHACKER.value or
                     (data.type == UserType.HACKER.value and
-                    (data.user_id == hackerId
-                    and data.user_id != hacker_group.leader_id) or
-                    (data.user_id == hacker_group.leader_id))):
+                     (data.user_id == hackerId
+                      and data.user_id != hacker_group.leader_id) or
+                     (data.user_id == hacker_group.leader_id))):
                 raise InvalidDataException(
                     "Cannot remove user from group other than you")
         hacker = [h for h in hacker_group.members if h.id == hackerId]
@@ -225,18 +227,19 @@ class HackerGroupService(BaseService):
             self.dbrefresh(hacker_group)
         return hacker_group
 
-
     def set_hacker_group_leader(self, groupId: int, hackerId: int,
                                 data: TokenData):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value
-                                        or data.type == UserType.HACKER.value)):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value
+                     or data.type == UserType.HACKER.value)):
                 raise AuthenticationException("Not authorized")
         hacker_group = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.id == groupId).first()
         if hacker_group is None:
             raise NotFoundException("Hacker group not found")
-        hacker = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.db.query(ModelHacker).filter(
+            ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         if hacker_group.leader_id == hacker.id:
@@ -245,7 +248,7 @@ class HackerGroupService(BaseService):
         if not data.is_admin:
             if not (data.type == UserType.LLEIDAHACKER or
                     (data.type == UserType.HACKER.value
-                    and data.user_id in group_members_ids)):
+                     and data.user_id in group_members_ids)):
                 raise AuthenticationException("hacker not in group")
         hacker_group.leader_id = hacker.id
         self.dbcommit()

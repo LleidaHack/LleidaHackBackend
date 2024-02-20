@@ -24,6 +24,7 @@ router = APIRouter(
 
 event_service = EventService()
 
+
 @router.get("/get_hackeps", response_model=EventGetSchema)
 def get_hackeps():
     #get the current year
@@ -37,14 +38,12 @@ def get_events(token: str = Depends(JWTBearer())):
 
 
 @router.get("/{id}", response_model=Union[EventGetSchema, EventGetAllSchema])
-def get_event(id: int,
-              token: str = Depends(JWTBearer())):
+def get_event(id: int, token: str = Depends(JWTBearer())):
     return event_service.get_event(id, get_data_from_token(token))
 
 
 @router.post("/")
-def create_event(event: EventCreateSchema,
-                 token: str = Depends(JWTBearer())):
+def create_event(event: EventCreateSchema, token: str = Depends(JWTBearer())):
     new_event = event_service.add_event(event, get_data_from_token(token))
     return {'success': True, 'event_id': new_event.id}
 
@@ -59,39 +58,30 @@ def update_event(id: int,
 
 
 @router.delete("/{id}")
-def delete_event(id: int,
-                 token: str = Depends(JWTBearer())):
+def delete_event(id: int, token: str = Depends(JWTBearer())):
     event = event_service.delete_event(id, get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
 
 
 @router.get("/{id}/is_registered/{hacker_id}")
-def is_registered(id: int,
-                  hacker_id: int,
-                  token: str = Depends(JWTBearer())):
+def is_registered(id: int, hacker_id: int, token: str = Depends(JWTBearer())):
     return event_service.is_registered(id, hacker_id,
                                        get_data_from_token(token))
 
 
 @router.get("/{id}/is_accepted/{hacker_id}")
-def is_accepted(id: int,
-                hacker_id: int,
-                token: str = Depends(JWTBearer())):
-    return event_service.is_accepted(id, hacker_id,
-                                     get_data_from_token(token))
+def is_accepted(id: int, hacker_id: int, token: str = Depends(JWTBearer())):
+    return event_service.is_accepted(id, hacker_id, get_data_from_token(token))
 
 
 @router.get("/{id}/meals", response_model=List[MealGetSchema])
-def get_event_meals(id: int,
-                    token: str = Depends(JWTBearer())):
+def get_event_meals(id: int, token: str = Depends(JWTBearer())):
     return event_service.get_event_meals(id, get_data_from_token(token))
 
 
 @router.get("/{id}/participants", response_model=List[HackerGetSchema])
-def get_event_participants(id: int,
-                           token: str = Depends(JWTBearer())):
-    return event_service.get_event_participants(id,
-                                                get_data_from_token(token))
+def get_event_participants(id: int, token: str = Depends(JWTBearer())):
+    return event_service.get_event_participants(id, get_data_from_token(token))
 
 
 @router.get("/{id}/sponsors", response_model=List[CompanyGetSchema])
@@ -100,16 +90,13 @@ def get_event_sponsors(id: int):
 
 
 @router.get("/{id}/groups", response_model=List[HackerGroupGetSchema])
-def get_event_groups(id: int,
-                     token: str = Depends(JWTBearer())):
+def get_event_groups(id: int, token: str = Depends(JWTBearer())):
     event = event_service.get_event_groups(id, get_data_from_token(token))
     return {'success': True, 'groups': event}
 
 
 @router.put("/{id}/groups/{group_id}")
-def add_event_group(id: int,
-                    group_id: int,
-                    token: str = Depends(JWTBearer())):
+def add_event_group(id: int, group_id: int, token: str = Depends(JWTBearer())):
     event = event_service.add_hacker_group(id, group_id,
                                            get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
@@ -172,8 +159,7 @@ def remove_event_sponsor(id: int,
 
 @router.get("/{eventId}/get_approved_hackers",
             response_model=List[HackerGetSchema])
-def get_accepted_hackers(eventId: int,
-                         token: str = Depends(JWTBearer())):
+def get_accepted_hackers(eventId: int, token: str = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId,
                                               get_data_from_token(token))
 

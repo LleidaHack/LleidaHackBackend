@@ -28,8 +28,7 @@ class User(Base):
     updated_at: date = Column(DateTime, default=date.today())
     image: str = Column(String, default="")
     is_image_url: bool = Column(Boolean, default=False)
-    code: str = (
-        Column(String, default="", unique=True, index=True))
+    code: str = (Column(String, default="", unique=True, index=True))
     terms_accepted: bool = Column(Boolean, default=True)
     recive_mails: bool = Column(Boolean, default=True)
     lleidacoins_claimed: Boolean = Column(Boolean, default=False)
