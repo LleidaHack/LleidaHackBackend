@@ -16,11 +16,11 @@ from src.impl.Company.schema import CompanyUpdate as CompanyUpdateSchema
 class CompanyService(BaseService):
 
     def get_all(self):
-        return self..db.query(ModelCompany).all()
+        return self.db.query(ModelCompany).all()
 
 
     def get_company(self, companyId: int):
-        return self..db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
+        return self.db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
 
 
     def add_company(self, payload: CompanyCreateSchema, data: TokenData):

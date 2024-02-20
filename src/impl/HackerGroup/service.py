@@ -232,11 +232,11 @@ class HackerGroupService(BaseService):
             if not (data.available and (data.type == UserType.LLEIDAHACKER.value
                                         or data.type == UserType.HACKER.value)):
                 raise AuthenticationException("Not authorized")
-        hacker_group = self..db.query(ModelHackerGroup).filter(
+        hacker_group = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.id == groupId).first()
         if hacker_group is None:
             raise NotFoundException("Hacker group not found")
-        hacker = self..db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
+        hacker = self.db.query(ModelHacker).filter(ModelHacker.id == hackerId).first()
         if hacker is None:
             raise NotFoundException("Hacker not found")
         if hacker_group.leader_id == hacker.id:
