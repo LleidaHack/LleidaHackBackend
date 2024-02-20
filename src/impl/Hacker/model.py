@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, deferred, Mapped
 from database import Base
 
 from src.impl.User.model import User
-from src.Utils.UserType import UserType
+from src.utils.UserType import UserType
 
 
 class Hacker(User):

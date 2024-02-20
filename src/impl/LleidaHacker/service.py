@@ -2,8 +2,8 @@ from datetime import datetime as date
 from pydantic import parse_obj_as
 
 from security import get_password_hash
-from src.Utils import TokenData
-from src.Utils.UserType import UserType
+from src.utils import TokenData
+from src.utils.UserType import UserType
 from utils.BaseService import BaseService
 
 from utils.service_utils import set_existing_data, check_image, generate_user_code

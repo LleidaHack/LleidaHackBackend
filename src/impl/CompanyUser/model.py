@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped
 
 from src.impl.User.model import User
 from src.impl.Company.model import Company
-from src.Utils.UserType import UserType
+from src.utils.UserType import UserType
 
 
 class CompanyUser(User):

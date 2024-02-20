@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from security import get_password_hash
 
 from src.impl.User.model import User as ModelUser
-from src.Utils.UserType import UserType
-from src.Utils.TokenData import TokenData
+from src.utils.UserType import UserType
+from src.utils.TokenData import TokenData
 
 from src.impl.User.schema import UserGet as UserGetSchema
 from src.impl.User.schema import UserGetAll as UserGetAllSchema

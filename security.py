@@ -10,8 +10,8 @@ from passlib.hash import pbkdf2_sha256
 import os
 
 from src.impl.User.model import User as ModelUser
-from src.Utils.UserType import UserType
-from src.Utils.TokenData import TokenData as TD
+from utils.UserType import UserType
+from utils.TokenData import TokenData as TD
 from config import Configuration
 
 from error import AuthenticationException, NotFoundException

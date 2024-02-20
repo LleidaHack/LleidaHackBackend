@@ -1,8 +1,8 @@
 from pydantic import parse_obj_as
 from src.impl.LleidaHacker.model import LleidaHackerGroup as ModelLleidaHackerGroup
 from src.impl.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
+from src.utils.TokenData import TokenData
+from src.utils.UserType import UserType
 
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupCreate as LleidaHackerGroupCreateSchema
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupUpdate as LleidaHackerGroupUpdateSchema

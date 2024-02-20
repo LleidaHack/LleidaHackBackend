@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from src.impl.Notification.model import Notification as ModelNotification
-from src.Utils.UserType import UserType
+from src.utils.UserType import UserType
 
 
 def get_notifications(userId: int, db: Session):

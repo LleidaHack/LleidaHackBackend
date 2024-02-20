@@ -6,8 +6,8 @@ from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
 
 from security import get_data_from_token, generate_assistance_token
-from src.Utils.UserType import UserType
-from src.Utils.TokenData import TokenData
+from src.utils.UserType import UserType
+from src.utils.TokenData import TokenData
 from utils.service_utils import isBase64, subtract_lists
 
 from src.impl.Event.model import Event as ModelEvent

@@ -1,5 +1,5 @@
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
+from src.utils.TokenData import TokenData
+from src.utils.UserType import UserType
 from utils.BaseService import BaseService
 
 from utils.service_utils import set_existing_data, check_image

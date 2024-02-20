@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from config import Configuration
 from src.error.AuthenticationException import AuthenticationException
 
-from src.Utils import TokenData
+from src.utils import TokenData
 from src.impl.User.model import User as ModelUser
 from src.impl.MailQueue.model import MailQueue as ModelMailQueue
 

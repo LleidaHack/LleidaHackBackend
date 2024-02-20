@@ -1,7 +1,7 @@
 from pydantic import parse_obj_as
 from src.impl.Meal.model import Meal as ModelMeal
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
+from src.utils.TokenData import TokenData
+from src.utils.UserType import UserType
 
 from src.impl.Meal.schema import MealCreate as MealCreateSchema
 from src.impl.Meal.schema import MealUpdate as MealUpdateSchema

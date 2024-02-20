@@ -1,8 +1,8 @@
 from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
+from src.utils.TokenData import TokenData
+from src.utils.UserType import UserType
 from utils.BaseService import BaseService
 
 

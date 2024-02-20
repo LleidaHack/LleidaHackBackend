@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from security import create_all_tokens, get_data_from_token, get_password_hash, verify_password
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
+from src.utils.TokenData import TokenData
+from src.utils.UserType import UserType
 
 from src.error.InputException import InputException
 from src.error.InvalidDataException import InvalidDataException

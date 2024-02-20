@@ -1,7 +1,7 @@
 from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
-from src.Utils.UserType import UserType
+from src.utils.UserType import UserType
 from utils.BaseService import BaseService
 
 from utils.service_utils import generate_random_code, set_existing_data
@@ -9,7 +9,7 @@ from utils.service_utils import generate_random_code, set_existing_data
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.Hacker.model import Hacker as ModelHacker
-from src.Utils.TokenData import TokenData
+from src.utils.TokenData import TokenData
 from src.impl.Event.model import Event as ModelEvent
 
 from src.impl.HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema

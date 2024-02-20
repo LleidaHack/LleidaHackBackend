@@ -11,8 +11,8 @@ from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
 
 from utils.service_utils import check_user
-from src.Utils.TokenData import TokenData
-from src.Utils.UserType import UserType
+from src.utils.TokenData import TokenData
+from src.utils.UserType import UserType
 
 from src.impl.Hacker.model import Hacker as ModelHacker
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
