@@ -1,14 +1,12 @@
 from typing import List, Union
-from fastapi import Depends, Response, APIRouter
-from sqlalchemy.orm import Session
+from fastapi import Depends, APIRouter
 
 from security import create_all_tokens
 from security import create_refresh_token
 from security import get_data_from_token
-from database import get_db
 from utils.auth_bearer import JWTBearer
 
-import src.CompanyUser.service as companyuser_service
+from src.CompanyUser.service import CompanyUserService
 
 from src.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
 from src.CompanyUser.schema import CompanyUserGetAll as CompanyUserGetAllSchema
@@ -20,13 +18,13 @@ router = APIRouter(
     tags=["Company User"],
 )
 
+companyuser_service = CompanyUserService()
+
 
 @router.post("/signup")
-def signup(payload: CompanyUserCreateSchema,
-           response: Response,
-           db: Session = Depends(get_db)):
-    new_companyuser = companyuser_service.add_company_user(payload, db)
-    access_token, refresh_token = create_all_tokens(new_companyuser, db)
+def signup(payload: CompanyUserCreateSchema):
+    new_companyuser = companyuser_service.add_company_user(payload)
+    access_token, refresh_token = create_all_tokens(new_companyuser, companyuser_service.db)
     return {
         "success": True,
         "user_id": new_companyuser.id,
@@ -36,18 +34,16 @@ def signup(payload: CompanyUserCreateSchema,
 
 
 @router.get("/all", response_model=List[CompanyUserGetSchema])
-def get_company_users(db: Session = Depends(get_db),
-                      token: str = Depends(JWTBearer())):
-    return companyuser_service.get_companyusers(db)
+def get_company_users(token: str = Depends(JWTBearer())):
+    return companyuser_service.get_companyusers()
 
 
 @router.get("/{companyUserId}",
             response_model=Union[CompanyUserGetSchema,
                                  CompanyUserGetAllSchema])
 def get_company_user(companyUserId: int,
-                     db: Session = Depends(get_db),
                      token: str = Depends(JWTBearer())):
-    return companyuser_service.get_companyuser(db, companyUserId,
+    return companyuser_service.get_companyuser(companyUserId,
                                                get_data_from_token(token))
 
 
@@ -63,17 +59,13 @@ def get_company_user(companyUserId: int,
 @router.put("/{companyUserId}")
 def update_company_user(companyUserId: int,
                         payload: CompanyUserUpdateSchema,
-                        db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
-    companyuser = companyuser_service.update_companyuser(
-        db, companyUserId, payload, get_data_from_token(token))
+    companyuser = companyuser_service.update_companyuser(companyUserId, payload, get_data_from_token(token))
     return {"success": True, "updated_id": companyuser.id}
 
 
 @router.delete("/{companyUserId}")
 def delete_company_user(companyUserId: int,
-                        db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
-    companyuser = companyuser_service.delete_companyuser(
-        db, companyUserId, get_data_from_token(token))
+    companyuser = companyuser_service.delete_companyuser(companyUserId, get_data_from_token(token))
     return {"success": True, "deleted_id": companyuser.id}

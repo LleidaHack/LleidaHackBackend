@@ -1,13 +1,10 @@
 from typing import List, Union
 from fastapi import Depends, Response, APIRouter
-from sqlalchemy.orm import Session
-# from src.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
 
-from database import get_db
 from security import get_data_from_token
 from utils.auth_bearer import JWTBearer
 
-from src.Company import service as company_service
+from src.Company.service import CompanyService
 
 from src.Company.schema import CompanyGet as CompanyGetSchema
 from src.Company.schema import CompanyGetAll as CompanyGetAllSchema
@@ -21,23 +18,23 @@ router = APIRouter(
     tags=["Company"],
 )
 
+company_service = CompanyService()
 
 @router.get("/all", response_model=List[CompanyGetSchema])
-def get_companies(db: Session = Depends(get_db)):
-    return company_service.get_all(db)
+def get_companies():
+    return company_service.get_all()
 
 
 @router.get("/{companyId}",
             response_model=Union[CompanyGetSchema, CompanyGetAllSchema])
-def get_company(companyId: int, db: Session = Depends(get_db)):
-    return company_service.get_company(db, companyId)
+def get_company(companyId: int):
+    return company_service.get_company(companyId)
 
 
 @router.post("/")
 def add_company(payload: CompanyCreateSchema,
-                db: Session = Depends(get_db),
                 token: str = Depends(JWTBearer())):
-    new_company = company_service.add_company(db, payload,
+    new_company = company_service.add_company(payload,
                                               get_data_from_token(token))
     return {"success": True, "user_id": new_company.id}
 
@@ -45,18 +42,16 @@ def add_company(payload: CompanyCreateSchema,
 @router.put("/{companyId}")
 def update_company(companyId: int,
                    payload: CompanyUpdateSchema,
-                   db: Session = Depends(get_db),
                    token: str = Depends(JWTBearer())):
-    company = company_service.update_company(db, companyId, payload,
+    company = company_service.update_company(companyId, payload,
                                              get_data_from_token(token))
     return {"success": True, "updated_id": company.id}
 
 
 @router.delete("/{companyId}")
 def delete_company(companyId: int,
-                   db: Session = Depends(get_db),
                    token: str = Depends(JWTBearer())):
-    company = company_service.delete_company(db, companyId,
+    company = company_service.delete_company(companyId,
                                              get_data_from_token(token))
     return {"success": True, "deleted_id": company.id}
 
@@ -65,9 +60,8 @@ def delete_company(companyId: int,
 # #################################################################
 @router.get("/{companyId}/users", response_model=List[CompanyUserGetSchema])
 def get_company_users(companyId: int,
-                      db: Session = Depends(get_db),
                       str=Depends(JWTBearer())):
-    return company_service.get_company_users(db, companyId,
+    return company_service.get_company_users(companyId,
                                              get_data_from_token(str))
 
 
@@ -75,9 +69,8 @@ def get_company_users(companyId: int,
 def add_company_user(companyId: int,
                      userId: int,
                      response: Response,
-                     db: Session = Depends(get_db),
                      token: str = Depends(JWTBearer())):
-    company = company_service.add_company_user(db, companyId, userId,
+    company = company_service.add_company_user(companyId, userId,
                                                get_data_from_token(token))
     return {"success": True, "updated_id": company.id}
 
@@ -86,9 +79,8 @@ def add_company_user(companyId: int,
 def delete_company_user(companyId: int,
                         userId: int,
                         response: Response,
-                        db: Session = Depends(get_db),
                         token: str = Depends(JWTBearer())):
-    company = company_service.delete_company_user(db, companyId, userId,
+    company = company_service.delete_company_user(companyId, userId,
                                                   get_data_from_token(token))
     return {"success": True, "deleted_id": company.id}
 
@@ -97,6 +89,5 @@ def delete_company_user(companyId: int,
 @router.get("/{companyId}/events", response_model=EventGetSchema)
 def get_company_events(companyId: int,
                        response: Response,
-                       db: Session = Depends(get_db),
                        str=Depends(JWTBearer())):
-    return company_service.get_company_events(db, companyId)
+    return company_service.get_company_events(companyId)
