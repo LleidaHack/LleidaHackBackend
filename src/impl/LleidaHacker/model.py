@@ -11,13 +11,13 @@ from src.Utils.UserType import UserType
 class LleidaHacker(User):
     __tablename__ = 'lleida_hacker'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    role: Mapped[str] = deferred(Column(String))
-    nif: Mapped[str] = deferred(Column(String, unique=True))
+    role: str = (Column(String))
+    nif: str = (Column(String, unique=True))
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
     github: str = Column(String)
-    accepted: Mapped[bool] = deferred(Column(Boolean, default=True))
-    rejected: Mapped[bool] = deferred(Column(Boolean, default=False))
+    accepted: bool = (Column(Boolean, default=True))
+    rejected: bool = (Column(Boolean, default=False))
     groups = relationship('LleidaHackerGroup',
                           secondary='lleida_hacker_group_user')
     events = relationship('Event',

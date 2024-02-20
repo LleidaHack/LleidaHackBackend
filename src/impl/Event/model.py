@@ -51,7 +51,7 @@ class HackerRegistration(Base):
     how_did_you_meet_us: str = Column(String, default="")
     update_user: bool = Column(Boolean, default=True)
     confirmed_assistance: bool = Column(Boolean, default=False)
-    confirm_assistance_token: Mapped[str] = deferred(Column(String,
+    confirm_assistance_token: str = (Column(String,
                                                             default=""))
     # accepted: bool = Column(Boolean, default=False)
 

@@ -14,7 +14,7 @@ class HackerGroupUser(Base):
 class HackerGroup(Base):
     __tablename__ = 'hacker_group'
     id: int = Column(Integer, primary_key=True, index=True)
-    code: Mapped[str] = deferred(Column(String, unique=True, index=True))
+    code: str = (Column(String, unique=True, index=True))
     name: str = Column(String)
     description: str = Column(String)
     leader_id: int = Column(Integer,
