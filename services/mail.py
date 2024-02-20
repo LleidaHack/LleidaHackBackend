@@ -5,10 +5,10 @@ from database import db_get
 from pydantic import BaseModel
 from string import Template
 
-from src.User.model import User as ModelUser
-from src.Event.model import Event as ModelEvent
-from src.MailQueue.model import MailQueue as ModelMailQueue
-from src.MailQueue import service as mail_queue_service
+from src.impl.User.model import User as ModelUser
+from src.impl.Event.model import Event as ModelEvent
+from src.impl.MailQueue.model import MailQueue as ModelMailQueue
+from src.impl.MailQueue import service as mail_queue_service
 
 
 class EmailSchema(BaseModel):
