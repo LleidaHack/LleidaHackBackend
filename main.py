@@ -7,26 +7,26 @@ from logging.config import dictConfig
 import logging
 from log_config import LogConfig
 
-from src.User import router as User
-from src.Hacker import router as Hacker
-from src.HackerGroup import router as HackerGroup
-from src.LleidaHacker import router as LleidaHacker
-from src.LleidaHackerGroup import router as LleidaHackerGroup
-from src.Company import router as Company
-from src.CompanyUser import router as CompanyUser
-from src.Event import router as Event
-from src.Meal import router as Meal
-from src.EventManagment import router as EventManagment
-from src.Authentication import router as Authentication
-from src.MailQueue import router as MailQueue
-from src.Geocaching import router as Geocaching
+from src.impl.User import router as User
+from src.impl.Hacker import router as Hacker
+from src.impl.HackerGroup import router as HackerGroup
+from src.impl.LleidaHacker import router as LleidaHacker
+from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
+from src.impl.Company import router as Company
+from src.impl.CompanyUser import router as CompanyUser
+from src.impl.Event import router as Event
+from src.impl.Meal import router as Meal
+from src.impl.EventManagment import router as EventManagment
+from src.impl.Authentication import router as Authentication
+from src.impl.MailQueue import router as MailQueue
+from src.impl.Geocaching import router as Geocaching
 
 from error import error_handler as eh
-from error.AuthenticationException import AuthenticationException
-from error.NotFoundException import NotFoundException
-from error.ValidationException import ValidationException
-from error.InvalidDataException import InvalidDataException
-from error.InputException import InputException
+from src.error.AuthenticationException import AuthenticationException
+from src.error.NotFoundException import NotFoundException
+from src.error.ValidationException import ValidationException
+from src.error.InvalidDataException import InvalidDataException
+from src.error.InputException import InputException
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")

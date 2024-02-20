@@ -5,14 +5,13 @@ from database import get_db
 from fastapi.security import OAuth2PasswordBearer, HTTPBasic
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from jose import JWTError, jwt
+from jose import jwt
 from passlib.hash import pbkdf2_sha256
 import os
 
-from src.User.model import User as ModelUser
-from src.Utils.UserType import UserType
-from utils.Token import TokenData
-from src.Utils.TokenData import TokenData as TD
+from src.impl.User.model import User as ModelUser
+from utils.UserType import UserType
+from utils.TokenData import TokenData as TD
 from config import Configuration
 
 from error import AuthenticationException, NotFoundException

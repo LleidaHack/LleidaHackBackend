@@ -2,8 +2,8 @@ import string
 import random
 import base64
 
-from error.ValidationException import ValidationException
-from src.User.model import User
+from src.error.ValidationException import ValidationException
+from src.impl.User.model import User
 
 
 def get_user_by_mail(db, email):

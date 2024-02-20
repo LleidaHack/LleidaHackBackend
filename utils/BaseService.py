@@ -1,7 +1,6 @@
-from database import get_db
+from database import db_get
 
 
 class BaseService:
-
     def __init__(self):
-        self.model = get_db()
+        self.db = db_get()
