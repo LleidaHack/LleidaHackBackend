@@ -53,7 +53,8 @@ def send_mail_by_id(id: int,
 
 
 @router.get("/count")
-def count(db: Session = Depends(get_db), token: BaseToken = Depends(JWTBearer())):
+def count(db: Session = Depends(get_db),
+          token: BaseToken = Depends(JWTBearer())):
     return mail_queue_service.count_unsent(db, get_data_from_token(token))
 
 

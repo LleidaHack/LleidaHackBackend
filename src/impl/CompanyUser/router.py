@@ -42,7 +42,8 @@ def get_company_users(token: BaseToken = Depends(JWTBearer())):
 @router.get("/{companyUserId}",
             response_model=Union[CompanyUserGetSchema,
                                  CompanyUserGetAllSchema])
-def get_company_user(companyUserId: int, token: BaseToken = Depends(JWTBearer())):
+def get_company_user(companyUserId: int,
+                     token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_companyuser(companyUserId,
                                                get_data_from_token(token))
 
@@ -66,7 +67,8 @@ def update_company_user(companyUserId: int,
 
 
 @router.delete("/{companyUserId}")
-def delete_company_user(companyUserId: int, token: BaseToken = Depends(JWTBearer())):
+def delete_company_user(companyUserId: int,
+                        token: BaseToken = Depends(JWTBearer())):
     companyuser = companyuser_service.delete_companyuser(
         companyUserId, get_data_from_token(token))
     return {"success": True, "deleted_id": companyuser.id}

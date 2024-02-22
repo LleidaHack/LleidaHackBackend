@@ -44,7 +44,8 @@ def get_event(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/")
-def create_event(event: EventCreateSchema, token: BaseToken = Depends(JWTBearer())):
+def create_event(event: EventCreateSchema,
+                 token: BaseToken = Depends(JWTBearer())):
     new_event = event_service.add_event(event, get_data_from_token(token))
     return {'success': True, 'event_id': new_event.id}
 
@@ -65,13 +66,17 @@ def delete_event(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{id}/is_registered/{hacker_id}")
-def is_registered(id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())):
+def is_registered(id: int,
+                  hacker_id: int,
+                  token: BaseToken = Depends(JWTBearer())):
     return event_service.is_registered(id, hacker_id,
                                        get_data_from_token(token))
 
 
 @router.get("/{id}/is_accepted/{hacker_id}")
-def is_accepted(id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())):
+def is_accepted(id: int,
+                hacker_id: int,
+                token: BaseToken = Depends(JWTBearer())):
     return event_service.is_accepted(id, hacker_id, get_data_from_token(token))
 
 
@@ -97,7 +102,9 @@ def get_event_groups(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{id}/groups/{group_id}")
-def add_event_group(id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
+def add_event_group(id: int,
+                    group_id: int,
+                    token: BaseToken = Depends(JWTBearer())):
     event = event_service.add_hacker_group(id, group_id,
                                            get_data_from_token(token))
     return {'success': True, 'event_id': event.id}
@@ -160,7 +167,8 @@ def remove_event_sponsor(id: int,
 
 @router.get("/{eventId}/get_approved_hackers",
             response_model=List[HackerGetSchema])
-def get_accepted_hackers(eventId: int, token: BaseToken = Depends(JWTBearer())):
+def get_accepted_hackers(eventId: int,
+                         token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId,
                                               get_data_from_token(token))
 

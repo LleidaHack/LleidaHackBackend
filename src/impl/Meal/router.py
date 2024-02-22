@@ -32,7 +32,8 @@ def get_meal(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/")
-def create_meal(meal: MealCreateSchema, token: BaseToken = Depends(JWTBearer())):
+def create_meal(meal: MealCreateSchema,
+                token: BaseToken = Depends(JWTBearer())):
     return meal_service.add_meal(meal, get_data_from_token(token))
 
 
@@ -46,5 +47,6 @@ def update_meal(id: int,
 
 
 @router.delete("/{id}/{meal_id}")
-def delete_meal(id: int, meal_id: int, token: BaseToken = Depends(JWTBearer())):
+def delete_meal(id: int, meal_id: int,
+                token: BaseToken = Depends(JWTBearer())):
     return meal_service.delete_meal(id, meal_id, get_data_from_token(token))

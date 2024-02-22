@@ -19,12 +19,15 @@ from src.impl.CompanyUser.model import CompanyUser as ModelCompanyUser
 from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
 from src.utils.Token.model import AccesToken, RefreshToken, ResetPassToken
 
+
 def create_access_and_refresh_token(user: ModelUser):
     access_token = AccesToken(user)
     refresh_token = RefreshToken(user)
     access_token.save_to_user()
     refresh_token.save_to_user()
     return access_token, refresh_token
+
+
 def login(mail: str, password: str, db: Session = Depends(get_db)):
     user = db.query(ModelUser).filter(ModelUser.email == mail).first()
     if user is None:
@@ -51,7 +54,7 @@ def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User not found")
     if not (refresh_token == user.refresh_token):
         raise InvalidDataException("Invalid token")
-    acces_token, refresh_token = create_access_and_refresh_token(user) 
+    acces_token, refresh_token = create_access_and_refresh_token(user)
     return acces_token.to_token(), refresh_token.to_token()
 
 
@@ -61,7 +64,7 @@ def reset_password(email: str, db: Session = Depends(get_db)):
         raise InvalidDataException("User not found")
     if not user.is_verified:
         raise InvalidDataException("User not verified")
-    acces_token, refresh_token = create_access_and_refresh_token(user) 
+    acces_token, refresh_token = create_access_and_refresh_token(user)
     ResetPassToken(user).save_to_user()
     send_password_reset_email(user)
     return {"success": True}

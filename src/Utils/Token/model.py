@@ -13,7 +13,9 @@ from src.impl.User.model import User as UserModel
 SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
 ALGORITHM = Configuration.get("SECURITY", "ALGORITHM")
 SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
-ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY", "ACCESS_TOKEN_EXPIRE_MINUTES")
+ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY",
+                                                "ACCESS_TOKEN_EXPIRE_MINUTES")
+
 
 class TokenType(enum.Enum):
     ACCESS = 'access'
@@ -21,6 +23,7 @@ class TokenType(enum.Enum):
     ASSISTENCE = 'assistence'
     VERIFICATION = 'verification'
     RESET_PASS = 'reset_pass'
+
 
 class BaseToken:
     user_id: int
@@ -31,17 +34,19 @@ class BaseToken:
     is_admin: bool = False
     is_service: bool = False
     data = None
-    
+
     user_service = UserService()
 
-    def __init__(self, user:UserModel):
+    def __init__(self, user: UserModel):
         self.user_id = user.id
         self.email - user.email
-        # self.type = 
-        self.expt = (datetime.utcnow() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))).isoformat()
+        # self.type =
+        self.expt = (
+            datetime.utcnow() +
+            timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))).isoformat()
         self.user_type = user.type
 
-    def from_token(self, token:str):
+    def from_token(self, token: str):
         if BaseToken.is_service(token):
             self.is_admin = True
             self.is_service = True
@@ -55,11 +60,11 @@ class BaseToken:
         self.expt = self.data.get("expt")
         self.type = self.data.get("type")
         self.email = self.data.get("email")
-        
+
     def to_token(self) -> str:
         return BaseToken.encode(self.__dict__)
-    
-    def user_set(self, user:UserModel):
+
+    def user_set(self, user: UserModel):
         if type == TokenType.ACCESS.value:
             user.token = self.to_token()
         elif type == TokenType.REFRESH.value:
@@ -75,12 +80,17 @@ class BaseToken:
     @classmethod
     def is_service(token):
         return token == SERVICE_TOKEN
+
     @classmethod
     def decode(token):
-        return jwt.decode(token.encode('utf-8'), SECRET_KEY, algorithms=[ALGORITHM])
+        return jwt.decode(token.encode('utf-8'),
+                          SECRET_KEY,
+                          algorithms=[ALGORITHM])
+
     @classmethod
     def encode(dict):
         return jwt.encode(dict, SECRET_KEY, algorithm=ALGORITHM)
+
     @classmethod
     def verify(token):
         if BaseToken.is_service(token):
@@ -95,8 +105,9 @@ class BaseToken:
         if parser.parse(dict["expt"]) < datetime.utcnow():
             raise AuthenticationException(message="Token expired")
         return True
+
     @classmethod
-    def get_data(token:str):
+    def get_data(token: str):
         type = BaseToken.decode(token).get('type')
         if type == TokenType.ACCESS.value:
             return AccesToken(token)
@@ -108,15 +119,16 @@ class BaseToken:
             return ResetPassToken(token)
         elif type == TokenType.VERIFICATION.value:
             return VerificationToken(token)
-            
 
 
 class AssistenceToken(BaseToken):
     event_id: int = 0
-    def __init__(self, user: UserModel, event_id:int):
+
+    def __init__(self, user: UserModel, event_id: int):
         self.type = TokenType.ASSISTENCE.value
         super().__init__(user)
         self.event_id = event_id
+
     def from_token(self, token):
         super().from_token(token)
         self.event_id = self.data.get("event_id")
@@ -125,7 +137,7 @@ class AssistenceToken(BaseToken):
 class AccesToken(BaseToken):
     is_verified: bool = False
     available: bool = True
-    
+
     def __init__(self, user: UserModel):
         self.type = TokenType.ACCESS.value
         super().__init__(user)
@@ -136,23 +148,29 @@ class AccesToken(BaseToken):
             self.available = user.active and user.accepted and not user.rejected
         else:
             self.available = user.active
-    
+
     def from_token(self, token):
         super().from_token(token)
         self.is_verified = self.data.get("is_verified")
         self.available = self.data.get("available")
 
+
 class RefreshToken(BaseToken):
+
     def __init__(self, user: UserModel):
         self.type = TokenType.REFRESH.value
         super().__init__(user)
 
+
 class VerificationToken(BaseToken):
+
     def __init__(self, user: UserModel):
         self.type = TokenType.VERIFICATION.value
         super().__init__(user)
 
+
 class ResetPassToken(BaseToken):
+
     def __init__(self, user: UserModel):
         self.type = TokenType.RESET_PASS.value
         super().__init__(user)

@@ -88,14 +88,16 @@ def reject_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/{userId}/activate")
-def activate_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
+def activate_lleidahacker(userId: int,
+                          token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.activate_lleidahacker(
         userId, get_data_from_token(token))
     return {"success": True, "updated_id": userId}
 
 
 @router.post("/{userId}/deactivate")
-def deactivate_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
+def deactivate_lleidahacker(userId: int,
+                            token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.deactivate_lleidahacker(
         userId, get_data_from_token(token))
     return {"success": True, "updated_id": userId}

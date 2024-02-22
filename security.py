@@ -87,7 +87,7 @@ def update_tokens(user_id: int,
 def create_access_token(user: ModelUser,
                         db: Session,
                         expires_delta: timedelta = None):
-    
+
     encoded_jwt = AccesToken(user).to_token()
     update_tokens(user.id, db, access_token=encoded_jwt)
     return encoded_jwt

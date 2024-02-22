@@ -144,7 +144,8 @@ def accept_hacker_to_event(event_id: int,
 def unaccept_hacker_from_event_by_email(event_id: int,
                                         hacker_email: str,
                                         db: Session = Depends(get_db),
-                                        token: BaseToken = Depends(JWTBearer())):
+                                        token: BaseToken = Depends(
+                                            JWTBearer())):
     """
     Unaccept a hacker from an event by email
     """

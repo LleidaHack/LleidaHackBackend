@@ -34,7 +34,7 @@ class UserService(BaseService):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
-    def get_user_by_id(self, userId:int):
+    def get_user_by_id(self, userId: int):
         user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
         if not user:
             raise NotFoundException("User not found")
@@ -134,9 +134,9 @@ class UserService(BaseService):
         self.db.refresh(user)
         return user
 
-    def set_token(self, token:BaseToken):
+    def set_token(self, token: BaseToken):
         user = self.get_user_by_id(token.user_id)
         token.user_set(user)
         self.db.commit()
         self.db.refresh(user)
-        return 
+        return
