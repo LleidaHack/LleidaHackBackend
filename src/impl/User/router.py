@@ -2,6 +2,7 @@ from typing import List, Union
 from fastapi import Depends, APIRouter
 
 from security import get_data_from_token
+from src.utils.Token.model import BaseToken
 from utils.auth_bearer import JWTBearer
 
 from src.impl.User.service import UserService
@@ -18,12 +19,12 @@ user_service = UserService()
 
 
 @router.get("/count")
-def count_users(token: str = Depends(JWTBearer())):
+def count_users(token: BaseToken = Depends(JWTBearer())):
     return user_service.count_users()
 
 
 @router.get("/all", response_model=List[UserGetSchema])
-def get_users(token: str = Depends(JWTBearer())):
+def get_users(token: BaseToken = Depends(JWTBearer())):
     return user_service.get_all()
 
 

@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from security import verify_token
 from config import Configuration
+from src.utils.Token.model import BaseToken
 
 SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
 
@@ -17,8 +18,8 @@ class JWTBearer(HTTPBearer):
     async def __call__(self, request: Request):
         credentials: HTTPAuthorizationCredentials = await super(
             JWTBearer, self).__call__(request)
-        if credentials.credentials == SERVICE_TOKEN:
-            return credentials.credentials
+        # if credentials.credentials == SERVICE_TOKEN:
+        #     return credentials.credentials
         if credentials:
             if not credentials.scheme.lower() == "bearer":
                 raise HTTPException(status_code=403,
@@ -26,7 +27,8 @@ class JWTBearer(HTTPBearer):
             if not self.verify_jwt(credentials.credentials):
                 raise HTTPException(status_code=403,
                                     message="Invalid token or expired token.")
-            return credentials.credentials
+            return BaseToken.get_data(credentials.credentials)
+            # return credentials.credentials
         else:
             raise HTTPException(status_code=403,
                                 message="Invalid authorization code.")
@@ -34,7 +36,7 @@ class JWTBearer(HTTPBearer):
     def verify_jwt(self, jwtoken: str) -> bool:
         isTokenValid: bool = False
         try:
-            payload = verify_token(jwtoken, db_get())
+            payload = BaseToken.verify(jwtoken)
         except:
             payload = None
         if payload:

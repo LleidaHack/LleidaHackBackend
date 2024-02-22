@@ -6,6 +6,7 @@ from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 
 from utils.service_utils import subtract_lists
+from src.utils.Token.model import BaseToken
 from utils.auth_bearer import JWTBearer
 from security import get_data_from_token
 from database import get_db
@@ -32,7 +33,7 @@ def register_hacker_to_event(event_id: int,
                              hacker_id: str,
                              registration: EventRegistrationSchema,
                              db: Session = Depends(get_db),
-                             token: str = Depends(JWTBearer())):
+                             token: BaseToken = Depends(JWTBearer())):
     """
     Register a hacker to an event
     """
@@ -47,7 +48,7 @@ def register_hacker_to_event(event_id: int,
 def unregister_hacker_from_event(event_id: int,
                                  hacker_id: int,
                                  db: Session = Depends(get_db),
-                                 token: str = Depends(JWTBearer())):
+                                 token: BaseToken = Depends(JWTBearer())):
     """
     Unregister a hacker from an event
     """
@@ -78,7 +79,7 @@ def confirm_assistance(token: str, db: Session = Depends(get_db)):
 def participate_hacker_to_event(event_id: int,
                                 hacker_code: str,
                                 db: Session = Depends(get_db),
-                                token: str = Depends(JWTBearer())):
+                                token: BaseToken = Depends(JWTBearer())):
     """
     Participate a hacker to an event
     """
@@ -105,7 +106,7 @@ def participate_hacker_to_event(event_id: int,
 def unparticipate_hacker_from_event(event_id: int,
                                     hacker_id: int,
                                     db: Session = Depends(get_db),
-                                    token: str = Depends(JWTBearer())):
+                                    token: BaseToken = Depends(JWTBearer())):
     """
     Unparticipate a hacker from an event
     """
@@ -124,7 +125,7 @@ def unparticipate_hacker_from_event(event_id: int,
 def accept_hacker_to_event(event_id: int,
                            hacker_id: int,
                            db: Session = Depends(get_db),
-                           token: str = Depends(JWTBearer())):
+                           token: BaseToken = Depends(JWTBearer())):
     """
         Accept a hacker to an event
         """
@@ -143,7 +144,7 @@ def accept_hacker_to_event(event_id: int,
 def unaccept_hacker_from_event_by_email(event_id: int,
                                         hacker_email: str,
                                         db: Session = Depends(get_db),
-                                        token: str = Depends(JWTBearer())):
+                                        token: BaseToken = Depends(JWTBearer())):
     """
     Unaccept a hacker from an event by email
     """
@@ -161,7 +162,7 @@ def unaccept_hacker_from_event_by_email(event_id: int,
 def accept_group_to_event(event_id: int,
                           group_id: int,
                           db: Session = Depends(get_db),
-                          token: str = Depends(JWTBearer())):
+                          token: BaseToken = Depends(JWTBearer())):
     """
             Accept a group to an event
             """
@@ -179,7 +180,7 @@ def accept_group_to_event(event_id: int,
 def reject_hacker_from_event(event_id: int,
                              hacker_id: int,
                              db: Session = Depends(get_db),
-                             token: str = Depends(JWTBearer())):
+                             token: BaseToken = Depends(JWTBearer())):
     """
         Reject a hacker from an event
         """
@@ -198,7 +199,7 @@ def reject_hacker_from_event(event_id: int,
 def reject_group_from_event(event_id: int,
                             group_id: int,
                             db: Session = Depends(get_db),
-                            token: str = Depends(JWTBearer())):
+                            token: BaseToken = Depends(JWTBearer())):
     """
           Reject a group from an event
           """
@@ -215,7 +216,7 @@ def reject_group_from_event(event_id: int,
 @router.get("/{event_id}/pending")
 def get_pending_hackers(event_id: int,
                         db: Session = Depends(get_db),
-                        token: str = Depends(JWTBearer())):
+                        token: BaseToken = Depends(JWTBearer())):
     """
     Get the pending hackers of an event
     """
@@ -232,7 +233,7 @@ def get_pending_hackers(event_id: int,
 @router.get("/{event_id}/pendinggruped")
 def get_pending_hackers_gruped(event_id: int,
                                db: Session = Depends(get_db),
-                               token: str = Depends(JWTBearer())):
+                               token: BaseToken = Depends(JWTBearer())):
     """
         Get the pending hackers of an event
         """
@@ -246,7 +247,7 @@ def get_pending_hackers_gruped(event_id: int,
 @router.get("/{event_id}/rejected")
 def get_rejected_hackers(event_id: int,
                          db: Session = Depends(get_db),
-                         token: str = Depends(JWTBearer())):
+                         token: BaseToken = Depends(JWTBearer())):
     """
         Get the rejected hackers of an event
         """
@@ -283,7 +284,7 @@ def eat(event_id: int,
         meal_id: int,
         hacker_code: str,
         db: Session = Depends(get_db),
-        token: str = Depends(JWTBearer())):
+        token: BaseToken = Depends(JWTBearer())):
     """
     Register a hacker to an event
     """
@@ -310,7 +311,7 @@ def send_remember(
     event_id: int,
     # background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    token: str = Depends(JWTBearer())):
+    token: BaseToken = Depends(JWTBearer())):
     """
     Send a remember notification to all attendees of an event
     """
@@ -329,7 +330,7 @@ def send_remember(
 def send_dailyhack(event_id: int,
                    background_tasks: BackgroundTasks,
                    db: Session = Depends(get_db),
-                   token: str = Depends(JWTBearer())):
+                   token: BaseToken = Depends(JWTBearer())):
     """
     Send a daily hack notification to all attendees of an event
     """
@@ -356,7 +357,7 @@ def get_sizes(event_id: int, db: Session = Depends(get_db)):
 @router.get("/{event_id}/get_unregistered_hackers")
 def get_unregistered_hackers(event_id: int,
                              db: Session = Depends(get_db),
-                             token: str = Depends(JWTBearer())):
+                             token: BaseToken = Depends(JWTBearer())):
     """
     Get the hackers who are not registered for the event
     """
@@ -372,7 +373,7 @@ def get_unregistered_hackers(event_id: int,
 @router.get("/{event_id}/count_unregistered_hackers")
 def count_unregistered_hackers(event_id: int,
                                db: Session = Depends(get_db),
-                               token: str = Depends(JWTBearer())):
+                               token: BaseToken = Depends(JWTBearer())):
     """
     Get the count of hackers who are not registered for the event
     """

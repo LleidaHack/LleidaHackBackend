@@ -5,9 +5,10 @@ from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
 
-from security import get_data_from_token, generate_assistance_token
+from security import get_data_from_token
 from src.utils.UserType import UserType
 from src.utils.TokenData import TokenData
+from utils.Token.model import AssistenceToken
 from utils.service_utils import isBase64, subtract_lists
 
 from src.impl.Event.model import Event as ModelEvent
@@ -287,7 +288,7 @@ def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker, db: Session,
         ModelHackerRegistration.event_id == event.id).first()
     if hacker_registration is None:
         raise InvalidDataException("Hacker not registered")
-    token = generate_assistance_token(hacker.id, event.id, db)
+    token = AssistenceToken(hacker, event.id).to_token()
     hacker_registration.confirm_assistance_token = token
     event.accepted_hackers.append(hacker)
     db.commit()

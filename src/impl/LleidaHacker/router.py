@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from security import create_all_tokens, get_data_from_token
+from src.utils.Token.model import BaseToken
 from utils.auth_bearer import JWTBearer
 
 from src.impl.LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
@@ -57,7 +58,7 @@ def get_lleidahacker(userId: int, str=Depends(JWTBearer())):
 
 
 @router.delete("/{userId}")
-def delete_lleidahacker(userId: int, token: str = Depends(JWTBearer())):
+def delete_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.delete_lleidahacker(
         userId, get_data_from_token(token))
     return {"success": True, "deleted_id": userId}
@@ -66,35 +67,35 @@ def delete_lleidahacker(userId: int, token: str = Depends(JWTBearer())):
 @router.put("/{userId}")
 def update_lleidahacker(userId: int,
                         payload: LleidaHackerUpdateSchema,
-                        token: str = Depends(JWTBearer())):
+                        token: BaseToken = Depends(JWTBearer())):
     lleidahacker, updated = lleidahacker_service.update_lleidahacker(
         userId, payload, get_data_from_token(token))
     return {"success": True, "updated_id": userId, 'updated': updated}
 
 
 @router.post("/{userId}/accept")
-def accept_lleidahacker(userId: int, token: str = Depends(JWTBearer())):
+def accept_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.accept_lleidahacker(
         userId, get_data_from_token(token))
     return {"success": True, "updated_id": userId}
 
 
 @router.post("/{userId}/reject")
-def reject_lleidahacker(userId: int, token: str = Depends(JWTBearer())):
+def reject_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.reject_lleidahacker(
         userId, get_data_from_token(token))
     return {"success": True, "updated_id": userId}
 
 
 @router.post("/{userId}/activate")
-def activate_lleidahacker(userId: int, token: str = Depends(JWTBearer())):
+def activate_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.activate_lleidahacker(
         userId, get_data_from_token(token))
     return {"success": True, "updated_id": userId}
 
 
 @router.post("/{userId}/deactivate")
-def deactivate_lleidahacker(userId: int, token: str = Depends(JWTBearer())):
+def deactivate_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.deactivate_lleidahacker(
         userId, get_data_from_token(token))
     return {"success": True, "updated_id": userId}

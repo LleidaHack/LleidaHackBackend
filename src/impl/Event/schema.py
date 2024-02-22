@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import date
 from pydantic import validator
 
-from utils.BaseSchema import BaseSchema
+from src.utils.Base.BaseSchema import BaseSchema
 
 
 class EventCreate(BaseSchema):

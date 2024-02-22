@@ -8,7 +8,8 @@ from src.utils.TokenData import TokenData
 
 from src.impl.User.schema import UserGet as UserGetSchema
 from src.impl.User.schema import UserGetAll as UserGetAllSchema
-from utils.BaseService import BaseService
+from src.utils.Base.BaseService import BaseService
+from utils.Token.model import BaseToken
 
 from utils.service_utils import check_image
 from src.error.AuthenticationException import AuthenticationException
@@ -32,6 +33,12 @@ class UserService(BaseService):
                               or data.user_id == userId)):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
+
+    def get_user_by_id(self, userId:int):
+        user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
+        if not user:
+            raise NotFoundException("User not found")
+        return user
 
     def get_user_by_email(self, email: str, data: TokenData):
         if not data.is_admin:
@@ -126,3 +133,10 @@ class UserService(BaseService):
         self.db.commit()
         self.db.refresh(user)
         return user
+
+    def set_token(self, token:BaseToken):
+        user = self.get_user_by_id(token.user_id)
+        token.user_set(user)
+        self.db.commit()
+        self.db.refresh(user)
+        return 

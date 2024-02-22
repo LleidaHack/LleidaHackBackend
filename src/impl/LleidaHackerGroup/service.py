@@ -8,7 +8,7 @@ from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupCreate as LleidaH
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupUpdate as LleidaHackerGroupUpdateSchema
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGet as LleidaHackerGroupGetSchema
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
-from utils.BaseService import BaseService
+from src.utils.Base.BaseService import BaseService
 
 from utils.service_utils import set_existing_data
 

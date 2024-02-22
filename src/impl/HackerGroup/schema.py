@@ -1,4 +1,4 @@
-from utils.BaseSchema import BaseSchema
+from src.utils.Base.BaseSchema import BaseSchema
 from typing import Optional
 
 

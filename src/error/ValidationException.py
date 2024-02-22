@@ -1,4 +1,4 @@
-from src.error.BaseException import BaseException
+from src.utils.Base.BaseException import BaseException
 
 
 class ValidationException(BaseException):

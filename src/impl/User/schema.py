@@ -2,7 +2,7 @@ from pydantic import validator
 from datetime import date
 from typing import Optional
 import re
-from utils.BaseSchema import BaseSchema
+from src.utils.Base.BaseSchema import BaseSchema
 
 
 class UserCreate(BaseSchema):

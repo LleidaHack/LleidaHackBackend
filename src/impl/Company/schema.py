@@ -1,6 +1,6 @@
 from typing import Optional
 
-from utils.BaseSchema import BaseSchema
+from src.utils.Base.BaseSchema import BaseSchema
 
 
 class CompanyCreate(BaseSchema):

@@ -5,6 +5,7 @@ from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGet as LleidaHack
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
 
 from src.impl.LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
+from src.utils.Token.model import BaseToken
 from utils.auth_bearer import JWTBearer
 
 from fastapi import Depends, APIRouter

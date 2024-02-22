@@ -10,6 +10,7 @@ from passlib.hash import pbkdf2_sha256
 import os
 
 from src.impl.User.model import User as ModelUser
+from src.utils.Token.model import AccesToken, AsistenceToken, BaseToken, RefreshToken, ResetPassToken, VerificationToken
 from utils.UserType import UserType
 from utils.TokenData import TokenData as TD
 from config import Configuration
@@ -86,101 +87,40 @@ def update_tokens(user_id: int,
 def create_access_token(user: ModelUser,
                         db: Session,
                         expires_delta: timedelta = None):
-    to_encode = {
-        'user_id': user.id,
-        'email': user.email,
-        'type': user.type,
-        "is_verified": user.is_verified
-    }
-    # return "test- "+ ACCESS_TOKEN_EXPIRE_MINUTES
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(
-            minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
-    if user.type == UserType.HACKER.value:
-        to_encode.update({"banned": user.banned})
-    elif user.type == UserType.LLEIDAHACKER.value:
-        to_encode.update(
-            {"active": user.active and user.accepted and not user.rejected})
-    elif user.type == UserType.COMPANYUSER.value:
-        to_encode.update({"active": user.active})
-    to_encode.update({"expt": expire.isoformat()})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    
+    encoded_jwt = AccesToken(user).to_token()
     update_tokens(user.id, db, access_token=encoded_jwt)
-
     return encoded_jwt
 
 
 def create_refresh_token(user: ModelUser,
                          db: Session,
                          expires_delta: timedelta = None):
-    to_encode = {'user_id': user.id, 'email': user.email, 'type': user.type}
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = RefreshToken(user).to_token()
     update_tokens(user.id, db, refresh_token=encoded_jwt)
     return encoded_jwt
 
 
 def create_verification_token(user: ModelUser, db: Session):
-    to_encode = {'user_id': user.id, 'type': user.type}
-    #expire in 10 minutes
-    expire = datetime.utcnow() + timedelta(minutes=10)
-    to_encode.update({"expt": expire.isoformat()})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = VerificationToken(user).to_token()
     update_tokens(user.id, db, verification_token=encoded_jwt)
     return encoded_jwt
 
 
 def create_reset_password_token(user: ModelUser, db: Session):
-    to_encode = {'user_id': user.id, 'type': user.type}
-    #expire in 10 minutes
-    expire = datetime.utcnow() + timedelta(minutes=10)
-    to_encode.update({"expt": expire.isoformat()})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = ResetPassToken(user).to_token()
     update_tokens(user.id, db, reset_pass_token=encoded_jwt)
 
 
 def generate_assistance_token(user_id: int, event_id: int, db: Session):
-    to_encode = {'user_id': user_id, 'event_id': event_id}
-    #expire in 5 days
-    expire = datetime.utcnow() + timedelta(days=5)
-    to_encode.update({"expt": expire.isoformat()})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = AsistenceToken(user, event_id).to_token()
     return encoded_jwt
 
 
 def get_data_from_token(token: str = Depends(oauth2_scheme),
                         refresh: bool = False,
                         special: bool = False):
-    d = TD()
-    if is_service_token(token):
-        d.is_admin = True
-        d.is_service = True
-        d.user_id = 0
-        d.available = True
-        d.type = "service"
-        d.email = ""
-        return d
-    data = decode_token(token)
-    d.user_id = data.get("user_id")
-    d.expt = data.get("expt")
-    d.type = data.get("type")
-    if not special:
-        d.email = data.get("email")
-    else:
-        try:
-            d.event_id = data.get("event_id")
-        except:
-            pass
-    if not refresh and not special:
-        d.is_verified = data.get("is_verified")
-        if d.type == UserType.HACKER.value:
-            d.available = not data.get("banned")
-        elif d.type == UserType.LLEIDAHACKER.value:
-            d.available = bool(data.get("active"))
-        elif d.type == UserType.COMPANYUSER.value:
-            d.available = bool(data.get("active"))
-    return d
+    return BaseToken.to_data(token)
 
 
 def decode_token(token):

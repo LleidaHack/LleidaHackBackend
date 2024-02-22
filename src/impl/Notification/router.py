@@ -1,4 +1,5 @@
 from database import get_db
+from src.utils.Token.model import BaseToken
 from utils.auth_bearer import JWTBearer
 
 from sqlalchemy.orm import Session

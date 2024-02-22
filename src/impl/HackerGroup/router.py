@@ -1,6 +1,7 @@
 from typing import List, Union
 from fastapi import Depends, APIRouter
 from security import get_data_from_token
+from src.utils.Token.model import BaseToken
 from utils.auth_bearer import JWTBearer
 
 from src.impl.HackerGroup.service import HackerGroupService
@@ -27,7 +28,7 @@ def get_hacker_groups(str=Depends(JWTBearer())):
 @router.get("/{groupId}",
             response_model=Union[HackerGroupGetSchema,
                                  HackerGroupGetAllSchema])
-def get_hacker_group(groupId: int, token: str = Depends(JWTBearer())):
+def get_hacker_group(groupId: int, token: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_hacker_group(groupId,
                                                 get_data_from_token(token))
 
@@ -50,20 +51,19 @@ def add_hacker_group(payload: HackerGroupCreateSchema,
 def update_hacker_group(groupId: int,
                         payload: HackerGroupUpdateSchema,
                         str=Depends(JWTBearer())):
-    hacker_group = hackergroup_service.update_hacker_group(
-        groupId, payload, db)
+    hacker_group = hackergroup_service.update_hacker_group(groupId, payload)
     return {"success": True, "updated_id": hacker_group.id}
 
 
 @router.delete("/{groupId}")
 def delete_hacker_group(groupId: int, str=Depends(JWTBearer())):
-    hacker_group = hackergroup_service.delete_hacker_group(groupId, db)
+    hacker_group = hackergroup_service.delete_hacker_group(groupId)
     return {"success": True, "deleted_id": hacker_group.id}
 
 
 @router.get("/{groupId}/members", response_model=List[HackerGetSchema])
 def get_hacker_group_members(groupId: int, str=Depends(JWTBearer())):
-    hacker_group = hackergroup_service.get_hacker_group(groupId, db)
+    hacker_group = hackergroup_service.get_hacker_group(groupId)
     return {"success": True, "members": hacker_group.members}
 
 

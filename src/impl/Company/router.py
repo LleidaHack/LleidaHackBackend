@@ -2,6 +2,7 @@ from typing import List, Union
 from fastapi import Depends, Response, APIRouter
 
 from security import get_data_from_token
+from src.utils.Token.model import BaseToken
 from utils.auth_bearer import JWTBearer
 
 from src.impl.Company.service import CompanyService
@@ -34,7 +35,7 @@ def get_company(companyId: int):
 
 @router.post("/")
 def add_company(payload: CompanyCreateSchema,
-                token: str = Depends(JWTBearer())):
+                token: BaseToken = Depends(JWTBearer())):
     new_company = company_service.add_company(payload,
                                               get_data_from_token(token))
     return {"success": True, "user_id": new_company.id}
@@ -43,14 +44,14 @@ def add_company(payload: CompanyCreateSchema,
 @router.put("/{companyId}")
 def update_company(companyId: int,
                    payload: CompanyUpdateSchema,
-                   token: str = Depends(JWTBearer())):
+                   token: BaseToken = Depends(JWTBearer())):
     company = company_service.update_company(companyId, payload,
                                              get_data_from_token(token))
     return {"success": True, "updated_id": company.id}
 
 
 @router.delete("/{companyId}")
-def delete_company(companyId: int, token: str = Depends(JWTBearer())):
+def delete_company(companyId: int, token: BaseToken = Depends(JWTBearer())):
     company = company_service.delete_company(companyId,
                                              get_data_from_token(token))
     return {"success": True, "deleted_id": company.id}
@@ -68,7 +69,7 @@ def get_company_users(companyId: int, str=Depends(JWTBearer())):
 def add_company_user(companyId: int,
                      userId: int,
                      response: Response,
-                     token: str = Depends(JWTBearer())):
+                     token: BaseToken = Depends(JWTBearer())):
     company = company_service.add_company_user(companyId, userId,
                                                get_data_from_token(token))
     return {"success": True, "updated_id": company.id}
@@ -78,7 +79,7 @@ def add_company_user(companyId: int,
 def delete_company_user(companyId: int,
                         userId: int,
                         response: Response,
-                        token: str = Depends(JWTBearer())):
+                        token: BaseToken = Depends(JWTBearer())):
     company = company_service.delete_company_user(companyId, userId,
                                                   get_data_from_token(token))
     return {"success": True, "deleted_id": company.id}

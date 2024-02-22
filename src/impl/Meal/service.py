@@ -8,7 +8,7 @@ from src.impl.Meal.schema import MealUpdate as MealUpdateSchema
 from src.impl.Meal.schema import MealGet as MealGetSchema
 from src.impl.Meal.schema import MealGetAll as MealGetAllSchema
 
-from utils.BaseService import BaseService
+from src.utils.Base.BaseService import BaseService
 
 from utils.service_utils import set_existing_data
 

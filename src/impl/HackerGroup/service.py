@@ -2,7 +2,7 @@ from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from src.utils.UserType import UserType
-from utils.BaseService import BaseService
+from src.utils.Base.BaseService import BaseService
 
 from utils.service_utils import generate_random_code, set_existing_data
 
