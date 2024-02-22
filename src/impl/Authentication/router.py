@@ -10,60 +10,51 @@ from src.error.AuthenticationException import AuthenticationException
 from src.utils.Token.model import BaseToken
 from utils.auth_bearer import JWTBearer
 
-from src.impl.Authentication import service as auth_service
+from src.impl.Authentication.service import AuthenticationService
 
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
 )
 
-# from services.mail import send_registration_confirmation_email, send_password_reset_email
-
-# @router.post("/test")
-# def test(id: int, db: Session = Depends(get_db)):
-#     user = db.query(ModelUser).filter(ModelUser.id == id).first()
-#     send_registration_confirmation_email(user)
-#     send_password_reset_email(user)
+auth_service = AuthenticationService()
 
 
 @router.get("/login")
-def login(credentials: HTTPBasicCredentials = Depends(sec),
-          db: Session = Depends(get_db)):
+def login(credentials: HTTPBasicCredentials = Depends(sec)):
     username = credentials.username
     password = credentials.password
-    return auth_service.login(username, password, db)
+    return auth_service.login(username, password)
 
 
 @router.post("/reset-password")
-def reset_password(email: str, db: Session = Depends(get_db)):
-    return auth_service.reset_password(email, db)
+def reset_password(email: str):
+    return auth_service.reset_password(email)
 
 
 @router.post("/confirm-reset-password")
-def confirm_reset_password(token: str,
-                           password: str,
-                           db: Session = Depends(get_db)):
-    return auth_service.confirm_reset_password(token, password, db)
+def confirm_reset_password(token: str, password: str):
+    return auth_service.confirm_reset_password(token, password)
 
 
 @router.post("/refresh-token")
-def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
-    return auth_service.refresh_token(refresh_token, db)
+def refresh_token(refresh_token: BaseToken = Depends(JWTBearer())):
+    return auth_service.refresh_token(refresh_token)
 
 
 @router.get("/me")
-def me(db: Session = Depends(get_db), token: BaseToken = Depends(JWTBearer())):
-    return auth_service.get_me(get_data_from_token(token), db)
+def me(token: BaseToken = Depends(JWTBearer())):
+    return auth_service.get_me(token)
 
 
 @router.post("/verify")
-def verify(token: str, db: Session = Depends(get_db)):
-    return auth_service.verify_user(token, db)
+def verify(token: BaseToken):
+    return auth_service.verify_user(token)
 
 
 @router.post("/resend-verification")
-def resend_verification(email: str, db: Session = Depends(get_db)):
-    return auth_service.resend_verification(email, db)
+def resend_verification(email: str):
+    return auth_service.resend_verification(email)
 
 
 @router.get("/check_token")
