@@ -1,6 +1,6 @@
 from database import get_db
 from src.utils.Token.model import BaseToken
-from utils.auth_bearer import JWTBearer
+from src.utils.JWTBearer import JWTBearer
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter

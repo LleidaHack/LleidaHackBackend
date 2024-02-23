@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 
-from utils.service_utils import subtract_lists
+from src.utils.service_utils import subtract_lists
 from src.utils.Token.model import BaseToken
-from utils.auth_bearer import JWTBearer
+from src.utils.JWTBearer import JWTBearer
 from security import get_data_from_token
 from database import get_db
 from config import Configuration

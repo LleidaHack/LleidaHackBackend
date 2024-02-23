@@ -7,7 +7,7 @@ from src.utils import TokenData
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
-from utils.service_utils import set_existing_data, check_image, generate_user_code, check_user
+from src.utils.service_utils import set_existing_data, check_image, generate_user_code, check_user
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -38,9 +38,9 @@ class CompanyUserService(BaseService):
         return parse_obj_as(CompanyUserGetSchema, user)
 
     def add_company_user(self, payload: CompanyUserCreateSchema):
-        check_user(self.db, payload.email, payload.nickname, payload.telephone)
+        check_user(payload.email, payload.nickname, payload.telephone)
         new_company_user = ModelCompanyUser(**payload.dict(),
-                                            code=generate_user_code(db))
+                                            code=generate_user_code())
         new_company_user.password = get_password_hash(payload.password)
         if payload.image is not None:
             payload = check_image(payload)

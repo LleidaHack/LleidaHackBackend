@@ -4,13 +4,13 @@ from pydantic import parse_obj_as
 from security import get_password_hash
 from src.utils.Base.BaseService import BaseService
 
-from utils.service_utils import set_existing_data, check_image, generate_user_code
+from src.utils.service_utils import set_existing_data, check_image, generate_user_code
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
 
-from utils.service_utils import check_user
+from src.utils.service_utils import check_user
 from src.utils.TokenData import TokenData
 from src.utils.UserType import UserType
 
@@ -59,9 +59,9 @@ class HackerService(BaseService):
         return user
 
     def add_hacker(self, payload: HackerCreateSchema):
-        check_user(self.db, payload.email, payload.nickname, payload.telephone)
+        check_user(payload.email, payload.nickname, payload.telephone)
         new_hacker = ModelHacker(**payload.dict(),
-                                 code=generate_user_code(self.db))
+                                 code=generate_user_code())
         if payload.image is not None:
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)

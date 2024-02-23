@@ -10,7 +10,7 @@ from src.impl.Meal.schema import MealGetAll as MealGetAllSchema
 
 from src.utils.Base.BaseService import BaseService
 
-from utils.service_utils import set_existing_data
+from src.utils.service_utils import set_existing_data
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException

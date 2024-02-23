@@ -5,7 +5,7 @@ from typing import List, Union
 
 from security import get_data_from_token
 from src.utils.Token.model import BaseToken
-from utils.auth_bearer import JWTBearer
+from src.utils.JWTBearer import JWTBearer
 
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Event.schema import EventGetAll as EventGetAllSchema

@@ -5,7 +5,7 @@ from src.utils.TokenData import TokenData
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
-from utils.service_utils import set_existing_data, check_image
+from src.utils.service_utils import set_existing_data, check_image
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException

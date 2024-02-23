@@ -6,8 +6,7 @@ from src.utils import TokenData
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
-from utils.service_utils import set_existing_data, check_image, generate_user_code
-from utils.service_utils import check_user
+from src.utils.service_utils import set_existing_data, check_image, generate_user_code, check_user
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -37,11 +36,11 @@ class LleidaHackerService(BaseService):
         return parse_obj_as(LleidaHackerGetSchema, user)
 
     def add_lleidahacker(self, payload: LleidaHackerCreateSchema):
-        check_user(db, payload.email, payload.nickname, payload.telephone)
+        check_user(payload.email, payload.nickname, payload.telephone)
         if payload.image is not None:
             payload = check_image(payload)
         new_lleidahacker = ModelLleidaHacker(**payload.dict(),
-                                             code=generate_user_code(self.db))
+                                             code=generate_user_code())
         new_lleidahacker.password = get_password_hash(payload.password)
         self.db.add(new_lleidahacker)
         self.db.commit()

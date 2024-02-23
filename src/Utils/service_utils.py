@@ -2,28 +2,19 @@ import string
 import random
 import base64
 
+from src.impl.User.service import UserService
+
 from src.error.ValidationException import ValidationException
-from src.impl.User.model import User
+
+user_service = UserService()
 
 
-def get_user_by_mail(db, email):
-    return db.query(User).filter(User.email == email).first()
-
-
-def get_user_by_nickname(db, nickname):
-    return db.query(User).filter(User.nickname == nickname).first()
-
-
-def get_user_by_telephone(db, telephone):
-    return db.query(User).filter(User.telephone == telephone).first()
-
-
-def check_user(db, email, nickname, telephone):
-    if get_user_by_mail(db, email) is not None:
+def check_user(email, nickname, telephone):
+    if user_service.get_user_by_email(email) is not None:
         raise ValidationException("Email already exists")
-    if get_user_by_nickname(db, nickname) is not None:
+    if user_service.get_user_by_nickname(nickname) is not None:
         raise ValidationException("Nickname already exists")
-    if get_user_by_telephone(db, telephone) is not None:
+    if user_service.get_user_by_phone(telephone) is not None:
         raise ValidationException("Telephone already exists")
 
 
@@ -62,9 +53,9 @@ def check_image(payload):
     return payload
 
 
-def generate_user_code(db, length=20):
+def generate_user_code(length=20):
     code = generate_random_code(length)
-    while db.query(User).filter(User.code == code).first() is not None:
+    while user_service.get_user_by_code(code) is not None:
         code = generate_random_code(length)
     return code
 

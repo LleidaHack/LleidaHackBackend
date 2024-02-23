@@ -9,7 +9,7 @@ from security import get_data_from_token
 from src.utils.UserType import UserType
 from src.utils.TokenData import TokenData
 from utils.Token.model import AssistenceToken
-from utils.service_utils import isBase64, subtract_lists
+from src.utils.service_utils import isBase64, subtract_lists
 
 from src.impl.Event.model import Event as ModelEvent
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration

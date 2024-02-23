@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
-from utils.service_utils import generate_random_code, set_existing_data
+from src.utils.service_utils import generate_random_code, set_existing_data
 
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser

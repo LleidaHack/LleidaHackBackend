@@ -11,7 +11,7 @@ from src.impl.User.schema import UserGetAll as UserGetAllSchema
 from src.utils.Base.BaseService import BaseService
 from utils.Token.model import BaseToken
 
-from utils.service_utils import check_image
+from src.utils.service_utils import check_image
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 

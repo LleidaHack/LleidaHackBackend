@@ -6,7 +6,7 @@ from src.error.AuthenticationException import AuthenticationException
 from security import get_data_from_token
 import src.impl.MailQueue.service as mail_queue_service
 from src.utils.Token.model import BaseToken
-from utils.auth_bearer import JWTBearer
+from src.utils.JWTBearer import JWTBearer
 
 from src.impl.User.schema import UserGet as SchemaUser
 

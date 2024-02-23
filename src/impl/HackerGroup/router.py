@@ -2,7 +2,7 @@ from typing import List, Union
 from fastapi import Depends, APIRouter
 from security import get_data_from_token
 from src.utils.Token.model import BaseToken
-from utils.auth_bearer import JWTBearer
+from src.utils.JWTBearer import JWTBearer
 
 from src.impl.HackerGroup.service import HackerGroupService
 
