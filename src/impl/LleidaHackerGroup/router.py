@@ -25,27 +25,34 @@ def get_lleidahacker_groups(str=Depends(JWTBearer())):
 
 
 @router.get("/{groupId}",
-            response_model=Union[LleidaHackerGroupGetAllSchema, LleidaHackerGroupGetSchema])
-def get_lleidahacker_group(groupId: int, token: BaseToken = Depends(JWTBearer())):
+            response_model=Union[LleidaHackerGroupGetAllSchema,
+                                 LleidaHackerGroupGetSchema])
+def get_lleidahacker_group(groupId: int,
+                           token: BaseToken = Depends(JWTBearer())):
     return lleidahackergroup_service.get_lleidahackergroup(groupId, token)
 
 
 @router.post("/")
 def add_lleidahacker_group(payload: LleidaHackerGroupCreateSchema,
                            token: BaseToken = Depends(JWTBearer())):
-    new_lleidahacker_group = lleidahackergroup_service.add_lleidahackergroup(payload, token)
+    new_lleidahacker_group = lleidahackergroup_service.add_lleidahackergroup(
+        payload, token)
     return {"success": True, "user_id": new_lleidahacker_group.id}
 
 
 @router.delete("/{groupId}")
-def delete_lleidahacker_group(groupId: int, token: BaseToken = Depends(JWTBearer())):
-    lleidahacker_group = lleidahackergroup_service.delete_lleidahackergroup(groupId, token)
+def delete_lleidahacker_group(groupId: int,
+                              token: BaseToken = Depends(JWTBearer())):
+    lleidahacker_group = lleidahackergroup_service.delete_lleidahackergroup(
+        groupId, token)
     return {"success": True, "deleted_id": lleidahacker_group.id}
 
 
 @router.get("/{groupId}/members", response_model=List[LleidaHackerGetSchema])
-def get_lleidahacker_group_members(groupId: int, token: BaseToken = Depends(JWTBearer())):
-    lleidahacker_group = lleidahackergroup_service.get_lleidahackergroup(groupId, token)
+def get_lleidahacker_group_members(groupId: int,
+                                   token: BaseToken = Depends(JWTBearer())):
+    lleidahacker_group = lleidahackergroup_service.get_lleidahackergroup(
+        groupId, token)
     return lleidahacker_group.members
 
 

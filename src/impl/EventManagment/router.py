@@ -362,7 +362,8 @@ def get_sizes(event_id: int, db: Session = Depends(get_db)):
     return eventmanagment_service.get_sizes(event, db)
 
 
-@router.get("/{event_id}/get_unregistered_hackers", response_model=List[HackerGetSchema])
+@router.get("/{event_id}/get_unregistered_hackers",
+            response_model=List[HackerGetSchema])
 def get_unregistered_hackers(event_id: int,
                              db: Session = Depends(get_db),
                              token: BaseToken = Depends(JWTBearer())):

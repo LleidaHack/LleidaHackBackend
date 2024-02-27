@@ -196,10 +196,12 @@ def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 def confirm_assistance(token: AssistenceToken, db: Session):
     # data = get_data_from_token(token, special=True)
     # if data.expt < datetime.utcnow().isoformat():
-    user = db.query(ModelHacker).filter(ModelHacker.id == token.user_id).first()
+    user = db.query(ModelHacker).filter(
+        ModelHacker.id == token.user_id).first()
     if user is None:
         raise InvalidDataException("User not found")
-    event = db.query(ModelEvent).filter(ModelEvent.id == token.event_id).first()
+    event = db.query(ModelEvent).filter(
+        ModelEvent.id == token.event_id).first()
     if event is None:
         raise InvalidDataException("Event not found")
     user_registration = db.query(ModelHackerRegistration).filter(

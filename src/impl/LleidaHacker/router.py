@@ -43,7 +43,8 @@ def get_lleidahacker(str=Depends(JWTBearer())):
 
 
 @router.get("/{userId}",
-            response_model=Union[LleidaHackerGetAllSchema, LleidaHackerGetSchema])
+            response_model=Union[LleidaHackerGetAllSchema,
+                                 LleidaHackerGetSchema])
 def get_lleidahacker(userId: int, data: BaseToken = Depends(JWTBearer())):
     return lleidahacker_service.get_lleidahacker(userId, data)
 
@@ -73,29 +74,25 @@ def update_lleidahacker(userId: int,
 
 @router.post("/{userId}/accept")
 def accept_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
-    lleidahacker = lleidahacker_service.accept_lleidahacker(
-        userId, token)
+    lleidahacker = lleidahacker_service.accept_lleidahacker(userId, token)
     return {"success": True, "updated_id": userId}
 
 
 @router.post("/{userId}/reject")
 def reject_lleidahacker(userId: int, token: BaseToken = Depends(JWTBearer())):
-    lleidahacker = lleidahacker_service.reject_lleidahacker(
-        userId, token)
+    lleidahacker = lleidahacker_service.reject_lleidahacker(userId, token)
     return {"success": True, "updated_id": userId}
 
 
 @router.post("/{userId}/activate")
 def activate_lleidahacker(userId: int,
                           token: BaseToken = Depends(JWTBearer())):
-    lleidahacker = lleidahacker_service.activate_lleidahacker(
-        userId, token)
+    lleidahacker = lleidahacker_service.activate_lleidahacker(userId, token)
     return {"success": True, "updated_id": userId}
 
 
 @router.post("/{userId}/deactivate")
 def deactivate_lleidahacker(userId: int,
                             token: BaseToken = Depends(JWTBearer())):
-    lleidahacker = lleidahacker_service.deactivate_lleidahacker(
-        userId, token)
+    lleidahacker = lleidahacker_service.deactivate_lleidahacker(userId, token)
     return {"success": True, "updated_id": userId}

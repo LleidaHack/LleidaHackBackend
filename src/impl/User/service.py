@@ -124,7 +124,6 @@ class UserService(BaseService):
     #     self.db.refresh(user)
     #     return user
 
-
     def set_token(self, token):
         user = self.get_user_by_id(token.user_id)
         token.user_set(user)

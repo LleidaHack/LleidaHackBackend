@@ -40,7 +40,8 @@ def get_company_users(token: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{companyUserId}",
-            response_model=Union[CompanyUserGetAllSchema, CompanyUserGetSchema])
+            response_model=Union[CompanyUserGetAllSchema,
+                                 CompanyUserGetSchema])
 def get_company_user(companyUserId: int,
                      token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_company_user(companyUserId, token)

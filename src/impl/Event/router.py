@@ -53,7 +53,7 @@ def create_event(event: EventCreateSchema,
 def update_event(id: int,
                  event: EventUpdateSchema,
                  token: BaseToken = Depends(JWTBearer())):
-    new_event, updated = event_service.update_event(id, event,token)
+    new_event, updated = event_service.update_event(id, event, token)
     return {'success': True, 'event_id': new_event.id, 'updated': updated}
 
 

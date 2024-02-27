@@ -21,11 +21,13 @@ class JWTBearer(HTTPBearer):
         if credentials:
             if not credentials.credentials == SERVICE_TOKEN:
                 if not credentials.scheme.lower() == "bearer":
-                    raise HTTPException(status_code=403,
-                                        detail="Invalid authentication scheme.")
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Invalid authentication scheme.")
                 if not self.verify_jwt(credentials.credentials):
-                    raise HTTPException(status_code=403,
-                                        detail="Invalid token or expired token.")
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Invalid token or expired token.")
             return BaseToken.get_data(credentials.credentials)
         else:
             raise HTTPException(status_code=403,

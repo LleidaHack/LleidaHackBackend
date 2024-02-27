@@ -14,7 +14,6 @@ from src.utils.service_utils import check_user
 from src.utils.UserType import UserType
 from src.utils.Token import BaseToken
 
-
 from src.impl.Hacker.model import Hacker as ModelHacker
 from src.impl.User.model import User as ModelUser
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
@@ -28,8 +27,9 @@ from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 
-
 from sqlalchemy.orm import with_polymorphic
+
+
 class HackerService(BaseService):
 
     def get_all(self):

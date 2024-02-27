@@ -41,13 +41,11 @@ def get_password_hash(password):
 # def is_service_token(token: str):
 #     return token == SERVICE_TOKEN
 
-
 # def get_user(user_id: int, db: Session):
 #     user = db.query(ModelUser).filter(ModelUser.id == user_id).first()
 #     if not user:
 #         raise NotFoundException("User not found")
 #     return user
-
 
 # def verify_token(token: str, db: Session):
 #     # token = req.headers["Authorization"]
@@ -63,7 +61,6 @@ def get_password_hash(password):
 #     if parser.parse(dict["expt"]) < datetime.utcnow():
 #         raise HTTPException(status_code=401, detail="Token expired")
 #     return True
-
 
 # def update_tokens(user_id: int,
 #                   db: Session,
@@ -83,7 +80,6 @@ def get_password_hash(password):
 #     db.commit()
 #     db.refresh(user)
 
-
 # def create_access_token(user: ModelUser,
 #                         db: Session,
 #                         expires_delta: timedelta = None):
@@ -92,7 +88,6 @@ def get_password_hash(password):
 #     update_tokens(user.id, db, access_token=encoded_jwt)
 #     return encoded_jwt
 
-
 # def create_refresh_token(user: ModelUser,
 #                          db: Session,
 #                          expires_delta: timedelta = None):
@@ -100,19 +95,15 @@ def get_password_hash(password):
 #     update_tokens(user.id, db, refresh_token=encoded_jwt)
 #     return encoded_jwt
 
-
 # def create_verification_token(user: ModelUser, db: Session):
 #     encoded_jwt = VerificationToken(user).to_token()
 #     update_tokens(user.id, db, verification_token=encoded_jwt)
 #     return encoded_jwt
 
-
 # def create_reset_password_token(user: ModelUser, db: Session):
 #     encoded_jwt = ResetPassToken(user).to_token()
 #     update_tokens(user.id, db, reset_pass_token=encoded_jwt)
 
-
 # def generate_assistance_token(user_id: int, event_id: int, db: Session):
 #     encoded_jwt = AssistenceToken(user, event_id).to_token()
 #     return encoded_jwt
-
