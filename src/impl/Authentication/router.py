@@ -4,10 +4,10 @@ from fastapi import Depends
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.orm import Session
 
-from security import get_data_from_token, sec
+from security import sec
 from database import get_db
 from src.error.AuthenticationException import AuthenticationException
-from src.utils.Token.model import BaseToken
+from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer
 
 from src.impl.Authentication.service import AuthenticationService
@@ -48,20 +48,20 @@ def me(token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/verify")
-def verify(token: BaseToken):
-    return auth_service.verify_user(token)
+def verify(token: str):
+    return auth_service.verify_user(BaseToken.get_data(token))
 
 
-@router.post("/resend-verification")
+# @router.post("/resend-verification")
 def resend_verification(email: str):
     return auth_service.resend_verification(email)
 
 
-@router.get("/check_token")
+# @router.get("/check_token")
 def check_token(token: BaseToken = Depends(JWTBearer())):
     return {"success": True}
 
 
-@router.get("/contact")
+# @router.get("/contact")
 def contact(name: str, title: str, email: str, message: str):
     return auth_service.contact(name, title, email, message)

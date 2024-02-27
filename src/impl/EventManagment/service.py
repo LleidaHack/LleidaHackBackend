@@ -5,11 +5,10 @@ from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
 
-from security import get_data_from_token
 from src.utils.UserType import UserType
-from src.utils.TokenData import TokenData
-from utils.Token.model import AssistenceToken
+from src.utils.Token import AssistenceToken
 from src.utils.service_utils import isBase64, subtract_lists
+from src.utils.Token import BaseToken
 
 from src.impl.Event.model import Event as ModelEvent
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
@@ -26,7 +25,7 @@ from services.mail import send_event_accepted_email
 
 
 def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
-                  data: TokenData):
+                  data: BaseToken):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -48,7 +47,7 @@ def add_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
 # A PARTIR D'ARA EL SENYOR LOLO A.K.A LUFI ES DIRA LO-FI
 
 
-def get_dailyhack(eventId: int, hackerId: int, db: Session, data: TokenData):
+def get_dailyhack(eventId: int, hackerId: int, db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -63,7 +62,7 @@ def get_dailyhack(eventId: int, hackerId: int, db: Session, data: TokenData):
 
 
 def update_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
-                     data: TokenData):
+                     data: BaseToken):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -81,7 +80,7 @@ def update_dailyhack(eventId: int, hackerId: int, url: str, db: Session,
 
 
 def delete_dailyhack(eventId: int, hackerId: int, db: Session,
-                     data: TokenData):
+                     data: BaseToken):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -98,7 +97,7 @@ def delete_dailyhack(eventId: int, hackerId: int, db: Session,
     return hacker_registration
 
 
-def get_dailyhacks(eventId: int, db: Session, data: TokenData):
+def get_dailyhacks(eventId: int, db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -123,7 +122,7 @@ def get_dailyhacks(eventId: int, db: Session, data: TokenData):
 
 def register_hacker_to_event(payload: EventRegistrationSchema,
                              event: ModelEvent, hacker: ModelHacker,
-                             db: Session, data: TokenData):
+                             db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -172,7 +171,7 @@ def register_hacker_to_event(payload: EventRegistrationSchema,
 
 
 def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                                 db: Session, data: TokenData):
+                                 db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
                                     (data.type == UserType.HACKER.value
@@ -194,18 +193,18 @@ def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     return event
 
 
-def confirm_assistance(token: str, db: Session):
-    data = get_data_from_token(token, special=True)
+def confirm_assistance(token: AssistenceToken, db: Session):
+    # data = get_data_from_token(token, special=True)
     # if data.expt < datetime.utcnow().isoformat():
-    user = db.query(ModelHacker).filter(ModelHacker.id == data.user_id).first()
+    user = db.query(ModelHacker).filter(ModelHacker.id == token.user_id).first()
     if user is None:
         raise InvalidDataException("User not found")
-    event = db.query(ModelEvent).filter(ModelEvent.id == data.event_id).first()
+    event = db.query(ModelEvent).filter(ModelEvent.id == token.event_id).first()
     if event is None:
         raise InvalidDataException("Event not found")
     user_registration = db.query(ModelHackerRegistration).filter(
-        ModelHackerRegistration.user_id == data.user_id,
-        ModelHackerRegistration.event_id == data.event_id).first()
+        ModelHackerRegistration.user_id == token.user_id,
+        ModelHackerRegistration.event_id == token.event_id).first()
     if user_registration is None:
         raise InvalidDataException("User not registered")
     if user_registration.confirm_assistance_token != token:
@@ -221,7 +220,7 @@ def confirm_assistance(token: str, db: Session):
 
 
 def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
-                                db: Session, data: TokenData):
+                                db: Session, data: BaseToken):
     message = ''
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
@@ -247,7 +246,7 @@ def participate_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
 
 
 def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                                    db: Session, data: TokenData):
+                                    db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -261,7 +260,7 @@ def unparticipate_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 
 
 def unaccept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
-                             db: Session, data: TokenData):
+                             db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -275,7 +274,7 @@ def unaccept_hacker_to_event(event: ModelEvent, hacker: ModelHacker,
 
 
 def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker, db: Session,
-                           data: TokenData):
+                           data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -299,7 +298,7 @@ def accept_hacker_to_event(event: ModelEvent, hacker: ModelHacker, db: Session,
 
 
 def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
-                          db: Session, data: TokenData):
+                          db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -314,7 +313,7 @@ def accept_group_to_event(event: ModelEvent, group: ModelHackerGroup,
 
 
 def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
-                            db: Session, data: TokenData):
+                            db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -325,7 +324,7 @@ def reject_group_from_event(event: ModelEvent, group: ModelHackerGroup,
 
 
 def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                             db: Session, data: TokenData):
+                             db: Session, data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -341,7 +340,7 @@ def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
 
 
 def get_pending_hackers_gruped(event: ModelEvent, db: Session,
-                               data: TokenData):
+                               data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -399,7 +398,7 @@ def get_pending_hackers_gruped(event: ModelEvent, db: Session,
     return {"groups": output_data, "nogroup": nogroup_data}
 
 
-# def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: TokenData):
+# def get_pending_hackers_gruped(event: ModelEvent, db: Session, data: BaseToken):
 #     if not data.is_admin:
 #         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
 #             raise AuthenticationException("Not authorized")
@@ -449,7 +448,7 @@ def get_food_restrictions(event: ModelEvent, db: Session):
 
 
 def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker, db: Session,
-        data: TokenData):
+        data: BaseToken):
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -487,10 +486,7 @@ def get_accepted_and_confirmed(event: ModelEvent, db: Session):
 
 def get_hackers_unregistered(event: ModelEvent, db: Session):
     hackers = db.query(ModelHacker).all()
-    out = subtract_lists(hackers, event.registered_hackers)
-    for u in out:
-        hacker_show_private(u)
-    return out
+    return subtract_lists(hackers, event.registered_hackers)
 
 
 def count_hackers_unregistered(event: ModelEvent, db: Session):

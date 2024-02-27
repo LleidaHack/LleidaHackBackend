@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List, Union
 
-from security import get_data_from_token
-from src.utils.Token.model import BaseToken
+from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer
 
 from src.impl.Event.schema import EventGet as EventGetSchema
@@ -38,15 +37,15 @@ def get_events(token: BaseToken = Depends(JWTBearer())):
     return event_service.get_all()
 
 
-@router.get("/{id}", response_model=Union[EventGetSchema, EventGetAllSchema])
+@router.get("/{id}", response_model=Union[EventGetAllSchema, EventGetSchema])
 def get_event(id: int, token: BaseToken = Depends(JWTBearer())):
-    return event_service.get_event(id, get_data_from_token(token))
+    return event_service.get_event(id, token)
 
 
 @router.post("/")
 def create_event(event: EventCreateSchema,
                  token: BaseToken = Depends(JWTBearer())):
-    new_event = event_service.add_event(event, get_data_from_token(token))
+    new_event = event_service.add_event(event, token)
     return {'success': True, 'event_id': new_event.id}
 
 
@@ -54,14 +53,13 @@ def create_event(event: EventCreateSchema,
 def update_event(id: int,
                  event: EventUpdateSchema,
                  token: BaseToken = Depends(JWTBearer())):
-    new_event, updated = event_service.update_event(id, event,
-                                                    get_data_from_token(token))
+    new_event, updated = event_service.update_event(id, event,token)
     return {'success': True, 'event_id': new_event.id, 'updated': updated}
 
 
 @router.delete("/{id}")
 def delete_event(id: int, token: BaseToken = Depends(JWTBearer())):
-    event = event_service.delete_event(id, get_data_from_token(token))
+    event = event_service.delete_event(id, token)
     return {'success': True, 'event_id': event.id}
 
 
@@ -69,25 +67,24 @@ def delete_event(id: int, token: BaseToken = Depends(JWTBearer())):
 def is_registered(id: int,
                   hacker_id: int,
                   token: BaseToken = Depends(JWTBearer())):
-    return event_service.is_registered(id, hacker_id,
-                                       get_data_from_token(token))
+    return event_service.is_registered(id, hacker_id, token)
 
 
 @router.get("/{id}/is_accepted/{hacker_id}")
 def is_accepted(id: int,
                 hacker_id: int,
                 token: BaseToken = Depends(JWTBearer())):
-    return event_service.is_accepted(id, hacker_id, get_data_from_token(token))
+    return event_service.is_accepted(id, hacker_id, token)
 
 
 @router.get("/{id}/meals", response_model=List[MealGetSchema])
 def get_event_meals(id: int, token: BaseToken = Depends(JWTBearer())):
-    return event_service.get_event_meals(id, get_data_from_token(token))
+    return event_service.get_event_meals(id, token)
 
 
 @router.get("/{id}/participants", response_model=List[HackerGetSchema])
 def get_event_participants(id: int, token: BaseToken = Depends(JWTBearer())):
-    return event_service.get_event_participants(id, get_data_from_token(token))
+    return event_service.get_event_participants(id, token)
 
 
 @router.get("/{id}/sponsors", response_model=List[CompanyGetSchema])
@@ -97,7 +94,7 @@ def get_event_sponsors(id: int):
 
 @router.get("/{id}/groups", response_model=List[HackerGroupGetSchema])
 def get_event_groups(id: int, token: BaseToken = Depends(JWTBearer())):
-    event = event_service.get_event_groups(id, get_data_from_token(token))
+    event = event_service.get_event_groups(id, token)
     return {'success': True, 'groups': event}
 
 
@@ -105,8 +102,7 @@ def get_event_groups(id: int, token: BaseToken = Depends(JWTBearer())):
 def add_event_group(id: int,
                     group_id: int,
                     token: BaseToken = Depends(JWTBearer())):
-    event = event_service.add_hacker_group(id, group_id,
-                                           get_data_from_token(token))
+    event = event_service.add_hacker_group(id, group_id, token)
     return {'success': True, 'event_id': event.id}
 
 
@@ -114,8 +110,7 @@ def add_event_group(id: int,
 def remove_event_group(id: int,
                        group_id: int,
                        token: BaseToken = Depends(JWTBearer())):
-    event = event_service.remove_hacker_group(id, group_id,
-                                              get_data_from_token(token))
+    event = event_service.remove_hacker_group(id, group_id, token)
     return {'success': True, 'event_id': event.id}
 
 
@@ -142,8 +137,7 @@ def remove_event_group(id: int,
 def add_event_sponsor(id: int,
                       company_id: int,
                       token: BaseToken = Depends(JWTBearer())):
-    event = event_service.add_company(id, company_id,
-                                      get_data_from_token(token))
+    event = event_service.add_company(id, company_id, token)
     return {'success': True, 'event_id': event.id}
 
 
@@ -151,8 +145,7 @@ def add_event_sponsor(id: int,
 def remove_event_sponsor(id: int,
                          company_id: int,
                          token: BaseToken = Depends(JWTBearer())):
-    event = event_service.remove_company(id, company_id,
-                                         get_data_from_token(token))
+    event = event_service.remove_company(id, company_id, token)
     return {'success': True, 'event_id': event.id}
 
 
@@ -169,12 +162,10 @@ def remove_event_sponsor(id: int,
             response_model=List[HackerGetSchema])
 def get_accepted_hackers(eventId: int,
                          token: BaseToken = Depends(JWTBearer())):
-    return event_service.get_accepted_hackers(eventId,
-                                              get_data_from_token(token))
+    return event_service.get_accepted_hackers(eventId, token)
 
 
 @router.get("/{eventId}/get_approved_hackers_mails")
 def get_accepted_hackers_mails(eventId: int,
                                token: BaseToken = Depends(JWTBearer())):
-    return event_service.get_accepted_hackers_mails(eventId,
-                                                    get_data_from_token(token))
+    return event_service.get_accepted_hackers_mails(eventId, token)

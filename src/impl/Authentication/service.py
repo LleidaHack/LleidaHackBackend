@@ -3,12 +3,11 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from database import get_db
-from security import create_all_tokens, get_data_from_token, get_password_hash, verify_password
-from src.utils.TokenData import TokenData
+from security import get_password_hash, verify_password
 from src.utils.UserType import UserType
-from utils.Base.BaseService import BaseService
+from src.utils.Base.BaseService import BaseService
 
-from impl.User.service import UserService
+from src.impl.User.service import UserService
 from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
 
 from src.error.InputException import InputException
@@ -19,7 +18,7 @@ from src.impl.User.model import User as ModelUser
 from src.impl.Hacker.model import Hacker as ModelHacker
 from src.impl.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
 from src.impl.CompanyUser.model import CompanyUser as ModelCompanyUser
-from src.utils.Token.model import AccesToken, RefreshToken, ResetPassToken, VerificationToken
+from src.utils.Token import AccesToken, RefreshToken, ResetPassToken, VerificationToken
 
 
 class AuthenticationService(BaseService):
@@ -107,8 +106,8 @@ class AuthenticationService(BaseService):
         user = self.user_service.get_user_by_email(email)
         if user.is_verified:
             raise InvalidDataException("User already verified")
-        # create_all_tokens(user, db, verification=True)
-        self.create_access_and_refresh_token(user)
+        AccesToken(user).save_to_user()
+        RefreshToken(user).save_to_user()
         VerificationToken(user).save_to_user()
         send_registration_confirmation_email(user)
         return {"success": True}

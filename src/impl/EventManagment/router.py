@@ -1,4 +1,5 @@
 import time
+from typing import List
 from fastapi import BackgroundTasks, Depends, Response, APIRouter
 from sqlalchemy.orm import Session
 
@@ -6,26 +7,32 @@ from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 
 from src.utils.service_utils import subtract_lists
-from src.utils.Token.model import BaseToken
+from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer
 from security import get_data_from_token
 from database import get_db
-from config import Configuration
+from src.utils.Configuration import Configuration
 
 from src.impl.Event.schema import HackerEventRegistration as EventRegistrationSchema
 from src.impl.Event.schema import HackerEventRegistrationUpdate as EventRegistrationUpdateSchema
 
-import src.impl.Event.service as event_service
-import src.impl.Hacker.service as hacker_service
-import src.impl.HackerGroup.service as hackergroup_service
+from src.impl.Event.service import EventService
+from src.impl.Hacker.service import HackerService
+from src.impl.HackerGroup.service import HackerGroupService
 import src.impl.EventManagment.service as eventmanagment_service
-import src.impl.Hacker.service as hacker_service
+from src.impl.Hacker.service import HackerService
 import services.mail as mail_service
+
+from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 
 router = APIRouter(
     prefix="/eventmanagment",
     tags=["EventManagment"],
 )
+
+hacker_service = HackerService()
+event_service = EventService()
+hacker_group_service = HackerGroupService()
 
 
 @router.put("/{event_id}/register/{hacker_id}")
@@ -355,7 +362,7 @@ def get_sizes(event_id: int, db: Session = Depends(get_db)):
     return eventmanagment_service.get_sizes(event, db)
 
 
-@router.get("/{event_id}/get_unregistered_hackers")
+@router.get("/{event_id}/get_unregistered_hackers", response_model=List[HackerGetSchema])
 def get_unregistered_hackers(event_id: int,
                              db: Session = Depends(get_db),
                              token: BaseToken = Depends(JWTBearer())):

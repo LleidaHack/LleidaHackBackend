@@ -1,4 +1,3 @@
-from src.utils.TokenData import TokenData
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
@@ -12,6 +11,7 @@ from src.impl.Company.model import Company as ModelCompany
 
 from src.impl.Company.schema import CompanyCreate as CompanyCreateSchema
 from src.impl.Company.schema import CompanyUpdate as CompanyUpdateSchema
+from src.utils.Token import BaseToken
 
 
 class CompanyService(BaseService):
@@ -23,7 +23,7 @@ class CompanyService(BaseService):
         return self.db.query(ModelCompany).filter(
             ModelCompany.id == companyId).first()
 
-    def add_company(self, payload: CompanyCreateSchema, data: TokenData):
+    def add_company(self, payload: CompanyCreateSchema, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -41,7 +41,7 @@ class CompanyService(BaseService):
         return new_company
 
     def update_company(self, companyId: int, payload: CompanyUpdateSchema,
-                       data: TokenData):
+                       data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.user_type == UserType.COMPANYUSER.value
@@ -64,7 +64,7 @@ class CompanyService(BaseService):
         self.db.refresh(company)
         return company, updated
 
-    def delete_company(self, companyId: int, data: TokenData):
+    def delete_company(self, companyId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.user_type == UserType.LLEIDAHACKER.value
@@ -83,14 +83,14 @@ class CompanyService(BaseService):
         self.db.commit()
         return company
 
-    def get_company_users(self, companyId: int, data: TokenData):
+    def get_company_users(self, companyId: int, data: BaseToken):
         company = self.db.query(ModelCompany).filter(
             ModelCompany.id == companyId).first()
         if company is None:
             raise NotFoundException("Company not found")
         return company.users
 
-    def add_company_user(self, companyId: int, userId: int, data: TokenData):
+    def add_company_user(self, companyId: int, userId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.user_type == UserType.LLEIDAHACKER.value
@@ -115,7 +115,7 @@ class CompanyService(BaseService):
         return company
 
     def delete_company_user(self, companyId: int, userId: int,
-                            data: TokenData):
+                            data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.user_type == UserType.COMPANYUSER.value

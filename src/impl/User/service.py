@@ -1,17 +1,15 @@
+from __future__ import annotations
 from pydantic import parse_obj_as
-from sqlalchemy.orm import Session
-from security import get_password_hash
+# from security import get_password_hash
 
 from src.impl.User.model import User as ModelUser
 from src.utils.UserType import UserType
-from src.utils.TokenData import TokenData
 
 from src.impl.User.schema import UserGet as UserGetSchema
 from src.impl.User.schema import UserGetAll as UserGetAllSchema
 from src.utils.Base.BaseService import BaseService
-from utils.Token.model import BaseToken
 
-from src.utils.service_utils import check_image
+# from src.utils.service_utils import check_image
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 
@@ -24,7 +22,7 @@ class UserService(BaseService):
     def count_users(self):
         return self.db.query(ModelUser).count()
 
-    def get_user(self, userId: int, data: TokenData):
+    def get_user(self, userId: int, data):
         user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
         if user is None:
             raise NotFoundException("User not found")
@@ -40,7 +38,7 @@ class UserService(BaseService):
             raise NotFoundException("User not found")
         return user
 
-    def get_user_by_email(self, email: str, data: TokenData):
+    def get_user_by_email(self, email: str, data):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -55,7 +53,7 @@ class UserService(BaseService):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
-    def get_user_by_nickname(self, nickname: str, data: TokenData):
+    def get_user_by_nickname(self, nickname: str, data):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -70,7 +68,7 @@ class UserService(BaseService):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
-    def get_user_by_phone(self, phone: str, data: TokenData):
+    def get_user_by_phone(self, phone: str, data):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -85,7 +83,7 @@ class UserService(BaseService):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
-    def get_user_by_code(self, code: str, data: TokenData):
+    def get_user_by_code(self, code: str, data):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -126,15 +124,8 @@ class UserService(BaseService):
     #     self.db.refresh(user)
     #     return user
 
-    def set_user_token(self, userId: int, token: str, refresh_token: str):
-        user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
-        user.token = token
-        user.refresh_token = refresh_token
-        self.db.commit()
-        self.db.refresh(user)
-        return user
 
-    def set_token(self, token: BaseToken):
+    def set_token(self, token):
         user = self.get_user_by_id(token.user_id)
         token.user_set(user)
         self.db.commit()

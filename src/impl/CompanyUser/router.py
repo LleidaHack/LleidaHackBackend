@@ -1,9 +1,7 @@
 from typing import List, Union
 from fastapi import Depends, APIRouter
 
-from security import create_all_tokens
-from security import get_data_from_token
-from src.utils.Token.model import BaseToken
+from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
 from src.utils.JWTBearer import JWTBearer
 
 from src.impl.CompanyUser.service import CompanyUserService
@@ -24,8 +22,10 @@ companyuser_service = CompanyUserService()
 @router.post("/signup")
 def signup(payload: CompanyUserCreateSchema):
     new_companyuser = companyuser_service.add_company_user(payload)
-    access_token, refresh_token = create_all_tokens(new_companyuser,
-                                                    companyuser_service.db)
+
+    access_token = AccesToken(new_companyuser).save_to_user()
+    refresh_token = RefreshToken(new_companyuser).save_to_user()
+    VerificationToken(new_companyuser).save_to_user()
     return {
         "success": True,
         "user_id": new_companyuser.id,
@@ -36,16 +36,14 @@ def signup(payload: CompanyUserCreateSchema):
 
 @router.get("/all", response_model=List[CompanyUserGetSchema])
 def get_company_users(token: BaseToken = Depends(JWTBearer())):
-    return companyuser_service.get_companyusers()
+    return companyuser_service.get_all()
 
 
 @router.get("/{companyUserId}",
-            response_model=Union[CompanyUserGetSchema,
-                                 CompanyUserGetAllSchema])
+            response_model=Union[CompanyUserGetAllSchema, CompanyUserGetSchema])
 def get_company_user(companyUserId: int,
                      token: BaseToken = Depends(JWTBearer())):
-    return companyuser_service.get_companyuser(companyUserId,
-                                               get_data_from_token(token))
+    return companyuser_service.get_company_user(companyUserId, token)
 
 
 # @router.post("/")
@@ -62,13 +60,12 @@ def update_company_user(companyUserId: int,
                         payload: CompanyUserUpdateSchema,
                         token: BaseToken = Depends(JWTBearer())):
     companyuser = companyuser_service.update_companyuser(
-        companyUserId, payload, get_data_from_token(token))
+        companyUserId, payload, token)
     return {"success": True, "updated_id": companyuser.id}
 
 
 @router.delete("/{companyUserId}")
 def delete_company_user(companyUserId: int,
                         token: BaseToken = Depends(JWTBearer())):
-    companyuser = companyuser_service.delete_companyuser(
-        companyUserId, get_data_from_token(token))
+    companyuser = companyuser_service.delete_companyuser(companyUserId, token)
     return {"success": True, "deleted_id": companyuser.id}

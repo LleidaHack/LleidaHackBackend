@@ -3,15 +3,15 @@ from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from security import get_password_hash
-from src.utils import TokenData
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
 from src.utils.service_utils import set_existing_data, check_image, generate_user_code, check_user
+from src.utils.Token import BaseToken
+
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
-from src.error.ValidationException import ValidationException
 
 from src.impl.CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
 from src.impl.CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
@@ -25,7 +25,7 @@ class CompanyUserService(BaseService):
     def get_all(self):
         return self.db.query(ModelCompanyUser).all()
 
-    def get_company_user(self, companyUserId: int, data: TokenData):
+    def get_company_user(self, companyUserId: int, data: BaseToken):
         user = self.db.query(ModelCompanyUser).filter(
             ModelCompanyUser.id == companyUserId).first()
         if user is None:
@@ -50,7 +50,7 @@ class CompanyUserService(BaseService):
         return new_company_user
 
     def update_company_user(self, payload: CompanyUserUpdateSchema,
-                            companyUserId: int, data: TokenData):
+                            companyUserId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value or
@@ -73,7 +73,7 @@ class CompanyUserService(BaseService):
         self.db.refresh(company_user)
         return company_user, updated
 
-    def delete_company_user(self, companyUserId: int, data: TokenData):
+    def delete_company_user(self, companyUserId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value or

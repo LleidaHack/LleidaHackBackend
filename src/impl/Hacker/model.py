@@ -25,4 +25,5 @@ class Hacker(User):
 
     __mapper_args__ = {
         "polymorphic_identity": UserType.HACKER.value,
+        'with_polymorphic': '*'
     }

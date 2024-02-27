@@ -4,12 +4,11 @@ from email.mime.text import MIMEText
 from smtplib import SMTP_SSL
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from config import Configuration
+from src.utils.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
 
-from src.utils import TokenData
-from src.impl.User.model import User as ModelUser
 from src.impl.MailQueue.model import MailQueue as ModelMailQueue
+from src.utils.Token import BaseToken
 
 FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')
 BACK_LINK = Configuration.get('OTHERS', 'BACK_URL')
@@ -47,7 +46,7 @@ def set_sent(mail, db: Session):
     db.commit()
 
 
-def get_last(db: Session, data: TokenData):
+def get_last(db: Session, data: BaseToken):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     return db.query(ModelMailQueue).filter(
@@ -55,13 +54,13 @@ def get_last(db: Session, data: TokenData):
             ModelMailQueue.id.asc()).first()
 
 
-def get_by_id(db: Session, id: int, data: TokenData):
+def get_by_id(db: Session, id: int, data: BaseToken):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     return db.query(ModelMailQueue).filter(ModelMailQueue.id == id).first()
 
 
-def count_unsent(db: Session, data: TokenData):
+def count_unsent(db: Session, data: BaseToken):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     unsent_count = db.query(ModelMailQueue).filter(
@@ -69,7 +68,7 @@ def count_unsent(db: Session, data: TokenData):
     return unsent_count
 
 
-def clear_queue(db: Session, data: TokenData):
+def clear_queue(db: Session, data: BaseToken):
     if not data.is_admin:
         raise AuthenticationException("Not authorized")
     db.query(ModelMailQueue).delete()

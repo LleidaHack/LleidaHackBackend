@@ -2,11 +2,12 @@ from datetime import datetime as date
 from pydantic import parse_obj_as
 
 from security import get_password_hash
-from src.utils import TokenData
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
 from src.utils.service_utils import set_existing_data, check_image, generate_user_code, check_user
+from src.utils.Token import BaseToken
+
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -24,7 +25,7 @@ class LleidaHackerService(BaseService):
     def get_all(self):
         return self.db.query(ModelLleidaHacker).all()
 
-    def get_lleidahacker(self, userId: int, data: TokenData):
+    def get_lleidahacker(self, userId: int, data: BaseToken):
         user = self.db.query(ModelLleidaHacker).filter(
             ModelLleidaHacker.id == userId).first()
         if user is None:
@@ -49,7 +50,7 @@ class LleidaHackerService(BaseService):
 
     def update_lleidahacker(self, userId: int,
                             payload: LleidaHackerUpdateSchema,
-                            data: TokenData):
+                            data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -70,7 +71,7 @@ class LleidaHackerService(BaseService):
         self.db.refresh(lleidahacker)
         return lleidahacker, updated
 
-    def delete_lleidahacker(self, userId: int, data: TokenData):
+    def delete_lleidahacker(self, userId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -84,7 +85,7 @@ class LleidaHackerService(BaseService):
         self.db.commit()
         return lleidahacker
 
-    def accept_lleidahacker(self, userId: int, data: TokenData):
+    def accept_lleidahacker(self, userId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -100,7 +101,7 @@ class LleidaHackerService(BaseService):
         self.db.refresh(lleidahacker)
         return lleidahacker
 
-    def reject_lleidahacker(self, userId: int, data: TokenData):
+    def reject_lleidahacker(self, userId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -116,7 +117,7 @@ class LleidaHackerService(BaseService):
         self.db.refresh(lleidahacker)
         return lleidahacker
 
-    def activate_lleidahacker(self, userId: int, data: TokenData):
+    def activate_lleidahacker(self, userId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -130,7 +131,7 @@ class LleidaHackerService(BaseService):
         self.db.refresh(lleidahacker)
         return lleidahacker
 
-    def deactivate_lleidahacker(self, userId: int, data: TokenData):
+    def deactivate_lleidahacker(self, userId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):

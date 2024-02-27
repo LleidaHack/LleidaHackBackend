@@ -1,11 +1,12 @@
+from __future__ import annotations
 import enum
 import jwt
 from dateutil import parser
 from datetime import datetime, timedelta
 
-from config import Configuration
-from error.AuthenticationException import AuthenticationException
-from utils.UserType import UserType
+from src.utils.Configuration import Configuration
+from src.error.AuthenticationException import AuthenticationException
+from src.utils.UserType import UserType
 from src.impl.User.service import UserService
 
 from src.impl.User.model import User as UserModel
@@ -24,44 +25,46 @@ class TokenType(enum.Enum):
     VERIFICATION = 'verification'
     RESET_PASS = 'reset_pass'
 
-
 class BaseToken:
-    user_id: int
-    expt: int
-    type: str
-    email: str
-    user_type: str
+    user_id: int = 0
+    expt: int = 0
+    type: str = ''
+    email: str = ''
+    user_type: str = ''
     is_admin: bool = False
-    is_service: bool = False
-    data = None
+    data:dict = None
 
     user_service = UserService()
-
+    # @classmethod    
+    # def class_method(cls):
+    #     print(f"A class method from {cls.__name__}!")
     def __init__(self, user: UserModel):
-        self.user_id = user.id
-        self.email - user.email
-        # self.type =
         self.expt = (
             datetime.utcnow() +
             timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))).isoformat()
+        if user is None:
+            return 
+        self.user_id = user.id
+        self.email - user.email
+        # self.type =
         self.user_type = user.type
 
     def from_token(self, token: str):
         if BaseToken.is_service(token):
             self.is_admin = True
-            self.is_service = True
+            # self.is_service = True
             self.user_id = 0
             self.available = True
-            self.type = "service"
-            self.email = ""
-            return self
-        self.data = self.decode(token)
-        self.user_id = self.data.get("user_id")
-        self.expt = self.data.get("expt")
-        self.type = self.data.get("type")
-        self.email = self.data.get("email")
-
-    def to_token(self) -> str:
+            self.user_type = "service"
+            self.email = "service"
+            return self.__dict__
+        data = self.decode(token)
+        self.user_id = data.get("user_id")
+        self.expt = data.get("expt")
+        self.type = data.get("type")
+        self.email = data.get("email")
+        return data
+    def to_token(self):
         return BaseToken.encode(self.__dict__)
 
     def user_set(self, user: UserModel):
@@ -76,22 +79,23 @@ class BaseToken:
 
     def save_to_user(self):
         BaseToken.user_service.set_token(self)
+        return self.to_token()
 
-    @classmethod
+    # @classmethod
     def is_service(token):
         return token == SERVICE_TOKEN
 
-    @classmethod
+    # @classmethod
     def decode(token):
         return jwt.decode(token.encode('utf-8'),
                           SECRET_KEY,
                           algorithms=[ALGORITHM])
 
-    @classmethod
+    # @classmethod
     def encode(dict):
         return jwt.encode(dict, SECRET_KEY, algorithm=ALGORITHM)
 
-    @classmethod
+    # @classmethod
     def verify(token):
         if BaseToken.is_service(token):
             return True
@@ -106,32 +110,36 @@ class BaseToken:
             raise AuthenticationException(message="Token expired")
         return True
 
-    @classmethod
+    # @classmethod
     def get_data(token: str):
-        type = BaseToken.decode(token).get('type')
+        type = TokenType.ACCESS.value
+        if not BaseToken.is_service(token):
+            type = BaseToken.decode(token).get('type')
         if type == TokenType.ACCESS.value:
-            return AccesToken(token)
+            return AccesToken(None).from_token(token)
         elif type == TokenType.ASSISTENCE.value:
-            return AssistenceToken(token)
+            return AssistenceToken(None).from_token(token)
         elif type == TokenType.REFRESH.value:
-            return RefreshToken(token)
+            return RefreshToken(None).from_token(token)
         elif type == TokenType.RESET_PASS.value:
-            return ResetPassToken(token)
+            return ResetPassToken(None).from_token(token)
         elif type == TokenType.VERIFICATION.value:
-            return VerificationToken(token)
+            return VerificationToken(None).from_token(token)
 
 
 class AssistenceToken(BaseToken):
     event_id: int = 0
 
     def __init__(self, user: UserModel, event_id: int):
+        if user is None:
+            return
         self.type = TokenType.ASSISTENCE.value
         super().__init__(user)
         self.event_id = event_id
 
     def from_token(self, token):
-        super().from_token(token)
-        self.event_id = self.data.get("event_id")
+        data = super().from_token(token)
+        self.event_id = data.get("event_id")
 
 
 class AccesToken(BaseToken):
@@ -141,6 +149,8 @@ class AccesToken(BaseToken):
     def __init__(self, user: UserModel):
         self.type = TokenType.ACCESS.value
         super().__init__(user)
+        if user is None:
+            return
         self.is_verified = user.is_verified
         if self.user_type == UserType.HACKER.value:
             self.available = not user.banned
@@ -150,14 +160,18 @@ class AccesToken(BaseToken):
             self.available = user.active
 
     def from_token(self, token):
-        super().from_token(token)
-        self.is_verified = self.data.get("is_verified")
-        self.available = self.data.get("available")
+        data = super().from_token(token)
+        if not self.is_admin:
+            self.is_verified = data.get("is_verified")
+            self.available = data.get("available")
+        return self
 
 
 class RefreshToken(BaseToken):
 
     def __init__(self, user: UserModel):
+        if user is None:
+            return
         self.type = TokenType.REFRESH.value
         super().__init__(user)
 
@@ -165,6 +179,8 @@ class RefreshToken(BaseToken):
 class VerificationToken(BaseToken):
 
     def __init__(self, user: UserModel):
+        if user is None:
+            return
         self.type = TokenType.VERIFICATION.value
         super().__init__(user)
 
@@ -172,5 +188,7 @@ class VerificationToken(BaseToken):
 class ResetPassToken(BaseToken):
 
     def __init__(self, user: UserModel):
+        if user is None:
+            return
         self.type = TokenType.RESET_PASS.value
         super().__init__(user)

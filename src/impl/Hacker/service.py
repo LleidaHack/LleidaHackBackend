@@ -11,10 +11,12 @@ from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
 
 from src.utils.service_utils import check_user
-from src.utils.TokenData import TokenData
 from src.utils.UserType import UserType
+from src.utils.Token import BaseToken
+
 
 from src.impl.Hacker.model import Hacker as ModelHacker
+from src.impl.User.model import User as ModelUser
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
@@ -27,12 +29,13 @@ from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 
 
+from sqlalchemy.orm import with_polymorphic
 class HackerService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelHacker).all()
 
-    def get_hacker(self, hackerId: int, data: TokenData):
+    def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.db.query(ModelHacker).filter(
             ModelHacker.id == hackerId).first()
         if user is None:
@@ -71,7 +74,7 @@ class HackerService(BaseService):
         self.db.refresh(new_hacker)
         return new_hacker
 
-    def remove_hacker(self, hackerId: int, data: TokenData):
+    def remove_hacker(self, hackerId: int, data: BaseToken):
         if not data.is_admin:
             if not (
                     data.available and
@@ -117,7 +120,7 @@ class HackerService(BaseService):
         return hacker
 
     def update_hacker(self, hackerId: int, payload: HackerUpdateSchema,
-                      data: TokenData):
+                      data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value or
@@ -139,7 +142,7 @@ class HackerService(BaseService):
         self.db.refresh(hacker)
         return hacker, updated
 
-    def ban_hacker(self, hackerId: int, data: TokenData):
+    def ban_hacker(self, hackerId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -155,7 +158,7 @@ class HackerService(BaseService):
         self.db.refresh(hacker)
         return hacker
 
-    def unban_hacker(self, hackerId: int, data: TokenData):
+    def unban_hacker(self, hackerId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -187,7 +190,7 @@ class HackerService(BaseService):
             raise NotFoundException("Hacker not found")
         return hacker.groups
 
-    # def update_all_codes(data: TokenData):
+    # def update_all_codes(data: BaseToken):
     #     if not data.is_admin:
     #         raise AuthenticationException("Not authorized")
     #     hackers = self.db.query(ModelHacker).all()

@@ -1,4 +1,4 @@
-from config import Configuration
+from src.utils.Configuration import Configuration
 from pydantic import EmailStr, BaseModel
 from typing import List
 from database import db_get

@@ -1,5 +1,5 @@
 from database import get_db
-from src.utils.Token.model import BaseToken
+from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer
 
 from sqlalchemy.orm import Session

@@ -36,6 +36,3 @@ class User(Base):
         "polymorphic_identity": "user",
         "polymorphic_on": type,
     }
-
-    class Config:
-        orm_mode = True

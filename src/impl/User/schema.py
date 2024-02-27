@@ -66,7 +66,6 @@ class UserGet(BaseSchema):
 
 
 class UserGetAll(UserGet):
-    password: str
     food_restrictions: str
     telephone: str
     address: str

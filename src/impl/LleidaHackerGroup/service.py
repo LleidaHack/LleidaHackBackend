@@ -1,7 +1,6 @@
 from pydantic import parse_obj_as
 from src.impl.LleidaHacker.model import LleidaHackerGroup as ModelLleidaHackerGroup
 from src.impl.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
-from src.utils.TokenData import TokenData
 from src.utils.UserType import UserType
 
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupCreate as LleidaHackerGroupCreateSchema
@@ -11,6 +10,8 @@ from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGetAll as LleidaH
 from src.utils.Base.BaseService import BaseService
 
 from src.utils.service_utils import set_existing_data
+from src.utils.Token import BaseToken
+
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -22,7 +23,7 @@ class LleidaHackerGroupService(BaseService):
     def get_all(self):
         return self.db.query(ModelLleidaHackerGroup).all()
 
-    def get_lleidahackergroup(self, groupId: int, data: TokenData):
+    def get_lleidahackergroup(self, groupId: int, data: BaseToken):
         group = self.db.query(ModelLleidaHackerGroup).filter(
             ModelLleidaHackerGroup.id == groupId).first()
         if group is None:
@@ -35,7 +36,7 @@ class LleidaHackerGroupService(BaseService):
         return parse_obj_as(LleidaHackerGroupGetSchema, group)
 
     def add_lleidahackergroup(self, payload: LleidaHackerGroupCreateSchema,
-                              data: TokenData):
+                              data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -53,7 +54,7 @@ class LleidaHackerGroupService(BaseService):
 
     def update_lleidahackergroup(self, groupId: int,
                                  payload: LleidaHackerGroupUpdateSchema,
-                                 data: TokenData):
+                                 data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -70,7 +71,7 @@ class LleidaHackerGroupService(BaseService):
         self.db.refresh(lleidahacker_group)
         return lleidahacker_group, updated
 
-    def delete_lleidahackergroup(self, groupId: int, data: TokenData):
+    def delete_lleidahackergroup(self, groupId: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -87,7 +88,7 @@ class LleidaHackerGroupService(BaseService):
         return lleidahacker_group
 
     def add_lleidahacker_to_group(self, groupId: int, lleidahackerId: int,
-                                  data: TokenData):
+                                  data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -109,7 +110,7 @@ class LleidaHackerGroupService(BaseService):
         return lleidahacker_group
 
     def remove_lleidahacker_from_group(self, groupId: int, lleidahackerId: int,
-                                       data: TokenData):
+                                       data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):
@@ -133,7 +134,7 @@ class LleidaHackerGroupService(BaseService):
         return lleidahacker_group
 
     def set_lleidahacker_group_leader(self, groupId: int, lleidahackerId: int,
-                                      data: TokenData):
+                                      data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.user_type == UserType.LLEIDAHACKER.value):

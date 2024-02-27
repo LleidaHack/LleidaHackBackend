@@ -21,7 +21,7 @@ from src.impl.Authentication import router as Authentication
 from src.impl.MailQueue import router as MailQueue
 from src.impl.Geocaching import router as Geocaching
 
-from error import error_handler as eh
+from src.error import error_handler as eh
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.error.ValidationException import ValidationException

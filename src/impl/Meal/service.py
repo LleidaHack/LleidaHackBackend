@@ -1,6 +1,5 @@
 from pydantic import parse_obj_as
 from src.impl.Meal.model import Meal as ModelMeal
-from src.utils.TokenData import TokenData
 from src.utils.UserType import UserType
 
 from src.impl.Meal.schema import MealCreate as MealCreateSchema
@@ -11,6 +10,7 @@ from src.impl.Meal.schema import MealGetAll as MealGetAllSchema
 from src.utils.Base.BaseService import BaseService
 
 from src.utils.service_utils import set_existing_data
+from src.utils.Token import BaseToken
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -18,10 +18,10 @@ from src.error.NotFoundException import NotFoundException
 
 class MealService(BaseService):
 
-    def get_meals(self, id: int, token: TokenData):
+    def get_meals(self, id: int, token: BaseToken):
         return self.db.query(ModelMeal).filter(ModelMeal.event_id == id).all()
 
-    def get_meal(self, id: int, data: TokenData):
+    def get_meal(self, id: int, data: BaseToken):
         meal = self.db.query(ModelMeal).filter(ModelMeal.id == id).first()
         if meal is None:
             raise NotFoundException("Meal not found")
@@ -30,7 +30,7 @@ class MealService(BaseService):
             return parse_obj_as(MealGetAllSchema, meal)
         return parse_obj_as(MealGetSchema, meal)
 
-    def add_meal(self, meal: MealCreateSchema, data: TokenData):
+    def add_meal(self, meal: MealCreateSchema, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -43,7 +43,7 @@ class MealService(BaseService):
         return db_meal
 
     def update_meal(self, id: int, meal_id: int, meal: MealUpdateSchema,
-                    data: TokenData):
+                    data: BaseToken):
         if not data.is_admin:
             if not data.type == UserType.LLEIDAHACKER.value:
                 raise AuthenticationException(
@@ -57,7 +57,7 @@ class MealService(BaseService):
         self.db.refresh(db_meal)
         return db_meal
 
-    def delete_meal(self, id: int, meal_id: int, data: TokenData):
+    def delete_meal(self, id: int, meal_id: int, data: BaseToken):
         if not data.is_admin:
             if not data.type == UserType.LLEIDAHACKER.value:
                 raise AuthenticationException(

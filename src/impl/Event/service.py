@@ -1,11 +1,11 @@
 from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
-from src.utils.TokenData import TokenData
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
 from src.utils.service_utils import set_existing_data, check_image
+from src.utils.Token import BaseToken
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -37,7 +37,7 @@ class EventService(BaseService):
                 ModelEvent.name.ilike(f'%HackEPS {str(year-1)}%')).first()
         return e
 
-    def get_hacker_group(self, event_id: int, hacker_id: int, data: TokenData):
+    def get_hacker_group(self, event_id: int, hacker_id: int, data: BaseToken):
         event = self.db.query(ModelEvent).filter(
             ModelEvent.id == event_id).first()
         if event is None:
@@ -56,14 +56,14 @@ class EventService(BaseService):
                     [g.hacker_group_id for g in user_groups])).first()
         return group
 
-    def get_event(self, id: int, data: TokenData):
+    def get_event(self, id: int, data: BaseToken):
         event = self.db.query(ModelEvent).filter(ModelEvent.id == id).first()
         if data.is_admin or (data.available
                              and data.type == UserType.LLEIDAHACKER.value):
             return parse_obj_as(EventGetAllSchema, event)
         return parse_obj_as(EventGetSchema, event)
 
-    def add_event(self, payload: EventCreateSchema, data: TokenData):
+    def add_event(self, payload: EventCreateSchema, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -76,7 +76,7 @@ class EventService(BaseService):
         self.db.refresh(db_event)
         return db_event
 
-    def update_event(self, id: int, event: EventUpdateSchema, data: TokenData):
+    def update_event(self, id: int, event: EventUpdateSchema, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -91,7 +91,7 @@ class EventService(BaseService):
         self.db.commit()
         return db_event, updated
 
-    def delete_event(self, id: int, data: TokenData):
+    def delete_event(self, id: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -104,7 +104,7 @@ class EventService(BaseService):
         self.db.commit()
         return db_event
 
-    def is_registered(self, id: int, hacker_id: int, data: TokenData):
+    def is_registered(self, id: int, hacker_id: int, data: BaseToken):
         event = self.db.query(ModelEvent).filter(ModelEvent.id == id).first()
         if event is None:
             raise NotFoundException("Event not found")
@@ -114,7 +114,7 @@ class EventService(BaseService):
             raise NotFoundException("Hacker not found")
         return hacker in event.registered_hackers
 
-    def is_accepted(self, id: int, hacker_id: int, data: TokenData):
+    def is_accepted(self, id: int, hacker_id: int, data: BaseToken):
         event = self.db.query(ModelEvent).filter(ModelEvent.id == id).first()
         if event is None:
             raise NotFoundException("Event not found")
@@ -124,13 +124,13 @@ class EventService(BaseService):
             raise NotFoundException("Hacker not found")
         return hacker in event.accepted_hackers
 
-    def get_event_meals(self, id: int, data: TokenData):
+    def get_event_meals(self, id: int, data: BaseToken):
         event = self.db.query(ModelEvent).filter(ModelEvent.id == id).first()
         if event is None:
             raise NotFoundException("Event not found")
         return event.meals
 
-    def get_event_participants(self, id: int, data: TokenData):
+    def get_event_participants(self, id: int, data: BaseToken):
         event = self.db.query(ModelEvent).filter(ModelEvent.id == id).first()
         if event is None:
             raise NotFoundException("Event not found")
@@ -142,14 +142,14 @@ class EventService(BaseService):
             raise NotFoundException("Event not found")
         return event.sponsors
 
-    def get_event_groups(self, id: int, data: TokenData):
+    def get_event_groups(self, id: int, data: BaseToken):
         event = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.event_id == id)
         if event is None:
             raise NotFoundException("Event not found")
         return event
 
-    def add_company(self, id: int, company_id: int, data: TokenData):
+    def add_company(self, id: int, company_id: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -167,7 +167,7 @@ class EventService(BaseService):
         self.db.refresh(company)
         return event
 
-    # def add_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
+    # def add_hacker(id: int, hacker_id: int, db: Session, data: BaseToken):
     #     if not data.is_admin:
     #         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
     #                                     (data.type == UserType.HACKER.value
@@ -188,7 +188,7 @@ class EventService(BaseService):
     #     db.refresh(hacker)
     #     return event
 
-    def add_hacker_group(self, id: int, hacker_group_id: int, data: TokenData):
+    def add_hacker_group(self, id: int, hacker_group_id: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -215,7 +215,7 @@ class EventService(BaseService):
         self.db.refresh(event)
         return event
 
-    def remove_company(self, id: int, company_id: int, data: TokenData):
+    def remove_company(self, id: int, company_id: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -239,7 +239,7 @@ class EventService(BaseService):
         self.db.refresh(company)
         return event
 
-        # def remove_hacker(id: int, hacker_id: int, db: Session, data: TokenData):
+        # def remove_hacker(id: int, hacker_id: int, db: Session, data: BaseToken):
         #     if not data.is_admin:
         #         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
         #                                     (data.type == UserType.HACKER.value
@@ -265,7 +265,7 @@ class EventService(BaseService):
         return event
 
     def remove_hacker_group(self, id: int, hacker_group_id: int,
-                            data: TokenData):
+                            data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -290,7 +290,7 @@ class EventService(BaseService):
         self.db.refresh(event)
         return event
 
-    def get_accepted_hackers(self, event_id: int, data: TokenData):
+    def get_accepted_hackers(self, event_id: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):
@@ -304,7 +304,7 @@ class EventService(BaseService):
             hackers.append(h)
         return parse_obj_as(HackerGetAllSchema, hackers)
 
-    def get_accepted_hackers_mails(self, event_id: int, data: TokenData):
+    def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available
                     and data.type == UserType.LLEIDAHACKER.value):

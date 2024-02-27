@@ -5,11 +5,12 @@ from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
 from src.utils.service_utils import generate_random_code, set_existing_data
+from src.utils.Token import BaseToken
+
 
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.Hacker.model import Hacker as ModelHacker
-from src.utils.TokenData import TokenData
 from src.impl.Event.model import Event as ModelEvent
 
 from src.impl.HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema
@@ -34,7 +35,7 @@ class HackerGroupService(BaseService):
             raise NotFoundException("Hacker group not found")
         return group
 
-    def get_hacker_group(self, id: int, data: TokenData):
+    def get_hacker_group(self, id: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -52,7 +53,7 @@ class HackerGroupService(BaseService):
         return parse_obj_as(HackerGroupGetSchema, group)
 
     def add_hacker_group(self, payload: HackerGroupCreateSchema,
-                         data: TokenData):
+                         data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -86,7 +87,7 @@ class HackerGroupService(BaseService):
         return new_hacker_group
 
     def update_hacker_group(self, id: int, payload: HackerGroupUpdateSchema,
-                            data: TokenData):
+                            data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -107,7 +108,7 @@ class HackerGroupService(BaseService):
         self.dbcommit()
         return hacker_group, updated
 
-    def delete_hacker_group(self, id: int, data: TokenData):
+    def delete_hacker_group(self, id: int, data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -127,7 +128,7 @@ class HackerGroupService(BaseService):
         return hacker_group
 
     def add_hacker_to_group(self, groupId: int, hackerId: int,
-                            data: TokenData):
+                            data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
@@ -161,7 +162,7 @@ class HackerGroupService(BaseService):
         return hacker_group
 
     def add_hacker_to_group_by_code(self, code: str, hackerId: int,
-                                    data: TokenData):
+                                    data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value or
@@ -196,7 +197,7 @@ class HackerGroupService(BaseService):
         return hacker_group
 
     def remove_hacker_from_group(self, groupId: int, hackerId: int,
-                                 data: TokenData):
+                                 data: BaseToken):
         deleted = False
         if not data.is_admin:
             if not (data.available and
@@ -228,7 +229,7 @@ class HackerGroupService(BaseService):
         return hacker_group
 
     def set_hacker_group_leader(self, groupId: int, hackerId: int,
-                                data: TokenData):
+                                data: BaseToken):
         if not data.is_admin:
             if not (data.available and
                     (data.type == UserType.LLEIDAHACKER.value
