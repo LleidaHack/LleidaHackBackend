@@ -6,7 +6,7 @@ from src.utils.Token import BaseToken
 
 SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
 
-from database import db_get
+from src.utils.database import db_get
 
 
 class JWTBearer(HTTPBearer):

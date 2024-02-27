@@ -1,9 +1,6 @@
 from datetime import datetime
-from fastapi import Depends
-from sqlalchemy.orm import Session
 
-from database import get_db
-from security import get_password_hash, verify_password
+from src.utils.security import get_password_hash, verify_password
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 

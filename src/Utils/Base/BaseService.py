@@ -1,4 +1,4 @@
-from database import db_get
+from src.utils.database import db_get
 
 
 class BaseService:

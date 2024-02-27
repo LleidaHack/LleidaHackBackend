@@ -1,7 +1,7 @@
 from datetime import datetime as date
 from pydantic import parse_obj_as
 
-from security import get_password_hash
+from src.utils.security import get_password_hash
 from src.utils.Base.BaseService import BaseService
 
 from src.utils.service_utils import set_existing_data, check_image, generate_user_code
@@ -16,7 +16,6 @@ from src.utils.Token import BaseToken
 
 
 from src.impl.Hacker.model import Hacker as ModelHacker
-from src.impl.User.model import User as ModelUser
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration

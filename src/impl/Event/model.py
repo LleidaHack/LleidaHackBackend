@@ -7,7 +7,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship, deferred, Mapped
 from sqlalchemy.sql import func
 
-from database import Base
+from src.utils.database import Base
 
 # from src.impl.Hacker.model import Hacker as ModelHacker
 # from src.impl.LleidaHacker.model import LleidaHacker as ModelLleidaHacker

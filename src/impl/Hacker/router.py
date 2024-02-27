@@ -2,7 +2,7 @@ from typing import List, Union
 from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
 
-from database import get_db
+from src.utils.database import get_db
 from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
 from src.utils.JWTBearer import JWTBearer
 

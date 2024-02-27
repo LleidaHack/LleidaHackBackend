@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pydantic import parse_obj_as
-# from security import get_password_hash
+# from src.utils.security import get_password_hash
 
 from src.impl.User.model import User as ModelUser
 from src.utils.UserType import UserType

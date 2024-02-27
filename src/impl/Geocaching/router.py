@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from database import get_db
+from src.utils.database import get_db
 from src.impl.Geocaching import service as geocaching_service
 
 router = APIRouter()

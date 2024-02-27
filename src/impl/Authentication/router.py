@@ -1,11 +1,8 @@
-from datetime import timedelta
 from fastapi import Depends, APIRouter
 from fastapi import Depends
 from fastapi.security import HTTPBasicCredentials
-from sqlalchemy.orm import Session
 
-from security import sec
-from database import get_db
+from src.utils.security import sec
 from src.error.AuthenticationException import AuthenticationException
 from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer

@@ -1,6 +1,6 @@
 from datetime import date
 from sqlalchemy import Column, DateTime, Integer, String, Boolean
-from database import Base
+from src.utils.database import Base
 from sqlalchemy.orm import deferred
 
 from sqlalchemy.orm import Mapped

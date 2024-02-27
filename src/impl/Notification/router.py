@@ -1,4 +1,4 @@
-from database import get_db
+from src.utils.database import get_db
 from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer
 

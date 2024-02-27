@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 from src.impl.Hacker.model import Hacker as ModelHacker
 
-from database import Base
+from src.utils.database import Base
 
 
 class HackerMeal(Base):

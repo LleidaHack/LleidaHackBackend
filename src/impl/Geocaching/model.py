@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import Column, ForeignKey, String
 
-from database import Base
+from src.utils.database import Base
 
 
 class UserGeocaching(Base):

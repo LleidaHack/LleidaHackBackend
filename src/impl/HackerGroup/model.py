@@ -2,7 +2,7 @@ from __future__ import annotations
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship, deferred, Mapped
 
-from database import Base
+from src.utils.database import Base
 
 
 class HackerGroupUser(Base):

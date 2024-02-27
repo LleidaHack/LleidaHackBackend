@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import Depends, Response, APIRouter
 
-from database import get_db
+from src.utils.database import get_db
 from src.error.AuthenticationException import AuthenticationException
 import src.impl.MailQueue.service as mail_queue_service
 from src.utils.Token import BaseToken

@@ -1,7 +1,7 @@
 from src.utils.Configuration import Configuration
 from pydantic import EmailStr, BaseModel
 from typing import List
-from database import db_get
+from src.utils.database import db_get
 from pydantic import BaseModel
 from string import Template
 

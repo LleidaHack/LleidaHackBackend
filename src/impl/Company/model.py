@@ -1,7 +1,7 @@
 from __future__ import annotations
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from database import Base
+from src.utils.database import Base
 # from User.model import User
 # from src.utils.UserType import UserType
 # from Event.model import Event

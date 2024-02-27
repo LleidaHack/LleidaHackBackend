@@ -9,8 +9,8 @@ from src.error.NotFoundException import NotFoundException
 from src.utils.service_utils import subtract_lists
 from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer
-from security import get_data_from_token
-from database import get_db
+from src.utils.security import get_data_from_token
+from src.utils.database import get_db
 from src.utils.Configuration import Configuration
 
 from src.impl.Event.schema import HackerEventRegistration as EventRegistrationSchema

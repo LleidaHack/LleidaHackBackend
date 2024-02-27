@@ -1,8 +1,7 @@
 from datetime import datetime as date
 from pydantic import parse_obj_as
-from sqlalchemy.orm import Session
 
-from security import get_password_hash
+from src.utils.security import get_password_hash
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
