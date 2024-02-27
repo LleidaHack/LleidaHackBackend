@@ -307,12 +307,6 @@ def eat(event_id: int,
                                       get_data_from_token(token))
 
 
-# def test(lst, background_tasks: BackgroundTasks):
-#     for u in lst:
-#         mail_service.send_reminder_email(u)
-#         time.sleep(10)
-
-
 # background_tasks.add_task(mail_service.send_reminder_email, u)
 @router.post("/{event_id}/send_remember")
 def send_remember(
@@ -334,62 +328,5 @@ def send_remember(
     return mail_service.send_all_reminder_mails(users)
 
 
-@router.post("/{event_id}/send_dailyhack")
-def send_dailyhack(event_id: int,
-                   background_tasks: BackgroundTasks,
-                   db: Session = Depends(get_db),
-                   token: BaseToken = Depends(JWTBearer())):
-    """
-    Send a daily hack notification to all attendees of an event
-    """
-    data = get_data_from_token(token)
-    if not data.is_admin:
-        raise AuthenticationException("Not authorized")
-    event = event_service.get_event(event_id, db)
-    if event is None:
-        raise NotFoundException("Event not found")
-    return mail_service.send_all_dailyhack_mails(event.registered_hackers)
 
 
-@router.get("/{event_id}/get_sizes")
-def get_sizes(event_id: int, db: Session = Depends(get_db)):
-    """
-    Get the sizes of all the shirts of the registered hackers
-    """
-    event = event_service.get_event(event_id, db)
-    if event is None:
-        raise NotFoundException("Event not found")
-    return eventmanagment_service.get_sizes(event, db)
-
-
-@router.get("/{event_id}/get_unregistered_hackers",
-            response_model=List[HackerGetSchema])
-def get_unregistered_hackers(event_id: int,
-                             db: Session = Depends(get_db),
-                             token: BaseToken = Depends(JWTBearer())):
-    """
-    Get the hackers who are not registered for the event
-    """
-    data = get_data_from_token(token)
-    if not data.is_admin:
-        raise AuthenticationException("Not authorized")
-    event = event_service.get_event(event_id, db)
-    if event is None:
-        raise NotFoundException("Event not found")
-    return eventmanagment_service.get_hackers_unregistered(event, db)
-
-
-@router.get("/{event_id}/count_unregistered_hackers")
-def count_unregistered_hackers(event_id: int,
-                               db: Session = Depends(get_db),
-                               token: BaseToken = Depends(JWTBearer())):
-    """
-    Get the count of hackers who are not registered for the event
-    """
-    data = get_data_from_token(token)
-    if not data.is_admin:
-        raise AuthenticationException("Not authorized")
-    event = event_service.get_event(event_id, db)
-    if event is None:
-        raise NotFoundException("Event not found")
-    return eventmanagment_service.count_hackers_unregistered(event, db)

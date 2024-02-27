@@ -2,6 +2,8 @@ from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List, Union
+from error.AuthenticationException import AuthenticationException
+from error.NotFoundException import NotFoundException
 
 from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer
@@ -149,15 +151,6 @@ def remove_event_sponsor(id: int,
     return {'success': True, 'event_id': event.id}
 
 
-# @router.get("/{eventId}/get_hacker_group/{hackerId}")
-# def get_hacker_group(eventId: int,
-#                            hackerId: int,
-#                            ,
-#                            token: BaseToken = Depends(JWTBearer())):
-#     return event_service.get_hacker_group(eventId, hackerId,
-#                                                 get_data_from_token(token))
-
-
 @router.get("/{eventId}/get_approved_hackers",
             response_model=List[HackerGetSchema])
 def get_accepted_hackers(eventId: int,
@@ -169,3 +162,32 @@ def get_accepted_hackers(eventId: int,
 def get_accepted_hackers_mails(eventId: int,
                                token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers_mails(eventId, token)
+
+
+@router.get("/{event_id}/get_sizes")
+def get_sizes(event_id: int):
+    """
+    Get the sizes of all the shirts of the registered hackers
+    """
+    return event_service.get_sizes(event_id)
+
+
+@router.get("/{event_id}/get_unregistered_hackers", response_model=List[HackerGetSchema])
+def get_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """
+    Get the hackers who are not registered for the event
+    """
+    if not token.is_admin:
+        raise AuthenticationException("Not authorized")
+    return event_service.get_hackers_unregistered(event_id)
+
+
+@router.get("/{event_id}/count_unregistered_hackers")
+def count_unregistered_hackers(event_id: int,
+                               token: BaseToken = Depends(JWTBearer())):
+    """
+    Get the count of hackers who are not registered for the event
+    """
+    if not token.is_admin:
+        raise AuthenticationException("Not authorized")
+    return event_service.count_hackers_unregistered(event_id)

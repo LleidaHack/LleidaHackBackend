@@ -25,7 +25,7 @@ class TokenType(enum.Enum):
     VERIFICATION = 'verification'
     RESET_PASS = 'reset_pass'
 
-
+# TODO: fer que sigui abstracta
 class BaseToken:
     user_id: int = 0
     expt: int = 0
@@ -33,13 +33,9 @@ class BaseToken:
     email: str = ''
     user_type: str = ''
     is_admin: bool = False
-    data: dict = None
-
+    
     user_service = UserService()
 
-    # @classmethod
-    # def class_method(cls):
-    #     print(f"A class method from {cls.__name__}!")
     def __init__(self, user: UserModel):
         self.expt = (
             datetime.utcnow() +
@@ -80,9 +76,9 @@ class BaseToken:
         elif type == TokenType.VERIFICATION.value:
             user.verification_token = self.to_token()
 
-    def save_to_user(self):
-        BaseToken.user_service.set_token(self)
-        return self.to_token()
+    # def save_to_user(self):
+    #     BaseToken.user_service.set_token(self)
+    #     return self.to_token()
 
     # @classmethod
     def is_service(token):
@@ -103,14 +99,17 @@ class BaseToken:
         if BaseToken.is_service(token):
             return True
         dict = BaseToken.decode(token)
-        user = BaseToken.user_service.get_user_by_id(dict["user_id"])
+        user = BaseToken.user_service.get_by_id(dict["user_id"])
         if user.type != dict["type"]:
             raise AuthenticationException("Invalid token")
+        data = BaseToken.from_token(token)
+        #TODO: comprovar tipus de token
+
         if user.token != token:
             raise AuthenticationException("Invalid token")
         # Here your code for verifying the token or whatever you use
         if parser.parse(dict["expt"]) < datetime.utcnow():
-            raise AuthenticationException(message="Token expired")
+            raise AuthenticationException("Token expired")
         return True
 
     # @classmethod
@@ -143,6 +142,9 @@ class AssistenceToken(BaseToken):
     def from_token(self, token):
         data = super().from_token(token)
         self.event_id = data.get("event_id")
+    
+    def verify(self, user:UserModel):
+        return True
 
 
 class AccesToken(BaseToken):
@@ -169,6 +171,8 @@ class AccesToken(BaseToken):
             self.available = data.get("available")
         return self
 
+    def verify(self, user):
+        return self.to_token() == user.token
 
 class RefreshToken(BaseToken):
 

@@ -18,25 +18,23 @@ class UserService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelUser).all()
-
+    
+    def get_by_id(self, userId: int):
+        user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
+        if user is None:
+            raise NotFoundException("User not found")
+        return user
+    
     def count_users(self):
         return self.db.query(ModelUser).count()
 
     def get_user(self, userId: int, data):
-        user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
-        if user is None:
-            raise NotFoundException("User not found")
+        user = self.get_by_id(userId)
         if data.is_admin or (data.available and
                              (data.type == UserType.LLEIDAHACKER.value
                               or data.user_id == userId)):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
-
-    def get_user_by_id(self, userId: int):
-        user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
-        if not user:
-            raise NotFoundException("User not found")
-        return user
 
     def get_user_by_email(self, email: str, data):
         if not data.is_admin:
@@ -107,25 +105,10 @@ class UserService(BaseService):
     #     return new_user
 
     def delete_user(self, userId: int):
-        return self.db.query(ModelUser).filter(ModelUser.id == userId).delete()
-
-    # def update_user(self, userId: int, payload: UserUpdateSchema):
-    #     user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
-    #     user.name = payload.name
-    #     user.password = payload.password
-    #     user.nickname = payload.nickname
-    #     user.birthdate = payload.birthdate
-    #     user.food_restrictions = payload.food_restrictions
-    #     user.telephone = payload.telephone
-    #     user.address = payload.address
-    #     user.shirt_size = payload.shirt_size
-    #     user.image_id = payload.image_id
-    #     self.db.commit()
-    #     self.db.refresh(user)
-    #     return user
+        return self.get_by_id(userId).delete()
 
     def set_token(self, token):
-        user = self.get_user_by_id(token.user_id)
+        user = self.get_by_id(token.user_id)
         token.user_set(user)
         self.db.commit()
         self.db.refresh(user)

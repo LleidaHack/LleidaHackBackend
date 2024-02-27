@@ -1,7 +1,6 @@
-from fastapi.security import OAuth2PasswordBearer, HTTPBasic
+from fastapi.security import HTTPBasic
 from passlib.hash import pbkdf2_sha256
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 sec = HTTPBasic()
 
 
