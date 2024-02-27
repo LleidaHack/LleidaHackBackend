@@ -20,8 +20,8 @@ from src.impl.Event.schema import HackerEventRegistration as EventRegistrationSc
 from services.mail import send_event_registration_email
 from services.mail import send_event_accepted_email
 
-
 # A PARTIR D'ARA EL SENYOR LOLO A.K.A LUFI ES DIRA LO-FI
+
 
 def register_hacker_to_event(payload: EventRegistrationSchema,
                              event: ModelEvent, hacker: ModelHacker,
@@ -243,6 +243,7 @@ def reject_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     db.refresh(hacker)
     return event
 
+
 def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker, db: Session,
         data: BaseToken):
     if not data.is_admin:
@@ -256,5 +257,3 @@ def eat(event: ModelEvent, meal: ModelMeal, hacker: ModelHacker, db: Session,
     db.commit()
     db.refresh(event)
     return event
-
-

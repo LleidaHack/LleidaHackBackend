@@ -326,7 +326,3 @@ def send_remember(
         raise NotFoundException("Event not found")
     users = subtract_lists(all, event.registered_hackers)
     return mail_service.send_all_reminder_mails(users)
-
-
-
-

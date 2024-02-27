@@ -25,6 +25,7 @@ class TokenType(enum.Enum):
     VERIFICATION = 'verification'
     RESET_PASS = 'reset_pass'
 
+
 # TODO: fer que sigui abstracta
 class BaseToken:
     user_id: int = 0
@@ -33,7 +34,7 @@ class BaseToken:
     email: str = ''
     user_type: str = ''
     is_admin: bool = False
-    
+
     user_service = UserService()
 
     def __init__(self, user: UserModel):
@@ -142,8 +143,8 @@ class AssistenceToken(BaseToken):
     def from_token(self, token):
         data = super().from_token(token)
         self.event_id = data.get("event_id")
-    
-    def verify(self, user:UserModel):
+
+    def verify(self, user: UserModel):
         return True
 
 
@@ -173,6 +174,7 @@ class AccesToken(BaseToken):
 
     def verify(self, user):
         return self.to_token() == user.token
+
 
 class RefreshToken(BaseToken):
 

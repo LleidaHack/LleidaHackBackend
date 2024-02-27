@@ -18,13 +18,13 @@ class UserService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelUser).all()
-    
+
     def get_by_id(self, userId: int):
         user = self.db.query(ModelUser).filter(ModelUser.id == userId).first()
         if user is None:
             raise NotFoundException("User not found")
         return user
-    
+
     def count_users(self):
         return self.db.query(ModelUser).count()
 

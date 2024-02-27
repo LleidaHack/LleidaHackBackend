@@ -33,11 +33,13 @@ class HackerService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelHacker).all()
+
     def get_by_id(self, hacker_id: int):
         user = self.db.query(ModelHacker).filter(
             ModelHacker.id == hacker_id).first()
         if user is None:
             raise NotFoundException("Hacker not found")
+
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
         if data.is_admin or (data.available and
