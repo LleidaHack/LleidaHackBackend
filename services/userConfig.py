@@ -1,6 +1,6 @@
 from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
-from security import get_password_hash
+from security import get_data_from_token, get_password_hash
 
 from models.UserConfig import UserConfig as ModelUserConfig
 from models.UserType import UserType
@@ -20,7 +20,8 @@ from utils.hide_utils import user_show_private
 
 
 
-async def get_user_config(db: Session, userId: int, data: TokenData):
+def get_user_config(db: Session, userId: int, token: TokenData):
+    data = get_data_from_token(token)
     userConfig = db.query(ModelUserConfig).filter(ModelUserConfig.user_id == userId).first()
     if userConfig is None:
         raise NotFoundException("User config not found")
@@ -30,7 +31,8 @@ async def get_user_config(db: Session, userId: int, data: TokenData):
     return parse_obj_as(UserConfigGet, userConfig)
         
 
-async def get_all_users_config(db: Session, userId: int, data: TokenData):
+def get_all_users_config(db: Session, token: TokenData):
+    data = get_data_from_token(token)
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")
@@ -38,14 +40,14 @@ async def get_all_users_config(db: Session, userId: int, data: TokenData):
     return userConfig
 
 
-async def add_user_config(db: Session, payload: SchemaUserConfig):
+def add_user_config(db: Session, payload: SchemaUserConfig):
     userConfig = ModelUserConfig(**payload.dict())
     db.add(userConfig)
     db.commit()
     return userConfig
 
 
-async def update_user_config(db: Session, userId: int, payload: SchemaUserConfigUpdate, data:TokenData):
+def update_user_config(db: Session, userId: int, payload: SchemaUserConfigUpdate, data:TokenData):
     userConfig = db.query(ModelUserConfig).filter(ModelUserConfig.user_id == userId).first()
     if userConfig is None:
             raise NotFoundException("User not found")

@@ -6,7 +6,6 @@ from typing import Optional
 
 
 class UserConfigCreate(BaseModel):
-    user_id:int
     reciveNotifications: bool
     defaultLang: str
     comercialNotifications: bool

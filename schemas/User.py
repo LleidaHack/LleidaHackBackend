@@ -5,6 +5,8 @@ from datetime import date
 from typing import Optional
 import re
 
+from schemas.Userconfig import UserConfigCreate
+
 
 class User(BaseModel):
     name: str
@@ -19,6 +21,7 @@ class User(BaseModel):
     image: Optional[str]
     is_image_url: Optional[bool]
     recive_mails: Optional[bool]
+    config: UserConfigCreate
 
     @validator('email')
     def email_validation(cls, v):

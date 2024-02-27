@@ -1,14 +1,15 @@
 from datetime import date
-from sqlalchemy import Column, DateTime, Integer, String, Boolean
+from sqlalchemy import Column, DateTime, Integer, String, Boolean, ForeignKey
 from database import Base
 from sqlalchemy.orm import deferred
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 
 
+
 class User(Base):
     __tablename__ = 'user'
-    id: int = Column(Integer, primary_key=True, index=True)
+    id: int = Column(Integer, primary_key=True, index=True) 
     is_verified: bool = Column(Boolean, default=False)
     token: Mapped[str] = deferred(Column(String, default=""))
     refresh_token: Mapped[str] = deferred(Column(String, default=""))
@@ -33,8 +34,12 @@ class User(Base):
     terms_accepted: bool = Column(Boolean, default=True)
     recive_mails: bool = Column(Boolean, default=True)
     lleidacoins_claimed: Boolean = Column(Boolean, default=False)
-    ##config = relationship('user-config', backref = 'user')
+    ##config_id = Column(Integer, ForeignKey('user-config.id'))
+    config = relationship('UserConfig', uselist=False)##, backref="user")
     __mapper_args__ = {
         "polymorphic_identity": "user",
         "polymorphic_on": type,
     }
+
+
+
