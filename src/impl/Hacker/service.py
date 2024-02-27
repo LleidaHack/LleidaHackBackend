@@ -63,8 +63,7 @@ class HackerService(BaseService):
 
     def add_hacker(self, payload: HackerCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)
-        new_hacker = ModelHacker(**payload.dict(),
-                                 code=generate_user_code())
+        new_hacker = ModelHacker(**payload.dict(), code=generate_user_code())
         if payload.image is not None:
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)
