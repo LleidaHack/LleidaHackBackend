@@ -25,7 +25,8 @@ def get_hacker_groups(str=Depends(JWTBearer())):
 
 
 @router.get("/{groupId}",
-            response_model=Union[HackerGroupGetAllSchema, HackerGroupGetSchema])
+            response_model=Union[HackerGroupGetAllSchema,
+                                 HackerGroupGetSchema])
 def get_hacker_group(groupId: int, token: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_hacker_group(groupId, token)
 
@@ -64,7 +65,9 @@ def get_hacker_group_members(groupId: int, str=Depends(JWTBearer())):
 
 
 @router.post("/{groupId}/members/{hackerId}")
-def add_hacker_to_group(groupId: int, hackerId: int, token: BaseToken = Depends(JWTBearer())):
+def add_hacker_to_group(groupId: int,
+                        hackerId: int,
+                        token: BaseToken = Depends(JWTBearer())):
     hacker_group = hackergroup_service.add_hacker_to_group(
         groupId, hackerId, token)
     return {"success": True, "added_id": hacker_group.id}

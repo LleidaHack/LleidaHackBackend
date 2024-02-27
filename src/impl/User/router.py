@@ -18,7 +18,7 @@ user_service = UserService()
 
 
 @router.get("/count")
-def count_users(token = Depends(JWTBearer())):
+def count_users(token=Depends(JWTBearer())):
     # return BaseToken.get_data(token)
     return user_service.count_users()
 
@@ -38,9 +38,11 @@ def get_user(userId: int, token: BaseToken = Depends(JWTBearer())):
 def get_user_by_email(email: str, token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user_by_email(email, token)
 
+
 @router.get("/nickname/{nickname}",
             response_model=Union[UserGetAllSchema, UserGetSchema])
-def get_user_by_nickname(nickname: str, token: BaseToken = Depends(JWTBearer())):
+def get_user_by_nickname(nickname: str,
+                         token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user_by_nickname(nickname, token)
 
 

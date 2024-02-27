@@ -25,6 +25,7 @@ class TokenType(enum.Enum):
     VERIFICATION = 'verification'
     RESET_PASS = 'reset_pass'
 
+
 class BaseToken:
     user_id: int = 0
     expt: int = 0
@@ -32,10 +33,11 @@ class BaseToken:
     email: str = ''
     user_type: str = ''
     is_admin: bool = False
-    data:dict = None
+    data: dict = None
 
     user_service = UserService()
-    # @classmethod    
+
+    # @classmethod
     # def class_method(cls):
     #     print(f"A class method from {cls.__name__}!")
     def __init__(self, user: UserModel):
@@ -43,7 +45,7 @@ class BaseToken:
             datetime.utcnow() +
             timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))).isoformat()
         if user is None:
-            return 
+            return
         self.user_id = user.id
         self.email - user.email
         # self.type =
@@ -64,6 +66,7 @@ class BaseToken:
         self.type = data.get("type")
         self.email = data.get("email")
         return data
+
     def to_token(self):
         return BaseToken.encode(self.__dict__)
 

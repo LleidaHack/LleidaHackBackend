@@ -7,7 +7,6 @@ from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import generate_random_code, set_existing_data
 from src.utils.Token import BaseToken
 
-
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.Hacker.model import Hacker as ModelHacker

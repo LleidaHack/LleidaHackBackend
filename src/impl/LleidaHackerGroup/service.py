@@ -12,7 +12,6 @@ from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import set_existing_data
 from src.utils.Token import BaseToken
 
-
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
