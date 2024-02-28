@@ -23,6 +23,7 @@ from error.InvalidDataException import InvalidDataException
 
 from utils.hide_utils import hacker_show_private
 from utils.service_utils import check_user
+from models.UserConfig import UserConfig as ModelUserConfig
 
 
 async def get_all(db: Session):
@@ -58,10 +59,11 @@ async def get_hacker_by_email(email: str, db: Session):
 async def add_hacker(payload: SchemaHacker, db: Session):
     await check_user(db, payload.email, payload.nickname, payload.telephone)
     new_hacker = ModelHacker(**payload.dict(), code=generate_user_code(db))
+    
     if payload.image is not None:
         payload = check_image(payload)
     new_hacker.password = get_password_hash(payload.password)
-
+    
     db.add(new_hacker)
     db.commit()
     db.refresh(new_hacker)
