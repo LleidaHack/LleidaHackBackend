@@ -46,8 +46,7 @@ def test_hacker_signup():
                      is_image_url=False,
                      recive_mails=True,
                      github="string",
-                     linkedin="string"
-                     )
+                     linkedin="string")
     }
     response = client.post("/signup", json=payload)
     assert response.status_code == 200
