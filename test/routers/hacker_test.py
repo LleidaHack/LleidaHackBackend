@@ -75,5 +75,11 @@ def mock_jwt_bearer():
 def test_get_hackers():
     response = client.get("/all")
     assert response.status_code == 200
-    expected_response_body = [{"id": 1, "name": "Hacker1"}, {"id": 2, "name": "Hacker2"}]
+    expected_response_body = [{
+        "id": 1,
+        "name": "Hacker1"
+    }, {
+        "id": 2,
+        "name": "Hacker2"
+    }]
     assert response.json() == expected_response_body
