@@ -1,6 +1,7 @@
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from schemas.Hacker import Hacker as SchemaHacker
+from database import db_get
 from main import app
 import random
 import string
@@ -20,6 +21,7 @@ def random_password(length):
     return result_str[0].upper() + result_str[1:]
 
 
+# ===== signup endpoint test =====
 async def mock_add_hacker():
     return {"id": 1}
 
@@ -56,4 +58,22 @@ def test_hacker_signup():
         "access_token": "fake_access_token",
         "refresh_token": "fake_refresh_token"
     }
+    assert response.json() == expected_response_body
+
+
+# ===== get_all endpoint test =====
+async def mock_get_all():
+    return [{"id": 1, "name": "Hacker1"}, {"id": 2, "name": "Hacker2"}]
+
+
+def mock_jwt_bearer():
+    return "fake_token"
+
+
+@patch("services.hacker.get_all", new=mock_get_all)
+@patch("routers.hacker.get_hackers.JWTBearer", new=mock_jwt_bearer)
+def test_get_hackers():
+    response = client.get("/all")
+    assert response.status_code == 200
+    expected_response_body = [{"id": 1, "name": "Hacker1"}, {"id": 2, "name": "Hacker2"}]
     assert response.json() == expected_response_body
