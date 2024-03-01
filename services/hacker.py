@@ -1,4 +1,5 @@
 from datetime import datetime as date
+from hmac import new
 
 from models.Hacker import Hacker as ModelHacker
 from models.Hacker import HackerGroup as ModelHackerGroup
@@ -58,8 +59,10 @@ async def get_hacker_by_email(email: str, db: Session):
 
 async def add_hacker(payload: SchemaHacker, db: Session):
     await check_user(db, payload.email, payload.nickname, payload.telephone)
-    new_hacker = ModelHacker(**payload.dict(), code=generate_user_code(db))
-    
+    new_hacker = ModelHacker(**payload.dict(exclude={"config"}), code=generate_user_code(db))
+    ##config asignat manualment per provar
+    ##TODO: CORREGIR QUAN EL PROBLEMA ES SOLUCIONI AMB UNA ASIGNACIÓ AUTOMÀTICA
+
     if payload.image is not None:
         payload = check_image(payload)
     new_hacker.password = get_password_hash(payload.password)
@@ -67,8 +70,20 @@ async def add_hacker(payload: SchemaHacker, db: Session):
     db.add(new_hacker)
     db.commit()
     db.refresh(new_hacker)
-    return new_hacker
 
+  # Ahora que new_hacker se ha insertado en la base de datos, new_hacker.id existe
+    new_config = ModelUserConfig(
+    user_id=new_hacker.id,
+    reciveNotifications=payload.config.reciveNotifications,
+    defaultLang=payload.config.defaultLang,
+    comercialNotifications=payload.config.comercialNotifications,
+)
+    db.add(new_config)
+    db.commit()
+    db.refresh(new_config)
+
+    return new_hacker
+ 
 
 async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     if not data.is_admin:

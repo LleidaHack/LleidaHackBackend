@@ -21,7 +21,7 @@ class User(BaseModel):
     image: Optional[str]
     is_image_url: Optional[bool]
     recive_mails: Optional[bool]
-
+    config: UserConfigCreate
 
     @validator('email')
     def email_validation(cls, v):

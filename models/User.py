@@ -34,8 +34,8 @@ class User(Base):
     terms_accepted: bool = Column(Boolean, default=True)
     recive_mails: bool = Column(Boolean, default=True)
     lleidacoins_claimed: Boolean = Column(Boolean, default=False)
-    ##config_id = Column(Integer, ForeignKey('user-config.id'))
-    config = relationship('UserConfig', uselist=False)
+    config_id = Column(Integer, ForeignKey('user-config.id'))
+    config = relationship('UserConfig', foreign_keys=[config_id])
     __mapper_args__ = {
         "polymorphic_identity": "user",
         "polymorphic_on": type,

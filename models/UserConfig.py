@@ -10,8 +10,8 @@ from schemas.Event import Event
 
 class UserConfig(Base):
     __tablename__ = 'user-config'
-    id: int = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
+    id: int = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     #user = relationship('User', uselist=False, backref="config_c")  # Corregido el nombre del backref
     reciveNotifications = Column(Boolean, default=True)
     defaultLang = Column(String, default="ca-CA")
