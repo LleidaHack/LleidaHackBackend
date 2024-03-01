@@ -81,7 +81,9 @@ async def add_hacker(payload: SchemaHacker, db: Session):
     db.add(new_config)
     db.commit()
     db.refresh(new_config)
-
+    ##TODO: FALTA ARREGLAR QUE EL CONFIG_ID DE LA TAULA user ES NULL
+    new_hacker.config_id = new_config.id
+    db.commit()
     return new_hacker
  
 
