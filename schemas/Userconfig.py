@@ -25,6 +25,7 @@ class UserConfigGetAll(UserConfigGet):
     id:int
     comercialNotifications: bool
     reciveNotifications: bool
+    
 
 
 class UserConfigUpdate(BaseModel):

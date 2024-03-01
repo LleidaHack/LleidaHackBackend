@@ -17,7 +17,7 @@ router = APIRouter(
     tags=["UserConfig"],
 )
 
-@router.get("/all", response_model = List[UserConfigGetSchema])
+@router.get("/all", response_model = List[UserConfigGetAllSchema])
 def get_user_configs(db: Session = Depends(get_db),
                     token: str = Depends(JWTBearer())):
     return userConfig_service.get_all_users_config(db, token) ##TODO: Faltaria pasarli el token per a que nomes pugui realitzar-ho l'admin
@@ -39,4 +39,17 @@ def update_user_config(userId: int,
      return userConfig_service.update_user_config(db, userId, payload, get_data_from_token(token))
 
 
-##TODO faltaria el de crear el userconfig que hauria de estar relacionat amb la taula de creacio de usuaris
+##TODO: Creació del sistema de autoNeteja de valors / auto-asignació dels userconfigs que haurien d'existir pero no existeixen
+@router.delete("/")
+def delete_user_config(db: Session = Depends(get_db),
+                       token=Depends(JWTBearer())):
+    userConfig_service.delete_user_config(db, get_data_from_token(token))
+    
+    return {"message": "UserConfig deleted successfully"}
+
+
+
+@router.post("/")
+def create_user_configs(db: Session = Depends(get_db),
+                        token=Depends(JWTBearer())):
+    return userConfig_service.create_user_configs(db, get_data_from_token(token))

@@ -1,4 +1,5 @@
 from pydantic import parse_obj_as
+from models.User import User
 from sqlalchemy.orm import Session
 from security import get_data_from_token, get_password_hash
 
@@ -28,6 +29,7 @@ def get_user_config(db: Session, userId: int, token: TokenData):
 
     if data.is_admin or (data.available and(data.type == UserType.LLEIDAHACKER.value or data.user_id == userId)):
         return parse_obj_as(UserConfigGetAll, userConfig)
+    
     return parse_obj_as(UserConfigGet, userConfig)
         
 
@@ -62,3 +64,50 @@ def update_user_config(db: Session, userId: int, payload: SchemaUserConfigUpdate
     else:
         raise AuthenticationException("Not authorized")
 
+
+
+
+
+
+
+##Funcións per preparar la creació de userConfig de tots els usuaris i que vagi ben ordenat el valor de id
+def delete_user_config(db: Session, data: TokenData):
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    
+    db.execute('UPDATE "user" SET config_id = NULL')
+    db.commit()
+    db.query(ModelUserConfig).delete()
+    db.commit()
+
+
+
+
+
+def create_user_configs(db: Session, data: TokenData):
+    if not data.is_admin:
+        raise AuthenticationException("Not authorized")
+    
+    users = db.query(User).all()
+    success_count = 0
+    failed_count = 0
+    user_configs = []
+    for user in users:
+        user_config = ModelUserConfig(user_id=user.id, defaultLang="ca-CA", comercialNotifications=True, reciveNotifications=True)
+        user_configs.append(user_config)
+    
+    db.execute('ALTER SEQUENCE user_config_id_seq RESTART WITH 0')  # TODO: Arreglar esto para que al crear la tabla, empiece en 1 y no en 150 o por ahi
+    db.bulk_save_objects(user_configs)
+    db.commit()
+    
+    for user_config in user_configs:
+        user = db.query(User).filter(User.id == user_config.user_id).first()
+        if user:
+            user.config_id = user_config.id
+            success_count += 1
+        else:
+            failed_count += 1
+    
+    db.commit()
+    
+    return success_count, failed_count
