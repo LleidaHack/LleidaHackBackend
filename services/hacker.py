@@ -86,7 +86,7 @@ async def add_hacker(payload: SchemaHacker, db: Session):
     new_hacker.config_id = new_config.id
     db.commit()
     return new_hacker
- 
+
 
 async def remove_hacker(hackerId: int, db: Session, data: TokenData):
     if not data.is_admin:
