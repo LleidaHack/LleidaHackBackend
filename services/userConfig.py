@@ -96,7 +96,6 @@ def create_user_configs(db: Session, data: TokenData):
         user_config = ModelUserConfig(user_id=user.id, defaultLang="ca-CA", comercialNotifications=True, reciveNotifications=True)
         user_configs.append(user_config)
     
-    db.execute('ALTER SEQUENCE user_config_id_seq RESTART WITH 0')  # TODO: Arreglar esto para que al crear la tabla, empiece en 1 y no en 150 o por ahi
     db.bulk_save_objects(user_configs)
     db.commit()
     

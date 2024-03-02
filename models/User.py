@@ -7,6 +7,8 @@ from sqlalchemy.orm import Mapped
 
 
 
+##TODO: cascade : Buscar a documentació de fastapi i sqlalchemy
+
 class User(Base):
     __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True) 

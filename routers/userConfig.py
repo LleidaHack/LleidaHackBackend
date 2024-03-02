@@ -40,6 +40,7 @@ def update_user_config(userId: int,
 
 
 ##TODO: Creació del sistema de autoNeteja de valors / auto-asignació dels userconfigs que haurien d'existir pero no existeixen
+##TODO: BORRAR DESPRES D'UTILITZAR
 @router.delete("/")
 def delete_user_config(db: Session = Depends(get_db),
                        token=Depends(JWTBearer())):
@@ -49,7 +50,7 @@ def delete_user_config(db: Session = Depends(get_db),
 
 
 
-@router.post("/")
+@router.post("/") ##TODO: FICAR NOM DESCRIPTIU / 
 def create_user_configs(db: Session = Depends(get_db),
                         token=Depends(JWTBearer())):
     return userConfig_service.create_user_configs(db, get_data_from_token(token))

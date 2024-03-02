@@ -14,7 +14,8 @@ from error.NotFoundException import NotFoundException
 from utils.hide_utils import user_show_private
 from models.UserConfig import UserConfig as ModelConfig
 
-async def get_all(db: Session):
+async def get_all(db: Session, deleted: bool = False):
+    ##TODO: si deleted esta true, que mostri els usuaris deleted
     return db.query(ModelUser).all()
 
 
@@ -23,6 +24,7 @@ async def count_users(db: Session):
 
 
 async def get_user(db: Session, userId: int, data: TokenData):
+    ##TODO: NOMES ADMINS PODEN OBTINDRE UN USUARI DELETED.
     user = db.query(ModelUser).filter(ModelUser.id == userId).first()
     if user is None:
         raise NotFoundException("User not found")
@@ -34,6 +36,7 @@ async def get_user(db: Session, userId: int, data: TokenData):
 
 
 async def get_user_by_email(db: Session, email: str, data: TokenData):
+    ##TODO: ARREGLAR QUE AL CREAR ELS USUARIS, LA COMPROBACIO DE MAIL I TOT AIXO COMPROBI QUE NO EXISTEIX O QUE ESTA DELETED.
     if not data.is_admin:
         if not (data.available and data.type == UserType.LLEIDAHACKER.value):
             raise AuthenticationException("Not authorized")

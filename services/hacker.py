@@ -57,6 +57,7 @@ async def get_hacker_by_email(email: str, db: Session):
     return user
 
 
+##TODO: DESPRES DEL REFACTOR, VEURE COM GENERALITZAR LA FUNCIO PER A CREAR USUARIS.
 async def add_hacker(payload: SchemaHacker, db: Session):
     await check_user(db, payload.email, payload.nickname, payload.telephone)
     new_hacker = ModelHacker(**payload.dict(exclude={"config"}), code=generate_user_code(db))
