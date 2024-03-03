@@ -35,9 +35,6 @@ event_service = EventService()
 hacker_group_service = HackerGroupService()
 
 
-
-
-
 @router.get("/confirm-assistance")
 def confirm_assistance(token: str, db: Session = Depends(get_db)):
     """

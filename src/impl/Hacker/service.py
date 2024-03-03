@@ -76,7 +76,8 @@ class HackerService(BaseService):
         return new_hacker
 
     def remove_hacker(self, hackerId: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]) or not data.check([UserType.HACKER], hackerId):
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check(
+            [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
         hacker_groups_ids = self.db.query(ModelHackerGroupUser).filter(
@@ -115,7 +116,8 @@ class HackerService(BaseService):
 
     def update_hacker(self, hackerId: int, payload: HackerUpdateSchema,
                       data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]) or not data.check([UserType.HACKER], hackerId):
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check(
+            [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
         if payload.image is not None:
@@ -209,7 +211,6 @@ class HackerService(BaseService):
     #     db.refresh(hacker)
     #     send_event_registration_email(hacker, event)
     #     return event
-
 
     # def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
     #                                 db: Session, data: BaseToken):

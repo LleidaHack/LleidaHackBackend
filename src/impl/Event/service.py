@@ -32,6 +32,7 @@ class EventService(BaseService):
 
     hacker_service = HackerService()
     company_service = CompanyService()
+
     # hackergroup_service = HackerGroupService()
 
     def get_all(self):
@@ -164,14 +165,17 @@ class EventService(BaseService):
         hacker_group = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.id == hacker_group_id).first()
         grou_hackers = [hacker.id for hacker in hacker_group.hackers]
-        if not data.is_admin and (data.user_id not in grou_hackers or hacker_group.leader_id != data.user_id):
+        if not data.is_admin and (data.user_id not in grou_hackers
+                                  or hacker_group.leader_id != data.user_id):
             raise AuthenticationException("Not authorized")
         if hacker_group is None:
             raise AuthenticationException("Hacker group not found")
         event = self.db.query(ModelEvent).filter(ModelEvent.id == id).first()
         if event is None:
             raise Exception("Event not found")
-        if not data.is_admin and (event.max_participants <= len(event.hackers) + len(hacker_group.hackers)):
+        if not data.is_admin and (event.max_participants
+                                  <= len(event.hackers) +
+                                  len(hacker_group.hackers)):
             raise Exception("Event is full")
         event.hacker_groups.append(hacker_group)
         event.hackers.extend(hacker_group.hackers)
@@ -269,9 +273,8 @@ class EventService(BaseService):
                     sizes[user.shirt_size] = 1
         return sizes
 
-
     def get_accepted_and_confirmed(self, eventId: int):
-        event= self.get_by_id(eventId)
+        event = self.get_by_id(eventId)
         accepted_and_confirmed = []
         for user in event.accepted_hackers:
             user_registration = self.query(ModelHackerRegistration).filter(

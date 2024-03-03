@@ -22,14 +22,14 @@ class CompanyUserService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelCompanyUser).all()
-    
-    def get_by_id(self, companyUserId:int):
+
+    def get_by_id(self, companyUserId: int):
         user = self.db.query(ModelCompanyUser).filter(
-                    ModelCompanyUser.id == companyUserId).first()
+            ModelCompanyUser.id == companyUserId).first()
         if user is None:
             raise NotFoundException("Company user not found")
         return user
-    
+
     def get_company_user(self, companyUserId: int, data: BaseToken):
         user = self.get_by_id(companyUserId)
         if data.is_admin or (data.available and
@@ -53,7 +53,8 @@ class CompanyUserService(BaseService):
 
     def update_company_user(self, payload: CompanyUserUpdateSchema,
                             companyUserId: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER]) or data.user_id != companyUserId:
+        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER
+                           ]) or data.user_id != companyUserId:
             raise AuthenticationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
         if payload.image is not None:
@@ -69,7 +70,8 @@ class CompanyUserService(BaseService):
         return company_user, updated
 
     def delete_company_user(self, companyUserId: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER]) or data.user_id != companyUserId:
+        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER
+                           ]) or data.user_id != companyUserId:
             raise AuthenticationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
         self.db.delete(company_user)

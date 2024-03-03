@@ -130,7 +130,8 @@ class HackerGroupService(BaseService):
 
     def add_hacker_to_group_by_code(self, code: str, hackerId: int,
                                     data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]) or not data.check([UserType.HACKER], hackerId):
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check(
+            [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         hacker_group = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.code == code).first()

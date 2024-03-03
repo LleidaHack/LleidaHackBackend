@@ -23,9 +23,6 @@ from services.mail import send_event_accepted_email
 # A PARTIR D'ARA EL SENYOR LOLO A.K.A LUFI ES DIRA LO-FI
 
 
-
-
-
 def confirm_assistance(token: AssistenceToken, db: Session):
     # data = get_data_from_token(token, special=True)
     # if data.expt < datetime.utcnow().isoformat():

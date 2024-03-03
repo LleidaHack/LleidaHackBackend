@@ -78,18 +78,22 @@ class BaseToken:
         elif type == TokenType.VERIFICATION.value:
             user.verification_token = self.to_token()
 
-    def check(self, available_users:List[UserType], user_id: int = None):
-        types=[t.value for t in available_users]
+    def check(self, available_users: List[UserType], user_id: int = None):
+        types = [t.value for t in available_users]
         if self.user_type not in types and not self.user_type == UserType.SERVICE:
             return False
-        if self.user_type in [UserType.HACKER.value, UserType.COMPANYUSER.value, UserType.LLEIDAHACKER.value]:
+        if self.user_type in [
+                UserType.HACKER.value, UserType.COMPANYUSER.value,
+                UserType.LLEIDAHACKER.value
+        ]:
             if user_id is not None:
                 return self.available and self.user_id == user_id
             return self.available
         elif self.user_type == UserType.SERVICE.value:
             return self.is_admin
-        else: 
+        else:
             return False
+
     # data.check([UserType.LLEIDAHACKER, UserType.HACKER] , False, user_id)
     # data.check(['is_admin=False',
     #             'user_type in [LLEIDAHACKER,HACKER]',
@@ -135,7 +139,6 @@ class BaseToken:
         if parser.parse(dict["expt"]) < datetime.utcnow():
             raise AuthenticationException("Token expired")
         return True
-    
 
     # @classmethod
     def get_data(token: str):
