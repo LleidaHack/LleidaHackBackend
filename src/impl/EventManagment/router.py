@@ -9,7 +9,7 @@ from src.error.NotFoundException import NotFoundException
 from src.utils.service_utils import subtract_lists
 from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer
-from src.utils.security import get_data_from_token
+# from src.utils.security import get_data_from_token
 from src.utils.database import get_db
 from src.utils.Configuration import Configuration
 
@@ -35,39 +35,7 @@ event_service = EventService()
 hacker_group_service = HackerGroupService()
 
 
-@router.put("/{event_id}/register/{hacker_id}")
-def register_hacker_to_event(event_id: int,
-                             hacker_id: str,
-                             registration: EventRegistrationSchema,
-                             db: Session = Depends(get_db),
-                             token: BaseToken = Depends(JWTBearer())):
-    """
-    Register a hacker to an event
-    """
-    event = event_service.get_event(event_id, db)
-    hacker = hacker_service.get_hacker(hacker_id, db,
-                                       get_data_from_token(token))
-    return eventmanagment_service.register_hacker_to_event(
-        registration, event, hacker, db, get_data_from_token(token))
 
-
-@router.put("/{event_id}/unregister/{hacker_id}")
-def unregister_hacker_from_event(event_id: int,
-                                 hacker_id: int,
-                                 db: Session = Depends(get_db),
-                                 token: BaseToken = Depends(JWTBearer())):
-    """
-    Unregister a hacker from an event
-    """
-    event = event_service.get_event(event_id, db)
-    if event is None:
-        raise NotFoundException("Event not found")
-    hacker = hacker_service.get_hacker(hacker_id, db,
-                                       get_data_from_token(token))
-    if hacker is None:
-        raise NotFoundException("Hacker not found")
-    return eventmanagment_service.unregister_hacker_from_event(
-        event, hacker, db, get_data_from_token(token))
 
 
 @router.get("/confirm-assistance")

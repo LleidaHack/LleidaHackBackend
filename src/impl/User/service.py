@@ -30,68 +30,50 @@ class UserService(BaseService):
 
     def get_user(self, userId: int, data):
         user = self.get_by_id(userId)
-        if data.is_admin or (data.available and
-                             (data.type == UserType.LLEIDAHACKER.value
-                              or data.user_id == userId)):
+        if data.check([UserType.LLEIDAHACKER], userId):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
     def get_user_by_email(self, email: str, data):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         user = self.db.query(ModelUser).filter(
             ModelUser.email == email).first()
         if user is None:
             raise NotFoundException("User not found")
-        if data.is_admin or (data.available and
-                             (data.type == UserType.LLEIDAHACKER.value
-                              or data.user_id == user.id)):
+        if data.check([UserType.LLEIDAHACKER], user.id):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
     def get_user_by_nickname(self, nickname: str, data):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         user = self.db.query(ModelUser).filter(
             ModelUser.nickname == nickname).first()
         if user is None:
             raise NotFoundException("User not found")
-        if data.is_admin or (data.available and
-                             (data.type == UserType.LLEIDAHACKER.value
-                              or data.user_id == user.id)):
+        if data.check([UserType.LLEIDAHACKER], user.id):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
     def get_user_by_phone(self, phone: str, data):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         user = self.db.query(ModelUser).filter(
             ModelUser.telephone == phone).first()
         if user is None:
             raise NotFoundException("User not found")
-        if data.is_admin or (data.available and
-                             (data.type == UserType.LLEIDAHACKER.value
-                              or data.user_id == user.id)):
+        if data.check([UserType.LLEIDAHACKER], user.id):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
     def get_user_by_code(self, code: str, data):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         user = self.db.query(ModelUser).filter(ModelUser.code == code).first()
         if user is None:
             raise NotFoundException("User not found")
-        if data.is_admin or (data.available and
-                             (data.type == UserType.LLEIDAHACKER.value
-                              or data.user_id == user.id)):
+        if data.check([UserType.LLEIDAHACKER], user.id):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
 
@@ -104,12 +86,5 @@ class UserService(BaseService):
     #     self.db.commit()
     #     return new_user
 
-    def delete_user(self, userId: int):
-        return self.get_by_id(userId).delete()
-
-    def set_token(self, token):
-        user = self.get_by_id(token.user_id)
-        token.user_set(user)
-        self.db.commit()
-        self.db.refresh(user)
-        return
+    # def delete_user(self, userId: int):
+    #     return self.get_by_id(userId).delete()

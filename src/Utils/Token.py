@@ -1,5 +1,6 @@
 from __future__ import annotations
 import enum
+from typing import List
 import jwt
 from dateutil import parser
 from datetime import datetime, timedelta
@@ -53,7 +54,7 @@ class BaseToken:
             # self.is_service = True
             self.user_id = 0
             self.available = True
-            self.user_type = "service"
+            self.user_type = UserType.SERVICE.value
             self.email = "service"
             return self.__dict__
         data = self.decode(token)
@@ -76,9 +77,31 @@ class BaseToken:
         elif type == TokenType.VERIFICATION.value:
             user.verification_token = self.to_token()
 
-    # def save_to_user(self):
-    #     BaseToken.user_service.set_token(self)
-    #     return self.to_token()
+    def check(self, available_users:List[UserType], user_id: int = None):
+        types=[t.value for t in available_users]
+        if self.user_type not in types and not self.user_type == UserType.SERVICE:
+            return False
+        if self.user_type in [UserType.HACKER.value, UserType.COMPANYUSER.value, UserType.LLEIDAHACKER.value]:
+            if user_id is not None:
+                return self.available and self.user_id == user_id
+            return self.available
+        elif self.user_type == UserType.SERVICE.value:
+            return self.is_admin
+        else: 
+            return False
+    # data.check([UserType.LLEIDAHACKER, UserType.HACKER] , False, user_id)
+    # data.check(['is_admin=False',
+    #             'user_type in [LLEIDAHACKER,HACKER]',
+    #             'user_id = '+ user_id])
+    # def check(self, available_users:List[UserType], is_admin: bool, user_id: int = None):
+    #     types=[t.value for t in available_users]
+    #     if self.user_type not in types:
+    #         return False
+    #     ret = False
+    #     if is_admin:
+    #         ret = self.is_admin
+    #     if user_id is not None:
+    #         ret = ret and user_id == self.user_id
 
     # @classmethod
     def is_service(token):
@@ -111,6 +134,7 @@ class BaseToken:
         if parser.parse(dict["expt"]) < datetime.utcnow():
             raise AuthenticationException("Token expired")
         return True
+    
 
     # @classmethod
     def get_data(token: str):

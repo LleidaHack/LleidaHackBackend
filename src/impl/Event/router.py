@@ -2,8 +2,8 @@ from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List, Union
-from error.AuthenticationException import AuthenticationException
-from error.NotFoundException import NotFoundException
+from src.error.AuthenticationException import AuthenticationException
+# from src.error.NotFoundException import NotFoundException
 
 from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer

@@ -47,11 +47,8 @@ class HackerGroupService(BaseService):
         return group
 
     def get_hacker_group(self, id: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value
-                     or data.type == UserType.HACKER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
+            raise AuthenticationException("Not authorized")
         group = self.get_by_id(id)
         members_ids = [h.id for h in group.members]
         if data.is_admin or (data.type == UserType.HACKER.value
@@ -62,11 +59,8 @@ class HackerGroupService(BaseService):
 
     def add_hacker_group(self, payload: HackerGroupCreateSchema,
                          data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value
-                     or data.type == UserType.HACKER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
+            raise AuthenticationException("Not authorized")
         members = []
         event_exists = self.get_by_id(payload.event_id)
         if data.type == UserType.HACKER.value:
@@ -89,28 +83,20 @@ class HackerGroupService(BaseService):
 
     def update_hacker_group(self, id: int, payload: HackerGroupUpdateSchema,
                             data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value
-                     or data.type == UserType.HACKER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
+            raise AuthenticationException("Not authorized")
         hacker_group = self.get_by_id(id)
-        if not (data.type == UserType.HACKER.value
-                and data.user_id == hacker_group.leader_id):
+        if not data.check([UserType.HACKER], hacker_group.leader_id):
             raise AuthenticationException("Not authorized")
         updated = set_existing_data(hacker_group, payload)
         self.db.commit()
         return hacker_group, updated
 
     def delete_hacker_group(self, id: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value
-                     or data.type == UserType.HACKER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
+            raise AuthenticationException("Not authorized")
         hacker_group = self.get_by_id(id)
-        if not (data.type == UserType.HACKER.value
-                and data.user_id == hacker_group.leader_id):
+        if not data.check([UserType.HACKER], hacker_group.leader_id):
             raise AuthenticationException("Not authorized")
         self.db.query(ModelHackerGroupUser).filter(
             ModelHackerGroupUser.group_id == id).delete()
@@ -120,11 +106,8 @@ class HackerGroupService(BaseService):
 
     def add_hacker_to_group(self, groupId: int, hackerId: int,
                             data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value
-                     or data.type == UserType.HACKER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
+            raise AuthenticationException("Not authorized")
         hacker_group = self.get_by_id(groupId)
         hacker = self.hacker_service.get_by_id(hackerId)
         # if hacker_group.members is None:
@@ -147,12 +130,8 @@ class HackerGroupService(BaseService):
 
     def add_hacker_to_group_by_code(self, code: str, hackerId: int,
                                     data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value or
-                     (data.type == UserType.HACKER.value
-                      and data.user_id == hackerId))):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check([UserType.HACKER], hackerId):
+            raise AuthenticationException("Not authorized")
         hacker_group = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.code == code).first()
         if hacker_group is None:

@@ -32,10 +32,8 @@ class CompanyService(BaseService):
             ModelCompany.id == companyId).first()
 
     def add_company(self, payload: CompanyCreateSchema, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available
-                    and data.user_type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         # if data.user_type == UserType.COMPANYUSER.value:
             # user = self.user_service.get_by_id(data.user_id)
         payload = check_image(payload)
@@ -47,11 +45,8 @@ class CompanyService(BaseService):
 
     def update_company(self, companyId: int, payload: CompanyUpdateSchema,
                        data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.user_type == UserType.COMPANYUSER.value
-                     or data.user_type == UserType.LLEIDAHACKER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.COMPANYUSER, UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)
         if data.user_type == UserType.COMPANYUSER.value:
             user = self.user_service.get_by_id(data.user_id)
@@ -66,16 +61,11 @@ class CompanyService(BaseService):
         return company, updated
 
     def delete_company(self, companyId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.user_type == UserType.LLEIDAHACKER.value
-                     or data.user_type == UserType.COMPANYUSER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER]):
+            raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)
         users = [user.id for user in company.users]
-        if not data.is_admin:
-            if not (data.user_id in users
-                    and company.leader_id == data.user_id):
+        if not data.is_admin or (not (data.user_id in users and company.leader_id == data.user_id)):
                 raise AuthenticationException("Not authorized")
         self.db.delete(company)
         self.db.commit()
@@ -86,18 +76,12 @@ class CompanyService(BaseService):
         return company.users
 
     def add_company_user(self, companyId: int, userId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.user_type == UserType.LLEIDAHACKER.value
-                     or data.user_type == UserType.COMPANYUSER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER]):
+            raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)
         users = [user.id for user in company.users]
-        if not data.is_admin:
-            if not (data.user_type == UserType.LLEIDAHACKER.value or
-                    (data.user_type == UserType.COMPANYUSER.value
-                     and data.user_id in users)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER]) or data.user_id not in users:
+            raise AuthenticationException("Not authorized")
         user = self.user_service.get_by_id(userId)
         company.users.append(user)
         self.db.commit()
@@ -106,18 +90,12 @@ class CompanyService(BaseService):
 
     def delete_company_user(self, companyId: int, userId: int,
                             data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.user_type == UserType.COMPANYUSER.value
-                     or data.user_type == UserType.LLEIDAHACKER.value)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.COMPANYUSER, UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)
         users = [user.id for user in company.users]
-        if not data.is_admin:
-            if not data.user_id in users:
+        if not data.is_admin or data.user_id not in users:
                 raise AuthenticationException("Not authorized")
-        if company is None:
-            raise NotFoundException("Company not found")
         user = self.user_service.get_by_id(userId)
         company.users.remove(user)
         self.db.commit()

@@ -89,6 +89,35 @@ def get_hacker_groups(userId: int,
                       token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_groups(userId, db)
 
+# @router.put("/{hacker_id}/register/{event_id}")
+# def register_hacker_to_event(event_id: int,
+#                              hacker_id: str,
+#                              registration: EventRegistrationSchema,
+#                              token: BaseToken = Depends(JWTBearer())):
+#     """
+#     Register a hacker to an event
+#     """
+#     # event = event_service.get_event(event_id)
+#     # hacker = hacker_service.get_hacker(hacker_id, token)
+#     return hacker_service.register_hacker_to_event(registration, hacker_id, event_id, token)
+
+
+# @router.put("/{hacker_id}/unregister/{event_id}")
+# def unregister_hacker_from_event(event_id: int,
+#                                  hacker_id: int,
+#                                  token: BaseToken = Depends(JWTBearer())):
+#     """
+#     Unregister a hacker from an event
+#     """
+#     # event = event_service.get_event(event_id, db)
+#     # if event is None:
+#     #     raise NotFoundException("Event not found")
+#     # hacker = hacker_service.get_hacker(hacker_id, db,
+#     #                                    get_data_from_token(token))
+#     # if hacker is None:
+#     #     raise NotFoundException("Hacker not found")
+#     return hacker_service.unregister_hacker_from_event(hacker_id, event_id, token)
+
 
 # @router.post("/update_all_codes")
 # def update_all_codes(db: Session = Depends(get_db),

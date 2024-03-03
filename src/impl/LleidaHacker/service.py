@@ -50,11 +50,8 @@ class LleidaHackerService(BaseService):
     def update_lleidahacker(self, userId: int,
                             payload: LleidaHackerUpdateSchema,
                             data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value
-                     and data.user_id == userId)):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER], userId):
+            raise AuthenticationException("Not authorized")
         lleidahacker = self.db.query(ModelLleidaHacker).filter(
             ModelLleidaHacker.id == userId).first()
         if lleidahacker is None:

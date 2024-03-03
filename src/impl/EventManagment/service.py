@@ -23,77 +23,7 @@ from services.mail import send_event_accepted_email
 
 # A PARTIR D'ARA EL SENYOR LOLO A.K.A LUFI ES DIRA LO-FI
 
-def register_hacker_to_event(payload: EventRegistrationSchema,
-                             event: ModelEvent, hacker: ModelHacker,
-                             db: Session, data: BaseToken):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and data.user_id == hacker.id))):
-            raise AuthenticationException("Not authorized")
-    if not event.is_open:
-        raise InvalidDataException("Event registration not open")
-    if hacker in event.registered_hackers or hacker in event.accepted_hackers:
-        raise InvalidDataException("Hacker already registered")
-    if len(event.registered_hackers) >= event.max_participants:
-        raise InvalidDataException("Event full")
-    if payload.cv != "" and not isBase64(payload.cv):
-        raise InvalidDataException("Invalid CV")
-    event_registration = ModelHackerRegistration(**payload.dict(),
-                                                 user_id=hacker.id,
-                                                 event_id=event.id,
-                                                 confirmed_assistance=False,
-                                                 confirm_assistance_token="")
-    if payload.update_user:
-        if hacker.cv != payload.cv:
-            hacker.cv = payload.cv
-        # if hacker.description != payload.description:
-        #     hacker.description = payload.description
-        if hacker.food_restrictions != payload.food_restrictions:
-            hacker.food_restrictions = payload.food_restrictions
-        if hacker.shirt_size != payload.shirt_size:
-            hacker.shirt_size = payload.shirt_size
-        if hacker.github != payload.github:
-            hacker.github = payload.github
-        if hacker.linkedin != payload.linkedin:
-            hacker.linkedin = payload.linkedin
-        if hacker.studies != payload.studies:
-            hacker.studies = payload.studies
-        if hacker.study_center != payload.study_center:
-            hacker.study_center = payload.study_center
-        if hacker.location != payload.location:
-            hacker.location = payload.location
-        if hacker.how_did_you_meet_us != payload.how_did_you_meet_us:
-            hacker.how_did_you_meet_us = payload.how_did_you_meet_us
-    db.add(event_registration)
-    db.commit()
-    db.refresh(event)
-    db.refresh(hacker)
-    send_event_registration_email(hacker, event)
-    return event
 
-
-def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
-                                 db: Session, data: BaseToken):
-    if not data.is_admin:
-        if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                    (data.type == UserType.HACKER.value
-                                     and data.user_id == hacker.id))):
-            raise AuthenticationException("Not authorized")
-    if not event.is_open:
-        raise InvalidDataException("Event registration not open")
-    if not (hacker in event.registered_hackers
-            or hacker in event.accepted_hackers):
-        raise InvalidDataException("Hacker not registered")
-    if hacker in event.participants:
-        raise InvalidDataException("Hacker already participating")
-    if hacker in event.accepted_hackers:
-        event.accepted_hackers.remove(hacker)
-    else:
-        event.registered_hackers.remove(hacker)
-    db.commit()
-    db.refresh(event)
-    return event
 
 
 def confirm_assistance(token: AssistenceToken, db: Session):

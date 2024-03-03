@@ -74,12 +74,8 @@ class HackerService(BaseService):
         return new_hacker
 
     def remove_hacker(self, hackerId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (
-                    data.available and
-                (data.type == UserType.LLEIDAHACKER.value or
-                 (data.type == UserType.HACKER and data.user_id == hackerId))):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check([UserType.HACKER], hackerId):
+            raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
         hacker_groups_ids = self.db.query(ModelHackerGroupUser).filter(
             ModelHackerGroupUser.hacker_id == hackerId).all()
@@ -117,12 +113,8 @@ class HackerService(BaseService):
 
     def update_hacker(self, hackerId: int, payload: HackerUpdateSchema,
                       data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value or
-                     (data.type == UserType.HACKER.value
-                      and data.user_id == hackerId))):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check([UserType.HACKER], hackerId):
+            raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
         if payload.image is not None:
             payload = check_image(payload)
@@ -136,10 +128,8 @@ class HackerService(BaseService):
         return hacker, updated
 
     def ban_hacker(self, hackerId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
         if hacker.banned:
             raise InvalidDataException("Hacker already banned")
@@ -149,10 +139,8 @@ class HackerService(BaseService):
         return hacker
 
     def unban_hacker(self, hackerId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
         if not hacker.banned:
             raise InvalidDataException("Hacker already unbanned")
@@ -170,6 +158,78 @@ class HackerService(BaseService):
     def get_hacker_groups(self, hackerId: int):
         hacker = self.get_by_id(hackerId)
         return hacker.groups
+
+    # def register_hacker_to_event(self, payload: EventRegistrationSchema, hacker_id: int, event_id: int, data: BaseToken):
+    #     if not data.is_admin:
+    #         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+    #                                     (data.type == UserType.HACKER.value
+    #                                     and data.user_id == hacker_id))):
+    #             raise AuthenticationException("Not authorized")
+    #     event = self.event_service.get_by_id(event_id)
+    #     if not event.is_open:
+    #         raise InvalidDataException("Event registration not open")
+    #     hacker = self.get_by_id(hacker_id)
+    #     if hacker in event.registered_hackers or hacker in event.accepted_hackers:
+    #         raise InvalidDataException("Hacker already registered")
+    #     if len(event.registered_hackers) >= event.max_participants:
+    #         raise InvalidDataException("Event full")
+    #     if payload.cv != "" and not isBase64(payload.cv):
+    #         raise InvalidDataException("Invalid CV")
+    #     event_registration = ModelHackerRegistration(**payload.dict(),
+    #                                                 user_id=hacker.id,
+    #                                                 event_id=event.id,
+    #                                                 confirmed_assistance=False,
+    #                                                 confirm_assistance_token="")
+    #     if payload.update_user:
+    #         if hacker.cv != payload.cv:
+    #             hacker.cv = payload.cv
+    #         # if hacker.description != payload.description:
+    #         #     hacker.description = payload.description
+    #         if hacker.food_restrictions != payload.food_restrictions:
+    #             hacker.food_restrictions = payload.food_restrictions
+    #         if hacker.shirt_size != payload.shirt_size:
+    #             hacker.shirt_size = payload.shirt_size
+    #         if hacker.github != payload.github:
+    #             hacker.github = payload.github
+    #         if hacker.linkedin != payload.linkedin:
+    #             hacker.linkedin = payload.linkedin
+    #         if hacker.studies != payload.studies:
+    #             hacker.studies = payload.studies
+    #         if hacker.study_center != payload.study_center:
+    #             hacker.study_center = payload.study_center
+    #         if hacker.location != payload.location:
+    #             hacker.location = payload.location
+    #         if hacker.how_did_you_meet_us != payload.how_did_you_meet_us:
+    #             hacker.how_did_you_meet_us = payload.how_did_you_meet_us
+    #     db.add(event_registration)
+    #     db.commit()
+    #     db.refresh(event)
+    #     db.refresh(hacker)
+    #     send_event_registration_email(hacker, event)
+    #     return event
+
+
+    # def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
+    #                                 db: Session, data: BaseToken):
+    #     if not data.is_admin:
+    #         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+    #                                     (data.type == UserType.HACKER.value
+    #                                     and data.user_id == hacker.id))):
+    #             raise AuthenticationException("Not authorized")
+    #     if not event.is_open:
+    #         raise InvalidDataException("Event registration not open")
+    #     if not (hacker in event.registered_hackers
+    #             or hacker in event.accepted_hackers):
+    #         raise InvalidDataException("Hacker not registered")
+    #     if hacker in event.participants:
+    #         raise InvalidDataException("Hacker already participating")
+    #     if hacker in event.accepted_hackers:
+    #         event.accepted_hackers.remove(hacker)
+    #     else:
+    #         event.registered_hackers.remove(hacker)
+    #     db.commit()
+    #     db.refresh(event)
+    #     return event
 
     # def update_all_codes(data: BaseToken):
     #     if not data.is_admin:
