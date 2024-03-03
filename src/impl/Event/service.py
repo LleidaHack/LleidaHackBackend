@@ -36,13 +36,13 @@ class EventService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelEvent).all()
-    
+
     def get_by_id(self, id: int) -> ModelEvent:
         event = self.db.query(ModelEvent).filter(ModelEvent.id == id).first()
         if event is None:
             raise NotFoundException('event not found')
         return event
-    
+
     def get_hackeps(self, year: int):
         #return and event called HackEPS year ignoring caps
         e = self.db.query(ModelEvent).filter(
@@ -65,8 +65,6 @@ class EventService(BaseService):
                     [g.hacker_group_id for g in user_groups])).first()
         return group
 
-    
-    
     def get_event(self, id: int, data: BaseToken):
         event = self.get_by_id(id)
         if not data.check([UserType.LLEIDAHACKER]):
@@ -262,7 +260,7 @@ class EventService(BaseService):
 
     def get_sizes(self, eventId: int):
         sizes = {}
-        event= self.get_by_id(eventId)
+        event = self.get_by_id(eventId)
         for user in event.registered_hackers:
             if user.shirt_size is not None and user.shirt_size.strip() != "":
                 if user.shirt_size in sizes:
@@ -283,12 +281,10 @@ class EventService(BaseService):
                 accepted_and_confirmed.append(user)
         return accepted_and_confirmed
 
-
     def get_hackers_unregistered(self, eventId: int):
         hackers = self.hacker_service.get_all()
         event = self.get_by_id(eventId)
         return subtract_lists(hackers, event.registered_hackers)
-
 
     def count_hackers_unregistered(self, eventId: int):
         return len(self.get_hackers_unregistered(eventId))
@@ -296,17 +292,22 @@ class EventService(BaseService):
     def get_event_status(self, eventId: int):
         event = self.get_by_id(eventId)
         data = {
-            'registratedUsers': len(event.registered_hackers),
-            'groups': len(event.groups),
-            'acceptedUsers': len(event.accepted_hackers),
-            'rejectedUsers': len(event.rejected_hackers),
-            'participatingUsers': len(event.participants),
-            'acceptedAndConfirmedUsers': len(self.get_accepted_and_confirmed(eventId)),
+            'registratedUsers':
+            len(event.registered_hackers),
+            'groups':
+            len(event.groups),
+            'acceptedUsers':
+            len(event.accepted_hackers),
+            'rejectedUsers':
+            len(event.rejected_hackers),
+            'participatingUsers':
+            len(event.participants),
+            'acceptedAndConfirmedUsers':
+            len(self.get_accepted_and_confirmed(eventId)),
         }
         for meal in event.meals:
             data[meal.name] = len(meal.users)
         return data
-
 
     def get_food_restrictions(self, eventId: int):
         event = self.get_by_id(eventId)
@@ -318,18 +319,19 @@ class EventService(BaseService):
                 restrictions.append(user.food_restrictions)
         # remove duplicates
         return list(set(restrictions))
-    
+
     def get_pending_hackers_gruped(self, event: ModelEvent, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         # Extract hacker IDs from registered_hackers
         pending_hackers_ids = [
             h.id for h in subtract_lists(event.registered_hackers,
-                                        event.accepted_hackers)
+                                         event.accepted_hackers)
         ]
         # Retrieve pending hacker groups
-        pending_groups_ids = self.db.query(ModelHackerGroupUser.group_id).filter(
-            ModelHackerGroupUser.hacker_id.in_(pending_hackers_ids)).all()
+        pending_groups_ids = self.db.query(
+            ModelHackerGroupUser.group_id).filter(
+                ModelHackerGroupUser.hacker_id.in_(pending_hackers_ids)).all()
         pending_groups_ids = [g[0] for g in pending_groups_ids]
         #remove duplicates
         pending_groups_ids = list(dict.fromkeys(pending_groups_ids))
@@ -367,7 +369,7 @@ class EventService(BaseService):
             "shirt_size": hacker.shirt_size,
             "approved": hacker in event.accepted_hackers,
         } for hacker in subtract_lists(event.registered_hackers,
-                                    event.accepted_hackers)
+                                       event.accepted_hackers)
                         if hacker.id not in group_users]
 
         # Combine group and nogroup data into a dictionary

@@ -172,8 +172,10 @@ def get_sizes(event_id: int):
     return event_service.get_sizes(event_id)
 
 
-@router.get("/{event_id}/get_unregistered_hackers", response_model=List[HackerGetSchema])
-def get_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
+@router.get("/{event_id}/get_unregistered_hackers",
+            response_model=List[HackerGetSchema])
+def get_unregistered_hackers(event_id: int,
+                             token: BaseToken = Depends(JWTBearer())):
     """
     Get the hackers who are not registered for the event
     """

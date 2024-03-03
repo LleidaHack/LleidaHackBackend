@@ -21,12 +21,14 @@ class CompanyService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelCompany).all()
-    
+
     def get_by_id(self, companyId: int):
-        company =  self.db.query(ModelCompany).filter(ModelCompany.id == companyId).first()
+        company = self.db.query(ModelCompany).filter(
+            ModelCompany.id == companyId).first()
         if company is None:
             raise NotFoundException('company not found')
         return company
+
     def get_company(self, companyId: int):
         return self.db.query(ModelCompany).filter(
             ModelCompany.id == companyId).first()
@@ -35,7 +37,7 @@ class CompanyService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         # if data.user_type == UserType.COMPANYUSER.value:
-            # user = self.user_service.get_by_id(data.user_id)
+        # user = self.user_service.get_by_id(data.user_id)
         payload = check_image(payload)
         new_company = ModelCompany(**payload.dict())
         self.db.add(new_company)

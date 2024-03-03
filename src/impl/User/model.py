@@ -10,7 +10,7 @@ class User(Base):
     __tablename__ = 'user'
     id: int = Column(Integer, primary_key=True, index=True)
     is_verified: bool = Column(Boolean, default=False)
-    
+
     name: str = Column(String)
     nickname: str = Column(String, unique=True, index=True)
     password: str = (Column(String))
@@ -34,7 +34,7 @@ class User(Base):
     refresh_token: str = (Column(String, default=""))
     verification_token: str = (Column(String, default=""))
     rest_password_token: str = (Column(String, default=""))
-    
+
     __mapper_args__ = {
         "polymorphic_identity": "user",
         "polymorphic_on": type,

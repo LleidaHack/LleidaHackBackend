@@ -30,14 +30,14 @@ class HackerGroupService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelHackerGroup).all()
-    
+
     def get_by_id(self, id: int):
         group = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.id == id).first()
         if group is None:
             raise NotFoundException("Hacker group not found")
         return group
-    
+
     def get_by_code(self, code: str, exc=True):
         group = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.code == code).first()
