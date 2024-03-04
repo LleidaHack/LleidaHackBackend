@@ -1,19 +1,12 @@
 from __future__ import annotations
 from datetime import date
-from typing import List
 
-# from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
-from sqlalchemy.orm import relationship, deferred, Mapped
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from src.utils.database import Base
 
-# from src.impl.Hacker.model import Hacker as ModelHacker
-# from src.impl.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
-# from src.impl.Company.model import Company as ModelCompany
-# from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
-from src.impl.Meal.model import Meal as ModelMeal
 
 
 class HackerParticipation(Base):

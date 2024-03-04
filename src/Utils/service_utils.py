@@ -10,11 +10,11 @@ user_service = UserService()
 
 
 def check_user(email, nickname, telephone):
-    if user_service.get_user_by_email(email) is not None:
+    if user_service.get_by_email(email, False) is not None:
         raise ValidationException("Email already exists")
-    if user_service.get_user_by_nickname(nickname) is not None:
+    if user_service.get_by_nickname(nickname, False) is not None:
         raise ValidationException("Nickname already exists")
-    if user_service.get_user_by_phone(telephone) is not None:
+    if user_service.get_by_phone(telephone, False) is not None:
         raise ValidationException("Telephone already exists")
 
 
@@ -55,7 +55,7 @@ def check_image(payload):
 
 def generate_user_code(length=20):
     code = generate_random_code(length)
-    while user_service.get_user_by_code(code) is not None:
+    while user_service.get_by_code(code, False) is not None:
         code = generate_random_code(length)
     return code
 

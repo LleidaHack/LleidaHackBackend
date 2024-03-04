@@ -1,4 +1,5 @@
 from src.utils.database import db_get
+from src.utils.Singleton import Singleton
 # from typing import List, TypeVar, Generic
 
 # T = TypeVar('T')
@@ -14,15 +15,15 @@ from src.utils.database import db_get
 #         return self.db.query(self.model).all()
 
 
-class BaseService:
+class BaseService(metaclass=Singleton):
 
     def __init__(self):
         self.db = db_get()
 
-    @classmethod
-    def get_all(cls):
-        return cls.db.query(cls.model).all()
+    # @classmethod
+    # def get_all(cls):
+    #     return cls.db.query(cls.model).all()
 
-    @classmethod
-    def get_by_id(cls):
-        return cls.model.query.filter(...)
+    # @classmethod
+    # def get_by_id(cls):
+    #     return cls.model.query.filter(...)

@@ -15,7 +15,6 @@ from src.utils.UserType import UserType
 from src.utils.Token import BaseToken
 
 from src.impl.Hacker.model import Hacker as ModelHacker
-from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
 from src.impl.Event.model import HackerParticipation as ModelHackerParticipation
@@ -26,10 +25,12 @@ from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 
-from sqlalchemy.orm import with_polymorphic
 
 
 class HackerService(BaseService):
+
+    def __call__(self):
+        pass
 
     def get_all(self):
         return self.db.query(ModelHacker).all()
@@ -42,10 +43,7 @@ class HackerService(BaseService):
 
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
-        if data.is_admin or (data.available and
-                             (data.type == UserType.LLEIDAHACKER.value or
-                              (data.type == UserType.HACKER.value
-                               and data.user_id == hackerId))):
+        if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
             return parse_obj_as(HackerGetAllSchema, user)
         return parse_obj_as(HackerGetSchema, user)
 
@@ -83,9 +81,7 @@ class HackerService(BaseService):
         hacker_groups_ids = self.db.query(ModelHackerGroupUser).filter(
             ModelHackerGroupUser.hacker_id == hackerId).all()
         hacker_groups_ids = [group.group_id for group in hacker_groups_ids]
-        hacker_groups = self.db.query(ModelHackerGroup).filter(
-            ModelHackerGroup.id.in_(hacker_groups_ids)).all()
-
+        hacker_groups = self.hackergroup_service.get_when_id_in(hacker_groups_ids)
         event_regs = self.db.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == hackerId).all()
         for event_reg in event_regs:
@@ -100,9 +96,6 @@ class HackerService(BaseService):
             self.db.delete(event_acc)
         self.db.delete(hacker)
         for group in hacker_groups:
-            # hacker_group_user = self.db.query(ModelHackerGroupUser).filter(
-            #     ModelHackerGroupUser.hacker_id == hackerId
-            #     and ModelHackerGroupUser.group_id == group.id).first()
             if len(group.members) <= 1:
                 self.db.delete(group)
             else:

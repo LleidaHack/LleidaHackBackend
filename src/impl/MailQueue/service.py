@@ -38,7 +38,7 @@ def send_email(email: str,
             server.sendmail(Configuration.get('MAIL', 'MAIL_FROM'), [email],
                             msg.as_string())
     except Exception as e:
-        raise HTTPException(status_code=500, message=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def set_sent(mail, db: Session):

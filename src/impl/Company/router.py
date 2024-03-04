@@ -1,5 +1,5 @@
 from typing import List, Union
-from fastapi import Depends, Response, APIRouter
+from fastapi import Depends, APIRouter
 
 from src.utils.Token import BaseToken
 from src.utils.JWTBearer import JWTBearer

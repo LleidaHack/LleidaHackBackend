@@ -21,7 +21,7 @@ meal_service = MealService()
 
 @router.get("/{id}/all", response_model=List[MealGetSchema])
 def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):
-    return meal_service.get_meals(id, token)
+    return meal_service.get_all(id)
 
 
 @router.get("/{id}/{meal_id}",
@@ -48,3 +48,13 @@ def update_meal(id: int,
 def delete_meal(id: int, meal_id: int,
                 token: BaseToken = Depends(JWTBearer())):
     return meal_service.delete_meal(id, meal_id, token)
+
+@router.put("/{event_id}/eat/{meal_id}/{hacker_code}")
+def eat(meal_id: int,
+        hacker_code: str,
+        token: BaseToken = Depends(JWTBearer())):
+    """
+    Register a hacker to an event
+    """
+    return meal_service.eat(meal_id, hacker_code, token)
+    

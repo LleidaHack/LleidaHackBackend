@@ -20,6 +20,9 @@ from src.impl.CompanyUser.model import CompanyUser as ModelCompanyUser
 
 class CompanyUserService(BaseService):
 
+    def __call__(self):
+        pass
+
     def get_all(self):
         return self.db.query(ModelCompanyUser).all()
 
@@ -32,10 +35,7 @@ class CompanyUserService(BaseService):
 
     def get_company_user(self, companyUserId: int, data: BaseToken):
         user = self.get_by_id(companyUserId)
-        if data.is_admin or (data.available and
-                             (data.type == UserType.LLEIDAHACKER.value or
-                              (data.type == UserType.COMPANYUSER.value
-                               and data.user_id == companyUserId))):
+        if data.check([UserType.LLEIDAHACKER.value, UserType.COMPANYUSER], companyUserId):
             return parse_obj_as(CompanyUserGetAllSchema, user)
         return parse_obj_as(CompanyUserGetSchema, user)
 
@@ -53,8 +53,7 @@ class CompanyUserService(BaseService):
 
     def update_company_user(self, payload: CompanyUserUpdateSchema,
                             companyUserId: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER
-                           ]) or data.user_id != companyUserId:
+        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER]) or data.user_id != companyUserId:
             raise AuthenticationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
         if payload.image is not None:

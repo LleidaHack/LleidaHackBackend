@@ -45,7 +45,7 @@ class BaseToken:
         if user is None:
             return
         self.user_id = user.id
-        self.email - user.email
+        self.email = user.email
         # self.type =
         self.user_type = user.type
 
@@ -86,7 +86,7 @@ class BaseToken:
                 UserType.HACKER.value, UserType.COMPANYUSER.value,
                 UserType.LLEIDAHACKER.value
         ]:
-            if user_id is not None:
+            if user_id is not None and self.user_type is not UserType.LLEIDAHACKER.value:
                 return self.available and self.user_id == user_id
             return self.available
         elif self.user_type == UserType.SERVICE.value:

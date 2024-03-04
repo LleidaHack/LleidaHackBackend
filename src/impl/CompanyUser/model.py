@@ -1,8 +1,6 @@
 from __future__ import annotations
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import deferred
-from sqlalchemy.orm import Mapped
 
 from src.impl.User.model import User
 from src.impl.Company.model import Company

@@ -2,12 +2,11 @@ from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
 from src.utils.service_utils import set_existing_data, check_image
-from src.impl.User.service import UserService
+import src.impl.User.service as U_S
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 
-from src.impl.User.model import User as ModelUser
 from src.impl.Company.model import Company as ModelCompany
 
 from src.impl.Company.schema import CompanyCreate as CompanyCreateSchema
@@ -16,8 +15,10 @@ from src.utils.Token import BaseToken
 
 
 class CompanyService(BaseService):
-
-    user_service = UserService()
+    
+    def __call__(self):
+        if self.user_service is None:
+            self.user_service = U_S.UserService()
 
     def get_all(self):
         return self.db.query(ModelCompany).all()
@@ -30,8 +31,7 @@ class CompanyService(BaseService):
         return company
 
     def get_company(self, companyId: int):
-        return self.db.query(ModelCompany).filter(
-            ModelCompany.id == companyId).first()
+        return self.get_by_id(companyId)
 
     def add_company(self, payload: CompanyCreateSchema, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):

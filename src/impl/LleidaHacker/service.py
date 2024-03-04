@@ -21,17 +21,22 @@ from src.impl.LleidaHacker.schema import LleidaHackerGetAll as LleidaHackerGetAl
 
 class LleidaHackerService(BaseService):
 
+    def __call__(self):
+        pass
+
     def get_all(self):
         return self.db.query(ModelLleidaHacker).all()
-
-    def get_lleidahacker(self, userId: int, data: BaseToken):
+    
+    def get_by_id(self, id:int):
         user = self.db.query(ModelLleidaHacker).filter(
-            ModelLleidaHacker.id == userId).first()
+            ModelLleidaHacker.id == id).first()
         if user is None:
             raise NotFoundException("LleidaHacker not found")
-        if data.is_admin or (data.available and
-                             (data.type == UserType.LLEIDAHACKER.value
-                              and data.user_id == userId)):
+        return user
+    
+    def get_lleidahacker(self, userId: int, data: BaseToken):
+        user = self.get_by_id(userId)
+        if data.check([UserType.LLEIDAHACKER], userId):
             return parse_obj_as(LleidaHackerGetAllSchema, user)
         return parse_obj_as(LleidaHackerGetSchema, user)
 
@@ -52,10 +57,7 @@ class LleidaHackerService(BaseService):
                             data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER], userId):
             raise AuthenticationException("Not authorized")
-        lleidahacker = self.db.query(ModelLleidaHacker).filter(
-            ModelLleidaHacker.id == userId).first()
-        if lleidahacker is None:
-            raise NotFoundException("LleidaHacker not found")
+        lleidahacker = self.get_by_id(userId)
         if payload.image is not None:
             payload = check_image(payload)
         updated = set_existing_data(lleidahacker, payload)
@@ -68,28 +70,17 @@ class LleidaHackerService(BaseService):
         return lleidahacker, updated
 
     def delete_lleidahacker(self, userId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value
-                     and data.user_id == userId)):
-                raise AuthenticationException("Not authorized")
-        lleidahacker = self.db.query(ModelLleidaHacker).filter(
-            ModelLleidaHacker.id == userId).first()
-        if lleidahacker is None:
-            raise NotFoundException("LleidaHacker not found")
+        if not data.check([UserType.LLEIDAHACKER], userId):
+            raise AuthenticationException("Not authorized")
+        lleidahacker = self.get_by_id(userId)
         self.db.delete(lleidahacker)
         self.db.commit()
         return lleidahacker
 
     def accept_lleidahacker(self, userId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
-        lleidahacker = self.db.query(ModelLleidaHacker).filter(
-            ModelLleidaHacker.id == userId).first()
-        if lleidahacker is None:
-            raise NotFoundException("LleidaHacker not found")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 1
         lleidahacker.accepted = 1
         lleidahacker.rejected = 0
@@ -98,14 +89,9 @@ class LleidaHackerService(BaseService):
         return lleidahacker
 
     def reject_lleidahacker(self, userId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
-        lleidahacker = self.db.query(ModelLleidaHacker).filter(
-            ModelLleidaHacker.id == userId).first()
-        if lleidahacker is None:
-            raise NotFoundException("LleidaHacker not found")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 0
         lleidahacker.accepted = 0
         lleidahacker.rejected = 1
@@ -114,28 +100,18 @@ class LleidaHackerService(BaseService):
         return lleidahacker
 
     def activate_lleidahacker(self, userId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
-        lleidahacker = self.db.query(ModelLleidaHacker).filter(
-            ModelLleidaHacker.id == userId).first()
-        if lleidahacker is None:
-            raise NotFoundException("LleidaHacker not found")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 1
         self.db.commit()
         self.db.refresh(lleidahacker)
         return lleidahacker
 
     def deactivate_lleidahacker(self, userId: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available
-                    and data.type == UserType.LLEIDAHACKER.value):
-                raise AuthenticationException("Not authorized")
-        lleidahacker = self.db.query(ModelLleidaHacker).filter(
-            ModelLleidaHacker.id == userId).first()
-        if lleidahacker is None:
-            raise NotFoundException("LleidaHacker not found")
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 0
         self.db.commit()
         self.db.refresh(lleidahacker)

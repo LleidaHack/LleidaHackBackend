@@ -25,13 +25,13 @@ hacker_service = HackerService()
 
 
 @router.post("/signup")
-def signup(payload: HackerCreateSchema = Depends(get_db)):
+def signup(payload: HackerCreateSchema):
     new_hacker = hacker_service.add_hacker(payload)
 
     # return new_hacker
-    access_token = AccesToken(new_hacker).save_to_user()
-    refresh_token = RefreshToken(new_hacker).save_to_user()
-    VerificationToken(new_hacker).save_to_user()
+    access_token = AccesToken(new_hacker).user_set(new_hacker)
+    refresh_token = RefreshToken(new_hacker).user_set(new_hacker)
+    VerificationToken(new_hacker).user_set(new_hacker)
     send_registration_confirmation_email(new_hacker)
     return {
         "success": True,

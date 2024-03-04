@@ -4,23 +4,32 @@ from src.utils.security import get_password_hash, verify_password
 from src.utils.UserType import UserType
 from src.utils.Base.BaseService import BaseService
 
-from src.impl.User.service import UserService
 from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
+
+import src.impl.User.service as U_S
+import src.impl.CompanyUser.service as C_S
+import src.impl.Hacker.service as H_S
+import src.impl.LleidaHacker.service as LH_S
 
 from src.error.InputException import InputException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.AuthenticationException import AuthenticationException
 
 from src.impl.User.model import User as ModelUser
-from src.impl.Hacker.model import Hacker as ModelHacker
-from src.impl.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
-from src.impl.CompanyUser.model import CompanyUser as ModelCompanyUser
-from src.utils.Token import AccesToken, RefreshToken, ResetPassToken, VerificationToken
+from src.utils.Token import AccesToken, BaseToken, RefreshToken, ResetPassToken, VerificationToken
 
 
 class AuthenticationService(BaseService):
-
-    user_service = UserService()
+    
+    def __call__(self):
+        if self.user_service is None:
+            self.user_service = U_S.UserService()
+        if self.hacker_service is None:
+            self.hacker_service = H_S.HackerService()
+        if self.lleidaHacker_service is None:
+            self.lleidaHacker_service = LH_S.LleidaHackerService()
+        if self.companyUser_service is None:
+            self.companyUser_service = C_S.CompanyUserService()
 
     def create_access_and_refresh_token(self, user: ModelUser):
         access_token = AccesToken(user)
@@ -74,14 +83,11 @@ class AuthenticationService(BaseService):
 
     def get_me(self, token: AccesToken):
         if token.user_type == UserType.HACKER.value:
-            return self.db.query(ModelHacker).filter(
-                ModelHacker.id == token.user_id).first()
+            return self.hacker_service.get_by_id(token.user_id)
         elif token.user_type == UserType.LLEIDAHACKER.value:
-            return self.db.query(ModelLleidaHacker).filter(
-                ModelLleidaHacker.id == token.user_id).first()
+            return self.lleidaHacker_service.get_by_id(token.user_id)
         elif token.user_type == UserType.COMPANYUSER.value:
-            return self.db.query(ModelCompanyUser).filter(
-                ModelCompanyUser.id == token.user_id).first()
+            return self.companyUser_service.get_by_id(token.user_id)
         else:
             raise InputException("Invalid token")
 
@@ -93,6 +99,18 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("User already verified")
         if user.verification_token != token.to_token():
             raise InvalidDataException("Invalid token")
+        user.is_verified = True
+        user.verification_token = None
+        self.db.commit()
+        self.db.refresh(user)
+        return {"success": True}
+    
+    def force_verification(self, user_id: int, data: BaseToken):
+        if not data.is_admin:
+            raise AuthenticationException("User don'have permissions to do this")
+        user = self.user_service.get_by_id(user_id)
+        if user.is_verified:
+            raise InvalidDataException("User already verified")
         user.is_verified = True
         user.verification_token = None
         self.db.commit()

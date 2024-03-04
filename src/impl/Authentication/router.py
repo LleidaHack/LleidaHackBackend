@@ -48,17 +48,21 @@ def me(token: BaseToken = Depends(JWTBearer())):
 def verify(token: str):
     return auth_service.verify_user(BaseToken.get_data(token))
 
+@router.post("/force-verify/{user_id}")
+def verify(user_id, token: BaseToken = Depends(JWTBearer())):
+    return auth_service.force_verification(user_id, token)
 
-# @router.post("/resend-verification")
+
+@router.post("/resend-verification")
 def resend_verification(email: str):
     return auth_service.resend_verification(email)
 
 
-# @router.get("/check_token")
+@router.get("/check_token")
 def check_token(token: BaseToken = Depends(JWTBearer())):
     return {"success": True}
 
 
-# @router.get("/contact")
+@router.get("/contact")
 def contact(name: str, title: str, email: str, message: str):
     return auth_service.contact(name, title, email, message)

@@ -1,11 +1,10 @@
-from fastapi import Depends, APIRouter
-from sqlalchemy.orm import Session
+from fastapi import Depends, APIRouter, Response
 from datetime import datetime
 from typing import List, Union
 from src.error.AuthenticationException import AuthenticationException
 # from src.error.NotFoundException import NotFoundException
 
-from src.utils.Token import BaseToken
+from src.utils.Token import AssistenceToken, BaseToken
 from src.utils.JWTBearer import JWTBearer
 
 from src.impl.Event.schema import EventGet as EventGetSchema
@@ -18,6 +17,8 @@ from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
 from src.impl.Company.schema import CompanyGet as CompanyGetSchema
 
 from src.impl.Event.service import EventService
+from utils.Configuration import Configuration
+from utils.service_utils import subtract_lists
 
 router = APIRouter(
     prefix="/event",
@@ -193,3 +194,138 @@ def count_unregistered_hackers(event_id: int,
     if not token.is_admin:
         raise AuthenticationException("Not authorized")
     return event_service.count_hackers_unregistered(event_id)
+
+@router.get("/confirm-assistance")
+def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
+    """
+    Confirm assistance of a hacker to an event
+    """
+    event_service.confirm_assistance(token)
+    #redirect to Configuration.get('OTHERS', 'FRONT_URL')
+    return Response(
+        status_code=303,
+        headers={"Location": Configuration.get('OTHERS', 'FRONT_URL')})
+
+@router.get("/force-confirm-assistance/{event_id}/{user_id}")
+def confirm_assistance(event_id: int, user_id: int, token: BaseToken = Depends(JWTBearer())):
+    """
+    Confirm assistance of a hacker to an event
+    """
+    return event_service.force_confirm_assistance(user_id, event_id, token)
+
+@router.put("/{event_id}/participate/{hacker_code}")
+def participate_hacker(event_id: int, hacker_code: str, token: BaseToken = Depends(JWTBearer())):
+    """
+    Participate a hacker to an event
+    """
+    return event_service.participate_hacker(event_id, hacker_code, token)
+    
+
+
+@router.put("/{event_id}/unparticipate/{hacker_code}")
+def unparticipate_hacker_from_event(event_id: int,
+                                    hacker_code: str,
+                                    token: BaseToken = Depends(JWTBearer())):
+    """
+    Unparticipate a hacker from an event
+    """
+    event_service.unparticipate_hacker(event_id, hacker_code, token)
+
+
+@router.put("/{event_id}/accept/{hacker_id}")
+def accept_hacker_to_event(event_id: int,
+                           hacker_id: int,
+                           token: BaseToken = Depends(JWTBearer())):
+    """
+        Accept a hacker to an event
+        """
+    event_service.accept_hacker(event_id, hacker_id, token)
+
+
+
+@router.put("/{event_id}/reject/{hacker_id}")
+def reject_hacker_from_event(event_id: int,
+                             hacker_id: int,
+                             token: BaseToken = Depends(JWTBearer())):
+    """
+        Reject a hacker from an event
+    """
+    return event_service.reject_hacker(event_id, hacker_id,token)
+
+
+@router.put("/{event_id}/acceptgroup/{group_id}")
+def accept_group(event_id: int,
+                          group_id: int,
+                          token: BaseToken = Depends(JWTBearer())):
+    return event_service.accept_group(event_id, group_id, token)
+
+@router.put("/{event_id}/rejectgroup/{group_id}")
+def reject_group(event_id: int,group_id: int,token: BaseToken = Depends(JWTBearer())):
+    """
+          Reject a group from an event
+    """
+    return event_service.reject_group(event_id, group_id, token)
+
+@router.get("/{event_id}/pending")
+def get_pending_hackers(event_id: int,
+                        token: BaseToken = Depends(JWTBearer())):
+    """
+    Get the pending hackers of an event
+    """
+    if token.is_admin:
+        raise AuthenticationException("You don't have permissions")
+    event = event_service.get_event(event_id, token)
+    return {
+        'size': len(event.registered_hackers),
+        'hackers': subtract_lists(event.registered_hackers,
+                                  event.accepted_hackers)
+    }
+
+@router.get("/{event_id}/rejected")
+def get_rejected_hackers(event_id: int,
+                         token: BaseToken = Depends(JWTBearer())):
+    """
+        Get the rejected hackers of an event
+        """
+    if token.is_admin:
+        raise AuthenticationException("You don't have permissions")
+    event = event_service.get_event(event_id, token)
+    return {
+        'size': len(event.rejected_hackers),
+        'hackers': event.rejected_hackers
+    }
+@router.get("/{event_id}/status")
+def get_event_status(event_id: int):
+    """
+    Get the status of an event
+    """
+    return event_service.get_status(event_id)
+
+
+@router.get("/{event_id}/food_restrictions")
+def get_food_restrictions(event_id: int):
+    return event_service.get_food_restrictions(event_id)
+
+@router.get("/{event_id}/pendinggruped")
+def get_pending_hackers_gruped(event_id: int,
+                               token: BaseToken = Depends(JWTBearer())):
+    return event_service.get_pending_hackers_gruped(event_id, token)
+
+# @router.post("/{event_id}/send_remember")
+# def send_remember(
+#     event_id: int,
+#     # background_tasks: BackgroundTasks,
+#     db: Session = Depends(get_db),
+#     token: BaseToken = Depends(JWTBearer())):
+#     """
+#     Send a remember notification to all attendees of an event
+#     """
+#     data = get_data_from_token(token)
+#     if not data.is_admin:
+#         raise AuthenticationException("Not authorized")
+#     all = hacker_service.get_all(db)
+#     event = event_service.get_event(event_id, db)
+#     if event is None:
+#         raise NotFoundException("Event not found")
+#     users = subtract_lists(all, event.registered_hackers)
+#     return mail_service.send_all_reminder_mails(users)
