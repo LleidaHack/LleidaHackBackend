@@ -26,14 +26,14 @@ class LleidaHackerService(BaseService):
 
     def get_all(self):
         return self.db.query(ModelLleidaHacker).all()
-    
-    def get_by_id(self, id:int):
+
+    def get_by_id(self, id: int):
         user = self.db.query(ModelLleidaHacker).filter(
             ModelLleidaHacker.id == id).first()
         if user is None:
             raise NotFoundException("LleidaHacker not found")
         return user
-    
+
     def get_lleidahacker(self, userId: int, data: BaseToken):
         user = self.get_by_id(userId)
         if data.check([UserType.LLEIDAHACKER], userId):

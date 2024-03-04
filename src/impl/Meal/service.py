@@ -19,6 +19,7 @@ from src.error.NotFoundException import NotFoundException
 import src.impl.Event.service as E_S
 import src.impl.Hacker.service as H_S
 
+
 class MealService(BaseService):
 
     def __call__(self):
@@ -54,7 +55,8 @@ class MealService(BaseService):
     def update_meal(self, id: int, meal_id: int, meal: MealUpdateSchema,
                     data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to update meals")
+            raise AuthenticationException(
+                "You are not allowed to update meals")
         db_meal = self.get_by_id(meal_id)
         set_existing_data(db_meal, meal)
         self.db.commit()
@@ -63,7 +65,8 @@ class MealService(BaseService):
 
     def delete_meal(self, id: int, meal_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to delete meals")
+            raise AuthenticationException(
+                "You are not allowed to delete meals")
         db_meal = self.get_by_id(meal_id)
         self.db.delete(db_meal)
         self.db.commit()

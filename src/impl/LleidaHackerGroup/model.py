@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from src.utils.database import Base
 
+
 class LleidaHackerGroupUser(Base):
     __tablename__ = 'lleida_hacker_group_user'
     group_id = Column(Integer,

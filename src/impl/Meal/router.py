@@ -49,6 +49,7 @@ def delete_meal(id: int, meal_id: int,
                 token: BaseToken = Depends(JWTBearer())):
     return meal_service.delete_meal(id, meal_id, token)
 
+
 @router.put("/{event_id}/eat/{meal_id}/{hacker_code}")
 def eat(meal_id: int,
         hacker_code: str,
@@ -57,4 +58,3 @@ def eat(meal_id: int,
     Register a hacker to an event
     """
     return meal_service.eat(meal_id, hacker_code, token)
-    

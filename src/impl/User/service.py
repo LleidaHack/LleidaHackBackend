@@ -28,28 +28,28 @@ class UserService(BaseService):
             raise NotFoundException("User not found")
         return user
 
-    def get_by_email(self, email: str, exc = True):
+    def get_by_email(self, email: str, exc=True):
         user = self.db.query(ModelUser).filter(
             ModelUser.email == email).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user
-    
-    def get_by_nickname(self, nickname: str, exc = True):
+
+    def get_by_nickname(self, nickname: str, exc=True):
         user = self.db.query(ModelUser).filter(
             ModelUser.nickname == nickname).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user
 
-    def get_by_phone(self, phone: str, exc = True):
+    def get_by_phone(self, phone: str, exc=True):
         user = self.db.query(ModelUser).filter(
             ModelUser.telephone == phone).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user
 
-    def get_by_code(self, code: str, exc = True):
+    def get_by_code(self, code: str, exc=True):
         user = self.db.query(ModelUser).filter(ModelUser.code == code).first()
         if user is None and exc:
             raise NotFoundException("User not found")
@@ -63,7 +63,7 @@ class UserService(BaseService):
         if data.check([UserType.LLEIDAHACKER], userId):
             return parse_obj_as(UserGetAllSchema, user)
         return parse_obj_as(UserGetSchema, user)
-    
+
     def get_user_by_email(self, email: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")

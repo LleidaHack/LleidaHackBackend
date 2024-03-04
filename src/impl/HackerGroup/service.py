@@ -38,10 +38,11 @@ class HackerGroupService(BaseService):
         if group is None:
             raise NotFoundException("Hacker group not found")
         return group
-    
+
     def get_when_id_in(self, ids: List[int]):
-        return self.db.query(ModelHackerGroup).filter(ModelHackerGroup.id.in_(ids)).all()
-    
+        return self.db.query(ModelHackerGroup).filter(
+            ModelHackerGroup.id.in_(ids)).all()
+
     def get_by_code(self, code: str, exc=True):
         group = self.db.query(ModelHackerGroup).filter(
             ModelHackerGroup.code == code).first()
@@ -55,7 +56,8 @@ class HackerGroupService(BaseService):
             raise AuthenticationException("Not authorized")
         group = self.get_by_id(id)
         members_ids = [h.id for h in group.members]
-        if data.check([UserType.HACKER, UserType.LLEIDAHACKER]) and data.user_id in members_ids:
+        if data.check([UserType.HACKER, UserType.LLEIDAHACKER
+                       ]) and data.user_id in members_ids:
             return parse_obj_as(HackerGroupGetAllSchema, group)
         return parse_obj_as(HackerGroupGetSchema, group)
 
@@ -159,8 +161,13 @@ class HackerGroupService(BaseService):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER.value]):
             raise AuthenticationException("Not authorized")
         hacker_group = self.get_by_id(groupId)
-        if not data.check([UserType.LLEIDAHACKER.value, UserType.HACKER]) and not data.check([UserType.HACKER], hackerId) and data.user_id != hacker_group.leader_id and data.user_id == hacker_group.leader_id:
-            raise InvalidDataException("Cannot remove user from group other than you")
+        if not data.check([
+                UserType.LLEIDAHACKER.value, UserType.HACKER
+        ]) and not data.check(
+            [UserType.HACKER], hackerId
+        ) and data.user_id != hacker_group.leader_id and data.user_id == hacker_group.leader_id:
+            raise InvalidDataException(
+                "Cannot remove user from group other than you")
         hacker = [h for h in hacker_group.members if h.id == hackerId]
         hacker_group.members.remove(hacker[0])
         if len(hacker_group.members) == 0:
@@ -182,7 +189,8 @@ class HackerGroupService(BaseService):
         if hacker_group.leader_id == hacker.id:
             raise InvalidDataException("Cannot set leader to current leader")
         group_members_ids = [member.id for member in hacker_group.members]
-        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]) and data.user_id not in group_members_ids:
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER
+                           ]) and data.user_id not in group_members_ids:
             raise AuthenticationException("hacker not in group")
         hacker_group.leader_id = hacker.id
         self.db.ommit()

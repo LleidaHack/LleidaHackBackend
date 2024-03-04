@@ -26,7 +26,6 @@ from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 
 
-
 class HackerService(BaseService):
 
     def __call__(self):
@@ -81,7 +80,8 @@ class HackerService(BaseService):
         hacker_groups_ids = self.db.query(ModelHackerGroupUser).filter(
             ModelHackerGroupUser.hacker_id == hackerId).all()
         hacker_groups_ids = [group.group_id for group in hacker_groups_ids]
-        hacker_groups = self.hackergroup_service.get_when_id_in(hacker_groups_ids)
+        hacker_groups = self.hackergroup_service.get_when_id_in(
+            hacker_groups_ids)
         event_regs = self.db.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == hackerId).all()
         for event_reg in event_regs:

@@ -195,6 +195,7 @@ def count_unregistered_hackers(event_id: int,
         raise AuthenticationException("Not authorized")
     return event_service.count_hackers_unregistered(event_id)
 
+
 @router.get("/confirm-assistance")
 def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     """
@@ -206,20 +207,25 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
         status_code=303,
         headers={"Location": Configuration.get('OTHERS', 'FRONT_URL')})
 
+
 @router.get("/force-confirm-assistance/{event_id}/{user_id}")
-def confirm_assistance(event_id: int, user_id: int, token: BaseToken = Depends(JWTBearer())):
+def confirm_assistance(event_id: int,
+                       user_id: int,
+                       token: BaseToken = Depends(JWTBearer())):
     """
     Confirm assistance of a hacker to an event
     """
     return event_service.force_confirm_assistance(user_id, event_id, token)
 
+
 @router.put("/{event_id}/participate/{hacker_code}")
-def participate_hacker(event_id: int, hacker_code: str, token: BaseToken = Depends(JWTBearer())):
+def participate_hacker(event_id: int,
+                       hacker_code: str,
+                       token: BaseToken = Depends(JWTBearer())):
     """
     Participate a hacker to an event
     """
     return event_service.participate_hacker(event_id, hacker_code, token)
-    
 
 
 @router.put("/{event_id}/unparticipate/{hacker_code}")
@@ -242,7 +248,6 @@ def accept_hacker_to_event(event_id: int,
     event_service.accept_hacker(event_id, hacker_id, token)
 
 
-
 @router.put("/{event_id}/reject/{hacker_id}")
 def reject_hacker_from_event(event_id: int,
                              hacker_id: int,
@@ -250,21 +255,25 @@ def reject_hacker_from_event(event_id: int,
     """
         Reject a hacker from an event
     """
-    return event_service.reject_hacker(event_id, hacker_id,token)
+    return event_service.reject_hacker(event_id, hacker_id, token)
 
 
 @router.put("/{event_id}/acceptgroup/{group_id}")
 def accept_group(event_id: int,
-                          group_id: int,
-                          token: BaseToken = Depends(JWTBearer())):
+                 group_id: int,
+                 token: BaseToken = Depends(JWTBearer())):
     return event_service.accept_group(event_id, group_id, token)
 
+
 @router.put("/{event_id}/rejectgroup/{group_id}")
-def reject_group(event_id: int,group_id: int,token: BaseToken = Depends(JWTBearer())):
+def reject_group(event_id: int,
+                 group_id: int,
+                 token: BaseToken = Depends(JWTBearer())):
     """
           Reject a group from an event
     """
     return event_service.reject_group(event_id, group_id, token)
+
 
 @router.get("/{event_id}/pending")
 def get_pending_hackers(event_id: int,
@@ -281,6 +290,7 @@ def get_pending_hackers(event_id: int,
                                   event.accepted_hackers)
     }
 
+
 @router.get("/{event_id}/rejected")
 def get_rejected_hackers(event_id: int,
                          token: BaseToken = Depends(JWTBearer())):
@@ -294,6 +304,8 @@ def get_rejected_hackers(event_id: int,
         'size': len(event.rejected_hackers),
         'hackers': event.rejected_hackers
     }
+
+
 @router.get("/{event_id}/status")
 def get_event_status(event_id: int):
     """
@@ -306,10 +318,12 @@ def get_event_status(event_id: int):
 def get_food_restrictions(event_id: int):
     return event_service.get_food_restrictions(event_id)
 
+
 @router.get("/{event_id}/pendinggruped")
 def get_pending_hackers_gruped(event_id: int,
                                token: BaseToken = Depends(JWTBearer())):
     return event_service.get_pending_hackers_gruped(event_id, token)
+
 
 # @router.post("/{event_id}/send_remember")
 # def send_remember(

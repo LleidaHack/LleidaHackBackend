@@ -8,7 +8,6 @@ from sqlalchemy.sql import func
 from src.utils.database import Base
 
 
-
 class HackerParticipation(Base):
     __tablename__ = "hacker_event_participation"
     user_id = Column(Integer,

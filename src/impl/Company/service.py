@@ -15,7 +15,7 @@ from src.utils.Token import BaseToken
 
 
 class CompanyService(BaseService):
-    
+
     def __call__(self):
         if self.user_service is None:
             self.user_service = U_S.UserService()

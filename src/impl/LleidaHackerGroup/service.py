@@ -18,14 +18,15 @@ from src.error.InvalidDataException import InvalidDataException
 
 
 class LleidaHackerGroupService(BaseService):
+
     def __call__(self):
         if self.lleidaHackerService is None:
             self.lleidaHackerService = LleidaHackerService()
 
     def get_all(self):
         return self.db.query(ModelLleidaHackerGroup).all()
-    
-    def get_by_id(self, id:int):
+
+    def get_by_id(self, id: int):
         group = self.db.query(ModelLleidaHackerGroup).filter(
             ModelLleidaHackerGroup.id == id).first()
         if group is None:
@@ -57,7 +58,8 @@ class LleidaHackerGroupService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         lleidahacker_group = self.get_by_id(groupId)
-        if not data.check([UserType.LLEIDAHACKER], lleidahacker_group.leader_id):
+        if not data.check([UserType.LLEIDAHACKER],
+                          lleidahacker_group.leader_id):
             raise AuthenticationException("Not authorized")
         updated = set_existing_data(lleidahacker_group, payload)
         self.db.commit()
@@ -68,7 +70,8 @@ class LleidaHackerGroupService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         lleidahacker_group = self.get_by_id(groupId)
-        if not data.check([UserType.LLEIDAHACKER], lleidahacker_group.leader_id):
+        if not data.check([UserType.LLEIDAHACKER],
+                          lleidahacker_group.leader_id):
             raise AuthenticationException("Not authorized")
         self.db.delete(lleidahacker_group)
         self.db.commit()
@@ -80,7 +83,8 @@ class LleidaHackerGroupService(BaseService):
             raise AuthenticationException("Not authorized")
         lleidahacker_group = self.get_by_id(groupId)
         lleidahacker = self.lleidaHackerService(lleidahackerId)
-        if not data.check([UserType.LLEIDAHACKER], lleidahacker_group.leader_id):
+        if not data.check([UserType.LLEIDAHACKER],
+                          lleidahacker_group.leader_id):
             raise AuthenticationException("Not authorized")
         if lleidahacker is None:
             raise NotFoundException("LleidaHacker not found")
@@ -94,7 +98,8 @@ class LleidaHackerGroupService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         lleidahacker_group = self.get_by_id(groupId)
-        if not data.check([UserType.LLEIDAHACKER], lleidahacker_group.leader_id):
+        if not data.check([UserType.LLEIDAHACKER],
+                          lleidahacker_group.leader_id):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.lleidaHackerService(lleidahackerId)
         if lleidahacker not in lleidahacker_group.members:
@@ -109,7 +114,8 @@ class LleidaHackerGroupService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         lleidahacker_group = self.get_by_id(groupId)
-        if not data.check([UserType.LLEIDAHACKER], lleidahacker_group.leader_id):
+        if not data.check([UserType.LLEIDAHACKER],
+                          lleidahacker_group.leader_id):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(lleidahackerId)
         if lleidahacker not in lleidahacker_group.members:

@@ -20,7 +20,7 @@ from src.utils.Token import AccesToken, BaseToken, RefreshToken, ResetPassToken,
 
 
 class AuthenticationService(BaseService):
-    
+
     def __call__(self):
         if self.user_service is None:
             self.user_service = U_S.UserService()
@@ -104,10 +104,11 @@ class AuthenticationService(BaseService):
         self.db.commit()
         self.db.refresh(user)
         return {"success": True}
-    
+
     def force_verification(self, user_id: int, data: BaseToken):
         if not data.is_admin:
-            raise AuthenticationException("User don'have permissions to do this")
+            raise AuthenticationException(
+                "User don'have permissions to do this")
         user = self.user_service.get_by_id(user_id)
         if user.is_verified:
             raise InvalidDataException("User already verified")
