@@ -1,68 +1,73 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
+import logging
+from logging.config import dictConfig
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from logging.config import dictConfig
-import logging
 from log_config import LogConfig
-
-from routers import user
-from routers import hacker
-from routers import hackergroup
-from routers import lleidahacker
-from routers import lleidahackergroup
-from routers import company
-from routers import companyuser
-from routers import event
-from routers import meal
-from routers import eventmanagment
-from routers import authentication
-from routers import mail_queue
-from routers import geocaching
+from src.error import error_handler as eh
+from src.error.AuthenticationException import AuthenticationException
+from src.error.InputException import InputException
+from src.error.InvalidDataException import InvalidDataException
+from src.error.NotFoundException import NotFoundException
+from src.error.ValidationException import ValidationException
+from src.impl.Authentication import router as Authentication
+from src.impl.Company import router as Company
+from src.impl.CompanyUser import router as CompanyUser
+from src.impl.Event import router as Event
+from src.impl.Geocaching import router as Geocaching
+from src.impl.Hacker import router as Hacker
+from src.impl.HackerGroup import router as HackerGroup
+from src.impl.LleidaHacker import router as LleidaHacker
+from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
+from src.impl.MailQueue import router as MailQueue
+from src.impl.Meal import router as Meal
+from src.impl.User import router as User
 from routers import userconfig
-
-from error import error_handler as eh
-from error.AuthenticationException import AuthenticationException
-from error.NotFoundException import NotFoundException
-from error.ValidationException import ValidationException
-from error.InvalidDataException import InvalidDataException
-from error.InputException import InputException
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
-tags_metadata = [{
-    "name": "User",
-    "description": "User related endpoints"
-}, {
-    "name": "Hacker",
-    "description": "Hacker related endpoints"
-}, {
-    "name": "Hacker Group",
-    "description": "Hacker Group related endpoints"
-}, {
-    "name": "LleidaHacker",
-    "description": "LleidaHacker related endpoints"
-}, {
-    "name": "LleidaHacker Group",
-    "description": "LleidaHacker Group related endpoints"
-}, {
-    "name": "Company",
-    "description": "Company related endpoints"
-}, {
-    "name": "Event",
-    "description": "Event related endpoints"
-}, {
-    "name": "EventManagment",
-    "description": "Event Managment related endpoints"
-}, {
-    "name": "Authentication",
-    "description": "Authentication related endpoints"
-}, {
-    "name": "UserConfig",
-    "description": "UserConfig related endpoints"
-}]
+tags_metadata = [
+    {
+        "name": "User",
+        "description": "User related endpoints"
+    },
+    {
+        "name": "Hacker",
+        "description": "Hacker related endpoints"
+    },
+    {
+        "name": "Hacker Group",
+        "description": "Hacker Group related endpoints"
+    },
+    {
+        "name": "LleidaHacker",
+        "description": "LleidaHacker related endpoints"
+    },
+    {
+        "name": "LleidaHacker Group",
+        "description": "LleidaHacker Group related endpoints"
+    },
+    {
+        "name": "Company",
+        "description": "Company related endpoints"
+    },
+    {
+        "name": "Event",
+        "description": "Event related endpoints"
+    },
+    {
+        "name": "UserConfig",
+        "description": "UserConfig related endpoints"
+    },
+    {
+        "name": "Authentication",
+        "description": "Authentication related endpoints"
+    },
+]
 
 app = FastAPI(title="LleidaHack API",
               description="LleidaHack API",
@@ -93,21 +98,19 @@ app.add_exception_handler(InputException, eh.input_exception_handler)
 
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
-app.include_router(user.router)
-app.include_router(hacker.router)
-app.include_router(hackergroup.router)
-app.include_router(lleidahacker.router)
-app.include_router(lleidahackergroup.router)
-app.include_router(company.router)
-app.include_router(companyuser.router)
-app.include_router(event.router)
-app.include_router(meal.router)
-app.include_router(mail_queue.router)
-app.include_router(eventmanagment.router)
-app.include_router(authentication.router)
-app.include_router(geocaching.router)
+app.include_router(User.router)
+app.include_router(Hacker.router)
+app.include_router(HackerGroup.router)
+app.include_router(LleidaHacker.router)
+app.include_router(LleidaHackerGroup.router)
+app.include_router(Company.router)
+app.include_router(CompanyUser.router)
+app.include_router(MailQueue.router)
+app.include_router(Meal.router)
+app.include_router(Event.router)
+app.include_router(Authentication.router)
+app.include_router(Geocaching.router)
 app.include_router(userconfig.router)
-
 
 @app.get("/")
 def root():
