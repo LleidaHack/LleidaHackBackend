@@ -1,18 +1,22 @@
 from typing import List, Union
-from fastapi import Depends, APIRouter
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from src.utils.database import get_db
-from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
-from src.utils.JWTBearer import JWTBearer
-
-from src.impl.LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
-from src.impl.LleidaHacker.schema import LleidaHackerGetAll as LleidaHackerGetAllSchema
-from src.impl.LleidaHacker.schema import LleidaHackerCreate as LleidaHackerCreateSchema
-from src.impl.LleidaHacker.schema import LleidaHackerUpdate as LleidaHackerUpdateSchema
-
-from src.impl.LleidaHacker.service import LleidaHackerService
 from services.mail import send_registration_confirmation_email
+from src.impl.LleidaHacker.schema import \
+    LleidaHackerCreate as LleidaHackerCreateSchema
+from src.impl.LleidaHacker.schema import \
+    LleidaHackerGet as LleidaHackerGetSchema
+from src.impl.LleidaHacker.schema import \
+    LleidaHackerGetAll as LleidaHackerGetAllSchema
+from src.impl.LleidaHacker.schema import \
+    LleidaHackerUpdate as LleidaHackerUpdateSchema
+from src.impl.LleidaHacker.service import LleidaHackerService
+from src.utils.database import get_db
+from src.utils.JWTBearer import JWTBearer
+from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
+                             VerificationToken)
 
 router = APIRouter(
     prefix="/lleidahacker",

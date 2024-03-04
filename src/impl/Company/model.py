@@ -1,6 +1,8 @@
 from __future__ import annotations
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+
 from src.utils.database import Base
 
 

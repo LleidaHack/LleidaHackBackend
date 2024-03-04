@@ -1,9 +1,9 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from src.utils.database import Base
 from src.impl.Event.model import Event
 from src.impl.User.model import User
+from src.utils.database import Base
 
 
 class Notification(Base):

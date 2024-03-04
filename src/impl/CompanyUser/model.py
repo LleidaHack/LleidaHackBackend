@@ -1,9 +1,10 @@
 from __future__ import annotations
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from src.impl.User.model import User
 from src.impl.Company.model import Company
+from src.impl.User.model import User
 from src.utils.UserType import UserType
 
 

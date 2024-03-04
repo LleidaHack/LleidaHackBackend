@@ -1,17 +1,16 @@
 from typing import List, Union
-from fastapi import Depends, APIRouter
 
-from src.utils.Token import BaseToken
-from src.utils.JWTBearer import JWTBearer
+from fastapi import APIRouter, Depends
 
-from src.impl.Company.service import CompanyService
-
+from src.impl.Company.schema import CompanyCreate as CompanyCreateSchema
 from src.impl.Company.schema import CompanyGet as CompanyGetSchema
 from src.impl.Company.schema import CompanyGetAll as CompanyGetAllSchema
-from src.impl.Company.schema import CompanyCreate as CompanyCreateSchema
 from src.impl.Company.schema import CompanyUpdate as CompanyUpdateSchema
+from src.impl.Company.service import CompanyService
 from src.impl.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
 from src.impl.Event.schema import EventGet as EventGetSchema
+from src.utils.JWTBearer import JWTBearer
+from src.utils.Token import BaseToken
 
 router = APIRouter(
     prefix="/company",

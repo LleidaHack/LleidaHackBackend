@@ -1,7 +1,9 @@
-from pydantic import validator
+import re
 from datetime import date
 from typing import Optional
-import re
+
+from pydantic import validator
+
 from src.utils.Base.BaseSchema import BaseSchema
 
 

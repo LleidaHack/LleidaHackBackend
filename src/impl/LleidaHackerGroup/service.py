@@ -1,20 +1,23 @@
 from pydantic import parse_obj_as
-from src.impl.LleidaHacker.service import LleidaHackerService
-from src.impl.LleidaHackerGroup.model import LleidaHackerGroup as ModelLleidaHackerGroup
-from src.utils.UserType import UserType
-
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupCreate as LleidaHackerGroupCreateSchema
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupUpdate as LleidaHackerGroupUpdateSchema
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGet as LleidaHackerGroupGetSchema
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
-from src.utils.Base.BaseService import BaseService
-
-from src.utils.service_utils import set_existing_data
-from src.utils.Token import BaseToken
 
 from src.error.AuthenticationException import AuthenticationException
-from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
+from src.error.NotFoundException import NotFoundException
+from src.impl.LleidaHacker.service import LleidaHackerService
+from src.impl.LleidaHackerGroup.model import \
+    LleidaHackerGroup as ModelLleidaHackerGroup
+from src.impl.LleidaHackerGroup.schema import \
+    LleidaHackerGroupCreate as LleidaHackerGroupCreateSchema
+from src.impl.LleidaHackerGroup.schema import \
+    LleidaHackerGroupGet as LleidaHackerGroupGetSchema
+from src.impl.LleidaHackerGroup.schema import \
+    LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
+from src.impl.LleidaHackerGroup.schema import \
+    LleidaHackerGroupUpdate as LleidaHackerGroupUpdateSchema
+from src.utils.Base.BaseService import BaseService
+from src.utils.service_utils import set_existing_data
+from src.utils.Token import BaseToken
+from src.utils.UserType import UserType
 
 
 class LleidaHackerGroupService(BaseService):

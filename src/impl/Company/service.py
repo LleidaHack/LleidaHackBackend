@@ -1,17 +1,13 @@
-from src.utils.UserType import UserType
-from src.utils.Base.BaseService import BaseService
-
-from src.utils.service_utils import set_existing_data, check_image
 import src.impl.User.service as U_S
-
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
-
 from src.impl.Company.model import Company as ModelCompany
-
 from src.impl.Company.schema import CompanyCreate as CompanyCreateSchema
 from src.impl.Company.schema import CompanyUpdate as CompanyUpdateSchema
+from src.utils.Base.BaseService import BaseService
+from src.utils.service_utils import check_image, set_existing_data
 from src.utils.Token import BaseToken
+from src.utils.UserType import UserType
 
 
 class CompanyService(BaseService):

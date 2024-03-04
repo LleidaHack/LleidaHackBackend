@@ -1,24 +1,25 @@
 from typing import List
+
 from pydantic import parse_obj_as
 
-from src.utils.Token import BaseToken
-from src.utils.service_utils import generate_random_code, set_existing_data
-from src.utils.UserType import UserType
-from src.utils.Base.BaseService import BaseService
-import src.impl.Hacker.service as H_S
 import src.impl.Event.service as E_S
-
+import src.impl.Hacker.service as H_S
+from src.error.AuthenticationException import AuthenticationException
+from src.error.InvalidDataException import InvalidDataException
+from src.error.NotFoundException import NotFoundException
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
-
-from src.impl.HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema
-from src.impl.HackerGroup.schema import HackerGroupUpdate as HackerGroupUpdateSchema
+from src.impl.HackerGroup.schema import \
+    HackerGroupCreate as HackerGroupCreateSchema
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
-from src.impl.HackerGroup.schema import HackerGroupGetAll as HackerGroupGetAllSchema
-
-from src.error.AuthenticationException import AuthenticationException
-from src.error.NotFoundException import NotFoundException
-from src.error.InvalidDataException import InvalidDataException
+from src.impl.HackerGroup.schema import \
+    HackerGroupGetAll as HackerGroupGetAllSchema
+from src.impl.HackerGroup.schema import \
+    HackerGroupUpdate as HackerGroupUpdateSchema
+from src.utils.Base.BaseService import BaseService
+from src.utils.service_utils import generate_random_code, set_existing_data
+from src.utils.Token import BaseToken
+from src.utils.UserType import UserType
 
 
 class HackerGroupService(BaseService):

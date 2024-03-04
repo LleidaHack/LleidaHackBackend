@@ -1,29 +1,26 @@
 from datetime import datetime as date
+
 from pydantic import parse_obj_as
 
-from src.utils.security import get_password_hash
-from src.utils.Base.BaseService import BaseService
-
-from src.utils.service_utils import set_existing_data, check_image, generate_user_code
-
 from src.error.AuthenticationException import AuthenticationException
-from src.error.NotFoundException import NotFoundException
 from src.error.InvalidDataException import InvalidDataException
-
-from src.utils.service_utils import check_user
-from src.utils.UserType import UserType
-from src.utils.Token import BaseToken
-
-from src.impl.Hacker.model import Hacker as ModelHacker
-from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
-from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
-from src.impl.Event.model import HackerParticipation as ModelHackerParticipation
+from src.error.NotFoundException import NotFoundException
 from src.impl.Event.model import HackerAccepted as ModelHackerAccepted
-
+from src.impl.Event.model import \
+    HackerParticipation as ModelHackerParticipation
+from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
+from src.impl.Hacker.model import Hacker as ModelHacker
 from src.impl.Hacker.schema import HackerGet as HackerCreateSchema
-from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
+from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
+from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.utils.Base.BaseService import BaseService
+from src.utils.security import get_password_hash
+from src.utils.service_utils import (check_image, check_user,
+                                     generate_user_code, set_existing_data)
+from src.utils.Token import BaseToken
+from src.utils.UserType import UserType
 
 
 class HackerService(BaseService):

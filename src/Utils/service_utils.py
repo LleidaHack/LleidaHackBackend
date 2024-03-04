@@ -1,10 +1,9 @@
-import string
-import random
 import base64
-
-from src.impl.User.service import UserService
+import random
+import string
 
 from src.error.ValidationException import ValidationException
+from src.impl.User.service import UserService
 
 user_service = UserService()
 

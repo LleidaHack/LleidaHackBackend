@@ -1,21 +1,23 @@
 from datetime import datetime as date
+
 from pydantic import parse_obj_as
-
-from src.utils.security import get_password_hash
-from src.utils.UserType import UserType
-from src.utils.Base.BaseService import BaseService
-
-from src.utils.service_utils import set_existing_data, check_image, generate_user_code, check_user
-from src.utils.Token import BaseToken
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
-
-from src.impl.CompanyUser.schema import CompanyUserCreate as CompanyUserCreateSchema
-from src.impl.CompanyUser.schema import CompanyUserUpdate as CompanyUserUpdateSchema
-from src.impl.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
-from src.impl.CompanyUser.schema import CompanyUserGetAll as CompanyUserGetAllSchema
 from src.impl.CompanyUser.model import CompanyUser as ModelCompanyUser
+from src.impl.CompanyUser.schema import \
+    CompanyUserCreate as CompanyUserCreateSchema
+from src.impl.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
+from src.impl.CompanyUser.schema import \
+    CompanyUserGetAll as CompanyUserGetAllSchema
+from src.impl.CompanyUser.schema import \
+    CompanyUserUpdate as CompanyUserUpdateSchema
+from src.utils.Base.BaseService import BaseService
+from src.utils.security import get_password_hash
+from src.utils.service_utils import (check_image, check_user,
+                                     generate_user_code, set_existing_data)
+from src.utils.Token import BaseToken
+from src.utils.UserType import UserType
 
 
 class CompanyUserService(BaseService):

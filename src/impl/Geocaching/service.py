@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
-from src.impl.User.model import User as ModelUser
 from src.impl.Geocaching.model import Geocaching as ModelGeocaching
 from src.impl.Geocaching.model import UserGeocaching as ModelUserGeocaching
+from src.impl.User.model import User as ModelUser
 
 
 def get_all_geocachings(db: Session):

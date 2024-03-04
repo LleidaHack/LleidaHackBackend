@@ -1,31 +1,27 @@
 from pydantic import parse_obj_as
-from error.InvalidDataException import InvalidDataException
-from impl.Event.router import accept_hacker_to_event
+
+import src.impl.Company.service as C_S
+import src.impl.Hacker.service as H_S
+import src.impl.HackerGroup.service as HG_S
 from services.mail import send_event_accepted_email
-
-from src.utils.UserType import UserType
-from src.utils.Base.BaseService import BaseService
-
-from src.utils.service_utils import set_existing_data, check_image, subtract_lists
-from src.utils.Token import AssistenceToken, BaseToken
-
 from src.error.AuthenticationException import AuthenticationException
+from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
-
-from src.impl.Event.schema import EventCreate as EventCreateSchema
-from src.impl.Event.schema import EventUpdate as EventUpdateSchema
-from src.impl.Event.schema import EventGet as EventGetSchema
-from src.impl.Event.schema import EventGetAll as EventGetAllSchema
-from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
-
 from src.impl.Event.model import Event as ModelEvent
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
+# from src.impl.Event.router import accept_hacker_to_event
+from src.impl.Event.schema import EventCreate as EventCreateSchema
+from src.impl.Event.schema import EventGet as EventGetSchema
+from src.impl.Event.schema import EventGetAll as EventGetAllSchema
+from src.impl.Event.schema import EventUpdate as EventUpdateSchema
+from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
-
-import src.impl.HackerGroup.service as HG_S
-import src.impl.Hacker.service as H_S
-import src.impl.Company.service as C_S
+from src.utils.Base.BaseService import BaseService
+from src.utils.service_utils import (check_image, set_existing_data,
+                                     subtract_lists)
+from src.utils.Token import AssistenceToken, BaseToken
+from src.utils.UserType import UserType
 
 
 class EventService(BaseService):
@@ -512,4 +508,4 @@ class EventService(BaseService):
             if hacker not in event.registered_hackers:
                 raise InvalidDataException("Hacker not registered")
             hacker_user = self.hacker_service.get_by_id(hacker.id)
-            accept_hacker_to_event(event, hacker_user, data)
+            self.accept_hacker(event.id, hacker_user.id, data)

@@ -1,22 +1,20 @@
 from datetime import datetime
 
-from src.utils.security import get_password_hash, verify_password
-from src.utils.UserType import UserType
-from src.utils.Base.BaseService import BaseService
-
-from services.mail import send_registration_confirmation_email, send_password_reset_email, send_contact_email
-
-import src.impl.User.service as U_S
 import src.impl.CompanyUser.service as C_S
 import src.impl.Hacker.service as H_S
 import src.impl.LleidaHacker.service as LH_S
-
+import src.impl.User.service as U_S
+from services.mail import (send_contact_email, send_password_reset_email,
+                           send_registration_confirmation_email)
+from src.error.AuthenticationException import AuthenticationException
 from src.error.InputException import InputException
 from src.error.InvalidDataException import InvalidDataException
-from src.error.AuthenticationException import AuthenticationException
-
 from src.impl.User.model import User as ModelUser
-from src.utils.Token import AccesToken, BaseToken, RefreshToken, ResetPassToken, VerificationToken
+from src.utils.Base.BaseService import BaseService
+from src.utils.security import get_password_hash, verify_password
+from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
+                             ResetPassToken, VerificationToken)
+from src.utils.UserType import UserType
 
 
 class AuthenticationService(BaseService):

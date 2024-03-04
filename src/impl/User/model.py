@@ -1,9 +1,9 @@
 from datetime import date
-from sqlalchemy import Column, DateTime, Integer, String, Boolean
-from src.utils.database import Base
-from sqlalchemy.orm import deferred
 
-from sqlalchemy.orm import Mapped
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy.orm import Mapped, deferred
+
+from src.utils.database import Base
 
 
 class User(Base):

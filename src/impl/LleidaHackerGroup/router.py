@@ -1,15 +1,18 @@
 from typing import List, Union
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupCreate as LleidaHackerGroupCreateSchema
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGet as LleidaHackerGroupGetSchema
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
 
-from src.impl.LleidaHacker.schema import LleidaHackerGet as LleidaHackerGetSchema
-from src.utils.Token import BaseToken
-from src.utils.JWTBearer import JWTBearer
+from fastapi import APIRouter, Depends
 
-from fastapi import Depends, APIRouter
-
+from src.impl.LleidaHacker.schema import \
+    LleidaHackerGet as LleidaHackerGetSchema
+from src.impl.LleidaHackerGroup.schema import \
+    LleidaHackerGroupCreate as LleidaHackerGroupCreateSchema
+from src.impl.LleidaHackerGroup.schema import \
+    LleidaHackerGroupGet as LleidaHackerGroupGetSchema
+from src.impl.LleidaHackerGroup.schema import \
+    LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
 from src.impl.LleidaHackerGroup.service import LleidaHackerGroupService
+from src.utils.JWTBearer import JWTBearer
+from src.utils.Token import BaseToken
 
 router = APIRouter(
     prefix="/lleidahacker/group",

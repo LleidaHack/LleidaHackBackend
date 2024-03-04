@@ -1,23 +1,19 @@
 from pydantic import parse_obj_as
-from error.InvalidDataException import InvalidDataException
-from src.impl.Meal.model import Meal as ModelMeal
-from src.utils.UserType import UserType
-
-from src.impl.Meal.schema import MealCreate as MealCreateSchema
-from src.impl.Meal.schema import MealUpdate as MealUpdateSchema
-from src.impl.Meal.schema import MealGet as MealGetSchema
-from src.impl.Meal.schema import MealGetAll as MealGetAllSchema
-
-from src.utils.Base.BaseService import BaseService
-
-from src.utils.service_utils import set_existing_data
-from src.utils.Token import BaseToken
-
-from src.error.AuthenticationException import AuthenticationException
-from src.error.NotFoundException import NotFoundException
 
 import src.impl.Event.service as E_S
 import src.impl.Hacker.service as H_S
+from src.error.AuthenticationException import AuthenticationException
+from src.error.InvalidDataException import InvalidDataException
+from src.error.NotFoundException import NotFoundException
+from src.impl.Meal.model import Meal as ModelMeal
+from src.impl.Meal.schema import MealCreate as MealCreateSchema
+from src.impl.Meal.schema import MealGet as MealGetSchema
+from src.impl.Meal.schema import MealGetAll as MealGetAllSchema
+from src.impl.Meal.schema import MealUpdate as MealUpdateSchema
+from src.utils.Base.BaseService import BaseService
+from src.utils.service_utils import set_existing_data
+from src.utils.Token import BaseToken
+from src.utils.UserType import UserType
 
 
 class MealService(BaseService):

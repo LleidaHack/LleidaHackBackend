@@ -2,12 +2,13 @@ from ast import List
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from smtplib import SMTP_SSL
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from src.utils.Configuration import Configuration
-from src.error.AuthenticationException import AuthenticationException
 
+from src.error.AuthenticationException import AuthenticationException
 from src.impl.MailQueue.model import MailQueue as ModelMailQueue
+from src.utils.Configuration import Configuration
 from src.utils.Token import BaseToken
 
 FRONT_LINK = Configuration.get('OTHERS', 'FRONT_URL')

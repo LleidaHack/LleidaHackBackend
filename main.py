@@ -1,32 +1,30 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
+import logging
+from logging.config import dictConfig
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from logging.config import dictConfig
-import logging
 from log_config import LogConfig
-
-from src.impl.User import router as User
+from src.error import error_handler as eh
+from src.error.AuthenticationException import AuthenticationException
+from src.error.InputException import InputException
+from src.error.InvalidDataException import InvalidDataException
+from src.error.NotFoundException import NotFoundException
+from src.error.ValidationException import ValidationException
+from src.impl.Authentication import router as Authentication
+from src.impl.Company import router as Company
+from src.impl.CompanyUser import router as CompanyUser
+from src.impl.Event import router as Event
+from src.impl.Geocaching import router as Geocaching
 from src.impl.Hacker import router as Hacker
 from src.impl.HackerGroup import router as HackerGroup
 from src.impl.LleidaHacker import router as LleidaHacker
 from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
-from src.impl.Company import router as Company
-from src.impl.CompanyUser import router as CompanyUser
-from src.impl.Event import router as Event
-from src.impl.Meal import router as Meal
-from src.impl.EventManagment import router as EventManagment
-from src.impl.Authentication import router as Authentication
 from src.impl.MailQueue import router as MailQueue
-from src.impl.Geocaching import router as Geocaching
-
-from src.error import error_handler as eh
-from src.error.AuthenticationException import AuthenticationException
-from src.error.NotFoundException import NotFoundException
-from src.error.ValidationException import ValidationException
-from src.error.InvalidDataException import InvalidDataException
-from src.error.InputException import InputException
+from src.impl.Meal import router as Meal
+from src.impl.User import router as User
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
@@ -59,10 +57,6 @@ tags_metadata = [
     {
         "name": "Event",
         "description": "Event related endpoints"
-    },
-    {
-        "name": "EventManagment",
-        "description": "Event Managment related endpoints"
     },
     {
         "name": "Authentication",
@@ -109,7 +103,6 @@ app.include_router(CompanyUser.router)
 app.include_router(MailQueue.router)
 app.include_router(Meal.router)
 app.include_router(Event.router)
-app.include_router(EventManagment.router)
 app.include_router(Authentication.router)
 app.include_router(Geocaching.router)
 

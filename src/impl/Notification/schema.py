@@ -1,5 +1,6 @@
-from src.utils.Base.BaseSchema import BaseSchema
 from typing import Optional
+
+from src.utils.Base.BaseSchema import BaseSchema
 
 
 class Notification(BaseSchema):

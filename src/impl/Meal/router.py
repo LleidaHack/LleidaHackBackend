@@ -1,15 +1,14 @@
 from typing import List, Union
-from fastapi import Depends, APIRouter
 
-from src.utils.Token import BaseToken
-from src.utils.JWTBearer import JWTBearer
+from fastapi import APIRouter, Depends
 
-from src.impl.Meal.service import MealService
-
+from src.impl.Meal.schema import MealCreate as MealCreateSchema
 from src.impl.Meal.schema import MealGet as MealGetSchema
 from src.impl.Meal.schema import MealGetAll as MealGetAllSchema
-from src.impl.Meal.schema import MealCreate as MealCreateSchema
 from src.impl.Meal.schema import MealUpdate as MealUpdateSchema
+from src.impl.Meal.service import MealService
+from src.utils.JWTBearer import JWTBearer
+from src.utils.Token import BaseToken
 
 router = APIRouter(
     prefix="/meal",

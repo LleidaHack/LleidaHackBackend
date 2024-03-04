@@ -1,5 +1,6 @@
 from typing import Optional
-from src.impl.User.schema import UserGet, UserGetAll, UserCreate, UserUpdate
+
+from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
 
 class CompanyUserCreate(UserCreate):

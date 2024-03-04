@@ -1,11 +1,13 @@
-import pytest
-from fastapi.testclient import TestClient
-from main import app
-from src.impl.User.schema import User as SchemaUser
-from src.impl.User.model import User as ModelUser
+import base64
 import random
 import string
-import base64
+
+import pytest
+from fastapi.testclient import TestClient
+
+from main import app
+from src.impl.User.model import User as ModelUser
+from src.impl.User.schema import User as SchemaUser
 
 client = TestClient(app)
 

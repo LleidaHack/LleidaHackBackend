@@ -1,13 +1,11 @@
-from fastapi import Depends, APIRouter
-from fastapi import Depends
+from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBasicCredentials
 
-from src.utils.security import sec
 from src.error.AuthenticationException import AuthenticationException
-from src.utils.Token import BaseToken
-from src.utils.JWTBearer import JWTBearer
-
 from src.impl.Authentication.service import AuthenticationService
+from src.utils.JWTBearer import JWTBearer
+from src.utils.security import sec
+from src.utils.Token import BaseToken
 
 router = APIRouter(
     prefix="/auth",

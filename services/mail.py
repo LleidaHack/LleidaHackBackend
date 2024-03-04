@@ -1,14 +1,14 @@
-from src.utils.Configuration import Configuration
-from pydantic import EmailStr, BaseModel
-from typing import List
-from src.utils.database import db_get
-from pydantic import BaseModel
 from string import Template
+from typing import List
 
-from src.impl.User.model import User as ModelUser
+from pydantic import BaseModel, EmailStr
+
 from src.impl.Event.model import Event as ModelEvent
-from src.impl.MailQueue.model import MailQueue as ModelMailQueue
 from src.impl.MailQueue import service as mail_queue_service
+from src.impl.MailQueue.model import MailQueue as ModelMailQueue
+from src.impl.User.model import User as ModelUser
+from src.utils.Configuration import Configuration
+from src.utils.database import db_get
 
 
 class EmailSchema(BaseModel):

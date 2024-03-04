@@ -1,13 +1,11 @@
-from src.utils.database import get_db
-from src.utils.Token import BaseToken
-from src.utils.JWTBearer import JWTBearer
-
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
-from fastapi import Depends, Response, APIRouter
-
-from src.impl.Notification.schema import Notification as SchemaNotification
 
 import src.impl.Notification.service as notifications_service
+from src.impl.Notification.schema import Notification as SchemaNotification
+from src.utils.database import get_db
+from src.utils.JWTBearer import JWTBearer
+from src.utils.Token import BaseToken
 
 router = APIRouter(
     prefix="/notification",

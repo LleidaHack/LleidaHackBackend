@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 '''The configuration for the Backend logging system'''
 
 

@@ -1,5 +1,6 @@
 from src.utils.database import db_get
 from src.utils.Singleton import Singleton
+
 # from typing import List, TypeVar, Generic
 
 # T = TypeVar('T')

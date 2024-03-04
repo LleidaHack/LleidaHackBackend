@@ -1,20 +1,20 @@
 from typing import List, Union
-from fastapi import Depends, APIRouter
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from src.utils.database import get_db
-from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
-from src.utils.JWTBearer import JWTBearer
-
 from services.mail import send_registration_confirmation_email
-from src.impl.Hacker.service import HackerService
-
+from src.impl.Event.schema import EventGet as EventGetSchema
+from src.impl.Hacker.schema import HackerCreate as HackerCreateSchema
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
-from src.impl.Hacker.schema import HackerCreate as HackerCreateSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
-from src.impl.Event.schema import EventGet as EventGetSchema
+from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
+from src.utils.database import get_db
+from src.utils.JWTBearer import JWTBearer
+from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
+                             VerificationToken)
 
 router = APIRouter(
     prefix="/hacker",

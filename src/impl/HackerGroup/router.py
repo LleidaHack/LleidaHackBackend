@@ -1,15 +1,18 @@
 from typing import List, Union
-from fastapi import Depends, APIRouter
-from src.utils.Token import BaseToken
-from src.utils.JWTBearer import JWTBearer
 
-from src.impl.HackerGroup.service import HackerGroupService
+from fastapi import APIRouter, Depends
 
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
+from src.impl.HackerGroup.schema import \
+    HackerGroupCreate as HackerGroupCreateSchema
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
-from src.impl.HackerGroup.schema import HackerGroupGetAll as HackerGroupGetAllSchema
-from src.impl.HackerGroup.schema import HackerGroupCreate as HackerGroupCreateSchema
-from src.impl.HackerGroup.schema import HackerGroupUpdate as HackerGroupUpdateSchema
+from src.impl.HackerGroup.schema import \
+    HackerGroupGetAll as HackerGroupGetAllSchema
+from src.impl.HackerGroup.schema import \
+    HackerGroupUpdate as HackerGroupUpdateSchema
+from src.impl.HackerGroup.service import HackerGroupService
+from src.utils.JWTBearer import JWTBearer
+from src.utils.Token import BaseToken
 
 router = APIRouter(
     prefix="/hacker/group",

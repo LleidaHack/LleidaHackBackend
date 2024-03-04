@@ -1,24 +1,27 @@
-from fastapi import Depends, APIRouter, Response
 from datetime import datetime
 from typing import List, Union
+
+from fastapi import APIRouter, Depends, Response
+
 from src.error.AuthenticationException import AuthenticationException
-# from src.error.NotFoundException import NotFoundException
-
-from src.utils.Token import AssistenceToken, BaseToken
-from src.utils.JWTBearer import JWTBearer
-
+from src.impl.Company.schema import CompanyGet as CompanyGetSchema
+from src.impl.Event.schema import EventCreate as EventCreateSchema
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Event.schema import EventGetAll as EventGetAllSchema
-from src.impl.Event.schema import EventCreate as EventCreateSchema
 from src.impl.Event.schema import EventUpdate as EventUpdateSchema
-from src.impl.Meal.schema import MealGet as MealGetSchema
+from src.impl.Event.service import EventService
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
-from src.impl.Company.schema import CompanyGet as CompanyGetSchema
+from src.impl.Meal.schema import MealGet as MealGetSchema
+from src.utils.Configuration import Configuration
+from src.utils.JWTBearer import JWTBearer
+from src.utils.service_utils import subtract_lists
+from src.utils.Token import AssistenceToken, BaseToken
 
-from src.impl.Event.service import EventService
-from utils.Configuration import Configuration
-from utils.service_utils import subtract_lists
+# from src.error.NotFoundException import NotFoundException
+
+
+
 
 router = APIRouter(
     prefix="/event",

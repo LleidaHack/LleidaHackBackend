@@ -1,13 +1,12 @@
 from typing import List, Union
-from fastapi import Depends, APIRouter
 
-from src.utils.Token import BaseToken
-from src.utils.JWTBearer import JWTBearer
-
-from src.impl.User.service import UserService
+from fastapi import APIRouter, Depends
 
 from src.impl.User.schema import UserGet as UserGetSchema
 from src.impl.User.schema import UserGetAll as UserGetAllSchema
+from src.impl.User.service import UserService
+from src.utils.JWTBearer import JWTBearer
+from src.utils.Token import BaseToken
 
 router = APIRouter(
     prefix="/user",

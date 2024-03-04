@@ -1,16 +1,17 @@
 from __future__ import annotations
+
 import enum
+from datetime import datetime, timedelta
 from typing import List
+
 import jwt
 from dateutil import parser
-from datetime import datetime, timedelta
 
-from src.utils.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
-from src.utils.UserType import UserType
-from src.impl.User.service import UserService
-
 from src.impl.User.model import User as UserModel
+from src.impl.User.service import UserService
+from src.utils.Configuration import Configuration
+from src.utils.UserType import UserType
 
 SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
 ALGORITHM = Configuration.get("SECURITY", "ALGORITHM")
