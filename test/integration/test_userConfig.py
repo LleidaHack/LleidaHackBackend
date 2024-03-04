@@ -19,7 +19,7 @@ def test_update_user_config():
         yield SessionLocal()
 
     app.dependency_overrides[get_db] = mock_get_db
-    
+
     # Make a request to update the user config
     response = client.put("/userConfig/1", json=user_config.dict())
 
@@ -31,5 +31,6 @@ def test_update_user_config():
 
     # Verify the changes in the database
     db = SessionLocal()
-    updated_user_config = db.query(UserConfig).filter(UserConfig.userId == 1).first()
+    updated_user_config = db.query(UserConfig).filter(
+        UserConfig.userId == 1).first()
     assert updated_user_config.someField == "value"

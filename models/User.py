@@ -5,13 +5,12 @@ from sqlalchemy.orm import deferred
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 
-
-
 ##TODO: cascade : Buscar a documentació de fastapi i sqlalchemy
+
 
 class User(Base):
     __tablename__ = 'user'
-    id: int = Column(Integer, primary_key=True, index=True) 
+    id: int = Column(Integer, primary_key=True, index=True)
     is_verified: bool = Column(Boolean, default=False)
     token: Mapped[str] = deferred(Column(String, default=""))
     refresh_token: Mapped[str] = deferred(Column(String, default=""))
@@ -37,12 +36,12 @@ class User(Base):
     recive_mails: bool = Column(Boolean, default=True)
     lleidacoins_claimed: Boolean = Column(Boolean, default=False)
     config_id = Column(Integer, ForeignKey('user-config.id'))
-    config = relationship('UserConfig', foreign_keys=[config_id], backref='user', uselist=False)
+    config = relationship('UserConfig',
+                          foreign_keys=[config_id],
+                          backref='user',
+                          uselist=False)
 
     __mapper_args__ = {
         "polymorphic_identity": "user",
         "polymorphic_on": type,
     }
-
-
-

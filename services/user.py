@@ -14,6 +14,7 @@ from error.NotFoundException import NotFoundException
 from utils.hide_utils import user_show_private
 from models.UserConfig import UserConfig as ModelConfig
 
+
 async def get_all(db: Session, deleted: bool = False):
     ##TODO: si deleted esta true, que mostri els usuaris deleted
     return db.query(ModelUser).all()
@@ -89,7 +90,8 @@ async def get_user_by_code(db: Session, code: str, data: TokenData):
 
 
 async def add_user(db: Session, payload: SchemaUser):
-    new_user = ModelUser(**payload.dict(), config = ModelConfig(payload.config.dict()))
+    new_user = ModelUser(**payload.dict(),
+                         config=ModelConfig(payload.config.dict()))
     if payload.image is not None:
         payload = check_image(payload)
     new_user.password = get_password_hash(payload.password)

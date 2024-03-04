@@ -60,25 +60,26 @@ async def get_hacker_by_email(email: str, db: Session):
 ##TODO: DESPRES DEL REFACTOR, VEURE COM GENERALITZAR LA FUNCIO PER A CREAR USUARIS.
 async def add_hacker(payload: SchemaHacker, db: Session):
     await check_user(db, payload.email, payload.nickname, payload.telephone)
-    new_hacker = ModelHacker(**payload.dict(exclude={"config"}), code=generate_user_code(db))
+    new_hacker = ModelHacker(**payload.dict(exclude={"config"}),
+                             code=generate_user_code(db))
     ##config asignat manualment per provar
     ##TODO: CORREGIR QUAN EL PROBLEMA ES SOLUCIONI AMB UNA ASIGNACIÓ AUTOMÀTICA
 
     if payload.image is not None:
         payload = check_image(payload)
     new_hacker.password = get_password_hash(payload.password)
-    
+
     db.add(new_hacker)
     db.commit()
     db.refresh(new_hacker)
 
-  # Ahora que new_hacker se ha insertado en la base de datos, new_hacker.id existe
+    # Ahora que new_hacker se ha insertado en la base de datos, new_hacker.id existe
     new_config = ModelUserConfig(
-    user_id=new_hacker.id,
-    reciveNotifications=payload.config.reciveNotifications,
-    defaultLang=payload.config.defaultLang,
-    comercialNotifications=payload.config.comercialNotifications,
-)
+        user_id=new_hacker.id,
+        reciveNotifications=payload.config.reciveNotifications,
+        defaultLang=payload.config.defaultLang,
+        comercialNotifications=payload.config.comercialNotifications,
+    )
     db.add(new_config)
     db.commit()
     db.refresh(new_config)
