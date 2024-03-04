@@ -14,9 +14,6 @@ from src.utils.UserType import UserType
 # from src.utils.security import get_password_hash
 
 
-
-
-
 class UserService(BaseService):
 
     def __call__(self):
