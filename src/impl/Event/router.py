@@ -20,9 +20,6 @@ from src.utils.Token import AssistenceToken, BaseToken
 
 # from src.error.NotFoundException import NotFoundException
 
-
-
-
 router = APIRouter(
     prefix="/event",
     tags=["Event"],
