@@ -17,7 +17,9 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False,
+                                   autoflush=False,
+                                   bind=engine)
 Base.metadata.create_all(bind=engine)
 
 
@@ -194,6 +196,4 @@ def test_get_hacker_events():
     response = client.get("/1/events")
     assert response.status_code == 200
     expected_response_body = {"success": True, "expected_id": 1}
-    assert  response.json() == expected_response_body
-
-
+    assert response.json() == expected_response_body
