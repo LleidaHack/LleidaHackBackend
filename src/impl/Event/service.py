@@ -171,7 +171,7 @@ class EventService(BaseService):
         event = self.get_by_id(id)
         if event.max_participants <= (len(event.hackers) +
                                       len(hacker_group.hackers)):
-            raise Exception("Event is full")
+            raise InvalidDataException("Event is full")
         event.hacker_groups.append(hacker_group)
         event.hackers.extend(hacker_group.hackers)
         self.db.commit()
@@ -184,10 +184,10 @@ class EventService(BaseService):
         company = self.company_service.get_by_id(company_id)
         company_users = [user.id for user in company.users]
         if not data.is_admin or data.user_id not in company_users:
-            raise Exception("Not authorized")
+            raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         if company not in event.companies:
-            raise Exception("Company is not sponsor")
+            raise InvalidDataException("Company is not sponsor")
         event.companies.remove(company)
         self.db.commit()
         self.db.refresh(event)
@@ -197,11 +197,11 @@ class EventService(BaseService):
     def remove_hacker_group(self, id: int, hacker_group_id: int,
                             data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER.value]):
-            raise Exception("Not authorized")
+            raise AuthenticationException("Not authorized")
         hacker_group = self.hackergroup_service.get_by_id(hacker_group_id)
         group_hackers = [hacker.id for hacker in hacker_group.members]
         if not data.is_admin or data.user_id not in group_hackers or hacker_group.leader_id != data.user_id:
-            raise Exception("Not authorized")
+            raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         event.hacker_groups.remove(hacker_group)
         for hacker in hacker_group.members:
