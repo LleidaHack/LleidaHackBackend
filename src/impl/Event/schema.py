@@ -88,7 +88,6 @@ class HackerEventRegistration(BaseSchema):
     description: Optional[str]
     github: Optional[str]
     linkedin: Optional[str]
-    dailyhack_url: Optional[str]
     studies: str
     study_center: str
     location: str
@@ -107,7 +106,6 @@ class HackerEventRegistrationUpdate(BaseSchema):
     food_restrictions: Optional[str]
     cv: Optional[str]
     description: Optional[str]
-    dailyhack_url: Optional[str]
     github: Optional[str]
     linkedin: Optional[str]
     studies: Optional[str]
