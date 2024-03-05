@@ -409,4 +409,5 @@ def downgrade():
     op.drop_table('role')
     op.drop_index(op.f('ix_event_id'), table_name='event')
     op.drop_table('event')
+    op.execute('DROP TYPE roleenum cascade;')
     # ### end Alembic commands ###

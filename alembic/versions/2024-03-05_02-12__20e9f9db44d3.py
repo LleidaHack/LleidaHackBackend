@@ -23,6 +23,7 @@ def upgrade():
     op.drop_index('ix_role_name', table_name='role')
     op.drop_table('role')
     op.drop_column('hacker_event_registration', 'dailyhack_url')
+    op.execute('DROP TYPE IF EXISTS roleenum;')
     # ### end Alembic commands ###
 
 
