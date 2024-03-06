@@ -1,6 +1,6 @@
 # .gitignore
 .config
-config.ini
+test/routers/config.ini
 **/__pycache__/
 .env
 utils/scripts

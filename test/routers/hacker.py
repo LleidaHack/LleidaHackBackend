@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from main import app
+import anyio
 import random
 import string
 import base64
@@ -41,7 +42,7 @@ def random_string(length):
 def random_password(length):
     letters = string.ascii_letters + string.digits
     result_str = ''.join(random.choice(letters) for i in range(length))
-    return result_str[0].upper() + result_str[1:]
+    return result_str[0].upper() + result_str[1:] + "."
 
 
 def test_create_rnd_hacker():
@@ -52,7 +53,7 @@ def test_create_rnd_hacker():
                         food_restrictions="None",
                         email=random_string(5) + "@test.com",
                         telephone="".join(
-                            [str(random.randint(0, 9)) for _ in range(10)]),
+                            [str(random.randint(0, 9)) for _ in range(9)]),
                         address="test",
                         shirt_size="M",
                         image=base64.b64encode(b'test').decode('utf-8'),
@@ -75,7 +76,7 @@ def mock_create_all_tokens():
 @patch("security.create_all_tokens", new=mock_create_all_tokens)
 def test_hacker_signup():
     payload = test_create_rnd_hacker()
-    response = client.post("/signup", json=payload)
+    response = client.post("/hacker/signup", json=payload.__dict__)
     assert response.status_code == 200
     expected_response_body = {
         "success": True,
@@ -98,7 +99,7 @@ def mock_jwt_bearer():
 @patch("services.hacker.get_all", new=mock_get_all)
 @patch("routers.hacker.get_hackers.JWTBearer", new=mock_jwt_bearer)
 def test_get_hackers():
-    response = client.get("/all")
+    response = client.get("/hacker/all")
     assert response.status_code == 200
     expected_response_body = [{
         "id": 1,
