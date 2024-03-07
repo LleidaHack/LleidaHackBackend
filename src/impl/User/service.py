@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pydantic import parse_obj_as
-
 # from src.utils.service_utils import check_image
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -61,40 +59,40 @@ class UserService(BaseService):
     def get_user(self, userId: int, data):
         user = self.get_by_id(userId)
         if data.check([UserType.LLEIDAHACKER], userId):
-            return parse_obj_as(UserGetAllSchema, user)
-        return parse_obj_as(UserGetSchema, user)
+            return UserGetAllSchema.from_orm(user)
+        return UserGetSchema.from_orm(user)
 
     def get_user_by_email(self, email: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         user = self.get_by_email(email)
         if data.check([UserType.LLEIDAHACKER], user.id):
-            return parse_obj_as(UserGetAllSchema, user)
-        return parse_obj_as(UserGetSchema, user)
+            return UserGetAllSchema.from_orm(user)
+        return UserGetSchema.from_orm(user)
 
     def get_user_by_nickname(self, nickname: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         user = self.get_by_nickname(nickname)
         if data.check([UserType.LLEIDAHACKER], user.id):
-            return parse_obj_as(UserGetAllSchema, user)
-        return parse_obj_as(UserGetSchema, user)
+            return UserGetAllSchema.from_orm(user)
+        return UserGetSchema.from_orm(user)
 
     def get_user_by_phone(self, phone: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         user = self.get_by_phone(phone)
         if data.check([UserType.LLEIDAHACKER], user.id):
-            return parse_obj_as(UserGetAllSchema, user)
-        return parse_obj_as(UserGetSchema, user)
+            return UserGetAllSchema.from_orm(user)
+        return UserGetSchema.from_orm(user)
 
     def get_user_by_code(self, code: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         user = self.get_by_code(code)
         if data.check([UserType.LLEIDAHACKER], user.id):
-            return parse_obj_as(UserGetAllSchema, user)
-        return parse_obj_as(UserGetSchema, user)
+            return UserGetAllSchema.from_orm(user)
+        return UserGetSchema.from_orm(user)
 
     # def add_user(self, payload: SchemaUser):
     #     new_user = ModelUser(**payload.dict())

@@ -15,14 +15,13 @@ class HackerCreate(UserCreate):
 class HackerGet(UserGet):
     github: str
     linkedin: str
-    study_center: Optional[str]
-    location: Optional[str]
-    how_did_you_meet_us: Optional[str]
-    cv: Optional[str]
 
 
 class HackerGetAll(UserGetAll, HackerGet):
-    pass
+    how_did_you_meet_us: Optional[str]
+    location: Optional[str]
+    cv: Optional[str]
+    study_center: Optional[str]
 
 
 class HackerUpdate(UserUpdate):

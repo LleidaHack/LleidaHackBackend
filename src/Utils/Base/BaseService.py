@@ -1,4 +1,4 @@
-from src.utils.database import db_get
+from src.utils.database import Database
 from src.utils.Singleton import Singleton
 
 # from typing import List, TypeVar, Generic
@@ -19,7 +19,7 @@ from src.utils.Singleton import Singleton
 class BaseService(metaclass=Singleton):
 
     def __init__(self):
-        self.db = db_get()
+        self.db = Database().db_get()
 
     # @classmethod
     # def get_all(cls):

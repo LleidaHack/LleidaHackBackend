@@ -1,7 +1,5 @@
 from datetime import datetime as date
 
-from pydantic import parse_obj_as
-
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
@@ -36,12 +34,13 @@ class HackerService(BaseService):
             ModelHacker.id == hacker_id).first()
         if user is None:
             raise NotFoundException("Hacker not found")
-
+        return user
+    
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
         if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
-            return parse_obj_as(HackerGetAllSchema, user)
-        return parse_obj_as(HackerGetSchema, user)
+            return HackerGetAllSchema.from_orm(user)
+        return HackerGetSchema.from_orm(user)
 
     def get_hacker_by_code(self, code: str):
         user = self.db.query(ModelHacker).filter(

@@ -1,7 +1,5 @@
 from typing import List
 
-from pydantic import parse_obj_as
-
 import src.impl.Event.service as E_S
 import src.impl.Hacker.service as H_S
 from src.error.AuthenticationException import AuthenticationException
@@ -59,8 +57,8 @@ class HackerGroupService(BaseService):
         members_ids = [h.id for h in group.members]
         if data.check([UserType.HACKER, UserType.LLEIDAHACKER
                        ]) and data.user_id in members_ids:
-            return parse_obj_as(HackerGroupGetAllSchema, group)
-        return parse_obj_as(HackerGroupGetSchema, group)
+            return HackerGroupGetAllSchema.from_orm(group)
+        return HackerGroupGetSchema.from_orm(group)
 
     def add_hacker_group(self, payload: HackerGroupCreateSchema,
                          data: BaseToken):

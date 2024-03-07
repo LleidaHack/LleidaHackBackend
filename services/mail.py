@@ -8,7 +8,7 @@ from src.impl.MailQueue import service as mail_queue_service
 from src.impl.MailQueue.model import MailQueue as ModelMailQueue
 from src.impl.User.model import User as ModelUser
 from src.utils.Configuration import Configuration
-from src.utils.database import db_get
+from src.utils.database import Database
 
 
 class EmailSchema(BaseModel):
@@ -24,7 +24,7 @@ STATIC_FOLDER = Configuration.get('OTHERS',
 
 
 def send_bulk_mails(lst: List):
-    db = db_get()
+    db = Database().db_get()
     db.bulk_save_objects(lst)
     db.commit()
 
@@ -38,7 +38,7 @@ def send_email(user, body: str, subject: str, queue: bool = False):
             pass
         mail_queue_service.send_email(mail, body, subject)
     else:
-        db = db_get()
+        db = Database.db_get()
         mail = ModelMailQueue()
         mail.user_id = user.id
         mail.subject = subject

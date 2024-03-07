@@ -11,7 +11,6 @@ from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
-from src.utils.database import get_db
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
                              VerificationToken)
@@ -85,7 +84,6 @@ def get_hacker_events(userId: int, token: BaseToken = Depends(JWTBearer())):
 
 @router.get("/{userId}/groups", response_model=List[HackerGroupGetSchema])
 def get_hacker_groups(userId: int,
-                      db: Session = Depends(get_db),
                       token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_groups(userId, db)
 

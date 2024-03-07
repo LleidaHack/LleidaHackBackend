@@ -6,3 +6,4 @@ config.ini
 utils/scripts
 .vscode
 utils/scripts
+env/

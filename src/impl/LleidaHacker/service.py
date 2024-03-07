@@ -1,7 +1,5 @@
 from datetime import datetime as date
 
-from pydantic import parse_obj_as
-
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.impl.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
@@ -39,8 +37,8 @@ class LleidaHackerService(BaseService):
     def get_lleidahacker(self, userId: int, data: BaseToken):
         user = self.get_by_id(userId)
         if data.check([UserType.LLEIDAHACKER], userId):
-            return parse_obj_as(LleidaHackerGetAllSchema, user)
-        return parse_obj_as(LleidaHackerGetSchema, user)
+            return LleidaHackerGetAllSchema.from_orm(user)
+        return LleidaHackerGetSchema.from_orm(user)
 
     def add_lleidahacker(self, payload: LleidaHackerCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)

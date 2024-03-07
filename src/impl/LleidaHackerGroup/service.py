@@ -1,5 +1,3 @@
-from pydantic import parse_obj_as
-
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
@@ -40,8 +38,8 @@ class LleidaHackerGroupService(BaseService):
         group = self.get_by_id(groupId)
         users_ids = [u.id for u in group.members]
         if data.check([UserType.LLEIDAHACKER]) and data.user_id in users_ids:
-            return parse_obj_as(LleidaHackerGroupGetAllSchema, group)
-        return parse_obj_as(LleidaHackerGroupGetSchema, group)
+            return LleidaHackerGroupGetAllSchema.from_orm(group)
+        return LleidaHackerGroupGetSchema.from_orm(group)
 
     def add_lleidahackergroup(self, payload: LleidaHackerGroupCreateSchema,
                               data: BaseToken):

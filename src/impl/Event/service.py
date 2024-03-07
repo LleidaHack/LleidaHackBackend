@@ -1,5 +1,3 @@
-from pydantic import parse_obj_as
-
 import src.impl.Company.service as C_S
 import src.impl.Hacker.service as H_S
 import src.impl.HackerGroup.service as HG_S
@@ -68,8 +66,8 @@ class EventService(BaseService):
     def get_event(self, id: int, data: BaseToken):
         event = self.get_by_id(id)
         if not data.check([UserType.LLEIDAHACKER]):
-            return parse_obj_as(EventGetAllSchema, event)
-        return parse_obj_as(EventGetSchema, event)
+            return EventGetAllSchema.from_orm(event)
+        return EventGetSchema.from_orm(event)
 
     def add_event(self, payload: EventCreateSchema, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.SERVICE]):
@@ -215,14 +213,14 @@ class EventService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
-        return parse_obj_as(HackerGetAllSchema, event.accepted_hackers)
+        return HackerGetAllSchema.from_orm(event.accepted_hackers)
 
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         hackers = [h.email for h in event.accepted_hackers]
-        return parse_obj_as(HackerGetAllSchema, hackers)
+        return HackerGetAllSchema.from_orm(hackers)
 
     def get_sizes(self, eventId: int):
         sizes = {}

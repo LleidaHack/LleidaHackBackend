@@ -1,7 +1,5 @@
 from datetime import datetime as date
 
-from pydantic import parse_obj_as
-
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.impl.CompanyUser.model import CompanyUser as ModelCompanyUser
@@ -39,8 +37,8 @@ class CompanyUserService(BaseService):
         user = self.get_by_id(companyUserId)
         if data.check([UserType.LLEIDAHACKER.value, UserType.COMPANYUSER],
                       companyUserId):
-            return parse_obj_as(CompanyUserGetAllSchema, user)
-        return parse_obj_as(CompanyUserGetSchema, user)
+            return CompanyUserGetAllSchema.from_orm(user)
+        return CompanyUserGetSchema.from_orm(user)
 
     def add_company_user(self, payload: CompanyUserCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)

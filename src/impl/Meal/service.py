@@ -1,5 +1,3 @@
-from pydantic import parse_obj_as
-
 import src.impl.Event.service as E_S
 import src.impl.Hacker.service as H_S
 from src.error.AuthenticationException import AuthenticationException
@@ -36,8 +34,8 @@ class MealService(BaseService):
     def get_meal(self, id: int, data: BaseToken):
         meal = self.get_by_id(id)
         if data.check([UserType.LLEIDAHACKER]):
-            return parse_obj_as(MealGetAllSchema, meal)
-        return parse_obj_as(MealGetSchema, meal)
+            return MealGetAllSchema.from_orm(meal)
+        return MealGetSchema.from_orm(meal)
 
     def add_meal(self, meal: MealCreateSchema, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
