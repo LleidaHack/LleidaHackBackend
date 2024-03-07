@@ -20,7 +20,8 @@ def get_geocaching(code: str):
 
 
 @router.get("/geocaching/hacker/{user_code}")
-def get_all_hacker_geocaching(user_code: str, db: Session = Depends(Database.get_db)):
+def get_all_hacker_geocaching(user_code: str,
+                              db: Session = Depends(Database.get_db)):
     return geocaching_service.get_all_hacker_geocaching(db, user_code)
 
 

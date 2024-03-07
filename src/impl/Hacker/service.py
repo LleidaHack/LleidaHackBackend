@@ -35,7 +35,7 @@ class HackerService(BaseService):
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
-    
+
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
         if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):

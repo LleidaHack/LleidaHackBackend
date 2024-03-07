@@ -83,8 +83,7 @@ def get_hacker_events(userId: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{userId}/groups", response_model=List[HackerGroupGetSchema])
-def get_hacker_groups(userId: int,
-                      token: BaseToken = Depends(JWTBearer())):
+def get_hacker_groups(userId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_groups(userId, db)
 
 
