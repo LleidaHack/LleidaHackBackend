@@ -210,8 +210,8 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
 
 @router.get("/force-confirm-assistance/{event_id}/{user_id}")
 def force_confirm_assistance(event_id: int,
-                       user_id: int,
-                       token: BaseToken = Depends(JWTBearer())):
+                             user_id: int,
+                             token: BaseToken = Depends(JWTBearer())):
     """
     Confirm assistance of a hacker to an event
     """

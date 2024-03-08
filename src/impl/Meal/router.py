@@ -23,8 +23,7 @@ def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):
     return meal_service.get_all(id)
 
 
-@router.get("/{id}",
-            response_model=Union[MealGetAllSchema, MealGetSchema])
+@router.get("/{id}", response_model=Union[MealGetAllSchema, MealGetSchema])
 def get_meal(id: int, token: BaseToken = Depends(JWTBearer())):
     return meal_service.get_meal(id, token)
 

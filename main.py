@@ -106,7 +106,6 @@ app.include_router(Meal.router)
 app.include_router(Event.router)
 app.include_router(Authentication.router)
 app.include_router(Geocaching.router)
-
 """
 Simplify operation IDs so that generated API clients have simpler function
 names.

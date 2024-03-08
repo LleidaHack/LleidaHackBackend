@@ -63,7 +63,8 @@ def get_company_user(companyUserId: int,
 def update_company_user(companyUserId: int,
                         payload: CompanyUserUpdateSchema,
                         token: BaseToken = Depends(JWTBearer())):
-    companyuser, updated = companyuser_service.update_company_user(payload, companyUserId, token)
+    companyuser, updated = companyuser_service.update_company_user(
+        payload, companyUserId, token)
     return {"success": True, "updated_id": companyuser.id, 'updated': updated}
 
 

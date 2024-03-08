@@ -35,13 +35,14 @@ class HackerService(BaseService):
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
-    
+
     def get_by_code(self, code: str):
-        event = self.db.query(ModelHacker).filter(ModelHacker.code == code).first()
+        event = self.db.query(ModelHacker).filter(
+            ModelHacker.code == code).first()
         if event is None:
             raise NotFoundException('hacker not found')
         return event
-    
+
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
         if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
