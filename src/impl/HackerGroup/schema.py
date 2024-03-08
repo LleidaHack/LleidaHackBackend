@@ -1,7 +1,8 @@
 from typing import Optional
 
-from src.utils.Base.BaseSchema import BaseSchema
 from pydantic import ConfigDict
+
+from src.utils.Base.BaseSchema import BaseSchema
 
 
 class HackerGroupCreate(BaseSchema):

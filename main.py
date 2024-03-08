@@ -1,5 +1,5 @@
-import logging
-from logging.config import dictConfig
+# import logging
+# from logging.config import dictConfig
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,7 +28,7 @@ from src.impl.Meal import router as Meal
 from src.impl.User import router as User
 
 # dictConfig(LogConfig().dict())
-logger = logging.getLogger("mycoolapp")
+# logger = logging.getLogger("mycoolapp")
 
 tags_metadata = [
     {

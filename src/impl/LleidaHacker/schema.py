@@ -1,7 +1,8 @@
 from typing import Optional
 
-from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 from pydantic import ConfigDict
+
+from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
 
 class LleidaHackerCreate(UserCreate):
