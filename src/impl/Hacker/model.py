@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from src.impl.User.model import User
@@ -11,7 +11,7 @@ from src.utils.UserType import UserType
 class Hacker(User):
     __tablename__ = 'hacker'
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    banned: bool = Column(Integer, default=0)
+    banned: bool = Column(Boolean, default=False)
     github: str = Column(String, default="")
     linkedin: str = Column(String, default="")
     cv: str = Column(String, default="")

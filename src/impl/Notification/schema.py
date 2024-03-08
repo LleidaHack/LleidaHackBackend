@@ -8,4 +8,4 @@ class Notification(BaseSchema):
 
 
 class NotificationUpdate(BaseSchema):
-    message: Optional[str]
+    message: Optional[str] = None

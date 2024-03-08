@@ -4,9 +4,10 @@ from logging.config import dictConfig
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
-from log_config import LogConfig
+# from log_config import LogConfig
 from src.error import error_handler as eh
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InputException import InputException
@@ -26,7 +27,7 @@ from src.impl.MailQueue import router as MailQueue
 from src.impl.Meal import router as Meal
 from src.impl.User import router as User
 
-dictConfig(LogConfig().dict())
+# dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
 
 tags_metadata = [
@@ -105,6 +106,16 @@ app.include_router(Meal.router)
 app.include_router(Event.router)
 app.include_router(Authentication.router)
 app.include_router(Geocaching.router)
+
+"""
+Simplify operation IDs so that generated API clients have simpler function
+names.
+
+Should be called only after all routes have been added.
+"""
+for route in app.routes:
+    if isinstance(route, APIRoute):
+        route.operation_id = route.name
 
 
 @app.get("/")

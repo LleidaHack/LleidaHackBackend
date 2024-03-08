@@ -35,7 +35,13 @@ class HackerService(BaseService):
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
-
+    
+    def get_by_code(self, code: str):
+        event = self.db.query(ModelHacker).filter(ModelHacker.code == code).first()
+        if event is None:
+            raise NotFoundException('hacker not found')
+        return event
+    
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
         if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
@@ -126,7 +132,7 @@ class HackerService(BaseService):
         hacker = self.get_by_id(hackerId)
         if hacker.banned:
             raise InvalidDataException("Hacker already banned")
-        hacker.banned = 1
+        hacker.banned = True
         self.db.commit()
         self.db.refresh(hacker)
         return hacker
@@ -137,7 +143,7 @@ class HackerService(BaseService):
         hacker = self.get_by_id(hackerId)
         if not hacker.banned:
             raise InvalidDataException("Hacker already unbanned")
-        hacker.banned = 0
+        hacker.banned = False
         self.db.commit()
         self.db.refresh(hacker)
         return hacker

@@ -91,7 +91,7 @@ class EventService(BaseService):
         return db_event, updated
 
     def delete_event(self, id: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER.value]):
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         db_event = self.get_by_id(id)
         self.db.delete(db_event)
@@ -177,7 +177,7 @@ class EventService(BaseService):
         return event
 
     def remove_company(self, id: int, company_id: int, data: BaseToken):
-        if not data.chek([UserType.LLEIDAHACKER]):
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         company = self.company_service.get_by_id(company_id)
         company_users = [user.id for user in company.users]
@@ -194,7 +194,7 @@ class EventService(BaseService):
 
     def remove_hacker_group(self, id: int, hacker_group_id: int,
                             data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER.value]):
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
             raise AuthenticationException("Not authorized")
         hacker_group = self.hackergroup_service.get_by_id(hacker_group_id)
         group_hackers = [hacker.id for hacker in hacker_group.members]
@@ -237,7 +237,7 @@ class EventService(BaseService):
         event = self.get_by_id(eventId)
         accepted_and_confirmed = []
         for user in event.accepted_hackers:
-            user_registration = self.query(ModelHackerRegistration).filter(
+            user_registration = self.db.query(ModelHackerRegistration).filter(
                 ModelHackerRegistration.user_id == user.id,
                 ModelHackerRegistration.event_id == event.id).first()
             if user_registration and user_registration.confirmed_assistance:
@@ -431,7 +431,7 @@ class EventService(BaseService):
         return event
 
     def accept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.check(UserType.LLEIDAHACKER):
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         hacker = self.hacker_service.get_by_id(hacker_id)

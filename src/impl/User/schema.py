@@ -2,7 +2,7 @@ import re
 from datetime import date
 from typing import Optional
 
-from pydantic import validator
+from pydantic import field_validator
 
 from src.utils.Base.BaseSchema import BaseSchema
 
@@ -16,12 +16,13 @@ class UserCreate(BaseSchema):
     email: str
     telephone: str
     address: str
-    shirt_size: Optional[str]
-    image: Optional[str]
-    is_image_url: Optional[bool]
-    recive_mails: Optional[bool]
+    shirt_size: Optional[str] = None
+    image: Optional[str] = None
+    is_image_url: Optional[bool] = None
+    recive_mails: Optional[bool] = None
 
-    @validator('email')
+    @field_validator('email')
+    @classmethod
     def email_validation(cls, v):
         if (re.search(
                 "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
@@ -29,13 +30,15 @@ class UserCreate(BaseSchema):
             raise ValueError('must be a valid email')
         return v
 
-    @validator('telephone')
+    @field_validator('telephone')
+    @classmethod
     def telephone_validation(cls, v):
         if re.search("^([/+][0-9]{1,2})?[0-9]{9}$", v) is None:
             raise ValueError('must contain at least 8 digits')
         return v
 
-    @validator('password')
+    @field_validator('password')
+    @classmethod
     def password_validation(cls, v):
         if (re.search("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$", v)
                 is None):
@@ -44,13 +47,15 @@ class UserCreate(BaseSchema):
             )
         return v
 
-    @validator('birthdate')
+    @field_validator('birthdate')
+    @classmethod
     def birthdate_validation(cls, v):
         if v > date.today():
             raise ValueError('must be a valid date')
         return v
 
-    @validator('shirt_size')
+    @field_validator('shirt_size')
+    @classmethod
     def shirt_size_validation(cls, v):
         if v not in ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']:
             raise ValueError('must be a valid shirt size')
@@ -62,9 +67,9 @@ class UserGet(BaseSchema):
     nickname: str
     birthdate: date
     email: str
-    image: Optional[str]
-    is_image_url: Optional[bool]
-    recive_mails: Optional[bool]
+    image: Optional[str] = None
+    is_image_url: Optional[bool] = None
+    recive_mails: Optional[bool] = None
 
 
 class UserGetAll(UserGet):
@@ -75,15 +80,15 @@ class UserGetAll(UserGet):
 
 
 class UserUpdate(BaseSchema):
-    name: Optional[str]
-    nickname: Optional[str]
-    password: Optional[str]
-    birthdate: Optional[date]
-    food_restrictions: Optional[str]
-    email: Optional[str]
-    telephone: Optional[str]
-    address: Optional[str]
-    shirt_size: Optional[str]
-    image: Optional[str]
-    is_image_url: Optional[bool]
-    recive_mails: Optional[bool]
+    name: Optional[str] = None
+    nickname: Optional[str] = None
+    password: Optional[str] = None
+    birthdate: Optional[date] = None
+    food_restrictions: Optional[str] = None
+    email: Optional[str] = None
+    telephone: Optional[str] = None
+    address: Optional[str] = None
+    shirt_size: Optional[str] = None
+    image: Optional[str] = None
+    is_image_url: Optional[bool] = None
+    recive_mails: Optional[bool] = None
