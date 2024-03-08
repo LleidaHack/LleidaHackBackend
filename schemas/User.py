@@ -31,7 +31,7 @@ class User(BaseModel):
     @validator('telephone')
     def telephone_validation(cls, v):
         if re.search("^([/+][0-9]{1,2})?[0-9]{9}$", v) is None:
-            raise ValueError('must contain at least 8 digits')
+            raise ValueError('Value must be a valid phone number')
         return v
 
     @validator('password')
