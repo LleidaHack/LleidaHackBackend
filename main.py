@@ -52,9 +52,11 @@ app = FastAPI(title="LleidaHack API",
 
 logger = logging.getLogger(__name__)
 
+
 @app.get("/")
 def root():
     return RedirectResponse(url='/docs')
+
 
 if __name__ == '__main__':
     App(app).setup_all(logger)
