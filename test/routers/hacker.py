@@ -73,20 +73,20 @@ schema_hacker = create_rnd_hacker()
 
 
 # ===== signup endpoint test =====
-async def mock_add_hacker(payload: schema_hacker,
-                          db: TestingSessionLocal):
+async def mock_add_hacker(payload: schema_hacker, db: TestingSessionLocal):
     return ModelHacker(**payload.dict(), code=generate_user_code(db))
 
 
-def mock_create_all_tokens(user: schema_hacker,
-                           db: TestingSessionLocal):
+def mock_create_all_tokens(user: schema_hacker, db: TestingSessionLocal):
     access_token = create_access_token(user, db)
     refresh_token = create_refresh_token(user, db)
     return access_token, refresh_token
 
 
-@patch("services.hacker.add_hacker", mock_add_hacker(schema_hacker, TestingSessionLocal))
-@patch("security.create_all_tokens", mock_create_all_tokens(schema_hacker, TestingSessionLocal))
+@patch("services.hacker.add_hacker",
+       mock_add_hacker(schema_hacker, TestingSessionLocal))
+@patch("security.create_all_tokens",
+       mock_create_all_tokens(schema_hacker, TestingSessionLocal))
 def test_hacker_signup():
     payload = create_rnd_hacker()
     payload_dict = payload.__dict__
