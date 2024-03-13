@@ -1,16 +1,20 @@
 from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from schemas.Hacker import Hacker as SchemaHacker
+from models.Hacker import Hacker as ModelHacker
+from models.User import User as ModelUser
 from database import Base
 from database import get_db
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from main import app
-import anyio
 import random
 import string
 import base64
+
+from security import create_access_token, create_refresh_token
+from utils.service_utils import generate_user_code
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 engine = create_engine(
@@ -38,16 +42,16 @@ client = TestClient(app)
 
 def random_string(length):
     letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(length))
+    return ''.join(random.choice(letters) for _ in range(length))
 
 
 def random_password(length):
     letters = string.ascii_letters + string.digits
-    result_str = ''.join(random.choice(letters) for i in range(length))
+    result_str = ''.join(random.choice(letters) for _ in range(length))
     return result_str[0].upper() + result_str[1:] + "."
 
 
-def test_create_rnd_hacker():
+def create_rnd_hacker():
     return SchemaHacker(name="test",
                         nickname=random_string(10),
                         password=random_password(10),
@@ -65,20 +69,29 @@ def test_create_rnd_hacker():
                         linkedin="string")
 
 
+schema_hacker = create_rnd_hacker()
+
+
 # ===== signup endpoint test =====
-async def mock_add_hacker():
-    return {"id": 1}
+async def mock_add_hacker(payload: schema_hacker,
+                          db: TestingSessionLocal):
+    return ModelHacker(**payload.dict(), code=generate_user_code(db))
 
 
-def mock_create_all_tokens():
-    return "fake_access_token", "fake_refresh_token"
+def mock_create_all_tokens(user: schema_hacker,
+                           db: TestingSessionLocal):
+    access_token = create_access_token(user, db)
+    refresh_token = create_refresh_token(user, db)
+    return access_token, refresh_token
 
 
-@patch("services.hacker.add_hacker", new=mock_add_hacker)
-@patch("security.create_all_tokens", new=mock_create_all_tokens)
+@patch("services.hacker.add_hacker", mock_add_hacker(schema_hacker, TestingSessionLocal))
+@patch("security.create_all_tokens", mock_create_all_tokens(schema_hacker, TestingSessionLocal))
 def test_hacker_signup():
-    payload = test_create_rnd_hacker()
-    response = client.post("/hacker/signup", json=payload.__dict__)
+    payload = create_rnd_hacker()
+    payload_dict = payload.__dict__
+    payload_dict['birthdate'] = payload_dict['birthdate'].isoformat()
+    response = client.post("/hacker/signup", json=payload_dict)
     assert response.status_code == 200
     expected_response_body = {
         "success": True,
@@ -175,7 +188,7 @@ def test_unban_hacker():
 
 # ===== delete_hacker endpoint test =====
 async def mock_remove_hacker():
-    return test_create_rnd_hacker()
+    return create_rnd_hacker()
 
 
 @patch("services.hacker.remove_hacker", new=mock_remove_hacker())
