@@ -78,6 +78,7 @@ class UserGetAll(UserGet):
     telephone: str
     address: str
     shirt_size: Optional[str]
+    is_verified: bool
 
 
 class UserUpdate(BaseSchema):

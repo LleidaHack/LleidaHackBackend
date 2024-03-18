@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from fastapi.middleware.cors import CORSMiddleware

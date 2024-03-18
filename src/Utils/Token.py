@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import enum
 from datetime import datetime, timedelta
 from typing import List
 
@@ -11,6 +10,7 @@ from src.error.AuthenticationException import AuthenticationException
 from src.impl.User.model import User as UserModel
 from src.impl.User.service import UserService
 from src.utils.Configuration import Configuration
+from src.utils.TokenType import TokenType
 from src.utils.UserType import UserType
 
 SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
@@ -20,12 +20,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY",
                                                 "ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
-class TokenType(enum.Enum):
-    ACCESS = 'access'
-    REFRESH = 'refresh'
-    ASSISTENCE = 'assistence'
-    VERIFICATION = 'verification'
-    RESET_PASS = 'reset_pass'
 
 
 # TODO: fer que sigui abstracta
@@ -69,15 +63,9 @@ class BaseToken:
     def to_token(self):
         return BaseToken.encode(self.__dict__)
 
-    def user_set(self, user: UserModel):
-        if type == TokenType.ACCESS.value:
-            user.token = self.to_token()
-        elif type == TokenType.REFRESH.value:
-            user.refresh_token = self.to_token()
-        elif type == TokenType.RESET_PASS.value:
-            user.rest_password_token = self.to_token()
-        elif type == TokenType.VERIFICATION.value:
-            user.verification_token = self.to_token()
+    def user_set(self):
+        self.user_service.update_token(self)
+        return self.to_token()
 
     def check(self, available_users: List[UserType], user_id: int = None):
         types = [t.value for t in available_users]

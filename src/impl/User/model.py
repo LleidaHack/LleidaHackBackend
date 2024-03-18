@@ -7,7 +7,7 @@ from src.utils.database import Base
 
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = 'my_user'
     id: int = Column(Integer, primary_key=True, index=True)
     is_verified: bool = Column(Boolean, default=False)
 
@@ -36,6 +36,6 @@ class User(Base):
     rest_password_token: str = (Column(String, default=""))
 
     __mapper_args__ = {
-        "polymorphic_identity": "user",
+        "polymorphic_identity": "my_user",
         "polymorphic_on": type,
     }

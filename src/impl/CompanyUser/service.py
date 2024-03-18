@@ -1,5 +1,7 @@
 from datetime import datetime as date
 
+from fastapi_sqlalchemy import db
+
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.impl.CompanyUser.model import CompanyUser as ModelCompanyUser
@@ -19,15 +21,12 @@ from src.utils.UserType import UserType
 
 
 class CompanyUserService(BaseService):
-
-    def __call__(self):
-        pass
-
+    name = 'companyuser_service'
     def get_all(self):
-        return self.db.query(ModelCompanyUser).all()
+        return db.session.query(ModelCompanyUser).all()
 
     def get_by_id(self, companyUserId: int):
-        user = self.db.query(ModelCompanyUser).filter(
+        user = db.session.query(ModelCompanyUser).filter(
             ModelCompanyUser.id == companyUserId).first()
         if user is None:
             raise NotFoundException("Company user not found")
@@ -47,9 +46,9 @@ class CompanyUserService(BaseService):
         new_company_user.password = get_password_hash(payload.password)
         if payload.image is not None:
             payload = check_image(payload)
-        self.db.add(new_company_user)
-        self.db.commit()
-        self.db.refresh(new_company_user)
+        db.session.add(new_company_user)
+        db.session.commit()
+        db.session.refresh(new_company_user)
         return new_company_user
 
     def update_company_user(self, payload: CompanyUserUpdateSchema,
@@ -66,8 +65,8 @@ class CompanyUserService(BaseService):
         if payload.password is not None:
             company_user.password = get_password_hash(payload.password)
             updated.append("password")
-        self.db.commit()
-        self.db.refresh(company_user)
+        db.session.commit()
+        db.session.refresh(company_user)
         return company_user, updated
 
     def delete_company_user(self, companyUserId: int, data: BaseToken):
@@ -75,6 +74,6 @@ class CompanyUserService(BaseService):
                            ]) or data.user_id != companyUserId:
             raise AuthenticationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
-        self.db.delete(company_user)
-        self.db.commit()
+        db.session.delete(company_user)
+        db.session.commit()
         return company_user

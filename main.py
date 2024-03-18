@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
 from App import App
+from src.utils.Configuration import Configuration
 
 tags_metadata = [
     {
@@ -40,6 +41,8 @@ tags_metadata = [
 
 import logging
 
+from fastapi_sqlalchemy import DBSessionMiddleware  # middleware helper
+
 app = FastAPI(title="LleidaHack API",
               description="LleidaHack API",
               version="2.0",
@@ -52,9 +55,12 @@ app = FastAPI(title="LleidaHack API",
 
 logger = logging.getLogger(__name__)
 
+app.add_middleware(DBSessionMiddleware, db_url=Configuration.get("POSTGRESQL", "DATABASE_URL"))
 @app.get("/")
 def root():
     return RedirectResponse(url='/docs')
 
-if __name__ == '__main__':
-    App(app).setup_all(logger)
+# app.add_middleware(MaintenanceModeMiddleware, is_maintenance_mode=True)
+
+
+App(app).setup_all(logger)

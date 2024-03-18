@@ -2,10 +2,10 @@ uvicorn[standard]
 configparser
 psycopg2
 fastapi-sqlalchemy
-starlette==0.19.1
+starlette
 pydantic
 alembic
-sqlalchemy == 1.4.25
+sqlalchemy
 sqlalchemy-utils
 gunicorn
 python-jose[cryptography]
@@ -17,3 +17,4 @@ glob2
 fastapi
 fastapi-mail
 python-dateutil
+fastapi-sqlalchemy

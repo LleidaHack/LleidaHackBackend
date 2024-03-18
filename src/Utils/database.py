@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -8,27 +10,42 @@ from src.utils.Singleton import Singleton
 
 Base = declarative_base()
 
-
+# # engine = create_engine(
+# #             Configuration.get("POSTGRESQL", "DATABASE_URL"))
+# # SessionLocal = sessionmaker(autocommit=False,
+# #                                     autoflush=True,
+# #                                     bind=engine)
+# #         # if not database_exists(engine.url):
 class Database(metaclass=Singleton):
 
-    def __init__(self):
-        self.engine = create_engine(
-            Configuration.get("POSTGRESQL", "DATABASE_URL"))
-        self.SessionLocal = sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=self.engine)
+    # def __init__(self):
+    # engine = create_engine(
+    #         Configuration.get("POSTGRESQL", "DATABASE_URL"))
+    # SessionLocal = sessionmaker(autocommit=True,
+    #                                      autoflush=True,
+    #                                      bind=engine)
+    # db = SessionLocal()
         # if not database_exists(engine.url):
         # create_database(engine.url)
 
     def get_db(self):
         '''returns the connetion to database'''
-        db = self.SessionLocal()
         try:
-            yield db
+            yield Database.db
         except Exception as e:
-            db.close()
+            Database.db.close()
         finally:
-            db.close()
+            Database.db.close()
 
-    def db_get(self):
-        return self.SessionLocal()
+# @contextmanager
+def db_get():
+    db = Database.SessionLocal()
+    # return Database.db
+    try:
+        yield db
+    except Exception as e:
+        db.close()
+        raise
+    finally:
+        db.close()
+    # return self.SessionLocal()

@@ -1,20 +1,22 @@
-import src.impl.Company.service as C_S
-import src.impl.Hacker.service as H_S
-import src.impl.HackerGroup.service as HG_S
+from fastapi_sqlalchemy import db
+
 from services.mail import send_event_accepted_email
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
+from src.impl.Company.service import CompanyService
 from src.impl.Event.model import Event as ModelEvent
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
-# from src.impl.Event.router import accept_hacker_to_event
+
 from src.impl.Event.schema import EventCreate as EventCreateSchema
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Event.schema import EventGetAll as EventGetAllSchema
 from src.impl.Event.schema import EventUpdate as EventUpdateSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
+from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.impl.HackerGroup.service import HackerGroupService
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import (check_image, set_existing_data,
                                      subtract_lists)
@@ -23,41 +25,38 @@ from src.utils.UserType import UserType
 
 
 class EventService(BaseService):
-
-    def __call__(self):
-        if self.hackergroup_service is None:
-            self.hackergroup_service = HG_S.HackerGroupService()
-        if self.hacker_service is None:
-            self.hacker_service = H_S.HackerService()
-        if self.company_service is None:
-            self.company_service = C_S.CompanyService()
+    name = 'event_service'
+    hackergroup_service = None
+    hacker_service = None
+    company_service = None
 
     def get_all(self):
-        return self.db.query(ModelEvent).all()
+        return db.session.query(ModelEvent).all()
 
     def get_by_id(self, id: int) -> ModelEvent:
-        event = self.db.query(ModelEvent).filter(ModelEvent.id == id).first()
+        event = db.session.query(ModelEvent).filter(ModelEvent.id == id).first()
         if event is None:
             raise NotFoundException('event not found')
         return event
 
     def get_hackeps(self, year: int):
         #return and event called HackEPS year ignoring caps
-        e = self.db.query(ModelEvent).filter(
+        e = db.session.query(ModelEvent).filter(
             ModelEvent.name.ilike(f'%HackEPS {str(year)}%')).first()
         if e is None:
-            return self.db.query(ModelEvent).filter(
+            return db.session.query(ModelEvent).filter(
                 ModelEvent.name.ilike(f'%HackEPS {str(year-1)}%')).first()
         return e
 
+    @BaseService.needs_service(HackerService)
     def get_hacker_group(self, event_id: int, hacker_id: int, data: BaseToken):
         event = self.get_by_id(event_id)
         hacker = self.hacker_service.get_by_id(hacker_id)
         if hacker not in event.registered_hackers:
             raise NotFoundException("Hacker is not participant")
-        user_groups = self.db.query(ModelHackerGroupUser).filter(
+        user_groups = db.session.query(ModelHackerGroupUser).filter(
             ModelHackerGroupUser.hacker_id == hacker_id).all()
-        group = self.db.query(ModelHackerGroup).filter(
+        group = db.session.query(ModelHackerGroup).filter(
             ModelHackerGroup.event_id == event_id).filter(
                 ModelHackerGroup.id.in_(
                     [g.hacker_group_id for g in user_groups])).first()
@@ -75,9 +74,9 @@ class EventService(BaseService):
         if payload.image is not None:
             payload = check_image(payload)
         db_event = ModelEvent(**payload.dict())
-        self.db.add(db_event)
-        self.db.commit()
-        self.db.refresh(db_event)
+        db.session.add(db_event)
+        db.session.commit()
+        db.session.refresh(db_event)
         return db_event
 
     def update_event(self, id: int, event: EventUpdateSchema, data: BaseToken):
@@ -87,22 +86,24 @@ class EventService(BaseService):
         if event.image is not None:
             event = check_image(event)
         updated = set_existing_data(db_event, event)
-        self.db.commit()
+        db.session.commit()
         return db_event, updated
 
     def delete_event(self, id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         db_event = self.get_by_id(id)
-        self.db.delete(db_event)
-        self.db.commit()
+        db.session.delete(db_event)
+        db.session.commit()
         return db_event
 
+    @BaseService.needs_service(HackerService)
     def is_registered(self, id: int, hacker_id: int, data: BaseToken):
         event = self.get_by_id(id)
         hacker = self.hacker_service.get_by_id(hacker_id)
         return hacker in event.registered_hackers
 
+    @BaseService.needs_service(HackerService)
     def is_accepted(self, id: int, hacker_id: int, data: BaseToken):
         event = self.get_by_id(id)
         hacker = self.hacker_service.get_by_id(hacker_id)
@@ -123,16 +124,17 @@ class EventService(BaseService):
     def get_event_groups(self, id: int, data: BaseToken):
         event = self.get_by_id(id)
         return event
-
+    
+    @BaseService.needs_service(CompanyService)
     def add_company(self, id: int, company_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         company = self.company_service.get_by_id(company_id)
         event.sponsors.append(company)
-        self.db.commit()
-        self.db.refresh(event)
-        self.db.refresh(company)
+        db.session.commit()
+        db.session.refresh(event)
+        db.session.refresh(company)
         return event
 
     # def add_hacker(id: int, hacker_id: int, db: Session, data: BaseToken):
@@ -155,7 +157,7 @@ class EventService(BaseService):
     #     db.refresh(event)
     #     db.refresh(hacker)
     #     return event
-
+    @BaseService.needs_service(HackerGroupService)
     def add_hacker_group(self, id: int, hacker_group_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
             raise AuthenticationException("Not authorized")
@@ -172,10 +174,11 @@ class EventService(BaseService):
             raise InvalidDataException("Event is full")
         event.hacker_groups.append(hacker_group)
         event.hackers.extend(hacker_group.hackers)
-        self.db.commit()
-        self.db.refresh(event)
+        db.session.commit()
+        db.session.refresh(event)
         return event
 
+    @BaseService.needs_service(CompanyService)
     def remove_company(self, id: int, company_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
@@ -187,11 +190,11 @@ class EventService(BaseService):
         if company not in event.companies:
             raise InvalidDataException("Company is not sponsor")
         event.companies.remove(company)
-        self.db.commit()
-        self.db.refresh(event)
-        self.db.refresh(company)
+        db.session.commit()
+        db.session.refresh(event)
+        db.session.refresh(company)
         return event
-
+    @BaseService.needs_service(HackerGroupService)
     def remove_hacker_group(self, id: int, hacker_group_id: int,
                             data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
@@ -204,23 +207,24 @@ class EventService(BaseService):
         event.hacker_groups.remove(hacker_group)
         for hacker in hacker_group.members:
             event.registered_hackers.remove(hacker)
-        self.db.commit()
-        self.db.refresh(hacker_group)
-        self.db.refresh(event)
+        db.session.commit()
+        db.session.refresh(hacker_group)
+        db.session.refresh(event)
         return event
 
     def get_accepted_hackers(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
-        return HackerGetAllSchema.from_orm(event.accepted_hackers)
+        return event.accepted_hackers
+        # return HackerGetAllSchema.from_orm(event.accepted_hackers)
 
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         hackers = [h.email for h in event.accepted_hackers]
-        return HackerGetAllSchema.from_orm(hackers)
+        return hackers
 
     def get_sizes(self, eventId: int):
         sizes = {}
@@ -237,13 +241,14 @@ class EventService(BaseService):
         event = self.get_by_id(eventId)
         accepted_and_confirmed = []
         for user in event.accepted_hackers:
-            user_registration = self.db.query(ModelHackerRegistration).filter(
+            user_registration = db.session.query(ModelHackerRegistration).filter(
                 ModelHackerRegistration.user_id == user.id,
                 ModelHackerRegistration.event_id == event.id).first()
             if user_registration and user_registration.confirmed_assistance:
                 accepted_and_confirmed.append(user)
         return accepted_and_confirmed
-
+    
+    @BaseService.needs_service(HackerGroupService)
     def get_hackers_unregistered(self, eventId: int):
         hackers = self.hacker_service.get_all()
         event = self.get_by_id(eventId)
@@ -282,7 +287,8 @@ class EventService(BaseService):
                 restrictions.append(user.food_restrictions)
         # remove duplicates
         return list(set(restrictions))
-
+    
+    @BaseService.needs_service(HackerGroupService)
     def get_pending_hackers_gruped(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
@@ -293,7 +299,7 @@ class EventService(BaseService):
                                          event.accepted_hackers)
         ]
         # Retrieve pending hacker groups
-        pending_groups_ids = self.db.query(
+        pending_groups_ids = db.session.query(
             ModelHackerGroupUser.group_id).filter(
                 ModelHackerGroupUser.hacker_id.in_(pending_hackers_ids)).all()
         pending_groups_ids = [g[0] for g in pending_groups_ids]
@@ -339,12 +345,13 @@ class EventService(BaseService):
         # Combine group and nogroup data into a dictionary
         return {"groups": output_data, "nogroup": nogroup_data}
 
+    @BaseService.needs_service(HackerService)
     def confirm_assistance(self, data: AssistenceToken):
         # data = get_data_from_token(token, special=True)
         # if data.expt < datetime.utcnow().isoformat():
         user = self.hacker_service.get_by_id(data.user_id)
         event = self.get_by_id(data.event_id)
-        user_registration = self.db.query(ModelHackerRegistration).filter(
+        user_registration = db.session.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == data.user_id,
             ModelHackerRegistration.event_id == data.event_id).first()
         if user_registration is None:
@@ -356,10 +363,11 @@ class EventService(BaseService):
         if user_registration.confirmed_assistance:
             raise InvalidDataException("User already confirmed assistance")
         user_registration.confirmed_assistance = True
-        self.db.commit()
-        self.db.refresh(user_registration)
+        db.session.commit()
+        db.session.refresh(user_registration)
         return user_registration
 
+    @BaseService.needs_service(HackerService)
     def force_confirm_assistance(self, user_id: int, event_id: int,
                                  data: BaseToken):
         if not data.is_admin:
@@ -367,7 +375,7 @@ class EventService(BaseService):
                 "You don't have permissions to do this")
         user = self.hacker_service.get_by_id(user_id)
         event = self.get_by_id(event_id)
-        user_registration = self.db.query(ModelHackerRegistration).filter(
+        user_registration = db.session.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == user_id,
             ModelHackerRegistration.event_id == event_id).first()
         if user_registration is None:
@@ -377,10 +385,11 @@ class EventService(BaseService):
         if user_registration.confirmed_assistance:
             raise InvalidDataException("User already confirmed assistance")
         user_registration.confirmed_assistance = True
-        self.db.commit()
-        self.db.refresh(user_registration)
+        db.session.commit()
+        db.session.refresh(user_registration)
         return user_registration
 
+    @BaseService.needs_service(HackerService)
     def participate_hacker(self, event_id: int, hacker_code: str,
                            data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
@@ -392,7 +401,7 @@ class EventService(BaseService):
             raise InvalidDataException("Hacker already participating")
         if not hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker not accepted")
-        user_registration = self.db.query(ModelHackerRegistration).filter(
+        user_registration = db.session.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == hacker.user_id,
             ModelHackerRegistration.event_id == event.id).first()
         if user_registration is None:
@@ -402,10 +411,10 @@ class EventService(BaseService):
             message = "user haven't confirmed so we frced confirmation"
             # raise InvalidDataException("User not confirmed assitence")
         event.participants.append(hacker)
-        self.db.commit()
-        self.db.refresh(user_registration)
-        self.db.refresh(event)
-        self.db.refresh(hacker)
+        db.session.commit()
+        db.session.refresh(user_registration)
+        db.session.refresh(event)
+        db.session.refresh(hacker)
         return {
             'success': True,
             'event_id': event.id,
@@ -416,6 +425,7 @@ class EventService(BaseService):
             'message': message,
         }
 
+    @BaseService.needs_service(HackerService)
     def unparticipate_hacker(self, event_id: int, hacker_code: str,
                              data: BaseToken):
         if not data.is_admin:
@@ -425,11 +435,12 @@ class EventService(BaseService):
         if not hacker in event.participants:
             raise InvalidDataException("Hacker not participating")
         event.participants.remove(hacker)
-        self.db.commit()
-        self.db.refresh(event)
-        self.db.refresh(hacker)
+        db.session.commit()
+        db.session.refresh(event)
+        db.session.refresh(hacker)
         return event
-
+    
+    @BaseService.needs_service(HackerService)
     def accept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
@@ -439,7 +450,7 @@ class EventService(BaseService):
             raise InvalidDataException("Hacker not registered")
         if hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker already accepted")
-        hacker_registration = self.db.query(ModelHackerRegistration).filter(
+        hacker_registration = db.session.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == hacker.id,
             ModelHackerRegistration.event_id == event.id).first()
         if hacker_registration is None:
@@ -447,12 +458,13 @@ class EventService(BaseService):
         token = AssistenceToken(hacker, event.id).to_token()
         hacker_registration.confirm_assistance_token = token
         event.accepted_hackers.append(hacker)
-        self.db.commit()
-        self.db.refresh(event)
-        self.db.refresh(hacker)
+        db.session.commit()
+        db.session.refresh(event)
+        db.session.refresh(hacker)
         send_event_accepted_email(hacker, event, token)
         return event
-
+    
+    @BaseService.needs_service(HackerService)
     def unaccept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
@@ -461,11 +473,12 @@ class EventService(BaseService):
         if not hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker not accepted")
         event.accepted_hackers.remove(hacker)
-        self.db.commit()
-        self.db.refresh(event)
-        self.db.refresh(hacker)
+        db.session.commit()
+        db.session.refresh(event)
+        db.session.refresh(hacker)
         return event
 
+    @BaseService.needs_service(HackerGroupService)
     def reject_group(self, event_id: int, group_id, data: BaseToken):
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
@@ -477,11 +490,12 @@ class EventService(BaseService):
             if hacker in event.accepted_hackers:
                 raise InvalidDataException("Hacker already accepted")
             event.rejected_hackers.append(hacker)
-        self.db.commit()
-        self.db.refresh(event)
-        self.db.refresh(group)
+        db.session.commit()
+        db.session.refresh(event)
+        db.session.refresh(group)
         return event
-
+    
+    @BaseService.needs_service(HackerService)
     def reject_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
@@ -492,11 +506,12 @@ class EventService(BaseService):
         if hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker already accepted")
         event.rejected_hackers.remove(hacker)
-        self.db.commit()
-        self.db.refresh(event)
-        self.db.refresh(hacker)
+        db.session.commit()
+        db.session.refresh(event)
+        db.session.refresh(hacker)
         return event
 
+    @BaseService.needs_service(HackerGroupService)
     def accept_group(self, event_id: int, group_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
