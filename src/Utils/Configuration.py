@@ -1,5 +1,4 @@
 import configparser
-
 '''Module used to parse the config on the config.ini file'''
 
 

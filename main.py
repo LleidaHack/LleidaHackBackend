@@ -55,6 +55,7 @@ app = FastAPI(title="LleidaHack API",
 
 logger = logging.getLogger(__name__)
 
+
 app.add_middleware(DBSessionMiddleware, db_url=Configuration.get("POSTGRESQL", "DATABASE_URL"))
 @app.get("/")
 def root():

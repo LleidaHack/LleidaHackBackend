@@ -26,6 +26,7 @@ from src.impl.User import router as User
 
 
 class App:
+
     def __init__(self, app):
         self.app = app
 
@@ -51,7 +52,7 @@ class App:
         for route in self.app.routes:
             if isinstance(route, APIRoute):
                 route.operation_id = route.name
-    
+
     def setup_middleware(self):
         self.app.add_middleware(
             CORSMiddleware,
@@ -61,25 +62,33 @@ class App:
             allow_headers=["*"],
             expose_headers=["*"],
         )
-    
+
     def setup_exceptions(self):
-        self.app.add_exception_handler(AuthenticationException,eh.authentication_exception_handler)
-        self.app.add_exception_handler(NotFoundException, eh.not_found_exception_handler)
-        self.app.add_exception_handler(ValidationException, eh.validation_exception_handler)
+        self.app.add_exception_handler(AuthenticationException,
+                                       eh.authentication_exception_handler)
+        self.app.add_exception_handler(NotFoundException,
+                                       eh.not_found_exception_handler)
+        self.app.add_exception_handler(ValidationException,
+                                       eh.validation_exception_handler)
         self.app.add_exception_handler(InvalidDataException,
-                                eh.invalid_data_exception_handler)
-        self.app.add_exception_handler(InputException, eh.input_exception_handler)
-    
+                                       eh.invalid_data_exception_handler)
+        self.app.add_exception_handler(InputException,
+                                       eh.input_exception_handler)
+
     def setup_static_folder(self):
-        self.app.mount('/static', StaticFiles(directory='static'), name='static')
+        self.app.mount('/static',
+                       StaticFiles(directory='static'),
+                       name='static')
 
     def setup_logger(self, logger):
         logger.setLevel(logging.DEBUG)
         stream_handler = logging.StreamHandler(sys.stdout)
-        log_formatter = logging.Formatter("%(asctime)s [%(processName)s: %(process)d] [%(threadName)s: %(thread)d] [%(levelname)s] %(name)s: %(message)s")
+        log_formatter = logging.Formatter(
+            "%(asctime)s [%(processName)s: %(process)d] [%(threadName)s: %(thread)d] [%(levelname)s] %(name)s: %(message)s"
+        )
         stream_handler.setFormatter(log_formatter)
         logger.addHandler(stream_handler)
-        
+
     def setup_all(self, logger):
         self.setup_static_folder()
         self.setup_exceptions()
