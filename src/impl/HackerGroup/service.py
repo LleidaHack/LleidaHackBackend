@@ -58,6 +58,7 @@ class HackerGroupService(BaseService):
                        ]) and data.user_id in members_ids:
             return HackerGroupGetAllSchema.from_orm(group)
         return HackerGroupGetSchema.from_orm(group)
+
     @BaseService.needs_service(EventService)
     @BaseService.needs_service(HackerService)
     def add_hacker_group(self, payload: HackerGroupCreateSchema,
@@ -106,7 +107,7 @@ class HackerGroupService(BaseService):
         db.session.delete(hacker_group)
         db.session.commit()
         return hacker_group
-    
+
     @BaseService.needs_service(H_S.HackerService)
     @BaseService.needs_service(EventService)
     def add_hacker_to_group(self, groupId: int, hackerId: int,

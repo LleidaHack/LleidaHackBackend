@@ -23,6 +23,7 @@ from src.utils.UserType import UserType
 
 class LleidaHackerService(BaseService):
     name = 'lleidahacker_service'
+
     def get_all(self):
         return db.session.query(ModelLleidaHacker).all()
 

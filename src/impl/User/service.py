@@ -34,7 +34,8 @@ class UserService(BaseService):
         return db.session.query(ModelUser).all()
 
     def get_by_id(self, userId: int):
-        user = db.session.query(ModelUser).filter(ModelUser.id == userId).first()
+        user = db.session.query(ModelUser).filter(
+            ModelUser.id == userId).first()
         if user is None:
             raise NotFoundException("User not found")
         return user
@@ -61,7 +62,8 @@ class UserService(BaseService):
         return user
 
     def get_by_code(self, code: str, exc=True):
-        user = db.session.query(ModelUser).filter(ModelUser.code == code).first()
+        user = db.session.query(ModelUser).filter(
+            ModelUser.code == code).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user

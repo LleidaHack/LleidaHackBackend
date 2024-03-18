@@ -22,6 +22,7 @@ from src.utils.UserType import UserType
 
 class CompanyUserService(BaseService):
     name = 'companyuser_service'
+
     def get_all(self):
         return db.session.query(ModelCompanyUser).all()
 

@@ -10,6 +10,7 @@ from src.utils.Singleton import Singleton
 
 Base = declarative_base()
 
+
 # # engine = create_engine(
 # #             Configuration.get("POSTGRESQL", "DATABASE_URL"))
 # # SessionLocal = sessionmaker(autocommit=False,
@@ -25,8 +26,8 @@ class Database(metaclass=Singleton):
     #                                      autoflush=True,
     #                                      bind=engine)
     # db = SessionLocal()
-        # if not database_exists(engine.url):
-        # create_database(engine.url)
+    # if not database_exists(engine.url):
+    # create_database(engine.url)
 
     def get_db(self):
         '''returns the connetion to database'''
@@ -36,6 +37,7 @@ class Database(metaclass=Singleton):
             Database.db.close()
         finally:
             Database.db.close()
+
 
 # @contextmanager
 def db_get():

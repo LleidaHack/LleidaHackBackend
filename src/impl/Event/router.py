@@ -153,7 +153,7 @@ def remove_event_sponsor(id: int,
 
 
 @router.get("/{eventId}/get_approved_hackers")
-            # response_model=List[HackerGetSchema])
+# response_model=List[HackerGetSchema])
 def get_accepted_hackers(eventId: int,
                          token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)

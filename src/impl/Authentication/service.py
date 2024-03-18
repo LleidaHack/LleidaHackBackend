@@ -57,7 +57,7 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("Invalid token")
         acces_token, refresh_token = self.create_access_and_refresh_token(user)
         return acces_token.to_token(), refresh_token.to_token()
-    
+
     @BaseService.needs_service(U_S.UserService)
     def reset_password(self, email: str):
         user = self.user_service.get_user_by_email(email)
@@ -90,7 +90,7 @@ class AuthenticationService(BaseService):
             return self.companyUser_service.get_by_id(token.user_id)
         else:
             raise InputException("Invalid token")
-        
+
     @BaseService.needs_service(U_S.UserService)
     def verify_user(self, token: VerificationToken):
         if token.expt < datetime.utcnow().isoformat():

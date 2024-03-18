@@ -20,8 +20,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY",
                                                 "ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
-
-
 # TODO: fer que sigui abstracta
 class BaseToken:
     user_id: int = 0

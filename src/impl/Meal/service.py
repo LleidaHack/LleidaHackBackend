@@ -22,7 +22,8 @@ class MealService(BaseService):
     event_service = None
 
     def get_all(self, id: int):
-        return db.session.query(ModelMeal).filter(ModelMeal.event_id == id).all()
+        return db.session.query(ModelMeal).filter(
+            ModelMeal.event_id == id).all()
 
     def get_by_id(self, id: int):
         meal = db.session.query(ModelMeal).filter(ModelMeal.id == id).first()
@@ -64,7 +65,7 @@ class MealService(BaseService):
         db.session.delete(db_meal)
         db.session.commit()
         return db_meal
-    
+
     @BaseService.needs_service(HackerService)
     @BaseService.needs_service(EventService)
     def eat(self, meal_id: int, hacker_code: str, data: BaseToken):
