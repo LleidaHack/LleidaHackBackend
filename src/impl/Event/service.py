@@ -35,7 +35,8 @@ class EventService(BaseService):
         return db.session.query(ModelEvent).all()
 
     def get_by_id(self, id: int) -> ModelEvent:
-        event = db.session.query(ModelEvent).filter(ModelEvent.id == id).first()
+        event = db.session.query(ModelEvent).filter(
+            ModelEvent.id == id).first()
         if event is None:
             raise NotFoundException('event not found')
         return event
@@ -125,7 +126,7 @@ class EventService(BaseService):
     def get_event_groups(self, id: int, data: BaseToken):
         event = self.get_by_id(id)
         return event
-    
+
     @BaseService.needs_service(CompanyService)
     def add_company(self, id: int, company_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
@@ -195,6 +196,7 @@ class EventService(BaseService):
         db.session.refresh(event)
         db.session.refresh(company)
         return event
+
     @BaseService.needs_service('HackerGroupService')
     def remove_hacker_group(self, id: int, hacker_group_id: int,
                             data: BaseToken):
@@ -242,13 +244,14 @@ class EventService(BaseService):
         event = self.get_by_id(eventId)
         accepted_and_confirmed = []
         for user in event.accepted_hackers:
-            user_registration = db.session.query(ModelHackerRegistration).filter(
-                ModelHackerRegistration.user_id == user.id,
-                ModelHackerRegistration.event_id == event.id).first()
+            user_registration = db.session.query(
+                ModelHackerRegistration).filter(
+                    ModelHackerRegistration.user_id == user.id,
+                    ModelHackerRegistration.event_id == event.id).first()
             if user_registration and user_registration.confirmed_assistance:
                 accepted_and_confirmed.append(user)
         return accepted_and_confirmed
-    
+
     @BaseService.needs_service('HackerGroupService')
     def get_hackers_unregistered(self, eventId: int):
         hackers = self.hacker_service.get_all()
@@ -288,7 +291,7 @@ class EventService(BaseService):
                 restrictions.append(user.food_restrictions)
         # remove duplicates
         return list(set(restrictions))
-    
+
     @BaseService.needs_service('HackerGroupService')
     def get_pending_hackers_gruped(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
@@ -440,7 +443,7 @@ class EventService(BaseService):
         db.session.refresh(event)
         db.session.refresh(hacker)
         return event
-    
+
     @BaseService.needs_service(HackerService)
     def accept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
@@ -464,7 +467,7 @@ class EventService(BaseService):
         db.session.refresh(hacker)
         send_event_accepted_email(hacker, event, token)
         return event
-    
+
     @BaseService.needs_service(HackerService)
     def unaccept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
         if not data.is_admin:
@@ -495,7 +498,7 @@ class EventService(BaseService):
         db.session.refresh(event)
         db.session.refresh(group)
         return event
-    
+
     @BaseService.needs_service(HackerService)
     def reject_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
         if not data.is_admin:
