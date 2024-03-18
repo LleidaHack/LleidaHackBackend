@@ -17,7 +17,7 @@ from src.impl.LleidaHackerGroup.schema import \
 from src.utils.service_utils import set_existing_data
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from utils.Base.BaseService import BaseService
+from src.utils.Base.BaseService import BaseService
 
 
 class LleidaHackerGroupService(BaseService):

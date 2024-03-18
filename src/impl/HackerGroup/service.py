@@ -5,8 +5,8 @@ from fastapi_sqlalchemy import db
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
-from src.impl.Event.service import EventService
-from src.impl.Hacker.service import HackerService
+import src.impl.Event.service as E_S
+import src.impl.Hacker.service as H_S
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.HackerGroup.schema import \
@@ -59,8 +59,8 @@ class HackerGroupService(BaseService):
             return HackerGroupGetAllSchema.from_orm(group)
         return HackerGroupGetSchema.from_orm(group)
 
-    @BaseService.needs_service(EventService)
-    @BaseService.needs_service(HackerService)
+    @BaseService.needs_service(E_S.EventService)
+    @BaseService.needs_service(H_S.HackerService)
     def add_hacker_group(self, payload: HackerGroupCreateSchema,
                          data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
@@ -109,7 +109,7 @@ class HackerGroupService(BaseService):
         return hacker_group
 
     @BaseService.needs_service(H_S.HackerService)
-    @BaseService.needs_service(EventService)
+    @BaseService.needs_service(E_S.EventService)
     def add_hacker_to_group(self, groupId: int, hackerId: int,
                             data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
@@ -134,7 +134,7 @@ class HackerGroupService(BaseService):
         db.session.efresh(hacker_group)
         return hacker_group
 
-    @BaseService.needs_service(EventService)
+    @BaseService.needs_service(E_S.EventService)
     @BaseService.needs_service(H_S.HackerService)
     def add_hacker_to_group_by_code(self, code: str, hackerId: int,
                                     data: BaseToken):

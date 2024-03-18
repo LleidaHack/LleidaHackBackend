@@ -13,7 +13,7 @@ from src.impl.Meal.schema import MealUpdate as MealUpdateSchema
 from src.utils.service_utils import set_existing_data
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from utils.Base.BaseService import BaseService
+from src.utils.Base.BaseService import BaseService
 
 
 class MealService(BaseService):
