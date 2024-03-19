@@ -10,15 +10,15 @@ from src.utils.Singleton import Singleton
 
 Base = declarative_base()
 
+engine = create_engine(Configuration.get("POSTGRESQL", "DATABASE_URL"))
+SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
 
-engine = create_engine(
-            Configuration.get("POSTGRESQL", "DATABASE_URL"))
-SessionLocal = sessionmaker(autocommit=False,
-                                    autoflush=True,
-                                    bind=engine)
-        # if not database_exists(engine.url):
+
+# if not database_exists(engine.url):
 def db_get():
     return SessionLocal()
+
+
 class Database(metaclass=Singleton):
 
     # def __init__(self):
@@ -52,4 +52,4 @@ class Database(metaclass=Singleton):
 #         raise
 #     finally:
 #         db.close()
-    # return self.SessionLocal()
+# return self.SessionLocal()
