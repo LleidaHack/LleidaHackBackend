@@ -38,11 +38,11 @@ class HackerService(BaseService):
         return user
 
     def get_by_code(self, code: str):
-        event = db.session.query(ModelHacker).filter(
+        hacker = db.session.query(ModelHacker).filter(
             ModelHacker.code == code).first()
-        if event is None:
+        if hacker is None:
             raise NotFoundException('hacker not found')
-        return event
+        return hacker
 
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)

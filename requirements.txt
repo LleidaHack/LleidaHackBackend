@@ -18,3 +18,4 @@ fastapi
 fastapi-mail
 python-dateutil
 fastapi-sqlalchemy
+jwt

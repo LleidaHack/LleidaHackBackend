@@ -8,7 +8,6 @@ from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
 from src.impl.Event.model import Event as ModelEvent
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
-# from src.impl.Event.router import accept_hacker_to_event
 from src.impl.Event.schema import EventCreate as EventCreateSchema
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Event.schema import EventGetAll as EventGetAllSchema
@@ -219,8 +218,7 @@ class EventService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
-        return event.accepted_hackers
-        # return HackerGetAllSchema.from_orm(event.accepted_hackers)
+        return HackerGetAllSchema.from_orm(event.accepted_hackers)
 
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
