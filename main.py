@@ -112,6 +112,7 @@ app.include_router(Authentication.router)
 app.include_router(Geocaching.router)
 app.include_router(userconfig.router)
 
+
 @app.get("/")
 def root():
     return RedirectResponse(url='/docs')
