@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from database import Base
 from database import get_db
+from unittest.mock import patch, MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -50,9 +51,28 @@ schema_hacker = {
     "linkedin": "test"
 }
 
+mock_new_hacker = MagicMock()
+mock_new_hacker.id = 1
+mock_access_token = "fake_access_token"
+mock_refresh_token = "fake_refresh_token"
 
-def test_signup():
+
+@patch("services.hacker.add_hacker", return_value=mock_new_hacker)
+@patch("security.create_all_tokens", return_value=(mock_access_token, mock_refresh_token))
+@patch("services.mail.send_registration_confirmation_email")
+def test_signup(mock_send_email, mock_create_tokens, mock_add_hacker):
+    fake_db = MagicMock(TestingSessionLocal)
     response = client.post("/hacker/signup", json=schema_hacker)
-    assert response.status_code == 200, response.text
-    data = response.json()
-    assert data["email"] == "test@email.com"
+    assert response.status_code == 200
+
+    expected_response_body = {
+        "success": True,
+        "user_id": 1,
+        "access_token": mock_access_token,
+        "refresh_token": mock_refresh_token
+    }
+    assert response.json() == expected_response_body
+
+    mock_add_hacker.assert_called_once_with(schema_hacker, fake_db)
+    mock_create_tokens.assert_called_once_with(mock_new_hacker, fake_db, verification=True)
+    mock_send_email.assert_called_once_with(mock_new_hacker)
