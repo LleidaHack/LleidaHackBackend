@@ -18,7 +18,6 @@ from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
 
 
-
 class UserConfigService(BaseService):
     name = 'user_config_service'
 
@@ -86,7 +85,8 @@ class UserConfigService(BaseService):
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
 
-        db.session.execute('UPDATE "{}" SET config_id = NULL'.format(User.__tablename__))
+        db.session.execute('UPDATE "{}" SET config_id = NULL'.format(
+            User.__tablename__))
         db.session.commit()
         db.session.query(ModelUserConfig).delete()
         db.session.commit()
