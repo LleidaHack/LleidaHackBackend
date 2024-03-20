@@ -4,6 +4,6 @@ config.ini
 **/__pycache__/
 .env
 utils/scripts
-.vscode/** */
+.vscode/**
 test/ep_test/*
 env/
