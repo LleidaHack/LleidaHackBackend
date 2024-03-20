@@ -121,5 +121,3 @@ class UserConfigService(BaseService):
         db.session.commit()
 
         return success_count, failed_count
-
-
