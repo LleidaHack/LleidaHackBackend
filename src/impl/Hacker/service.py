@@ -15,6 +15,7 @@ from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.impl.UserConfig import model as ModelUserConfig
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (check_image, check_user,
@@ -59,7 +60,8 @@ class HackerService(BaseService):
 
     def add_hacker(self, payload: HackerCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)
-        new_hacker = ModelHacker(**payload.dict(), code=generate_user_code())
+        new_hacker = ModelHacker(**payload.dict(exclude={"config"}),
+                             code=generate_user_code())
         if payload.image is not None:
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)
@@ -67,6 +69,19 @@ class HackerService(BaseService):
         self.db.add(new_hacker)
         self.db.commit()
         self.db.refresh(new_hacker)
+
+        new_config = ModelUserConfig(
+            user_id=new_hacker.id,
+            reciveNotifications=payload.config.reciveNotifications,
+            defaultLang=payload.config.defaultLang,
+            comercialNotifications=payload.config.comercialNotifications,
+        )
+
+        self.db.add(new_config)
+        self.db.commit()
+        self.db.refresh(new_config)
+        new_hacker.config_id = new_config.id
+        self.db.commit()
         return new_hacker
 
     def remove_hacker(self, hackerId: int, data: BaseToken):

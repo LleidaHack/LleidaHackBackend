@@ -1,11 +1,9 @@
-from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
-
+from app.database import SessionLocal, get_db
 from app.main import app
-from app.database import get_db
 from app.models import UserConfig
 from app.schemas import SchemaUser
-from app.database import SessionLocal
+from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 client = TestClient(app)
 

@@ -1,22 +1,20 @@
-from pydantic import BaseModel, ValidationError, validator
 from typing import Optional
 
+from src.utils.Base.BaseSchema import BaseSchema
 
-class UserConfigCreate(BaseModel):
+
+class UserConfigCreate(BaseSchema):
     reciveNotifications: bool
     defaultLang: str
     comercialNotifications: bool
 
-    class Config:
-        orm_mode = True
+  
 
 
-class UserConfigGet(BaseModel):
+class UserConfigGet(BaseSchema):
     user_id: int
     defaultLang: str
 
-    class Config:
-        orm_mode = True
 
 
 class UserConfigGetAll(UserConfigGet):
@@ -25,10 +23,9 @@ class UserConfigGetAll(UserConfigGet):
     reciveNotifications: bool
 
 
-class UserConfigUpdate(BaseModel):
+class UserConfigUpdate(BaseSchema):
     reciveNotifications: Optional[bool]
     defaultLang: Optional[str]
     comercialNotifications: Optional[bool]
 
-    class Config:
-        orm_mode = True
+    

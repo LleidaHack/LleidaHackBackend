@@ -25,7 +25,7 @@ from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
 from src.impl.MailQueue import router as MailQueue
 from src.impl.Meal import router as Meal
 from src.impl.User import router as User
-from routers import userconfig
+from src.impl.UserConfig import router as UserConfig
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("mycoolapp")
@@ -110,7 +110,7 @@ app.include_router(Meal.router)
 app.include_router(Event.router)
 app.include_router(Authentication.router)
 app.include_router(Geocaching.router)
-app.include_router(userconfig.router)
+app.include_router(UserConfig.router)
 
 @app.get("/")
 def root():

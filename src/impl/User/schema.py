@@ -4,8 +4,8 @@ from typing import Optional
 
 from pydantic import validator
 
+from src.impl.UserConfig.schema import UserConfigCreate, UserConfigGetAll
 from src.utils.Base.BaseSchema import BaseSchema
-from schemas.Userconfig import UserConfigCreate
 
 
 class UserCreate(BaseSchema):
@@ -74,6 +74,7 @@ class UserGetAll(UserGet):
     telephone: str
     address: str
     shirt_size: Optional[str]
+    config: UserConfigGetAll
 
 
 class UserUpdate(BaseSchema):
