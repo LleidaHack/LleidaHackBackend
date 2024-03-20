@@ -39,6 +39,8 @@ class App:
         self.app.include_router(Authentication.router)
         from src.impl.Geocaching import router as Geocaching
         self.app.include_router(Geocaching.router)
+        from src.impl.UserConfig import router as UserConfig
+        self.app.include_router(UserConfig.router)
         """
         Simplify operation IDs so that generated API clients have simpler function
         names.

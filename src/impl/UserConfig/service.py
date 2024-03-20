@@ -1,4 +1,6 @@
+from os import name
 from pydantic import parse_obj_as
+from fastapi_sqlalchemy import db
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -16,23 +18,22 @@ from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
 
 
-class UserConfigService(BaseService):
 
-    def __call__(self):
-        pass
+class UserConfigService(BaseService):
+    name = 'user_config_service'
 
     def get_all(self):
-        return self.db.query(ModelUserConfig).all()
+        return db.session.query(ModelUserConfig).all()
 
     def get_by_id(self, id: int):
-        config = self.db.query(ModelUserConfig).filter(
+        config = db.session.query(ModelUserConfig).filter(
             ModelUserConfig.id == id).first()
         if config is None:
             raise NotFoundException("User config not found")
         return config
 
     def get_by_user_id(self, user_id: int):
-        config = self.db.query(ModelUserConfig).filter(
+        config = db.session.query(ModelUserConfig).filter(
             ModelUserConfig.user_id == user_id).first()
         if config is None:
             raise NotFoundException("User config not found")
@@ -60,8 +61,8 @@ class UserConfigService(BaseService):
 
     def add_user_config(self, payload: SchemaUserConfigCreate):
         userConfig = ModelUserConfig(**payload.dict())
-        self.db.add(userConfig)
-        self.db.commit()
+        db.session.add(userConfig)
+        db.session.commit()
         return userConfig
 
     def update_user_config(self, config_id: int,
@@ -76,8 +77,8 @@ class UserConfigService(BaseService):
         userConfig.reciveNotifications = payload.reciveNotifications
         userConfig.defaultLang = payload.defaultLang
         userConfig.comercialNotifications = payload.comercialNotifications
-        self.db.commit()
-        self.db.refresh(userConfig)
+        db.session.commit()
+        db.session.refresh(userConfig)
         return userConfig
 
     ##Funcións per preparar la creació de userConfig de tots els usuaris i que vagi ben ordenat el valor de id
@@ -85,16 +86,16 @@ class UserConfigService(BaseService):
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
 
-        self.db.execute('UPDATE "user" SET config_id = NULL')
-        self.db.commit()
-        self.db.query(ModelUserConfig).delete()
-        self.db.commit()
+        db.session.execute('UPDATE "{}" SET config_id = NULL'.format(User.__tablename__))
+        db.session.commit()
+        db.session.query(ModelUserConfig).delete()
+        db.session.commit()
 
     def create_user_configs(self, data: BaseToken):
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
 
-        users = self.db.query(User).all()
+        users = db.session.query(User).all()
         success_count = 0
         failed_count = 0
         user_configs = []
@@ -105,11 +106,11 @@ class UserConfigService(BaseService):
                                           reciveNotifications=True)
             user_configs.append(user_config)
 
-        self.db.bulk_save_objects(user_configs)
-        self.db.commit()
+        db.session.bulk_save_objects(user_configs)
+        db.session.commit()
 
         for user_config in user_configs:
-            user = self.db.query(User).filter(
+            user = db.session.query(User).filter(
                 User.id == user_config.user_id).first()
             if user:
                 user.config_id = user_config.id
@@ -117,6 +118,6 @@ class UserConfigService(BaseService):
             else:
                 failed_count += 1
 
-        self.db.commit()
+        db.session.commit()
 
         return success_count, failed_count
