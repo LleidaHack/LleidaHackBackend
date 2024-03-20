@@ -58,7 +58,8 @@ mock_refresh_token = "fake_refresh_token"
 
 
 @patch("services.hacker.add_hacker", return_value=mock_new_hacker)
-@patch("security.create_all_tokens", return_value=(mock_access_token, mock_refresh_token))
+@patch("security.create_all_tokens",
+       return_value=(mock_access_token, mock_refresh_token))
 @patch("services.mail.send_registration_confirmation_email")
 def test_signup(mock_send_email, mock_create_tokens, mock_add_hacker):
     fake_db = MagicMock(TestingSessionLocal)
@@ -74,5 +75,7 @@ def test_signup(mock_send_email, mock_create_tokens, mock_add_hacker):
     assert response.json() == expected_response_body
 
     mock_add_hacker.assert_called_once_with(schema_hacker, fake_db)
-    mock_create_tokens.assert_called_once_with(mock_new_hacker, fake_db, verification=True)
+    mock_create_tokens.assert_called_once_with(mock_new_hacker,
+                                               fake_db,
+                                               verification=True)
     mock_send_email.assert_called_once_with(mock_new_hacker)
