@@ -5,5 +5,8 @@
         "titleBar.activeForeground": "#FEFCFC"
     },
     "python.analysis.autoImportCompletions": true,
-    "python.analysis.typeCheckingMode": "off"
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.extraPaths": [
+        "./src/utils"
+    ]
 }
