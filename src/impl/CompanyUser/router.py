@@ -15,7 +15,7 @@ from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
                              VerificationToken)
 
 router = APIRouter(
-    prefix="/company/user",
+    prefix="/company-user",
     tags=["Company User"],
 )
 
@@ -26,9 +26,9 @@ companyuser_service = CompanyUserService()
 def signup(payload: CompanyUserCreateSchema):
     new_companyuser = companyuser_service.add_company_user(payload)
 
-    access_token = AccesToken(new_companyuser).save_to_user()
-    refresh_token = RefreshToken(new_companyuser).save_to_user()
-    VerificationToken(new_companyuser).save_to_user()
+    access_token = AccesToken(new_companyuser).user_set(new_companyuser)
+    refresh_token = RefreshToken(new_companyuser).user_set(new_companyuser)
+    VerificationToken(new_companyuser).user_set(new_companyuser)
     return {
         "success": True,
         "user_id": new_companyuser.id,
@@ -63,13 +63,13 @@ def get_company_user(companyUserId: int,
 def update_company_user(companyUserId: int,
                         payload: CompanyUserUpdateSchema,
                         token: BaseToken = Depends(JWTBearer())):
-    companyuser = companyuser_service.update_companyuser(
-        companyUserId, payload, token)
-    return {"success": True, "updated_id": companyuser.id}
+    companyuser, updated = companyuser_service.update_company_user(
+        payload, companyUserId, token)
+    return {"success": True, "updated_id": companyuser.id, 'updated': updated}
 
 
 @router.delete("/{companyUserId}")
 def delete_company_user(companyUserId: int,
                         token: BaseToken = Depends(JWTBearer())):
-    companyuser = companyuser_service.delete_companyuser(companyUserId, token)
+    companyuser = companyuser_service.delete_company_user(companyUserId, token)
     return {"success": True, "deleted_id": companyuser.id}

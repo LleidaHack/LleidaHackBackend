@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 import src.impl.MailQueue.service as mail_queue_service
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.User.schema import UserGet as SchemaUser
-from src.utils.database import get_db
+from src.utils.database import Database
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
 
@@ -15,7 +15,7 @@ router = APIRouter(
 
 
 @router.post("/send_mail")
-def send_mail(db: Session = Depends(get_db),
+def send_mail(db: Session = Depends(Database.get_db),
               token: BaseToken = Depends(JWTBearer())):
     """
     Send a mail to all users
@@ -33,7 +33,7 @@ def send_mail(db: Session = Depends(get_db),
 
 @router.post("/send_mail_by_id")
 def send_mail_by_id(id: int,
-                    db: Session = Depends(get_db),
+                    db: Session = Depends(Database.get_db),
                     token: BaseToken = Depends(JWTBearer())):
     """
     Send a mail to all users
@@ -49,13 +49,13 @@ def send_mail_by_id(id: int,
 
 
 @router.get("/count")
-def count(db: Session = Depends(get_db),
+def count(db: Session = Depends(Database.get_db),
           token: BaseToken = Depends(JWTBearer())):
     return mail_queue_service.count_unsent(db, token)
 
 
 @router.post("/clear_queue")
-def clear_queue(db: Session = Depends(get_db),
+def clear_queue(db: Session = Depends(Database.get_db),
                 token: BaseToken = Depends(JWTBearer())):
     """
     Clear the mail queue

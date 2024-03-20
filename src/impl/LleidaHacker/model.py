@@ -10,7 +10,7 @@ from src.utils.UserType import UserType
 
 class LleidaHacker(User):
     __tablename__ = 'lleida_hacker'
-    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('my_user.id'), primary_key=True)
     role: str = (Column(String))
     nif: str = (Column(String, unique=True))
     student: bool = Column(Boolean, default=True)

@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from fastapi_sqlalchemy import db
+
 import src.impl.CompanyUser.service as C_S
 import src.impl.Hacker.service as H_S
 import src.impl.LleidaHacker.service as LH_S
@@ -18,16 +20,12 @@ from src.utils.UserType import UserType
 
 
 class AuthenticationService(BaseService):
+    name = 'auth_service'
 
-    def __call__(self):
-        if self.user_service is None:
-            self.user_service = U_S.UserService()
-        if self.hacker_service is None:
-            self.hacker_service = H_S.HackerService()
-        if self.lleidaHacker_service is None:
-            self.lleidaHacker_service = LH_S.LleidaHackerService()
-        if self.companyUser_service is None:
-            self.companyUser_service = C_S.CompanyUserService()
+    user_service = None
+    hacker_service = None
+    lleidaHacker_service = None
+    companyUser_service = None
 
     def create_access_and_refresh_token(self, user: ModelUser):
         access_token = AccesToken(user)
@@ -36,6 +34,7 @@ class AuthenticationService(BaseService):
         refresh_token.save_to_user()
         return access_token, refresh_token
 
+    @BaseService.needs_service(U_S.UserService)
     def login(self, mail: str, password: str):
         user = self.user_service.get_user_by_email(mail)
         if not verify_password(password, user.password):
@@ -51,6 +50,7 @@ class AuthenticationService(BaseService):
             "token_type": "Bearer"
         }
 
+    @BaseService.needs_service(U_S.UserService)
     def refresh_token(self, refresh_token: RefreshToken):
         user = self.user_service.get_by_id(refresh_token.user_id)
         if not (refresh_token.to_token() == user.refresh_token):
@@ -58,6 +58,7 @@ class AuthenticationService(BaseService):
         acces_token, refresh_token = self.create_access_and_refresh_token(user)
         return acces_token.to_token(), refresh_token.to_token()
 
+    @BaseService.needs_service(U_S.UserService)
     def reset_password(self, email: str):
         user = self.user_service.get_user_by_email(email)
         if not user.is_verified:
@@ -67,6 +68,7 @@ class AuthenticationService(BaseService):
         send_password_reset_email(user)
         return {"success": True}
 
+    @BaseService.needs_service(U_S.UserService)
     def confirm_reset_password(self, token: ResetPassToken, password: str):
         if token.expt < datetime.utcnow().isoformat():
             raise InvalidDataException("Token expired")
@@ -75,8 +77,8 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("Invalid token")
         user.password = get_password_hash(password)
         user.rest_password_token = None
-        self.db.commit()
-        self.db.refresh(user)
+        db.session.commit()
+        db.session.refresh(user)
         return {"success": True}
 
     def get_me(self, token: AccesToken):
@@ -89,6 +91,7 @@ class AuthenticationService(BaseService):
         else:
             raise InputException("Invalid token")
 
+    @BaseService.needs_service(U_S.UserService)
     def verify_user(self, token: VerificationToken):
         if token.expt < datetime.utcnow().isoformat():
             raise InvalidDataException("Token expired")
@@ -99,10 +102,11 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("Invalid token")
         user.is_verified = True
         user.verification_token = None
-        self.db.commit()
-        self.db.refresh(user)
+        db.session.commit()
+        db.session.refresh(user)
         return {"success": True}
 
+    @BaseService.needs_service(U_S.UserService)
     def force_verification(self, user_id: int, data: BaseToken):
         if not data.is_admin:
             raise AuthenticationException(
@@ -112,10 +116,11 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("User already verified")
         user.is_verified = True
         user.verification_token = None
-        self.db.commit()
-        self.db.refresh(user)
+        db.session.commit()
+        db.session.refresh(user)
         return {"success": True}
 
+    @BaseService.needs_service(U_S.UserService)
     def resend_verification(self, email: str):
         user = self.user_service.get_user_by_email(email)
         if user.is_verified:

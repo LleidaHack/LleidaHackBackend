@@ -1,12 +1,12 @@
 from typing import List
 
-from pydantic import parse_obj_as
+from fastapi_sqlalchemy import db
 
-import src.impl.Event.service as E_S
-import src.impl.Hacker.service as H_S
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
+import src.impl.Event.service as E_S
+import src.impl.Hacker.service as H_S
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.HackerGroup.schema import \
@@ -23,29 +23,26 @@ from src.utils.UserType import UserType
 
 
 class HackerGroupService(BaseService):
-
-    def __call__(self):
-        if self.event_service is None:
-            self.event_service = E_S.EventService()
-        if self.hacker_service is None:
-            self.hacker_service = H_S.HackerService()
+    name = 'hackergroup_service'
+    event_service = None
+    hacker_service = None
 
     def get_all(self):
-        return self.db.query(ModelHackerGroup).all()
+        return db.session.query(ModelHackerGroup).all()
 
     def get_by_id(self, id: int):
-        group = self.db.query(ModelHackerGroup).filter(
+        group = db.session.query(ModelHackerGroup).filter(
             ModelHackerGroup.id == id).first()
         if group is None:
             raise NotFoundException("Hacker group not found")
         return group
 
     def get_when_id_in(self, ids: List[int]):
-        return self.db.query(ModelHackerGroup).filter(
+        return db.session.query(ModelHackerGroup).filter(
             ModelHackerGroup.id.in_(ids)).all()
 
     def get_by_code(self, code: str, exc=True):
-        group = self.db.query(ModelHackerGroup).filter(
+        group = db.session.query(ModelHackerGroup).filter(
             ModelHackerGroup.code == code).first()
         if exc:
             if group is None:
@@ -59,15 +56,17 @@ class HackerGroupService(BaseService):
         members_ids = [h.id for h in group.members]
         if data.check([UserType.HACKER, UserType.LLEIDAHACKER
                        ]) and data.user_id in members_ids:
-            return parse_obj_as(HackerGroupGetAllSchema, group)
-        return parse_obj_as(HackerGroupGetSchema, group)
+            return HackerGroupGetAllSchema.from_orm(group)
+        return HackerGroupGetSchema.from_orm(group)
 
+    @BaseService.needs_service(E_S.EventService)
+    @BaseService.needs_service(H_S.HackerService)
     def add_hacker_group(self, payload: HackerGroupCreateSchema,
                          data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
             raise AuthenticationException("Not authorized")
         members = []
-        event_exists = self.get_by_id(payload.event_id)
+        event_exists = self.event_service.get_by_id(payload.event_id)
         if data.type == UserType.HACKER.value:
             hacker = self.hacker_service.get_by_id(data.user_id)
             members.append(hacker)
@@ -81,9 +80,9 @@ class HackerGroupService(BaseService):
         new_hacker_group = ModelHackerGroup(**payload.dict(),
                                             code=code,
                                             members=members)
-        self.db.add(new_hacker_group)
-        self.db.commit()
-        self.db.refresh(new_hacker_group)
+        db.session.add(new_hacker_group)
+        db.session.commit()
+        db.session.refresh(new_hacker_group)
         return new_hacker_group
 
     def update_hacker_group(self, id: int, payload: HackerGroupUpdateSchema,
@@ -94,7 +93,7 @@ class HackerGroupService(BaseService):
         if not data.check([UserType.HACKER], hacker_group.leader_id):
             raise AuthenticationException("Not authorized")
         updated = set_existing_data(hacker_group, payload)
-        self.db.commit()
+        db.session.commit()
         return hacker_group, updated
 
     def delete_hacker_group(self, id: int, data: BaseToken):
@@ -103,12 +102,14 @@ class HackerGroupService(BaseService):
         hacker_group = self.get_by_id(id)
         if not data.check([UserType.HACKER], hacker_group.leader_id):
             raise AuthenticationException("Not authorized")
-        self.db.query(ModelHackerGroupUser).filter(
+        db.session.query(ModelHackerGroupUser).filter(
             ModelHackerGroupUser.group_id == id).delete()
-        self.db.delete(hacker_group)
-        self.db.commit()
+        db.session.delete(hacker_group)
+        db.session.commit()
         return hacker_group
 
+    @BaseService.needs_service(H_S.HackerService)
+    @BaseService.needs_service(E_S.EventService)
     def add_hacker_to_group(self, groupId: int, hackerId: int,
                             data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
@@ -120,7 +121,7 @@ class HackerGroupService(BaseService):
         event = self.event_service.get_by_id(hacker_group.event_id)
         if hacker not in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
-        hacker_group_user = self.db.query(ModelHackerGroupUser).filter(
+        hacker_group_user = db.session.query(ModelHackerGroupUser).filter(
             ModelHackerGroupUser.hacker_id == hackerId).first()
         if hacker_group_user is not None:
             raise InvalidDataException("Hacker already in group")
@@ -129,10 +130,12 @@ class HackerGroupService(BaseService):
         if hacker in hacker_group.members:
             raise InvalidDataException("Hacker already in group")
         hacker_group.members.append(hacker)
-        self.db.ommit()
-        self.db.efresh(hacker_group)
+        db.session.ommit()
+        db.session.efresh(hacker_group)
         return hacker_group
 
+    @BaseService.needs_service(E_S.EventService)
+    @BaseService.needs_service(H_S.HackerService)
     def add_hacker_to_group_by_code(self, code: str, hackerId: int,
                                     data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) or not data.check(
@@ -143,7 +146,7 @@ class HackerGroupService(BaseService):
         if hacker_group.members is None:
             hacker_group.members = []
         event = self.event_service.get_by_id(hacker_group.event_id)
-        hacker_group_user = self.db.query(ModelHackerGroupUser).filter(
+        hacker_group_user = db.session.query(ModelHackerGroupUser).filter(
             ModelHackerGroupUser.hacker_id == hackerId).first()
         if hacker_group_user is not None:
             raise InvalidDataException("Hacker already in group")
@@ -152,8 +155,8 @@ class HackerGroupService(BaseService):
         if hacker in hacker_group.members:
             raise InvalidDataException("Hacker already in group")
         hacker_group.members.append(hacker)
-        self.db.ommit()
-        self.db.efresh(hacker_group)
+        db.session.ommit()
+        db.session.efresh(hacker_group)
         return hacker_group
 
     def remove_hacker_from_group(self, groupId: int, hackerId: int,
@@ -172,15 +175,16 @@ class HackerGroupService(BaseService):
         hacker = [h for h in hacker_group.members if h.id == hackerId]
         hacker_group.members.remove(hacker[0])
         if len(hacker_group.members) == 0:
-            self.db.elete(hacker_group)
+            db.session.elete(hacker_group)
             deleted = True
         elif hacker_group.leader_id == hackerId:
             hacker_group.leader_id = hacker_group.members[0].id
-        self.db.ommit()
+        db.session.ommit()
         if not deleted:
-            self.db.efresh(hacker_group)
+            db.session.efresh(hacker_group)
         return hacker_group
 
+    @BaseService.needs_service(H_S.HackerService)
     def set_hacker_group_leader(self, groupId: int, hackerId: int,
                                 data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
@@ -194,6 +198,6 @@ class HackerGroupService(BaseService):
                            ]) and data.user_id not in group_members_ids:
             raise AuthenticationException("hacker not in group")
         hacker_group.leader_id = hacker.id
-        self.db.ommit()
-        self.db.efresh(hacker_group)
+        db.session.ommit()
+        db.session.efresh(hacker_group)
         return hacker_group

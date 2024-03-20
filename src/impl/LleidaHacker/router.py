@@ -13,7 +13,6 @@ from src.impl.LleidaHacker.schema import \
 from src.impl.LleidaHacker.schema import \
     LleidaHackerUpdate as LleidaHackerUpdateSchema
 from src.impl.LleidaHacker.service import LleidaHackerService
-from src.utils.database import get_db
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
                              VerificationToken)
@@ -27,8 +26,8 @@ lleidahacker_service = LleidaHackerService()
 
 
 @router.post("/signup")
-def signup(payload: LleidaHackerCreateSchema, db: Session = Depends(get_db)):
-    new_lleidahacker = lleidahacker_service.add_lleidahacker(payload, db)
+def signup(payload: LleidaHackerCreateSchema):
+    new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
     access_token = AccesToken(new_lleidahacker).save_to_user()
     refresh_token = RefreshToken(new_lleidahacker).save_to_user()
     VerificationToken(new_lleidahacker).save_to_user()

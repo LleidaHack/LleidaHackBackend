@@ -1,5 +1,7 @@
 from typing import Optional
 
+from pydantic import ConfigDict
+
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
 
@@ -9,11 +11,6 @@ class LleidaHackerCreate(UserCreate):
     student: bool
     active: bool
     github: str
-
-    # linkedin: str
-
-    class Config:
-        orm_mode = True
 
 
 class LleidaHackerGet(UserGet):

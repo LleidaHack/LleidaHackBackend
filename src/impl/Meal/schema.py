@@ -20,5 +20,5 @@ class MealGetAll(MealGet):
 
 
 class MealUpdate(BaseSchema):
-    name: Optional[str]
-    description: Optional[str]
+    name: Optional[str] = None
+    description: Optional[str] = None

@@ -7,8 +7,8 @@ class CompanyCreate(BaseSchema):
     name: str
     description: str
     website: str
-    image: Optional[str]
-    is_image_url: Optional[bool]
+    image: Optional[str] = None
+    is_image_url: Optional[bool] = None
     address: str
     linkdin: str
     telephone: str
@@ -30,11 +30,11 @@ class CompanyGetAll(CompanyGet):
 
 
 class CompanyUpdate(BaseSchema):
-    name: Optional[str]
-    description: Optional[str]
-    website: Optional[str]
-    image: Optional[str]
-    is_image_url: Optional[bool]
-    address: Optional[str]
-    linkdin: Optional[str]
-    telephone: Optional[str]
+    name: Optional[str] = None
+    description: Optional[str] = None
+    website: Optional[str] = None
+    image: Optional[str] = None
+    is_image_url: Optional[bool] = None
+    address: Optional[str] = None
+    linkdin: Optional[str] = None
+    telephone: Optional[str] = None

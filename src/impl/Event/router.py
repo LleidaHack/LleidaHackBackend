@@ -152,8 +152,8 @@ def remove_event_sponsor(id: int,
     return {'success': True, 'event_id': event.id}
 
 
-@router.get("/{eventId}/get_approved_hackers",
-            response_model=List[HackerGetSchema])
+@router.get("/{eventId}/get_approved_hackers")
+# response_model=List[HackerGetSchema])
 def get_accepted_hackers(eventId: int,
                          token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)
@@ -209,9 +209,9 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
 
 
 @router.get("/force-confirm-assistance/{event_id}/{user_id}")
-def confirm_assistance(event_id: int,
-                       user_id: int,
-                       token: BaseToken = Depends(JWTBearer())):
+def force_confirm_assistance(event_id: int,
+                             user_id: int,
+                             token: BaseToken = Depends(JWTBearer())):
     """
     Confirm assistance of a hacker to an event
     """
@@ -283,7 +283,7 @@ def get_pending_hackers(event_id: int,
     """
     if token.is_admin:
         raise AuthenticationException("You don't have permissions")
-    event = event_service.get_event(event_id, token)
+    event = event_service.get_by_id(event_id)
     return {
         'size': len(event.registered_hackers),
         'hackers': subtract_lists(event.registered_hackers,
@@ -299,7 +299,7 @@ def get_rejected_hackers(event_id: int,
         """
     if token.is_admin:
         raise AuthenticationException("You don't have permissions")
-    event = event_service.get_event(event_id, token)
+    event = event_service.get_by_id(event_id)
     return {
         'size': len(event.rejected_hackers),
         'hackers': event.rejected_hackers

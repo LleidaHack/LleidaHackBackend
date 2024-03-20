@@ -25,12 +25,6 @@ def get_companies():
     return company_service.get_all()
 
 
-@router.get("/{companyId}",
-            response_model=Union[CompanyGetAllSchema, CompanyGetSchema])
-def get_company(companyId: int):
-    return company_service.get_company(companyId)
-
-
 @router.post("/")
 def add_company(payload: CompanyCreateSchema,
                 token: BaseToken = Depends(JWTBearer())):
@@ -38,12 +32,19 @@ def add_company(payload: CompanyCreateSchema,
     return {"success": True, "user_id": new_company.id}
 
 
+@router.get("/{companyId}",
+            response_model=Union[CompanyGetAllSchema, CompanyGetSchema])
+def get_company(companyId: int):
+    return company_service.get_company(companyId)
+
+
 @router.put("/{companyId}")
 def update_company(companyId: int,
                    payload: CompanyUpdateSchema,
                    token: BaseToken = Depends(JWTBearer())):
-    company = company_service.update_company(companyId, payload, token)
-    return {"success": True, "updated_id": company.id}
+    company, updated = company_service.update_company(companyId, payload,
+                                                      token)
+    return {"success": True, "updated_id": company.id, 'updated': updated}
 
 
 @router.delete("/{companyId}")

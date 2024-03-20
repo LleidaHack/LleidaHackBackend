@@ -1,30 +1,28 @@
-from src.utils.database import db_get
+import importlib
+
+from fastapi_sqlalchemy import db
 from src.utils.Singleton import Singleton
-
-# from typing import List, TypeVar, Generic
-
-# T = TypeVar('T')
-
-# class GBaseService(Generic[T]):
-#     def __init__(self):
-#         self.db = db_get()
-
-#     def get_by_id(self, id:int):
-#         return self.db.query(T).filter(T.id == id).first()
-
-#     def get_all(self):
-#         return self.db.query(self.model).all()
 
 
 class BaseService(metaclass=Singleton):
 
-    def __init__(self):
-        self.db = db_get()
+    def needs_service(service):
 
-    # @classmethod
-    # def get_all(cls):
-    #     return cls.db.query(cls.model).all()
+        def wrapper(f):
 
-    # @classmethod
-    # def get_by_id(cls):
-    #     return cls.model.query.filter(...)
+            def get_service(*args):
+                s = args[0]
+                ser = service
+                if type(service) is str:
+                    # equiv. of your `import matplotlib.text as text`
+                    ser = importlib.import_module(
+                        'src.impl.' + service.replace('Service', '') +
+                        '.service')
+                    ser = getattr(ser, service)
+
+                if getattr(s, ser.name) is None:
+                    setattr(s, ser.name, ser())
+
+            return get_service
+
+        return wrapper

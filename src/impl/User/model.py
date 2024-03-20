@@ -8,7 +8,7 @@ from src.utils.database import Base
 
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = 'my_user'
     id: int = Column(Integer, primary_key=True, index=True)
     is_verified: bool = Column(Boolean, default=False)
     is_deleted: bool = Column(Boolean, default=False)
@@ -25,11 +25,11 @@ class User(Base):
     created_at: date = Column(DateTime, default=date.today())
     updated_at: date = Column(DateTime, default=date.today())
     image: str = Column(String, default="")
-    is_image_url: bool = Column(Boolean, default=False)
+    # is_image_url: bool = Column(Boolean, default=False)
     code: str = (Column(String, default="", unique=True, index=True))
     terms_accepted: bool = Column(Boolean, default=True)
-    recive_mails: bool = Column(Boolean, default=True)
-    lleidacoins_claimed: Boolean = Column(Boolean, default=False)
+    # recive_mails: bool = Column(Boolean, default=True)
+    # lleidacoins_claimed: Boolean = Column(Boolean, default=False)
     config_id = Column(Integer, ForeignKey(UserConfig.id))
     config = relationship('UserConfig',
                           foreign_keys=[config_id],
@@ -41,6 +41,6 @@ class User(Base):
     rest_password_token: str = (Column(String, default=""))
 
     __mapper_args__ = {
-        "polymorphic_identity": "user",
+        "polymorphic_identity": "my_user",
         "polymorphic_on": type,
     }

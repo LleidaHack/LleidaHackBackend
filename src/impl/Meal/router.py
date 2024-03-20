@@ -23,8 +23,7 @@ def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):
     return meal_service.get_all(id)
 
 
-@router.get("/{id}/{meal_id}",
-            response_model=Union[MealGetAllSchema, MealGetSchema])
+@router.get("/{id}", response_model=Union[MealGetAllSchema, MealGetSchema])
 def get_meal(id: int, token: BaseToken = Depends(JWTBearer())):
     return meal_service.get_meal(id, token)
 
@@ -40,7 +39,7 @@ def update_meal(id: int,
                 meal_id: int,
                 meal: MealUpdateSchema,
                 token: BaseToken = Depends(JWTBearer())):
-    return meal_service.update_meal(id, meal_id, meal)
+    return meal_service.update_meal(id, meal_id, meal, token)
 
 
 @router.delete("/{id}/{meal_id}")
@@ -49,7 +48,7 @@ def delete_meal(id: int, meal_id: int,
     return meal_service.delete_meal(id, meal_id, token)
 
 
-@router.put("/{event_id}/eat/{meal_id}/{hacker_code}")
+@router.put("/{meal_id}/eat/{hacker_code}")
 def eat(meal_id: int,
         hacker_code: str,
         token: BaseToken = Depends(JWTBearer())):

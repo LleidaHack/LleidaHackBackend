@@ -9,7 +9,7 @@ from src.utils.database import Base
 class Notification(Base):
     __tablename__ = 'notification'
     id: int = Column(Integer, primary_key=True, index=True)
-    user_id: int = Column(Integer, ForeignKey('user.id'))
+    user_id: int = Column(Integer, ForeignKey('my_user.id'))
     message: str = Column(String)
     read: bool = Column(Boolean, default=False)
     created_at: str = Column(String)
@@ -20,7 +20,7 @@ class Notification(Base):
     type: str = Column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": "user",
+        "polymorphic_identity": "my_user",
         "polymorphic_on": type,
     }
 

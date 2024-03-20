@@ -48,7 +48,7 @@ def verify(token: str):
 
 
 @router.post("/force-verify/{user_id}")
-def verify(user_id, token: BaseToken = Depends(JWTBearer())):
+def force_verify(user_id, token: BaseToken = Depends(JWTBearer())):
     return auth_service.force_verification(user_id, token)
 
 

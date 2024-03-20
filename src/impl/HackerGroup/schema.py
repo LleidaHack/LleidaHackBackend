@@ -1,5 +1,7 @@
 from typing import Optional
 
+from pydantic import ConfigDict
+
 from src.utils.Base.BaseSchema import BaseSchema
 
 
@@ -8,9 +10,6 @@ class HackerGroupCreate(BaseSchema):
     description: str
     leader_id: int
     event_id: int
-
-    class Config:
-        orm_mode = True
 
 
 class HackerGroupGet(BaseSchema):
@@ -25,6 +24,6 @@ class HackerGroupGetAll(HackerGroupGet):
 
 
 class HackerGroupUpdate(BaseSchema):
-    name: Optional[str]
-    description: Optional[str]
-    leader_id: Optional[int]
+    name: Optional[str] = None
+    description: Optional[str] = None
+    leader_id: Optional[int] = None

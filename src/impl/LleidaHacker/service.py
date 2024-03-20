@@ -1,6 +1,6 @@
 from datetime import datetime as date
 
-from pydantic import parse_obj_as
+from fastapi_sqlalchemy import db
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
@@ -22,15 +22,13 @@ from src.utils.UserType import UserType
 
 
 class LleidaHackerService(BaseService):
-
-    def __call__(self):
-        pass
+    name = 'lleidahacker_service'
 
     def get_all(self):
-        return self.db.query(ModelLleidaHacker).all()
+        return db.session.query(ModelLleidaHacker).all()
 
     def get_by_id(self, id: int):
-        user = self.db.query(ModelLleidaHacker).filter(
+        user = db.session.query(ModelLleidaHacker).filter(
             ModelLleidaHacker.id == id).first()
         if user is None:
             raise NotFoundException("LleidaHacker not found")
@@ -39,8 +37,8 @@ class LleidaHackerService(BaseService):
     def get_lleidahacker(self, userId: int, data: BaseToken):
         user = self.get_by_id(userId)
         if data.check([UserType.LLEIDAHACKER], userId):
-            return parse_obj_as(LleidaHackerGetAllSchema, user)
-        return parse_obj_as(LleidaHackerGetSchema, user)
+            return LleidaHackerGetAllSchema.from_orm(user)
+        return LleidaHackerGetSchema.from_orm(user)
 
     def add_lleidahacker(self, payload: LleidaHackerCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)
@@ -49,9 +47,9 @@ class LleidaHackerService(BaseService):
         new_lleidahacker = ModelLleidaHacker(**payload.dict(),
                                              code=generate_user_code())
         new_lleidahacker.password = get_password_hash(payload.password)
-        self.db.add(new_lleidahacker)
-        self.db.commit()
-        self.db.refresh(new_lleidahacker)
+        db.session.add(new_lleidahacker)
+        db.session.commit()
+        db.session.refresh(new_lleidahacker)
         return new_lleidahacker
 
     def update_lleidahacker(self, userId: int,
@@ -67,16 +65,16 @@ class LleidaHackerService(BaseService):
         updated.append("updated_at")
         if payload.password is not None:
             lleidahacker.password = get_password_hash(payload.password)
-        self.db.commit()
-        self.db.refresh(lleidahacker)
+        db.session.commit()
+        db.session.refresh(lleidahacker)
         return lleidahacker, updated
 
     def delete_lleidahacker(self, userId: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER], userId):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(userId)
-        self.db.delete(lleidahacker)
-        self.db.commit()
+        db.session.delete(lleidahacker)
+        db.session.commit()
         return lleidahacker
 
     def accept_lleidahacker(self, userId: int, data: BaseToken):
@@ -86,8 +84,8 @@ class LleidaHackerService(BaseService):
         lleidahacker.active = 1
         lleidahacker.accepted = 1
         lleidahacker.rejected = 0
-        self.db.commit()
-        self.db.refresh(lleidahacker)
+        db.session.commit()
+        db.session.refresh(lleidahacker)
         return lleidahacker
 
     def reject_lleidahacker(self, userId: int, data: BaseToken):
@@ -97,8 +95,8 @@ class LleidaHackerService(BaseService):
         lleidahacker.active = 0
         lleidahacker.accepted = 0
         lleidahacker.rejected = 1
-        self.db.commit()
-        self.db.refresh(lleidahacker)
+        db.session.commit()
+        db.session.refresh(lleidahacker)
         return lleidahacker
 
     def activate_lleidahacker(self, userId: int, data: BaseToken):
@@ -106,8 +104,8 @@ class LleidaHackerService(BaseService):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 1
-        self.db.commit()
-        self.db.refresh(lleidahacker)
+        db.session.commit()
+        db.session.refresh(lleidahacker)
         return lleidahacker
 
     def deactivate_lleidahacker(self, userId: int, data: BaseToken):
@@ -115,6 +113,6 @@ class LleidaHackerService(BaseService):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 0
-        self.db.commit()
-        self.db.refresh(lleidahacker)
+        db.session.commit()
+        db.session.refresh(lleidahacker)
         return lleidahacker
