@@ -18,6 +18,7 @@ router = APIRouter(
 
 userConfig_service = UserConfigService()
 
+
 @router.get("/all", response_model=List[SchemaUserConfigGetAll])
 def get_user_configs(token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.get_all_users_config(token)
@@ -25,17 +26,20 @@ def get_user_configs(token: BaseToken = Depends(JWTBearer())):
 
 @router.get("/{userId}",
             response_model=Union[SchemaUserConfigGetAll, SchemaUserConfigGet])
-def get_user_config(userId: int,
-                    token: BaseToken=Depends(JWTBearer())):
+def get_user_config(userId: int, token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.get_user_config(userId, token)
-                                            
+
+
 @router.put("/{userId}")
-def update_user_config(userId: int, payload: SchemaUserConfigUpdate, token: BaseToken=Depends(JWTBearer())):
+def update_user_config(userId: int,
+                       payload: SchemaUserConfigUpdate,
+                       token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.update_user_config(userId, payload, token)
+
 
 ##TODO: BORRAR DESPRES D'UTILITZAR
 @router.delete("/")
-def delete_user_config(token:BaseToken=Depends(JWTBearer())):
+def delete_user_config(token: BaseToken = Depends(JWTBearer())):
     userConfig_service.delete_user_config(token)
 
     return {"message": "UserConfig deleted successfully"}

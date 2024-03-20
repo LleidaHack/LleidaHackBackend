@@ -17,6 +17,7 @@ from src.utils.UserType import UserType
 
 
 class UserConfigService(BaseService):
+
     def __call__(self):
         pass
 
@@ -24,34 +25,38 @@ class UserConfigService(BaseService):
         return self.db.query(ModelUserConfig).all()
 
     def get_by_id(self, id: int):
-        config = self.db.query(ModelUserConfig).filter(ModelUserConfig.id == id).first()
+        config = self.db.query(ModelUserConfig).filter(
+            ModelUserConfig.id == id).first()
         if config is None:
             raise NotFoundException("User config not found")
         return config
-    
+
     def get_by_user_id(self, user_id: int):
-        config = self.db.query(ModelUserConfig).filter(ModelUserConfig.user_id == user_id).first()
+        config = self.db.query(ModelUserConfig).filter(
+            ModelUserConfig.user_id == user_id).first()
         if config is None:
             raise NotFoundException("User config not found")
         return config
 
     def get_user_config(self, userId: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER], userId):
+        if not data.check(
+            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
+                userId):
             raise AuthenticationException("Not authorized")
-        
+
         userConfig = self.get_by_user_id(userId)
-        if data.check([UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER], userId):
+        if data.check(
+            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
+                userId):
             return parse_obj_as(SchemaUserConfigGetAll, userConfig)
 
         return parse_obj_as(SchemaUserConfigGet, userConfig)
 
-
     def get_all_users_config(self, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
-        
-        return self.get_all()
 
+        return self.get_all()
 
     def add_user_config(self, payload: SchemaUserConfigCreate):
         userConfig = ModelUserConfig(**payload.dict())
@@ -59,12 +64,13 @@ class UserConfigService(BaseService):
         self.db.commit()
         return userConfig
 
-
     def update_user_config(self, config_id: int,
-                        payload: SchemaUserConfigUpdate, data: BaseToken):
+                           payload: SchemaUserConfigUpdate, data: BaseToken):
         userConfig = self.get_by_id(config_id)
 
-        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER], userConfig.user_id):
+        if not data.check(
+            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
+                userConfig.user_id):
             raise AuthenticationException("Not authorized")
 
         userConfig.reciveNotifications = payload.reciveNotifications
@@ -73,7 +79,6 @@ class UserConfigService(BaseService):
         self.db.commit()
         self.db.refresh(userConfig)
         return userConfig
-
 
     ##Funcións per preparar la creació de userConfig de tots els usuaris i que vagi ben ordenat el valor de id
     def delete_user_config(self, data: BaseToken):
@@ -85,7 +90,6 @@ class UserConfigService(BaseService):
         self.db.query(ModelUserConfig).delete()
         self.db.commit()
 
-
     def create_user_configs(self, data: BaseToken):
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
@@ -96,16 +100,17 @@ class UserConfigService(BaseService):
         user_configs = []
         for user in users:
             user_config = ModelUserConfig(user_id=user.id,
-                                        defaultLang="ca-CA",
-                                        comercialNotifications=True,
-                                        reciveNotifications=True)
+                                          defaultLang="ca-CA",
+                                          comercialNotifications=True,
+                                          reciveNotifications=True)
             user_configs.append(user_config)
 
         self.db.bulk_save_objects(user_configs)
         self.db.commit()
 
         for user_config in user_configs:
-            user = self.db.query(User).filter(User.id == user_config.user_id).first()
+            user = self.db.query(User).filter(
+                User.id == user_config.user_id).first()
             if user:
                 user.config_id = user_config.id
                 success_count += 1

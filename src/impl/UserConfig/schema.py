@@ -8,13 +8,10 @@ class UserConfigCreate(BaseSchema):
     defaultLang: str
     comercialNotifications: bool
 
-  
-
 
 class UserConfigGet(BaseSchema):
     user_id: int
     defaultLang: str
-
 
 
 class UserConfigGetAll(UserConfigGet):
@@ -27,5 +24,3 @@ class UserConfigUpdate(BaseSchema):
     reciveNotifications: Optional[bool]
     defaultLang: Optional[str]
     comercialNotifications: Optional[bool]
-
-    
