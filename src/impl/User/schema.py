@@ -19,8 +19,8 @@ class UserCreate(BaseSchema):
     address: str
     shirt_size: Optional[str] = None
     image: Optional[str] = None
-    is_image_url: Optional[bool] = None
-    recive_mails: Optional[bool] = None
+    #is_image_url: Optional[bool] = None
+    #recive_mails: Optional[bool] = None
     config: UserConfigCreate
 
     @field_validator('email')

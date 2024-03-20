@@ -15,7 +15,7 @@ from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
-from src.impl.UserConfig import model as ModelUserConfig
+from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 from src.utils.Base.BaseService import \
     BaseService  # an object to provide global access to a database session
 from src.utils.security import get_password_hash
