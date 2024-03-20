@@ -1,8 +1,11 @@
 import importlib
+
+from fastapi_sqlalchemy import db
 from src.utils.Singleton import Singleton
 
 
 class BaseService(metaclass=Singleton):
+
 
     def needs_service(service):
 

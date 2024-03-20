@@ -4,25 +4,11 @@ import sys
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
+from fastapi_sqlalchemy import DBSessionMiddleware
 
-from src.error import error_handler as eh
-from src.error.AuthenticationException import AuthenticationException
-from src.error.InputException import InputException
-from src.error.InvalidDataException import InvalidDataException
-from src.error.NotFoundException import NotFoundException
-from src.error.ValidationException import ValidationException
-from src.impl.Authentication import router as Authentication
-from src.impl.Company import router as Company
-from src.impl.CompanyUser import router as CompanyUser
-from src.impl.Event import router as Event
-from src.impl.Geocaching import router as Geocaching
-from src.impl.Hacker import router as Hacker
-from src.impl.HackerGroup import router as HackerGroup
-from src.impl.LleidaHacker import router as LleidaHacker
-from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
-from src.impl.MailQueue import router as MailQueue
-from src.impl.Meal import router as Meal
-from src.impl.User import router as User
+
+
+from src.utils.Configuration import Configuration
 
 
 class App:
@@ -31,22 +17,33 @@ class App:
         self.app = app
 
     def setup_routers(self):
+        from src.impl.User import router as User
         self.app.include_router(User.router)
+        from src.impl.Hacker import router as Hacker
         self.app.include_router(Hacker.router)
+        from src.impl.HackerGroup import router as HackerGroup
         self.app.include_router(HackerGroup.router)
+        from src.impl.LleidaHacker import router as LleidaHacker
         self.app.include_router(LleidaHacker.router)
+        from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
         self.app.include_router(LleidaHackerGroup.router)
+        from src.impl.Company import router as Company
         self.app.include_router(Company.router)
+        from src.impl.CompanyUser import router as CompanyUser
         self.app.include_router(CompanyUser.router)
+        from src.impl.MailQueue import router as MailQueue
         self.app.include_router(MailQueue.router)
+        from src.impl.Meal import router as Meal
         self.app.include_router(Meal.router)
+        from src.impl.Event import router as Event
         self.app.include_router(Event.router)
+        from src.impl.Authentication import router as Authentication
         self.app.include_router(Authentication.router)
+        from src.impl.Geocaching import router as Geocaching
         self.app.include_router(Geocaching.router)
         """
         Simplify operation IDs so that generated API clients have simpler function
         names.
-
         Should be called only after all routes have been added.
         """
         for route in self.app.routes:
@@ -54,6 +51,8 @@ class App:
                 route.operation_id = route.name
 
     def setup_middleware(self):
+        self.app.add_middleware(DBSessionMiddleware,
+                   db_url=Configuration.get("POSTGRESQL", "DATABASE_URL"))
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
@@ -64,6 +63,12 @@ class App:
         )
 
     def setup_exceptions(self):
+        from src.error import error_handler as eh
+        from src.error.AuthenticationException import AuthenticationException
+        from src.error.InputException import InputException
+        from src.error.InvalidDataException import InvalidDataException
+        from src.error.NotFoundException import NotFoundException
+        from src.error.ValidationException import ValidationException
         self.app.add_exception_handler(AuthenticationException,
                                        eh.authentication_exception_handler)
         self.app.add_exception_handler(NotFoundException,
@@ -90,8 +95,8 @@ class App:
         logger.addHandler(stream_handler)
 
     def setup_all(self, logger):
-        self.setup_static_folder()
-        self.setup_exceptions()
-        self.setup_routers()
+        # self.setup_static_folder()
         self.setup_middleware()
         self.setup_logger(logger)
+        self.setup_exceptions()
+        self.setup_routers()
