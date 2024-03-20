@@ -42,7 +42,6 @@ tags_metadata = [
 
 import logging
 
-
 app = FastAPI(title="LleidaHack API",
               description="LleidaHack API",
               version="2.0",
@@ -54,8 +53,6 @@ app = FastAPI(title="LleidaHack API",
               swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"})
 
 logger = logging.getLogger(__name__)
-
-
 
 
 @app.get("/")

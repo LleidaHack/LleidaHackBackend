@@ -6,7 +6,6 @@ from src.utils.Singleton import Singleton
 
 class BaseService(metaclass=Singleton):
 
-
     def needs_service(service):
 
         def wrapper(f):
