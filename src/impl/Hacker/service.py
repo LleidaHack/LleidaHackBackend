@@ -85,11 +85,11 @@ class HackerService(BaseService):
             comercialNotifications=payload.config.comercialNotifications,
         )
 
-        self.db.add(new_config)
-        self.db.commit()
-        self.db.refresh(new_config)
+        db.session.add(new_config)
+        db.session.commit()
+        db.session.refresh(new_config)
         new_hacker.config_id = new_config.id
-        self.db.commit()
+        db.session.commit()
         return new_hacker
 
     def remove_hacker(self, hackerId: int, data: BaseToken):
