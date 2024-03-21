@@ -18,6 +18,7 @@ from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
+from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 
 
 class CompanyUserService(BaseService):
@@ -47,6 +48,18 @@ class CompanyUserService(BaseService):
         new_company_user.password = get_password_hash(payload.password)
         if payload.image is not None:
             payload = check_image(payload)
+
+        
+        new_config = ModelUserConfig(
+            reciveNotifications=payload.config.reciveNotifications,
+            defaultLang=payload.config.defaultLang,
+            comercialNotifications=payload.config.comercialNotifications,
+            terms_and_conditions=payload.config.terms_and_conditions
+        ) 
+
+        db.session.add(new_config)
+        db.session.flush()
+        new_company_user.config_id = new_config.id
         db.session.add(new_company_user)
         db.session.commit()
         db.session.refresh(new_company_user)

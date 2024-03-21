@@ -73,22 +73,18 @@ class HackerService(BaseService):
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)
 
-        db.session.add(new_hacker)
-        db.session.commit()
-        db.session.refresh(new_hacker)
-        db.session.flush()
-
         new_config = ModelUserConfig(
             reciveNotifications=payload.config.reciveNotifications,
             defaultLang=payload.config.defaultLang,
             comercialNotifications=payload.config.comercialNotifications,
             terms_and_conditions=payload.config.terms_and_conditions
-        )
+        ) ##TODO 
 
         db.session.add(new_config)
-        db.session.commit()
-        db.session.refresh(new_config)
+        db.session.flush()
+
         new_hacker.config_id = new_config.id
+        db.session.add(new_hacker)
         db.session.commit()
         return new_hacker
 
