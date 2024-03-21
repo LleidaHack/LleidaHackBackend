@@ -92,32 +92,28 @@ class UserConfigService(BaseService):
         db.session.commit()
 
     def create_user_configs(self, data: BaseToken):
+        
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
 
-        users = db.session.query(User).all()
+        
         success_count = 0
         failed_count = 0
-        user_configs = []
-        for user in users:
-            user_config = ModelUserConfig(user_id=user.id,
-                                          defaultLang="ca-CA",
-                                          comercialNotifications=True,
-                                          reciveNotifications=True)
-            user_configs.append(user_config)
-
-        db.session.bulk_save_objects(user_configs)
-        db.session.commit()
-
-        for user_config in user_configs:
-            user = db.session.query(User).filter(
-                User.id == user_config.user_id).first()
-            if user:
-                user.config_id = user_config.id
+       
+       
+        user_config = ModelUserConfig(  defaultLang="ca-CA",
+                                        comercialNotifications=True,
+                                        reciveNotifications=True)
+            
+        users = db.session.query(User).all()
+        for u in users:
+            db.session.add(user_config)
+            db.session.flush()
+            if u:
+                u.config_id = user_config.id
                 success_count += 1
             else:
                 failed_count += 1
 
         db.session.commit()
-
         return success_count, failed_count

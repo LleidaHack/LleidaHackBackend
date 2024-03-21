@@ -22,7 +22,7 @@ def count_users(token=Depends(JWTBearer())):
     return user_service.count_users()
 
 
-@router.get("/all", response_model=List[UserGetSchema])
+@router.get("/all", response_model=List[UserGetAllSchema])
 def get_users(token: BaseToken = Depends(JWTBearer())):
     return user_service.get_all()
 

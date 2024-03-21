@@ -12,7 +12,7 @@ class UserConfig(Base):
                      index=True,
                      unique=True,
                      autoincrement=True)
-    user_id = Column(Integer, ForeignKey('my_user.id'), nullable=False)
+    #user_id = Column(Integer, ForeignKey('my_user.id'), nullable=False)
     reciveNotifications = Column(Boolean, default=True)
     defaultLang = Column(String, default="ca-CA")
     comercialNotifications = Column(Boolean, default=True)

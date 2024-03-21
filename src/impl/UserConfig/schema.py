@@ -10,7 +10,6 @@ class UserConfigCreate(BaseSchema):
 
 
 class UserConfigGet(BaseSchema):
-    user_id: int
     defaultLang: str
 
 
