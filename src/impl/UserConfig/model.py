@@ -16,3 +16,4 @@ class UserConfig(Base):
     reciveNotifications = Column(Boolean, default=True)
     defaultLang = Column(String, default="ca-CA")
     comercialNotifications = Column(Boolean, default=True)
+    terms_and_conditions = Column(Boolean, default=True)

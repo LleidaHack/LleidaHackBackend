@@ -101,7 +101,8 @@ class UserConfigService(BaseService):
        
         user_config = ModelUserConfig(  defaultLang="ca-CA",
                                         comercialNotifications=True,
-                                        reciveNotifications=True)
+                                        reciveNotifications=True,
+                                        terms_and_conditions=True)
             
         users = db.session.query(User).all()
         for u in users:

@@ -79,10 +79,10 @@ class HackerService(BaseService):
         db.session.flush()
 
         new_config = ModelUserConfig(
-            user_id=new_hacker.id,
             reciveNotifications=payload.config.reciveNotifications,
             defaultLang=payload.config.defaultLang,
             comercialNotifications=payload.config.comercialNotifications,
+            terms_and_conditions=payload.config.terms_and_conditions
         )
 
         db.session.add(new_config)
