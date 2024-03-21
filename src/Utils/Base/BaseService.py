@@ -21,7 +21,7 @@ class BaseService(metaclass=Singleton):
 
                 if getattr(s, ser.name) is None:
                     setattr(s, ser.name, ser())
-
+                return f(*args)
             return get_service
 
         return wrapper

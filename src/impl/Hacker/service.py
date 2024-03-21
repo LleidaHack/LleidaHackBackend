@@ -43,7 +43,6 @@ class HackerService(BaseService):
         if hacker is None:
             raise NotFoundException('hacker not found')
         return hacker
-
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
         if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
@@ -77,6 +76,7 @@ class HackerService(BaseService):
         db.session.flush()
         return new_hacker
 
+    # @Token.check_token()
     def remove_hacker(self, hackerId: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) or not data.check(
             [UserType.HACKER], hackerId):

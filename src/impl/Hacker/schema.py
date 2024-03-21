@@ -22,6 +22,8 @@ class HackerGetAll(UserGetAll, HackerGet):
     location: Optional[str]
     cv: Optional[str]
     study_center: Optional[str]
+    token: Optional[str]
+    banned: int
 
 
 class HackerUpdate(UserUpdate):
