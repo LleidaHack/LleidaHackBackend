@@ -35,6 +35,10 @@ tags_metadata = [
         "description": "Event related endpoints"
     },
     {
+        "name": "UserConfig",
+        "description": "UserConfig related endpoints"
+    },
+    {
         "name": "Authentication",
         "description": "Authentication related endpoints"
     },

@@ -42,13 +42,13 @@ def isBase64(s):
 
 
 def check_image(payload):
-    if payload.image is not None:
-        if payload.image.startswith("https://") or payload.image.startswith(
-                "http://"):
-            payload.is_image_url = True
-        if not payload.is_image_url:
-            if not isBase64(payload.image):
-                raise ValidationException("Image is not a valid base64 string")
+    # if payload.image is not None:
+    #     if payload.image.startswith("https://") or payload.image.startswith(
+    #             "http://"):
+    #         payload.is_image_url = True
+    #     if not payload.is_image_url:
+    #         if not isBase64(payload.image):
+    #             raise ValidationException("Image is not a valid base64 string")
     return payload
 
 

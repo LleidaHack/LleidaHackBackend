@@ -4,6 +4,7 @@ from typing import Optional
 
 from pydantic import field_validator
 
+from src.impl.UserConfig.schema import UserConfigCreate, UserConfigGetAll
 from src.utils.Base.BaseSchema import BaseSchema
 
 
@@ -18,8 +19,9 @@ class UserCreate(BaseSchema):
     address: str
     shirt_size: Optional[str] = None
     image: Optional[str] = None
-    is_image_url: Optional[bool] = None
-    recive_mails: Optional[bool] = None
+    #is_image_url: Optional[bool] = None
+    #recive_mails: Optional[bool] = None
+    config: UserConfigCreate
 
     @field_validator('email')
     @classmethod
@@ -68,8 +70,8 @@ class UserGet(BaseSchema):
     birthdate: date
     email: str
     image: Optional[str] = None
-    is_image_url: Optional[bool] = None
-    recive_mails: Optional[bool] = None
+    #is_image_url: Optional[bool] = None
+    #recive_mails: Optional[bool] = None
 
 
 class UserGetAll(UserGet):
@@ -79,6 +81,7 @@ class UserGetAll(UserGet):
     address: str
     shirt_size: Optional[str]
     is_verified: bool
+    config: UserConfigGetAll 
 
 
 class UserUpdate(BaseSchema):
@@ -92,5 +95,5 @@ class UserUpdate(BaseSchema):
     address: Optional[str] = None
     shirt_size: Optional[str] = None
     image: Optional[str] = None
-    is_image_url: Optional[bool] = None
-    recive_mails: Optional[bool] = None
+    #is_image_url: Optional[bool] = None
+    #recive_mails: Optional[bool] = None

@@ -10,3 +10,4 @@ from src.impl.MailQueue import model
 from src.impl.Meal import model
 from src.impl.Notification import model
 from src.impl.User import model
+from src.impl.UserConfig import model

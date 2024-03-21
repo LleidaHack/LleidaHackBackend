@@ -20,7 +20,7 @@ class EventCreate(BaseSchema):
     max_sponsors: int
     status: int
     image: Optional[str] = None
-    is_image_url: Optional[bool] = None
+    #is_image_url: Optional[bool] = None 
 
     # start_time: Time = Column(Time, default=func.now())
 
@@ -59,7 +59,7 @@ class EventGet(BaseSchema):
     max_sponsors: int
     status: int
     image: Optional[str] = None
-    is_image_url: Optional[bool] = None
+    #is_image_url: Optional[bool] = None 
 
 
 class EventGetAll(EventGet):
@@ -78,7 +78,7 @@ class EventUpdate(BaseSchema):
     max_sponsors: Optional[int] = None
     status: Optional[int] = None
     image: Optional[str] = None
-    is_image_url: Optional[bool] = None
+    #is_image_url: Optional[bool] = None 
     is_open: Optional[bool] = None
     max_group_size: Optional[int] = None
 
