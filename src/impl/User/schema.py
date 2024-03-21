@@ -81,7 +81,7 @@ class UserGetAll(UserGet):
     address: str
     shirt_size: Optional[str]
     is_verified: bool
-    config: UserConfigGetAll ##TODO veure perque no agafa el UserConfig. Esta ficat el optional per evitar errors de moment.
+    config: UserConfigGetAll 
 
 
 class UserUpdate(BaseSchema):

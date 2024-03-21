@@ -45,6 +45,6 @@ def delete_user_config(token: BaseToken = Depends(JWTBearer())):
     return {"message": "UserConfig deleted successfully"}
 
 
-@router.post("/userconfig_all_creator")  ##TODO: FICAR NOM DESCRIPTIU /
+@router.post("/userconfig_all_creator") 
 def create_user_configs(token=Depends(JWTBearer())):
     return userConfig_service.create_user_configs(token)

@@ -96,10 +96,8 @@ class UserConfigService(BaseService):
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
 
-        
         success_count = 0
         failed_count = 0
-       
        
         user_config = ModelUserConfig(  defaultLang="ca-CA",
                                         comercialNotifications=True,
