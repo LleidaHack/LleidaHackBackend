@@ -13,7 +13,7 @@ class CompanyUser(User):
     user_id = Column(Integer, ForeignKey('my_user.id'), primary_key=True)
     company_id = Column(Integer, ForeignKey(Company.id), primary_key=True)
     company = relationship('Company', back_populates='users')
-    active: bool = (Column(Boolean, default=True))
+    active: bool = (Column(Integer, default=0))
     role: str = (Column(String))
     accepted: bool = (Column(Boolean, default=False))
     rejected: bool = (Column(Boolean, default=False))

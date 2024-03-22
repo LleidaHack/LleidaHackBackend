@@ -28,9 +28,9 @@ lleidahacker_service = LleidaHackerService()
 @router.post("/signup")
 def signup(payload: LleidaHackerCreateSchema):
     new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
-    access_token = AccesToken(new_lleidahacker).save_to_user()
-    refresh_token = RefreshToken(new_lleidahacker).save_to_user()
-    VerificationToken(new_lleidahacker).save_to_user()
+    access_token = AccesToken(new_lleidahacker).user_set()
+    refresh_token = RefreshToken(new_lleidahacker).user_set()
+    VerificationToken(new_lleidahacker).user_set()
     send_registration_confirmation_email(new_lleidahacker)
     return {
         "success": True,

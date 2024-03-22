@@ -30,8 +30,8 @@ class AuthenticationService(BaseService):
     def create_access_and_refresh_token(self, user: ModelUser):
         access_token = AccesToken(user)
         refresh_token = RefreshToken(user)
-        access_token.save_to_user()
-        refresh_token.save_to_user()
+        access_token.user_set()
+        refresh_token.user_set()
         return access_token, refresh_token
 
     @BaseService.needs_service(U_S.UserService)
@@ -64,7 +64,7 @@ class AuthenticationService(BaseService):
         if not user.is_verified:
             raise InvalidDataException("User not verified")
         self.create_access_and_refresh_token(user)
-        ResetPassToken(user).save_to_user()
+        ResetPassToken(user).user_set()
         send_password_reset_email(user)
         return {"success": True}
 
@@ -125,9 +125,9 @@ class AuthenticationService(BaseService):
         user = self.user_service.get_user_by_email(email)
         if user.is_verified:
             raise InvalidDataException("User already verified")
-        AccesToken(user).save_to_user()
-        RefreshToken(user).save_to_user()
-        VerificationToken(user).save_to_user()
+        AccesToken(user).user_set()
+        RefreshToken(user).user_set()
+        VerificationToken(user).user_set()
         send_registration_confirmation_email(user)
         return {"success": True}
 

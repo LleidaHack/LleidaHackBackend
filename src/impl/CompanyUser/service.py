@@ -43,7 +43,7 @@ class CompanyUserService(BaseService):
 
     def add_company_user(self, payload: CompanyUserCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)
-        new_company_user = ModelCompanyUser(**payload.dict(),
+        new_company_user = ModelCompanyUser(**payload.dict(exclude={"config"}),
                                             code=generate_user_code())
         new_company_user.password = get_password_hash(payload.password)
         if payload.image is not None:

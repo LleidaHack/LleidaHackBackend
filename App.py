@@ -17,8 +17,6 @@ class App:
     def setup_routers(self):
         from src.impl.User import router as User
         self.app.include_router(User.router)
-        from src.impl.Hacker import router as Hacker
-        self.app.include_router(Hacker.router)
         from src.impl.HackerGroup import router as HackerGroup
         self.app.include_router(HackerGroup.router)
         from src.impl.LleidaHacker import router as LleidaHacker
@@ -41,14 +39,16 @@ class App:
         self.app.include_router(Geocaching.router)
         from src.impl.UserConfig import router as UserConfig
         self.app.include_router(UserConfig.router)
+        from src.impl.Hacker import router as Hacker
+        self.app.include_router(Hacker.router)
         """
         Simplify operation IDs so that generated API clients have simpler function
         names.
         Should be called only after all routes have been added.
         """
-        for route in self.app.routes:
-            if isinstance(route, APIRoute):
-                route.operation_id = route.name
+        # for route in self.app.routes:
+        #     if isinstance(route, APIRoute):
+        #         route.operation_id = route.name
 
     def setup_middleware(self):
         self.app.add_middleware(DBSessionMiddleware,
