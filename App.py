@@ -46,9 +46,10 @@ class App:
         names.
         Should be called only after all routes have been added.
         """
-        # for route in self.app.routes:
-        #     if isinstance(route, APIRoute):
-        #         route.operation_id = route.name
+        
+        for route in self.app.routes:
+            if isinstance(route, APIRoute):
+                route.operation_id = route.name
 
     def setup_middleware(self):
         self.app.add_middleware(DBSessionMiddleware,
