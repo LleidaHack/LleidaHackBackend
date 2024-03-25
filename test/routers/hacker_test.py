@@ -56,6 +56,7 @@ schema_hacker = {
 mock_access_token = "fake_access_token"
 mock_refresh_token = "fake_refresh_token"
 
+
 @patch("security.create_all_tokens",
        return_value=(mock_access_token, mock_refresh_token))
 @patch("services.mail.send_registration_confirmation_email")
