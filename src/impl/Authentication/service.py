@@ -97,7 +97,6 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("Invalid token")
         return self.user_service._verify_user(token.user_id)
         return {"success": True}
-    
 
     @BaseService.needs_service(U_S.UserService)
     def force_verification(self, user_id: int, data: BaseToken):

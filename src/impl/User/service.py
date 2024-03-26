@@ -110,8 +110,8 @@ class UserService(BaseService):
         if data.check([UserType.LLEIDAHACKER], user.id):
             return UserGetAllSchema.from_orm(user)
         return UserGetSchema.from_orm(user)
-    
-    def _verify_user(self, user_id:int):
+
+    def _verify_user(self, user_id: int):
         user = self.get_by_id(user_id)
         if user.is_verified:
             raise InvalidDataException("User already verified")
@@ -121,6 +121,7 @@ class UserService(BaseService):
         db.session.flush(user)
         db.session.refresh(user)
         return user
+
     # def add_user(self, payload: SchemaUser):
     #     new_user = ModelUser(**payload.dict())
     #     if payload.image is not None:
