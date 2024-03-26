@@ -97,7 +97,7 @@ app.add_exception_handler(InvalidDataException,
                           eh.invalid_data_exception_handler)
 app.add_exception_handler(InputException, eh.input_exception_handler)
 
-app.mount('/static', StaticFiles(directory='static'), name='static')
+# app.mount('/static', StaticFiles(directory='static'), name='static')
 
 app.include_router(user.router)
 app.include_router(hacker.router)
