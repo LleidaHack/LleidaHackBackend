@@ -19,9 +19,8 @@ class UserCreate(BaseSchema):
     address: str
     shirt_size: Optional[str] = None
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
-    #recive_mails: Optional[bool] = None
-    config: UserConfigCreate
+    # is_image_url: Optional[bool] = None
+    # recive_mails: Optional[bool] = None
 
     @field_validator('email')
     @classmethod
@@ -70,8 +69,8 @@ class UserGet(BaseSchema):
     birthdate: date
     email: str
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
-    #recive_mails: Optional[bool] = None
+    # is_image_url: Optional[bool] = None
+    # recive_mails: Optional[bool] = None
 
 
 class UserGetAll(UserGet):
@@ -95,5 +94,5 @@ class UserUpdate(BaseSchema):
     address: Optional[str] = None
     shirt_size: Optional[str] = None
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
-    #recive_mails: Optional[bool] = None
+    # is_image_url: Optional[bool] = None
+    # recive_mails: Optional[bool] = None

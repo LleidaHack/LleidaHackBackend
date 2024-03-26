@@ -36,7 +36,7 @@ class JWTBearer(HTTPBearer):
         try:
             payload = BaseToken.verify(jwtoken)
         except:
-            payload = None
+            raise
         if payload:
             isTokenValid = True
         return isTokenValid

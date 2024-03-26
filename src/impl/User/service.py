@@ -4,6 +4,7 @@ from fastapi_sqlalchemy import db
 
 # from src.utils.service_utils import check_image
 from src.error.AuthenticationException import AuthenticationException
+from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
 from src.impl.User.model import User as ModelUser
 from src.impl.User.schema import UserGet as UserGetSchema
@@ -28,6 +29,7 @@ class UserService(BaseService):
         elif type == TokenType.VERIFICATION.value:
             user.verification_token = token.to_token()
         db.session.commit()
+        db.session.flush(user)
         db.session.refresh(user)
 
     def get_all(self):
@@ -108,6 +110,17 @@ class UserService(BaseService):
         if data.check([UserType.LLEIDAHACKER], user.id):
             return UserGetAllSchema.from_orm(user)
         return UserGetSchema.from_orm(user)
+
+    def _verify_user(self, user_id: int):
+        user = self.get_by_id(user_id)
+        if user.is_verified:
+            raise InvalidDataException("User already verified")
+        user.is_verified = True
+        user.verification_token = None
+        db.session.commit()
+        db.session.flush(user)
+        db.session.refresh(user)
+        return user
 
     # def add_user(self, payload: SchemaUser):
     #     new_user = ModelUser(**payload.dict())

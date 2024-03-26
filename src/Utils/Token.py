@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import List
+from inspect import getfullargspec
+from typing import List, overload
 
 import jwt
 from dateutil import parser
@@ -28,9 +29,35 @@ class BaseToken:
     email: str = ''
     user_type: str = ''
     is_admin: bool = False
-
     user_service = UserService()
 
+    # def check_token(available_users: List[UserType], user_id: int = None):
+    #     def wrapper(f):
+    #         argspec = getfullargspec(f)
+    #         argument_index = argspec.args.index('data')
+    #         def c_t(*args):
+    #             token = args[argument_index]
+    #             if not isinstance(token, BaseToken):
+    #                 raise Exception("This function has not token or its name is not data")
+    #             types = [t.value for t in available_users]
+    #             if (token.user_type not in types) and (not token.is_service):
+    #                 return False
+    #             if token.user_type in [
+    #                     UserType.HACKER.value, UserType.COMPANYUSER.value,
+    #                     UserType.LLEIDAHACKER.value
+    #             ]:
+    #                 if user_id is not None and token.user_type is not UserType.LLEIDAHACKER.value:
+    #                     return token.available and token.user_id == user_id
+    #                 return token.available
+    #             elif token.user_type == UserType.SERVICE.value:
+    #                 return token.is_admin
+    #             else:
+    #                 return False
+    #         return c_t
+    #     return wrapper
+    # def __init__(self) -> None:
+    #     return self.__init__(None)
+    # @overload
     def __init__(self, user: UserModel):
         self.expt = (
             datetime.utcnow() +
@@ -51,7 +78,8 @@ class BaseToken:
             self.user_type = UserType.SERVICE.value
             self.email = "service"
             return self.__dict__
-        data = self.decode(token)
+        data = BaseToken.decode(token)
+        self.user_type = data.get("user_type")
         self.user_id = data.get("user_id")
         self.expt = data.get("expt")
         self.type = data.get("type")
@@ -109,15 +137,14 @@ class BaseToken:
     def encode(dict):
         return jwt.encode(dict, SECRET_KEY, algorithm=ALGORITHM)
 
-    # @classmethod
     def verify(token):
         if BaseToken.is_service(token):
             return True
         dict = BaseToken.decode(token)
         user = BaseToken.user_service.get_by_id(dict["user_id"])
-        if user.type != dict["type"]:
+        if user.type != dict["user_type"]:
             raise AuthenticationException("Invalid token")
-        data = BaseToken.from_token(token)
+        data = BaseToken(None).from_token(token)
         #TODO: comprovar tipus de token
 
         if user.token != token:
@@ -173,7 +200,7 @@ class AccesToken(BaseToken):
             return
         self.is_verified = user.is_verified
         if self.user_type == UserType.HACKER.value:
-            self.available = not user.banned
+            self.available = not bool(user.banned)
         elif user.type == UserType.LLEIDAHACKER.value:
             self.available = user.active and user.accepted and not user.rejected
         else:

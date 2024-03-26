@@ -2,9 +2,6 @@ from datetime import datetime
 
 from fastapi_sqlalchemy import db
 
-import src.impl.CompanyUser.service as C_S
-import src.impl.Hacker.service as H_S
-import src.impl.LleidaHacker.service as LH_S
 import src.impl.User.service as U_S
 from services.mail import (send_contact_email, send_password_reset_email,
                            send_registration_confirmation_email)
@@ -96,14 +93,9 @@ class AuthenticationService(BaseService):
         if token.expt < datetime.utcnow().isoformat():
             raise InvalidDataException("Token expired")
         user = self.user_service.get_by_id(token.user_id)
-        if user.is_verified:
-            raise InvalidDataException("User already verified")
         if user.verification_token != token.to_token():
             raise InvalidDataException("Invalid token")
-        user.is_verified = True
-        user.verification_token = None
-        db.session.commit()
-        db.session.refresh(user)
+        return self.user_service._verify_user(token.user_id)
         return {"success": True}
 
     @BaseService.needs_service(U_S.UserService)
@@ -111,13 +103,7 @@ class AuthenticationService(BaseService):
         if not data.is_admin:
             raise AuthenticationException(
                 "User don'have permissions to do this")
-        user = self.user_service.get_by_id(user_id)
-        if user.is_verified:
-            raise InvalidDataException("User already verified")
-        user.is_verified = True
-        user.verification_token = None
-        db.session.commit()
-        db.session.refresh(user)
+        self.user_service._verify_user(user_id)
         return {"success": True}
 
     @BaseService.needs_service(U_S.UserService)

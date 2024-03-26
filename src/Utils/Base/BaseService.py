@@ -1,6 +1,5 @@
 import importlib
 
-from fastapi_sqlalchemy import db
 from src.utils.Singleton import Singleton
 
 
@@ -22,6 +21,7 @@ class BaseService(metaclass=Singleton):
 
                 if getattr(s, ser.name) is None:
                     setattr(s, ser.name, ser())
+                return f(*args)
 
             return get_service
 

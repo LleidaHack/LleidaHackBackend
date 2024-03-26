@@ -88,6 +88,7 @@ class HackerService(BaseService):
         db.session.commit()
         return new_hacker
 
+    # @Token.check_token()
     def remove_hacker(self, hackerId: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) or not data.check(
             [UserType.HACKER], hackerId):
