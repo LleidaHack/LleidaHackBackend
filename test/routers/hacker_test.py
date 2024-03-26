@@ -111,8 +111,5 @@ def test_ban_hacker():
     response = client.post("/hacker/1/ban")
     assert response.status_code == 200
     hacker = services.hacker.get_hacker(1, TestingSessionLocal, TokenData)
-    expected_response_body = {
-        "success": True,
-        "banned_id": hacker.id
-    }
+    expected_response_body = {"success": True, "banned_id": hacker.id}
     assert response.json() == expected_response_body
