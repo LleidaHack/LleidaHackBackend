@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_sqlalchemy import DBSessionMiddleware
 
 from src.utils.Configuration import Configuration
-
+from src.versions.v1 import router as v1_router
 
 class App:
 
@@ -15,30 +15,7 @@ class App:
         self.app = app
 
     def setup_routers(self):
-        from src.impl.User import router as User
-        self.app.include_router(User.router)
-        from src.impl.Hacker import router as Hacker
-        self.app.include_router(Hacker.router)
-        from src.impl.HackerGroup import router as HackerGroup
-        self.app.include_router(HackerGroup.router)
-        from src.impl.LleidaHacker import router as LleidaHacker
-        self.app.include_router(LleidaHacker.router)
-        from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
-        self.app.include_router(LleidaHackerGroup.router)
-        from src.impl.Company import router as Company
-        self.app.include_router(Company.router)
-        from src.impl.CompanyUser import router as CompanyUser
-        self.app.include_router(CompanyUser.router)
-        from src.impl.MailQueue import router as MailQueue
-        self.app.include_router(MailQueue.router)
-        from src.impl.Meal import router as Meal
-        self.app.include_router(Meal.router)
-        from src.impl.Event import router as Event
-        self.app.include_router(Event.router)
-        from src.impl.Authentication import router as Authentication
-        self.app.include_router(Authentication.router)
-        from src.impl.Geocaching import router as Geocaching
-        self.app.include_router(Geocaching.router)
+        self.app.include_router(v1_router)
         """
         Simplify operation IDs so that generated API clients have simpler function
         names.
@@ -46,7 +23,9 @@ class App:
         """
         for route in self.app.routes:
             if isinstance(route, APIRoute):
-                route.operation_id = route.name
+                route.operation_id = route.tags[-1].replace(' ', '').lower() if len(route.tags)>0 else '' 
+                route.operation_id += '_' + route.name
+                # print(route.operation_id)
 
     def setup_middleware(self):
         self.app.add_middleware(DBSessionMiddleware,

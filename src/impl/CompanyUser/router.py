@@ -38,14 +38,14 @@ def signup(payload: CompanyUserCreateSchema):
 
 
 @router.get("/all", response_model=List[CompanyUserGetSchema])
-def get_company_users(token: BaseToken = Depends(JWTBearer())):
+def get_all(token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_all()
 
 
 @router.get("/{companyUserId}",
             response_model=Union[CompanyUserGetAllSchema,
                                  CompanyUserGetSchema])
-def get_company_user(companyUserId: int,
+def get(companyUserId: int,
                      token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_company_user(companyUserId, token)
 
@@ -60,7 +60,7 @@ def get_company_user(companyUserId: int,
 
 
 @router.put("/{companyUserId}")
-def update_company_user(companyUserId: int,
+def update(companyUserId: int,
                         payload: CompanyUserUpdateSchema,
                         token: BaseToken = Depends(JWTBearer())):
     companyuser, updated = companyuser_service.update_company_user(
@@ -69,7 +69,7 @@ def update_company_user(companyUserId: int,
 
 
 @router.delete("/{companyUserId}")
-def delete_company_user(companyUserId: int,
+def delete(companyUserId: int,
                         token: BaseToken = Depends(JWTBearer())):
     companyuser = companyuser_service.delete_company_user(companyUserId, token)
     return {"success": True, "deleted_id": companyuser.id}

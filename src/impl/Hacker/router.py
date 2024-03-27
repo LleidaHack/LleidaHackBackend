@@ -43,18 +43,18 @@ def signup(payload: HackerCreateSchema):
 
 
 @router.get("/all", response_model=List[HackerGetSchema])
-def get_hackers(token: BaseToken = Depends(JWTBearer())):
+def get_all(token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_all()
 
 
 @router.get("/{hackerId}",
             response_model=Union[HackerGetAllSchema, HackerGetSchema])
-def get_hacker(hackerId: int, token: BaseToken = Depends(JWTBearer())):
+def get(hackerId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker(hackerId, token)
 
 
 @router.put("/{hackerId}")
-def update_hacker(hackerId: int,
+def update(hackerId: int,
                   payload: HackerUpdateSchema,
                   token: BaseToken = Depends(JWTBearer())):
     hacker, updated = hacker_service.update_hacker(hackerId, payload, token)
@@ -62,30 +62,30 @@ def update_hacker(hackerId: int,
 
 
 @router.post("/{userId}/ban")
-def ban_hacker(userId: int, token: BaseToken = Depends(JWTBearer())):
+def ban(userId: int, token: BaseToken = Depends(JWTBearer())):
     hacker = hacker_service.ban_hacker(userId, token)
     return {"success": True, "banned_id": hacker.id}
 
 
 @router.post("/{userId}/unban")
-def unban_hacker(userId: int, token: BaseToken = Depends(JWTBearer())):
+def unban(userId: int, token: BaseToken = Depends(JWTBearer())):
     hacker = hacker_service.unban_hacker(userId, token)
     return {"success": True, "unbanned_id": hacker.id}
 
 
 @router.delete("/{userId}")
-def delete_hacker(userId: int, token: BaseToken = Depends(JWTBearer())):
+def delete(userId: int, token: BaseToken = Depends(JWTBearer())):
     hacker = hacker_service.remove_hacker(userId, token)
     return {"success": True, "deleted_id": hacker.id}
 
 
 @router.get("/{userId}/events", response_model=List[EventGetSchema])
-def get_hacker_events(userId: int, token: BaseToken = Depends(JWTBearer())):
+def get_events(userId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_events(userId)
 
 
 @router.get("/{userId}/groups", response_model=List[HackerGroupGetSchema])
-def get_hacker_groups(userId: int, token: BaseToken = Depends(JWTBearer())):
+def get_groups(userId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_groups(userId, db)
 
 

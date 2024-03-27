@@ -23,20 +23,20 @@ lleidahackergroup_service = LleidaHackerGroupService()
 
 
 @router.get("/all", response_model=List[LleidaHackerGroupGetSchema])
-def get_lleidahacker_groups(str=Depends(JWTBearer())):
+def get_all(str=Depends(JWTBearer())):
     return lleidahackergroup_service.get_all()
 
 
 @router.get("/{groupId}",
             response_model=Union[LleidaHackerGroupGetAllSchema,
                                  LleidaHackerGroupGetSchema])
-def get_lleidahacker_group(groupId: int,
+def get(groupId: int,
                            token: BaseToken = Depends(JWTBearer())):
     return lleidahackergroup_service.get_lleidahackergroup(groupId, token)
 
 
 @router.post("/")
-def add_lleidahacker_group(payload: LleidaHackerGroupCreateSchema,
+def add(payload: LleidaHackerGroupCreateSchema,
                            token: BaseToken = Depends(JWTBearer())):
     new_lleidahacker_group = lleidahackergroup_service.add_lleidahackergroup(
         payload, token)
@@ -44,7 +44,7 @@ def add_lleidahacker_group(payload: LleidaHackerGroupCreateSchema,
 
 
 @router.delete("/{groupId}")
-def delete_lleidahacker_group(groupId: int,
+def delete(groupId: int,
                               token: BaseToken = Depends(JWTBearer())):
     lleidahacker_group = lleidahackergroup_service.delete_lleidahackergroup(
         groupId, token)
@@ -52,7 +52,7 @@ def delete_lleidahacker_group(groupId: int,
 
 
 @router.get("/{groupId}/members", response_model=List[LleidaHackerGetSchema])
-def get_lleidahacker_group_members(groupId: int,
+def get_members(groupId: int,
                                    token: BaseToken = Depends(JWTBearer())):
     lleidahacker_group = lleidahackergroup_service.get_lleidahackergroup(
         groupId, token)
@@ -60,7 +60,7 @@ def get_lleidahacker_group_members(groupId: int,
 
 
 @router.post("/{groupId}/members/{lleidahackerId}")
-def add_lleidahacker_group_member(groupId: int,
+def add_member(groupId: int,
                                   lleidahackerId: int,
                                   token: BaseToken = Depends(JWTBearer())):
     new_lleidahacker_group = lleidahackergroup_service.add_lleidahacker_to_group(
@@ -69,7 +69,7 @@ def add_lleidahacker_group_member(groupId: int,
 
 
 @router.delete("/{groupId}/members/{lleidahackerId}")
-def delete_lleidahacker_group_member(groupId: int,
+def delete_member(groupId: int,
                                      lleidahackerId: int,
                                      token: BaseToken = Depends(JWTBearer())):
     lleidahacker_group = lleidahackergroup_service.remove_lleidahacker_from_group(
@@ -78,7 +78,7 @@ def delete_lleidahacker_group_member(groupId: int,
 
 
 @router.put("/{groupId}/leader/{lleidahackerId}")
-def set_lleidahacker_group_leader(groupId: int,
+def set_leader(groupId: int,
                                   lleidahackerId: int,
                                   token: BaseToken = Depends(JWTBearer())):
     lleidahacker_group = lleidahackergroup_service.set_lleidahacker_group_leader(

@@ -36,24 +36,24 @@ def get_hackeps():
 
 
 @router.get("/all", response_model=List[EventGetSchema])
-def get_events(token: BaseToken = Depends(JWTBearer())):
+def get_all(token: BaseToken = Depends(JWTBearer())):
     return event_service.get_all()
 
 
 @router.get("/{id}", response_model=Union[EventGetAllSchema, EventGetSchema])
-def get_event(id: int, token: BaseToken = Depends(JWTBearer())):
+def get(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event(id, token)
 
 
 @router.post("/")
-def create_event(event: EventCreateSchema,
+def create(event: EventCreateSchema,
                  token: BaseToken = Depends(JWTBearer())):
     new_event = event_service.add_event(event, token)
     return {'success': True, 'event_id': new_event.id}
 
 
 @router.put("/{id}")
-def update_event(id: int,
+def update(id: int,
                  event: EventUpdateSchema,
                  token: BaseToken = Depends(JWTBearer())):
     new_event, updated = event_service.update_event(id, event, token)
@@ -61,7 +61,7 @@ def update_event(id: int,
 
 
 @router.delete("/{id}")
-def delete_event(id: int, token: BaseToken = Depends(JWTBearer())):
+def delete(id: int, token: BaseToken = Depends(JWTBearer())):
     event = event_service.delete_event(id, token)
     return {'success': True, 'event_id': event.id}
 
@@ -81,28 +81,28 @@ def is_accepted(id: int,
 
 
 @router.get("/{id}/meals", response_model=List[MealGetSchema])
-def get_event_meals(id: int, token: BaseToken = Depends(JWTBearer())):
+def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event_meals(id, token)
 
 
 @router.get("/{id}/participants", response_model=List[HackerGetSchema])
-def get_event_participants(id: int, token: BaseToken = Depends(JWTBearer())):
+def get_participants(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event_participants(id, token)
 
 
 @router.get("/{id}/sponsors", response_model=List[CompanyGetSchema])
-def get_event_sponsors(id: int):
+def get_sponsors(id: int):
     return event_service.get_event_sponsors(id)
 
 
 @router.get("/{id}/groups", response_model=List[HackerGroupGetSchema])
-def get_event_groups(id: int, token: BaseToken = Depends(JWTBearer())):
+def get_groups(id: int, token: BaseToken = Depends(JWTBearer())):
     event = event_service.get_event_groups(id, token)
     return {'success': True, 'groups': event}
 
 
 @router.put("/{id}/groups/{group_id}")
-def add_event_group(id: int,
+def add_group(id: int,
                     group_id: int,
                     token: BaseToken = Depends(JWTBearer())):
     event = event_service.add_hacker_group(id, group_id, token)
@@ -110,21 +110,19 @@ def add_event_group(id: int,
 
 
 @router.delete("/{id}/groups/{group_id}")
-def remove_event_group(id: int,
+def remove_group(id: int,
                        group_id: int,
                        token: BaseToken = Depends(JWTBearer())):
     event = event_service.remove_hacker_group(id, group_id, token)
     return {'success': True, 'event_id': event.id}
 
 
-# @router.put("/{id}/participants/{hacker_id}")
-# def add_event_participant(id: int,
-#                                 hacker_id: int,
-#                                 ,
-#                                 token: BaseToken = Depends(JWTBearer())):
-#     event = event_service.add_hacker(id, hacker_id,
-#                                            get_data_from_token(token))
-#     return {'success': True, 'event_id': event.id}
+@router.put("/{id}/register/{hacker_id}")
+def register_hacker(id: int,
+                    hacker_id: int,
+                    token: BaseToken = Depends(JWTBearer())):
+    event = event_service.add_hacker(id, hacker_id, token)
+    return {'success': True, 'event_id': event.id, 'user_id': hacker_id}
 
 # @router.delete("/{id}/participants/{hacker_id}")
 # def remove_event_participant(id: int,
@@ -137,7 +135,7 @@ def remove_event_group(id: int,
 
 
 @router.put("/{id}/sponsors/{company_id}")
-def add_event_sponsor(id: int,
+def add_sponsor(id: int,
                       company_id: int,
                       token: BaseToken = Depends(JWTBearer())):
     event = event_service.add_company(id, company_id, token)
@@ -145,7 +143,7 @@ def add_event_sponsor(id: int,
 
 
 @router.delete("/{id}/sponsors/{company_id}")
-def remove_event_sponsor(id: int,
+def remove_sponsor(id: int,
                          company_id: int,
                          token: BaseToken = Depends(JWTBearer())):
     event = event_service.remove_company(id, company_id, token)
@@ -229,27 +227,27 @@ def participate_hacker(event_id: int,
 
 
 @router.put("/{event_id}/unparticipate/{hacker_code}")
-def unparticipate_hacker_from_event(event_id: int,
+def unparticipate_hacker(event_id: int,
                                     hacker_code: str,
                                     token: BaseToken = Depends(JWTBearer())):
     """
     Unparticipate a hacker from an event
     """
     event_service.unparticipate_hacker(event_id, hacker_code, token)
-
+    return {'success': True}
 
 @router.put("/{event_id}/accept/{hacker_id}")
-def accept_hacker_to_event(event_id: int,
+def accept_hacker(event_id: int,
                            hacker_id: int,
                            token: BaseToken = Depends(JWTBearer())):
     """
         Accept a hacker to an event
         """
-    event_service.accept_hacker(event_id, hacker_id, token)
+    return event_service.accept_hacker(event_id, hacker_id, token)
 
 
 @router.put("/{event_id}/reject/{hacker_id}")
-def reject_hacker_from_event(event_id: int,
+def reject_hacker(event_id: int,
                              hacker_id: int,
                              token: BaseToken = Depends(JWTBearer())):
     """
@@ -307,7 +305,7 @@ def get_rejected_hackers(event_id: int,
 
 
 @router.get("/{event_id}/status")
-def get_event_status(event_id: int):
+def get_status(event_id: int):
     """
     Get the status of an event
     """
