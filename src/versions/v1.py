@@ -9,6 +9,8 @@ from src.impl.Meal import router as Meal
 from src.impl.Event import router as Event
 from src.impl.Authentication import router as Authentication
 from src.impl.Hacker import router as Hacker
+from src.impl.UserConfig import router as UserConfig
+from src.impl.Hacker import router as Hacker
 
 router = APIRouter(prefix="/v1",
                    # tags=['v1']
@@ -23,4 +25,6 @@ router.include_router(CompanyUser.router)
 router.include_router(Meal.router)
 router.include_router(Event.router)
 router.include_router(Authentication.router)
+router.include_router(Hacker.router)
+router.include_router(UserConfig.router)
 router.include_router(Hacker.router)
