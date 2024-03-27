@@ -20,18 +20,18 @@ userConfig_service = UserConfigService()
 
 
 @router.get("/all", response_model=List[SchemaUserConfigGetAll])
-def get_user_configs(token: BaseToken = Depends(JWTBearer())):
+def get_all(token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.get_all_users_config(token)
 
 
 @router.get("/{userId}",
             response_model=Union[SchemaUserConfigGetAll, SchemaUserConfigGet])
-def get_user_config(userId: int, token: BaseToken = Depends(JWTBearer())):
+def get(userId: int, token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.get_user_config(userId, token)
 
 
 @router.put("/{userId}")
-def update_user_config(userId: int,
+def update(userId: int,
                        payload: SchemaUserConfigUpdate,
                        token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.update_user_config(userId, payload, token)
@@ -39,12 +39,12 @@ def update_user_config(userId: int,
 
 ##TODO: BORRAR DESPRES D'UTILITZAR
 @router.delete("/")
-def delete_user_config(token: BaseToken = Depends(JWTBearer())):
+def delete_all(token: BaseToken = Depends(JWTBearer())):
     userConfig_service.delete_user_config(token)
 
     return {"message": "UserConfig deleted successfully"}
 
 
 @router.post("/userconfig_all_creator") 
-def create_user_configs(token=Depends(JWTBearer())):
+def create_all(token=Depends(JWTBearer())):
     return userConfig_service.create_user_configs(token)
