@@ -29,22 +29,20 @@ def get(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/")
-def create(meal: MealCreateSchema,
-                token: BaseToken = Depends(JWTBearer())):
+def create(meal: MealCreateSchema, token: BaseToken = Depends(JWTBearer())):
     return meal_service.add_meal(meal, token)
 
 
 @router.put("/{id}/{meal_id}")
 def update(id: int,
-                meal_id: int,
-                meal: MealUpdateSchema,
-                token: BaseToken = Depends(JWTBearer())):
+           meal_id: int,
+           meal: MealUpdateSchema,
+           token: BaseToken = Depends(JWTBearer())):
     return meal_service.update_meal(id, meal_id, meal, token)
 
 
 @router.delete("/{id}/{meal_id}")
-def delete(id: int, meal_id: int,
-                token: BaseToken = Depends(JWTBearer())):
+def delete(id: int, meal_id: int, token: BaseToken = Depends(JWTBearer())):
     return meal_service.delete_meal(id, meal_id, token)
 
 

@@ -10,10 +10,9 @@ from src.impl.Event import router as Event
 from src.impl.Authentication import router as Authentication
 from src.impl.Hacker import router as Hacker
 
-router = APIRouter(
-    prefix="/v1",
-    # tags=['v1']
-)
+router = APIRouter(prefix="/v1",
+                   # tags=['v1']
+                   )
 
 router.include_router(User.router)
 router.include_router(HackerGroup.router)

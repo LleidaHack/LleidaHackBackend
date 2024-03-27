@@ -55,8 +55,8 @@ def get(hackerId: int, token: BaseToken = Depends(JWTBearer())):
 
 @router.put("/{hackerId}")
 def update(hackerId: int,
-                  payload: HackerUpdateSchema,
-                  token: BaseToken = Depends(JWTBearer())):
+           payload: HackerUpdateSchema,
+           token: BaseToken = Depends(JWTBearer())):
     hacker, updated = hacker_service.update_hacker(hackerId, payload, token)
     return {"success": True, "updated_id": hacker.id, "updated": updated}
 

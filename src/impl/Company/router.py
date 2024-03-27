@@ -26,8 +26,7 @@ def get_all():
 
 
 @router.post("/")
-def add(payload: CompanyCreateSchema,
-                token: BaseToken = Depends(JWTBearer())):
+def add(payload: CompanyCreateSchema, token: BaseToken = Depends(JWTBearer())):
     new_company = company_service.add_company(payload, token)
     return {"success": True, "user_id": new_company.id}
 
@@ -40,8 +39,8 @@ def get(companyId: int):
 
 @router.put("/{companyId}")
 def update(companyId: int,
-                   payload: CompanyUpdateSchema,
-                   token: BaseToken = Depends(JWTBearer())):
+           payload: CompanyUpdateSchema,
+           token: BaseToken = Depends(JWTBearer())):
     company, updated = company_service.update_company(companyId, payload,
                                                       token)
     return {"success": True, "updated_id": company.id, 'updated': updated}
@@ -62,22 +61,21 @@ def get_users(companyId: int, token: BaseToken = Depends(JWTBearer())):
 
 @router.post("/{companyId}/users/{userId}")
 def add_user(companyId: int,
-                     userId: int,
-                     token: BaseToken = Depends(JWTBearer())):
+             userId: int,
+             token: BaseToken = Depends(JWTBearer())):
     company = company_service.add_company_user(companyId, userId, token)
     return {"success": True, "updated_id": company.id}
 
 
 @router.delete("/{companyId}/users/{userId}")
 def delete_user(companyId: int,
-                        userId: int,
-                        token: BaseToken = Depends(JWTBearer())):
+                userId: int,
+                token: BaseToken = Depends(JWTBearer())):
     company = company_service.delete_company_user(companyId, userId, token)
     return {"success": True, "deleted_id": company.id}
 
 
 #####################################################################################
 @router.get("/{companyId}/events", response_model=EventGetSchema)
-def get_events(companyId: int,
-                       token: BaseToken = Depends(JWTBearer())):
+def get_events(companyId: int, token: BaseToken = Depends(JWTBearer())):
     return company_service.get_company_events(companyId)

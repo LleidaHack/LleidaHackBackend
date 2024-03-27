@@ -40,8 +40,7 @@ def get_by_email(email: str, token: BaseToken = Depends(JWTBearer())):
 
 @router.get("/nickname/{nickname}",
             response_model=Union[UserGetAllSchema, UserGetSchema])
-def get_by_nickname(nickname: str,
-                         token: BaseToken = Depends(JWTBearer())):
+def get_by_nickname(nickname: str, token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user_by_nickname(nickname, token)
 
 

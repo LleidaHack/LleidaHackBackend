@@ -46,16 +46,15 @@ def get(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/")
-def create(event: EventCreateSchema,
-                 token: BaseToken = Depends(JWTBearer())):
+def create(event: EventCreateSchema, token: BaseToken = Depends(JWTBearer())):
     new_event = event_service.add_event(event, token)
     return {'success': True, 'event_id': new_event.id}
 
 
 @router.put("/{id}")
 def update(id: int,
-                 event: EventUpdateSchema,
-                 token: BaseToken = Depends(JWTBearer())):
+           event: EventUpdateSchema,
+           token: BaseToken = Depends(JWTBearer())):
     new_event, updated = event_service.update_event(id, event, token)
     return {'success': True, 'event_id': new_event.id, 'updated': updated}
 
@@ -102,17 +101,15 @@ def get_groups(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{id}/groups/{group_id}")
-def add_group(id: int,
-                    group_id: int,
-                    token: BaseToken = Depends(JWTBearer())):
+def add_group(id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
     event = event_service.add_hacker_group(id, group_id, token)
     return {'success': True, 'event_id': event.id}
 
 
 @router.delete("/{id}/groups/{group_id}")
 def remove_group(id: int,
-                       group_id: int,
-                       token: BaseToken = Depends(JWTBearer())):
+                 group_id: int,
+                 token: BaseToken = Depends(JWTBearer())):
     event = event_service.remove_hacker_group(id, group_id, token)
     return {'success': True, 'event_id': event.id}
 
@@ -123,6 +120,7 @@ def register_hacker(id: int,
                     token: BaseToken = Depends(JWTBearer())):
     event = event_service.add_hacker(id, hacker_id, token)
     return {'success': True, 'event_id': event.id, 'user_id': hacker_id}
+
 
 # @router.delete("/{id}/participants/{hacker_id}")
 # def remove_event_participant(id: int,
@@ -136,16 +134,16 @@ def register_hacker(id: int,
 
 @router.put("/{id}/sponsors/{company_id}")
 def add_sponsor(id: int,
-                      company_id: int,
-                      token: BaseToken = Depends(JWTBearer())):
+                company_id: int,
+                token: BaseToken = Depends(JWTBearer())):
     event = event_service.add_company(id, company_id, token)
     return {'success': True, 'event_id': event.id}
 
 
 @router.delete("/{id}/sponsors/{company_id}")
 def remove_sponsor(id: int,
-                         company_id: int,
-                         token: BaseToken = Depends(JWTBearer())):
+                   company_id: int,
+                   token: BaseToken = Depends(JWTBearer())):
     event = event_service.remove_company(id, company_id, token)
     return {'success': True, 'event_id': event.id}
 
@@ -228,18 +226,19 @@ def participate_hacker(event_id: int,
 
 @router.put("/{event_id}/unparticipate/{hacker_code}")
 def unparticipate_hacker(event_id: int,
-                                    hacker_code: str,
-                                    token: BaseToken = Depends(JWTBearer())):
+                         hacker_code: str,
+                         token: BaseToken = Depends(JWTBearer())):
     """
     Unparticipate a hacker from an event
     """
     event_service.unparticipate_hacker(event_id, hacker_code, token)
     return {'success': True}
 
+
 @router.put("/{event_id}/accept/{hacker_id}")
 def accept_hacker(event_id: int,
-                           hacker_id: int,
-                           token: BaseToken = Depends(JWTBearer())):
+                  hacker_id: int,
+                  token: BaseToken = Depends(JWTBearer())):
     """
         Accept a hacker to an event
         """
@@ -248,8 +247,8 @@ def accept_hacker(event_id: int,
 
 @router.put("/{event_id}/reject/{hacker_id}")
 def reject_hacker(event_id: int,
-                             hacker_id: int,
-                             token: BaseToken = Depends(JWTBearer())):
+                  hacker_id: int,
+                  token: BaseToken = Depends(JWTBearer())):
     """
         Reject a hacker from an event
     """

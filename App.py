@@ -9,6 +9,7 @@ from fastapi_sqlalchemy import DBSessionMiddleware
 from src.utils.Configuration import Configuration
 from src.versions.v1 import router as v1_router
 
+
 class App:
 
     def __init__(self, app):
@@ -23,7 +24,8 @@ class App:
         """
         for route in self.app.routes:
             if isinstance(route, APIRoute):
-                route.operation_id = route.tags[-1].replace(' ', '').lower() if len(route.tags)>0 else '' 
+                route.operation_id = route.tags[-1].replace(
+                    ' ', '').lower() if len(route.tags) > 0 else ''
                 route.operation_id += '_' + route.name
                 # print(route.operation_id)
 

@@ -68,8 +68,8 @@ def delete(userId: int, data: BaseToken = Depends(JWTBearer())):
 
 @router.put("/{userId}")
 def update(userId: int,
-                        payload: LleidaHackerUpdateSchema,
-                        token: BaseToken = Depends(JWTBearer())):
+           payload: LleidaHackerUpdateSchema,
+           token: BaseToken = Depends(JWTBearer())):
     lleidahacker, updated = lleidahacker_service.update_lleidahacker(
         userId, payload, token)
     return {"success": True, "updated_id": userId, 'updated': updated}
@@ -88,14 +88,12 @@ def reject(userId: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/{userId}/activate")
-def activate(userId: int,
-                          token: BaseToken = Depends(JWTBearer())):
+def activate(userId: int, token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.activate_lleidahacker(userId, token)
     return {"success": True, "updated_id": userId}
 
 
 @router.post("/{userId}/deactivate")
-def deactivate(userId: int,
-                            token: BaseToken = Depends(JWTBearer())):
+def deactivate(userId: int, token: BaseToken = Depends(JWTBearer())):
     lleidahacker = lleidahacker_service.deactivate_lleidahacker(userId, token)
     return {"success": True, "updated_id": userId}
