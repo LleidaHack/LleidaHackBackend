@@ -36,7 +36,7 @@ class CompanyUserService(BaseService):
 
     def get_company_user(self, companyUserId: int, data: BaseToken):
         user = self.get_by_id(companyUserId)
-        if data.check([UserType.LLEIDAHACKER.value, UserType.COMPANYUSER],
+        if data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER],
                       companyUserId):
             return CompanyUserGetAllSchema.from_orm(user)
         return CompanyUserGetSchema.from_orm(user)

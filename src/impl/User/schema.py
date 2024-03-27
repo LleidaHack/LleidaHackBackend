@@ -19,6 +19,7 @@ class UserCreate(BaseSchema):
     address: str
     shirt_size: Optional[str] = None
     image: Optional[str] = None
+    config: UserConfigCreate
     # is_image_url: Optional[bool] = None
     # recive_mails: Optional[bool] = None
 
