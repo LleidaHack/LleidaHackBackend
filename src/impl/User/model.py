@@ -1,7 +1,7 @@
 from datetime import date
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, deferred, relationship
+from sqlalchemy.orm import Mapped, deferred, relationship, backref
 
 from src.impl.UserConfig.model import UserConfig
 from src.utils.database import Base
@@ -33,7 +33,7 @@ class User(Base):
     config_id = Column(Integer, ForeignKey(UserConfig.id))
     config = relationship('UserConfig',
                           foreign_keys=[config_id],
-                          backref='user',
+                          backref=backref('user', cascade='all, delete-orphan') ,
                           uselist=False)
     token: str = (Column(String, default=""))
     refresh_token: str = (Column(String, default=""))
