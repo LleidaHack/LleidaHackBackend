@@ -30,21 +30,22 @@ def send_bulk_mails(lst: List):
 
 
 def send_email(user, body: str, subject: str, queue: bool = False):
-    mail = user
-    if not queue:
-        try:
-            mail = user.email
-        except:
-            pass
-        mail_queue_service.send_email(mail, body, subject)
-    else:
-        db = Database.db_get()
-        mail = ModelMailQueue()
-        mail.user_id = user.id
-        mail.subject = subject
-        mail.body = body
-        db.add(mail)
-        db.commit()
+    pass
+    # mail = user
+    # if not queue:
+    #     try:
+    #         mail = user.email
+    #     except:
+    #         pass
+    #     mail_queue_service.send_email(mail, body, subject)
+    # else:
+    #     db = Database.db_get()
+    #     mail = ModelMailQueue()
+    #     mail.user_id = user.id
+    #     mail.subject = subject
+    #     mail.body = body
+    #     db.add(mail)
+    #     db.commit()
 
 
 def generate_registration_confirmation_template(user: ModelUser):

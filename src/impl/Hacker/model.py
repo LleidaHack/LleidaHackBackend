@@ -11,7 +11,8 @@ from src.utils.UserType import UserType
 class Hacker(User):
     __tablename__ = 'hacker'
     user_id = Column(Integer, ForeignKey('my_user.id'), primary_key=True)
-    banned: int = Column(Integer, default=0)
+    # banned: bool = Column(Integer, default=0)
+    banned: bool = Column(Boolean, default=False)
     github: str = Column(String, default="")
     linkedin: str = Column(String, default="")
     cv: str = Column(String, default="")

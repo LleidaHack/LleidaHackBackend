@@ -15,9 +15,9 @@ class LleidaHacker(User):
     nif: str = (Column(String, unique=True))
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
-    github: str = Column(String)
-    accepted: bool = (Column(Boolean, default=True))
-    rejected: bool = (Column(Boolean, default=False))
+    github: str = Column(String, nullable=True)
+    accepted: bool = Column(Boolean, default=True)
+    # rejected: bool = Column(Boolean, default=False)
     groups = relationship('LleidaHackerGroup',
                           secondary='lleida_hacker_group_user')
     events = relationship('Event',

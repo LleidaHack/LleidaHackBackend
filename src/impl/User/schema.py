@@ -68,8 +68,6 @@ class UserGet(BaseSchema):
     birthdate: date
     email: str
     image: Optional[str] = None
-    # is_image_url: Optional[bool] = None
-    # recive_mails: Optional[bool] = None
 
 
 class UserGetAll(UserGet):
@@ -79,6 +77,7 @@ class UserGetAll(UserGet):
     address: str
     shirt_size: Optional[str]
     is_verified: bool
+    code: str
 
 
 class UserUpdate(BaseSchema):

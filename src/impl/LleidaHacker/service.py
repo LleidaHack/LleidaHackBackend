@@ -47,6 +47,7 @@ class LleidaHackerService(BaseService):
         new_lleidahacker = ModelLleidaHacker(**payload.dict(),
                                              code=generate_user_code())
         new_lleidahacker.password = get_password_hash(payload.password)
+        new_lleidahacker.active = True
         db.session.add(new_lleidahacker)
         db.session.commit()
         db.session.refresh(new_lleidahacker)

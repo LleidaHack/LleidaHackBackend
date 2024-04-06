@@ -7,3 +7,4 @@ utils/scripts
 .vscode
 test/ep_test/*
 env/
+src/configuration/*.yaml

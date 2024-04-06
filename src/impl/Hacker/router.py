@@ -11,7 +11,6 @@ from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
-from src.utils.Configuration import Configuration
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
                              VerificationToken)
@@ -32,8 +31,7 @@ def signup(payload: HackerCreateSchema):
     access_token = AccesToken(new_hacker).user_set()
     refresh_token = RefreshToken(new_hacker).user_set()
     VerificationToken(new_hacker).user_set()
-    if Configuration.get('OTHERS', 'LOCAL') == 'False':
-        send_registration_confirmation_email(new_hacker)
+    send_registration_confirmation_email(new_hacker)
     return {
         "success": True,
         "user_id": new_hacker.id,

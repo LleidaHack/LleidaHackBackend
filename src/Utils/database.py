@@ -5,12 +5,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # from sqlalchemy_utils import database_exists, create_database
-from src.utils.Configuration import Configuration
+from src.configuration.Configuration import Configuration
 from src.utils.Singleton import Singleton
 
 Base = declarative_base()
 
-engine = create_engine(Configuration.get("POSTGRESQL", "DATABASE_URL"))
+engine = create_engine(Configuration.database.url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
 
 

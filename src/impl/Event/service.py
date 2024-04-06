@@ -137,27 +137,24 @@ class EventService(BaseService):
         db.session.refresh(event)
         db.session.refresh(company)
         return event
-
-    # def add_hacker(id: int, hacker_id: int, db: Session, data: BaseToken):
-    #     if not data.is_admin:
-    #         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-    #                                     (data.type == UserType.HACKER.value
-    #                                      and hacker_id != data.user_id))):
-    #             raise Exception("Not authorized")
-    #     event = db.query(ModelEvent).filter(ModelEvent.id == id).first()
-    #     if event is None:
-    #         raise Exception("Event not found")
-    #     hacker = db.query(ModelHacker).filter(ModelHacker.id == hacker_id).first()
-    #     if hacker is None:
-    #         raise Exception("Hacker not found")
-    #     if not data.is_admin:
-    #         if event.max_participants <= len(event.hackers):
-    #             raise Exception("Event is full")
-    #     event.hackers.append(hacker)
-    #     db.commit()
-    #     db.refresh(event)
-    #     db.refresh(hacker)
-    #     return event
+    @BaseService.needs_service(HackerService)
+    def add_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
+        if not data.is_admin:
+            if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
+                                        (data.type == UserType.HACKER.value
+                                         and hacker_id != data.user_id))):
+                raise Exception("Not authorized")
+        event = self.get_by_id(event_id)
+        hacker = self.hacker_service.get_by_id(hacker_id)
+        if not data.is_admin:
+            if event.max_participants <= len(event.hackers):
+                raise Exception("Event is full")
+        event.registered_hackers.append(hacker)
+        db.session.commit()
+        db.session.refresh(event)
+        db.session.refresh(hacker)
+        return event
+    
     @BaseService.needs_service('HackerGroupService')
     def add_hacker_group(self, id: int, hacker_group_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
@@ -463,7 +460,7 @@ class EventService(BaseService):
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)
-        send_event_accepted_email(hacker, event, token)
+        # send_event_accepted_email(hacker, event, token)
         return event
 
     @BaseService.needs_service(HackerService)

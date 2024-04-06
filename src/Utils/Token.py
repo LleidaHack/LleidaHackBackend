@@ -10,15 +10,14 @@ from dateutil import parser
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.User.model import User as UserModel
 from src.impl.User.service import UserService
-from src.utils.Configuration import Configuration
+from src.configuration.Configuration import Configuration
 from src.utils.TokenType import TokenType
 from src.utils.UserType import UserType
 
-SECRET_KEY = Configuration.get("SECURITY", "SECRET_KEY")
-ALGORITHM = Configuration.get("SECURITY", "ALGORITHM")
-SERVICE_TOKEN = Configuration.get("SECURITY", "SERVICE_TOKEN")
-ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.get("SECURITY",
-                                                "ACCESS_TOKEN_EXPIRE_MINUTES")
+SECRET_KEY = Configuration.security.secret_key
+ALGORITHM = Configuration.security.algorithm
+SERVICE_TOKEN = Configuration.security.service_token
+ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.security.expire_time
 
 
 # TODO: fer que sigui abstracta

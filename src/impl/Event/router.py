@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Union
 
 from fastapi import APIRouter, Depends, Response
+from src.configuration.Configuration import Configuration
 
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet as CompanyGetSchema
@@ -13,7 +14,6 @@ from src.impl.Event.service import EventService
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
 from src.impl.Meal.schema import MealGet as MealGetSchema
-from src.utils.Configuration import Configuration
 from src.utils.JWTBearer import JWTBearer
 from src.utils.service_utils import subtract_lists
 from src.utils.Token import AssistenceToken, BaseToken
@@ -201,7 +201,7 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     #redirect to Configuration.get('OTHERS', 'FRONT_URL')
     return Response(
         status_code=303,
-        headers={"Location": Configuration.get('OTHERS', 'FRONT_URL')})
+        headers={"Location": Configuration.front_url})
 
 
 @router.get("/force-confirm-assistance/{event_id}/{user_id}")
