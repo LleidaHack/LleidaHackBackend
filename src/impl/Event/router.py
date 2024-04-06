@@ -199,9 +199,8 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     """
     event_service.confirm_assistance(token)
     #redirect to Configuration.get('OTHERS', 'FRONT_URL')
-    return Response(
-        status_code=303,
-        headers={"Location": Configuration.front_url})
+    return Response(status_code=303,
+                    headers={"Location": Configuration.front_url})
 
 
 @router.get("/force-confirm-assistance/{event_id}/{user_id}")

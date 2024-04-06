@@ -137,12 +137,14 @@ class EventService(BaseService):
         db.session.refresh(event)
         db.session.refresh(company)
         return event
+
     @BaseService.needs_service(HackerService)
     def add_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
         if not data.is_admin:
-            if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
-                                        (data.type == UserType.HACKER.value
-                                         and hacker_id != data.user_id))):
+            if not (data.available and
+                    (data.type == UserType.LLEIDAHACKER.value or
+                     (data.type == UserType.HACKER.value
+                      and hacker_id != data.user_id))):
                 raise Exception("Not authorized")
         event = self.get_by_id(event_id)
         hacker = self.hacker_service.get_by_id(hacker_id)
@@ -154,7 +156,7 @@ class EventService(BaseService):
         db.session.refresh(event)
         db.session.refresh(hacker)
         return event
-    
+
     @BaseService.needs_service('HackerGroupService')
     def add_hacker_group(self, id: int, hacker_group_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
