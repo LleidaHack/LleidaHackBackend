@@ -11,7 +11,7 @@ from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
 from src.impl.Meal import router as Meal
 from src.impl.Event import router as Event
 from src.impl.Authentication import router as Authentication
-from src.impl.User.model import User
+from src.impl.User import router as User
 from src.impl.UserConfig import router_v1 as UserConfig
 from src.impl.Hacker import router as Hacker
 
@@ -28,4 +28,3 @@ router.include_router(Event.router)
 router.include_router(Authentication.router)
 router.include_router(Hacker.router)
 router.include_router(UserConfig.router)
-router.include_router(Hacker.router)

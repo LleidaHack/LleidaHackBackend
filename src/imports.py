@@ -1,7 +1,7 @@
 from src.impl.Company import model
 from src.impl.CompanyUser import model
 from src.impl.Event import model
-from src.impl.Geocaching import model
+# from src.impl.Geocaching import model
 from src.impl.Hacker import model
 from src.impl.HackerGroup import model
 from src.impl.LleidaHacker import model
