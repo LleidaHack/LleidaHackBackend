@@ -9,22 +9,18 @@ from ...models.http_validation_error import HTTPValidationError
 from ...types import Response
 
 
-def _get_kwargs(
-    id: int,
-) -> Dict[str, Any]:
+def _get_kwargs(id: int, ) -> Dict[str, Any]:
     _kwargs: Dict[str, Any] = {
         "method": "put",
-        "url": "/v1/emplate/{id}/deactivate".format(
-            id=id,
-        ),
+        "url": "/v1/emplate/{id}/deactivate".format(id=id, ),
     }
 
     return _kwargs
 
 
 def _parse_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Any, HTTPValidationError]]:
+        *, client: Union[AuthenticatedClient, Client],
+        response: httpx.Response) -> Optional[Union[Any, HTTPValidationError]]:
     if response.status_code == HTTPStatus.OK:
         response_200 = response.json()
         return response_200
@@ -39,8 +35,8 @@ def _parse_response(
 
 
 def _build_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Any, HTTPValidationError]]:
+        *, client: Union[AuthenticatedClient, Client],
+        response: httpx.Response) -> Response[Union[Any, HTTPValidationError]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,13 +63,9 @@ def sync_detailed(
         Response[Union[Any, HTTPValidationError]]
     """
 
-    kwargs = _get_kwargs(
-        id=id,
-    )
+    kwargs = _get_kwargs(id=id, )
 
-    response = client.get_httpx_client().request(
-        **kwargs,
-    )
+    response = client.get_httpx_client().request(**kwargs, )
 
     return _build_response(client=client, response=response)
 
@@ -120,9 +112,7 @@ async def asyncio_detailed(
         Response[Union[Any, HTTPValidationError]]
     """
 
-    kwargs = _get_kwargs(
-        id=id,
-    )
+    kwargs = _get_kwargs(id=id, )
 
     response = await client.get_async_httpx_client().request(**kwargs)
 
@@ -147,9 +137,7 @@ async def asyncio(
         Union[Any, HTTPValidationError]
     """
 
-    return (
-        await asyncio_detailed(
-            id=id,
-            client=client,
-        )
-    ).parsed
+    return (await asyncio_detailed(
+        id=id,
+        client=client,
+    )).parsed

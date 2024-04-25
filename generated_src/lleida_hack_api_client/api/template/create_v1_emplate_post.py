@@ -77,13 +77,9 @@ def sync_detailed(
         Response[Union[HTTPValidationError, TemplateGetAll]]
     """
 
-    kwargs = _get_kwargs(
-        body=body,
-    )
+    kwargs = _get_kwargs(body=body, )
 
-    response = client.get_httpx_client().request(
-        **kwargs,
-    )
+    response = client.get_httpx_client().request(**kwargs, )
 
     return _build_response(client=client, response=response)
 
@@ -130,9 +126,7 @@ async def asyncio_detailed(
         Response[Union[HTTPValidationError, TemplateGetAll]]
     """
 
-    kwargs = _get_kwargs(
-        body=body,
-    )
+    kwargs = _get_kwargs(body=body, )
 
     response = await client.get_async_httpx_client().request(**kwargs)
 
@@ -157,9 +151,7 @@ async def asyncio(
         Union[HTTPValidationError, TemplateGetAll]
     """
 
-    return (
-        await asyncio_detailed(
-            client=client,
-            body=body,
-        )
-    ).parsed
+    return (await asyncio_detailed(
+        client=client,
+        body=body,
+    )).parsed

@@ -10,14 +10,10 @@ from ...models.template_get import TemplateGet
 from ...types import Response
 
 
-def _get_kwargs(
-    id: int,
-) -> Dict[str, Any]:
+def _get_kwargs(id: int, ) -> Dict[str, Any]:
     _kwargs: Dict[str, Any] = {
         "method": "get",
-        "url": "/v1/emplate/{id}".format(
-            id=id,
-        ),
+        "url": "/v1/emplate/{id}".format(id=id, ),
     }
 
     return _kwargs
@@ -69,13 +65,9 @@ def sync_detailed(
         Response[Union[HTTPValidationError, TemplateGet]]
     """
 
-    kwargs = _get_kwargs(
-        id=id,
-    )
+    kwargs = _get_kwargs(id=id, )
 
-    response = client.get_httpx_client().request(
-        **kwargs,
-    )
+    response = client.get_httpx_client().request(**kwargs, )
 
     return _build_response(client=client, response=response)
 
@@ -122,9 +114,7 @@ async def asyncio_detailed(
         Response[Union[HTTPValidationError, TemplateGet]]
     """
 
-    kwargs = _get_kwargs(
-        id=id,
-    )
+    kwargs = _get_kwargs(id=id, )
 
     response = await client.get_async_httpx_client().request(**kwargs)
 
@@ -149,9 +139,7 @@ async def asyncio(
         Union[HTTPValidationError, TemplateGet]
     """
 
-    return (
-        await asyncio_detailed(
-            id=id,
-            client=client,
-        )
-    ).parsed
+    return (await asyncio_detailed(
+        id=id,
+        client=client,
+    )).parsed

@@ -13,11 +13,9 @@ Base = declarative_base()
 # engine = create_engine(Configuration.database.url)
 # SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
 
-
 # if not database_exists(engine.url):
 # def db_get():
 #     return SessionLocal()
-
 
 # class Database(metaclass=Singleton):
 
@@ -39,7 +37,6 @@ Base = declarative_base()
 #             Database.db.close()
 #         finally:
 #             Database.db.close()
-
 
 # # @contextmanager
 # def db_get():

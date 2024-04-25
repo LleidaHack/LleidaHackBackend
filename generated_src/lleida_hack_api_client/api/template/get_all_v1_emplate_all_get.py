@@ -18,9 +18,8 @@ def _get_kwargs() -> Dict[str, Any]:
     return _kwargs
 
 
-def _parse_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[List["TemplateGet"]]:
+def _parse_response(*, client: Union[AuthenticatedClient, Client],
+                    response: httpx.Response) -> Optional[List["TemplateGet"]]:
     if response.status_code == HTTPStatus.OK:
         response_200 = []
         _response_200 = response.json()
@@ -36,9 +35,8 @@ def _parse_response(
         return None
 
 
-def _build_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[List["TemplateGet"]]:
+def _build_response(*, client: Union[AuthenticatedClient, Client],
+                    response: httpx.Response) -> Response[List["TemplateGet"]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -63,9 +61,7 @@ def sync_detailed(
 
     kwargs = _get_kwargs()
 
-    response = client.get_httpx_client().request(
-        **kwargs,
-    )
+    response = client.get_httpx_client().request(**kwargs, )
 
     return _build_response(client=client, response=response)
 
@@ -84,9 +80,7 @@ def sync(
         List['TemplateGet']
     """
 
-    return sync_detailed(
-        client=client,
-    ).parsed
+    return sync_detailed(client=client, ).parsed
 
 
 async def asyncio_detailed(
@@ -124,8 +118,4 @@ async def asyncio(
         List['TemplateGet']
     """
 
-    return (
-        await asyncio_detailed(
-            client=client,
-        )
-    ).parsed
+    return (await asyncio_detailed(client=client, )).parsed

@@ -39,11 +39,13 @@ class Client:
     _cookies: Dict[str, str] = field(factory=dict, kw_only=True)
     _headers: Dict[str, str] = field(factory=dict, kw_only=True)
     _timeout: Optional[httpx.Timeout] = field(default=None, kw_only=True)
-    _verify_ssl: Union[str, bool, ssl.SSLContext] = field(default=True, kw_only=True)
+    _verify_ssl: Union[str, bool, ssl.SSLContext] = field(default=True,
+                                                          kw_only=True)
     _follow_redirects: bool = field(default=False, kw_only=True)
     _httpx_args: Dict[str, Any] = field(factory=dict, kw_only=True)
     _client: Optional[httpx.Client] = field(default=None, init=False)
-    _async_client: Optional[httpx.AsyncClient] = field(default=None, init=False)
+    _async_client: Optional[httpx.AsyncClient] = field(default=None,
+                                                       init=False)
 
     def with_headers(self, headers: Dict[str, str]) -> "Client":
         """Get a new client matching this one with additional headers"""
@@ -100,7 +102,8 @@ class Client:
         """Exit a context manager for internal httpx.Client (see httpx docs)"""
         self.get_httpx_client().__exit__(*args, **kwargs)
 
-    def set_async_httpx_client(self, async_client: httpx.AsyncClient) -> "Client":
+    def set_async_httpx_client(self,
+                               async_client: httpx.AsyncClient) -> "Client":
         """Manually the underlying httpx.AsyncClient
 
         **NOTE**: This will override any other settings on the client, including cookies, headers, and timeout.
@@ -169,11 +172,13 @@ class AuthenticatedClient:
     _cookies: Dict[str, str] = field(factory=dict, kw_only=True)
     _headers: Dict[str, str] = field(factory=dict, kw_only=True)
     _timeout: Optional[httpx.Timeout] = field(default=None, kw_only=True)
-    _verify_ssl: Union[str, bool, ssl.SSLContext] = field(default=True, kw_only=True)
+    _verify_ssl: Union[str, bool, ssl.SSLContext] = field(default=True,
+                                                          kw_only=True)
     _follow_redirects: bool = field(default=False, kw_only=True)
     _httpx_args: Dict[str, Any] = field(factory=dict, kw_only=True)
     _client: Optional[httpx.Client] = field(default=None, init=False)
-    _async_client: Optional[httpx.AsyncClient] = field(default=None, init=False)
+    _async_client: Optional[httpx.AsyncClient] = field(default=None,
+                                                       init=False)
 
     token: str
     prefix: str = "Bearer"
@@ -215,8 +220,7 @@ class AuthenticatedClient:
         """Get the underlying httpx.Client, constructing a new one if not previously set"""
         if self._client is None:
             self._headers[self.auth_header_name] = (
-                f"{self.prefix} {self.token}" if self.prefix else self.token
-            )
+                f"{self.prefix} {self.token}" if self.prefix else self.token)
             self._client = httpx.Client(
                 base_url=self._base_url,
                 cookies=self._cookies,
@@ -238,8 +242,7 @@ class AuthenticatedClient:
         self.get_httpx_client().__exit__(*args, **kwargs)
 
     def set_async_httpx_client(
-        self, async_client: httpx.AsyncClient
-    ) -> "AuthenticatedClient":
+            self, async_client: httpx.AsyncClient) -> "AuthenticatedClient":
         """Manually the underlying httpx.AsyncClient
 
         **NOTE**: This will override any other settings on the client, including cookies, headers, and timeout.
@@ -251,8 +254,7 @@ class AuthenticatedClient:
         """Get the underlying httpx.AsyncClient, constructing a new one if not previously set"""
         if self._async_client is None:
             self._headers[self.auth_header_name] = (
-                f"{self.prefix} {self.token}" if self.prefix else self.token
-            )
+                f"{self.prefix} {self.token}" if self.prefix else self.token)
             self._async_client = httpx.AsyncClient(
                 base_url=self._base_url,
                 cookies=self._cookies,

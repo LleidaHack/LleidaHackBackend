@@ -11,8 +11,7 @@ from src.utils.database import Base
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option('sqlalchemy.url',
-                       Configuration.database.url)
+config.set_main_option('sqlalchemy.url', Configuration.database.url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

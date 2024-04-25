@@ -20,9 +20,7 @@ def _get_kwargs(
 
     _kwargs: Dict[str, Any] = {
         "method": "put",
-        "url": "/v1/mail/{id}".format(
-            id=id,
-        ),
+        "url": "/v1/mail/{id}".format(id=id, ),
     }
 
     _body = body.to_dict()
@@ -35,7 +33,7 @@ def _get_kwargs(
 
 
 def _parse_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
+        *, client: Union[AuthenticatedClient, Client], response: httpx.Response
 ) -> Optional[Union[HTTPValidationError, MailGet]]:
     if response.status_code == HTTPStatus.OK:
         response_200 = MailGet.from_dict(response.json())
@@ -52,7 +50,7 @@ def _parse_response(
 
 
 def _build_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
+        *, client: Union[AuthenticatedClient, Client], response: httpx.Response
 ) -> Response[Union[HTTPValidationError, MailGet]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
@@ -87,9 +85,7 @@ def sync_detailed(
         body=body,
     )
 
-    response = client.get_httpx_client().request(
-        **kwargs,
-    )
+    response = client.get_httpx_client().request(**kwargs, )
 
     return _build_response(client=client, response=response)
 
@@ -171,10 +167,8 @@ async def asyncio(
         Union[HTTPValidationError, MailGet]
     """
 
-    return (
-        await asyncio_detailed(
-            id=id,
-            client=client,
-            body=body,
-        )
-    ).parsed
+    return (await asyncio_detailed(
+        id=id,
+        client=client,
+        body=body,
+    )).parsed

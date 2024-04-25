@@ -22,7 +22,8 @@ class TemplateGet:
     description: str
     html: str
     created_date: datetime.date
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: Dict[str, Any] = _attrs_field(init=False,
+                                                         factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         name = self.name
@@ -35,14 +36,12 @@ class TemplateGet:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "name": name,
-                "description": description,
-                "html": html,
-                "created_date": created_date,
-            }
-        )
+        field_dict.update({
+            "name": name,
+            "description": description,
+            "html": html,
+            "created_date": created_date,
+        })
 
         return field_dict
 

@@ -20,7 +20,8 @@ class TemplateCreate:
     description: str
     html: str
     creator_id: int
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: Dict[str, Any] = _attrs_field(init=False,
+                                                         factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         name = self.name
@@ -33,14 +34,12 @@ class TemplateCreate:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "name": name,
-                "description": description,
-                "html": html,
-                "creator_id": creator_id,
-            }
-        )
+        field_dict.update({
+            "name": name,
+            "description": description,
+            "html": html,
+            "creator_id": creator_id,
+        })
 
         return field_dict
 

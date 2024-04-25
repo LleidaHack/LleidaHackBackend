@@ -28,7 +28,8 @@ class MailCreate:
     receiver_mail: Union[None, str]
     date: datetime.date
     fields: str
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: Dict[str, Any] = _attrs_field(init=False,
+                                                         factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         sender_id = self.sender_id
@@ -49,17 +50,15 @@ class MailCreate:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "sender_id": sender_id,
-                "reciver_id": reciver_id,
-                "template_id": template_id,
-                "subject": subject,
-                "receiver_mail": receiver_mail,
-                "date": date,
-                "fields": fields,
-            }
-        )
+        field_dict.update({
+            "sender_id": sender_id,
+            "reciver_id": reciver_id,
+            "template_id": template_id,
+            "subject": subject,
+            "receiver_mail": receiver_mail,
+            "date": date,
+            "fields": fields,
+        })
 
         return field_dict
 
