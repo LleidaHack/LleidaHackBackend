@@ -11,7 +11,6 @@ from src.impl.MailQueue.model import MailQueue as ModelMailQueue
 from src.utils.Token import BaseToken
 
 
-
 def send_email(email: str,
                template: str,
                subject: str,

@@ -1,18 +1,17 @@
 from fastapi import APIRouter
-from src.impl.User import router as User
+
+from src.impl.Authentication import router as Authentication
+from src.impl.Company import router as Company
+from src.impl.CompanyUser import router as CompanyUser
+from src.impl.Event import router as Event
+from src.impl.Hacker import router as Hacker
 from src.impl.HackerGroup import router as HackerGroup
 from src.impl.LleidaHacker import router as LleidaHacker
 from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
-from src.impl.Company import router as Company
-from src.impl.CompanyUser import router as CompanyUser
 from src.impl.Meal import router as Meal
-from src.impl.Event import router as Event
-from src.impl.Authentication import router as Authentication
-from src.impl.Hacker import router as Hacker
+from src.impl.User import router as User
 
-router = APIRouter(prefix="/v1",
-                   # tags=['v1']
-                   )
+router = APIRouter(prefix="/v1")
 
 router.include_router(User.router)
 router.include_router(HackerGroup.router)

@@ -7,10 +7,10 @@ from typing import List, overload
 import jwt
 from dateutil import parser
 
+from src.configuration.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.User.model import User as UserModel
 from src.impl.User.service import UserService
-from src.configuration.Configuration import Configuration
 from src.utils.TokenType import TokenType
 from src.utils.UserType import UserType
 

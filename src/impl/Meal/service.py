@@ -10,10 +10,10 @@ from src.impl.Meal.schema import MealCreate as MealCreateSchema
 from src.impl.Meal.schema import MealGet as MealGetSchema
 from src.impl.Meal.schema import MealGetAll as MealGetAllSchema
 from src.impl.Meal.schema import MealUpdate as MealUpdateSchema
+from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import set_existing_data
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.utils.Base.BaseService import BaseService
 
 
 class MealService(BaseService):
