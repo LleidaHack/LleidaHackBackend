@@ -2,11 +2,11 @@ from typing import List
 
 from fastapi_sqlalchemy import db
 
+import src.impl.Event.service as E_S
+import src.impl.Hacker.service as H_S
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
-import src.impl.Event.service as E_S
-import src.impl.Hacker.service as H_S
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.HackerGroup.schema import \

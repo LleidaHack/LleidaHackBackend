@@ -46,6 +46,7 @@ class CompanyUserService(BaseService):
         new_company_user = ModelCompanyUser(**payload.dict(exclude={"config"}),
                                             code=generate_user_code())
         new_company_user.password = get_password_hash(payload.password)
+        new_company_user.active = True
         if payload.image is not None:
             payload = check_image(payload)
 

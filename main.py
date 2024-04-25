@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from fastapi_sqlalchemy import DBSessionMiddleware
 
 from App import App
-from src.utils.Configuration import Configuration
+from src.configuration.Configuration import Configuration
 
 tags_metadata = [
     {
@@ -65,5 +65,5 @@ def root():
 
 
 # app.add_middleware(MaintenanceModeMiddleware, is_maintenance_mode=True)
-
+# Configuration()
 App(app).setup_all(logger)

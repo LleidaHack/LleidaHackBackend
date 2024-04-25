@@ -43,7 +43,7 @@ class HackerRegistration(Base):
     how_did_you_meet_us: str = Column(String, default="")
     update_user: bool = Column(Boolean, default=True)
     confirmed_assistance: bool = Column(Boolean, default=False)
-    confirm_assistance_token: str = (Column(String, default=""))
+    confirm_assistance_token: str = Column(String, default="")
     # accepted: bool = Column(Boolean, default=False)
 
 
@@ -108,7 +108,7 @@ class Event(Base):
     # start_time: Time = Column(Time, default=func.now())
     location: str = Column(String)
     archived: bool = Column(Boolean, default=False)
-    status: int = Column(Integer, default=0)
+    # status: int = Column(Integer, default=0)
     price: int = Column(Integer, default=0)
     max_participants: int = Column(Integer)
     max_sponsors: int = Column(Integer)

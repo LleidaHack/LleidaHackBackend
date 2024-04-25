@@ -14,10 +14,10 @@ from src.impl.LleidaHackerGroup.schema import \
     LleidaHackerGroupGetAll as LleidaHackerGroupGetAllSchema
 from src.impl.LleidaHackerGroup.schema import \
     LleidaHackerGroupUpdate as LleidaHackerGroupUpdateSchema
+from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import set_existing_data
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.utils.Base.BaseService import BaseService
 
 
 class LleidaHackerGroupService(BaseService):

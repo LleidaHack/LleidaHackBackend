@@ -3,6 +3,7 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends, Response
 
+from src.configuration.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet as CompanyGetSchema
 from src.impl.Event.schema import EventCreate as EventCreateSchema
@@ -13,7 +14,6 @@ from src.impl.Event.service import EventService
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
 from src.impl.Meal.schema import MealGet as MealGetSchema
-from src.utils.Configuration import Configuration
 from src.utils.JWTBearer import JWTBearer
 from src.utils.service_utils import subtract_lists
 from src.utils.Token import AssistenceToken, BaseToken
@@ -148,14 +148,13 @@ def remove_sponsor(id: int,
     return {'success': True, 'event_id': event.id}
 
 
-@router.get("/{eventId}/get_approved_hackers")
-# response_model=List[HackerGetSchema])
+@router.get("/{eventId}/get_approved_hackers", response_model=List[HackerGetSchema])
 def get_accepted_hackers(eventId: int,
                          token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)
 
 
-@router.get("/{eventId}/get_approved_hackers_mails")
+@router.get("/{eventId}/get_approved_hackers_mails", response_model=List[str])
 def get_accepted_hackers_mails(eventId: int,
                                token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers_mails(eventId, token)
@@ -181,7 +180,7 @@ def get_unregistered_hackers(event_id: int,
     return event_service.get_hackers_unregistered(event_id)
 
 
-@router.get("/{event_id}/count_unregistered_hackers")
+@router.get("/{event_id}/count_unregistered_hackers", response_model=int)
 def count_unregistered_hackers(event_id: int,
                                token: BaseToken = Depends(JWTBearer())):
     """
@@ -199,9 +198,8 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     """
     event_service.confirm_assistance(token)
     #redirect to Configuration.get('OTHERS', 'FRONT_URL')
-    return Response(
-        status_code=303,
-        headers={"Location": Configuration.get('OTHERS', 'FRONT_URL')})
+    return Response(status_code=303,
+                    headers={"Location": Configuration.front_url})
 
 
 @router.get("/force-confirm-assistance/{event_id}/{user_id}")
