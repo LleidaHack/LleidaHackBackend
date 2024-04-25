@@ -78,6 +78,7 @@ class UserGetAll(UserGet):
     shirt_size: Optional[str]
     is_verified: bool
     code: str
+    type: str
 
 
 class UserUpdate(BaseSchema):
