@@ -8,6 +8,7 @@ from attrs import define
 
 
 class Unset:
+
     def __bool__(self) -> Literal[False]:
         return False
 

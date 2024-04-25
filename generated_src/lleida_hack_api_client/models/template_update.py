@@ -18,7 +18,8 @@ class TemplateUpdate:
     name: Union[None, str]
     description: Union[None, str]
     html: Union[None, str]
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: Dict[str, Any] = _attrs_field(init=False,
+                                                         factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         name: Union[None, str]
@@ -32,13 +33,11 @@ class TemplateUpdate:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "name": name,
-                "description": description,
-                "html": html,
-            }
-        )
+        field_dict.update({
+            "name": name,
+            "description": description,
+            "html": html,
+        })
 
         return field_dict
 

@@ -18,7 +18,8 @@ class ValidationError:
     loc: List[Union[int, str]]
     msg: str
     type: str
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: Dict[str, Any] = _attrs_field(init=False,
+                                                         factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         loc = []
@@ -33,13 +34,11 @@ class ValidationError:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "loc": loc,
-                "msg": msg,
-                "type": type,
-            }
-        )
+        field_dict.update({
+            "loc": loc,
+            "msg": msg,
+            "type": type,
+        })
 
         return field_dict
 

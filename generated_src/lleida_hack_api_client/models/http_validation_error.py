@@ -8,7 +8,6 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.validation_error import ValidationError
 
-
 T = TypeVar("T", bound="HTTPValidationError")
 
 
@@ -20,7 +19,8 @@ class HTTPValidationError:
     """
 
     detail: Union[Unset, List["ValidationError"]] = UNSET
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: Dict[str, Any] = _attrs_field(init=False,
+                                                         factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         detail: Union[Unset, List[Dict[str, Any]]] = UNSET
@@ -50,9 +50,7 @@ class HTTPValidationError:
 
             detail.append(detail_item)
 
-        http_validation_error = cls(
-            detail=detail,
-        )
+        http_validation_error = cls(detail=detail, )
 
         http_validation_error.additional_properties = d
         return http_validation_error

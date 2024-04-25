@@ -19,8 +19,8 @@ class EmailSchema(BaseModel):
 # BACK_LINK = Configuration.get('OTHERS', 'BACK_URL')
 # CONTACT_MAIL = Configuration.get('OTHERS', 'CONTACT_MAIL')
 # STATIC_FOLDER = Configuration.get('OTHERS',
-                                #   'BACK_URL') + '/' + Configuration.get(
-                                #       'OTHERS', 'STATIC_FOLDER') + '/images'
+#   'BACK_URL') + '/' + Configuration.get(
+#       'OTHERS', 'STATIC_FOLDER') + '/images'
 
 
 def send_bulk_mails(lst: List):

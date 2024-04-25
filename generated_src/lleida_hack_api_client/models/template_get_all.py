@@ -28,7 +28,8 @@ class TemplateGetAll:
     id: int
     creator_id: int
     is_active: bool
-    additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: Dict[str, Any] = _attrs_field(init=False,
+                                                         factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         name = self.name
@@ -47,17 +48,15 @@ class TemplateGetAll:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "name": name,
-                "description": description,
-                "html": html,
-                "created_date": created_date,
-                "id": id,
-                "creator_id": creator_id,
-                "is_active": is_active,
-            }
-        )
+        field_dict.update({
+            "name": name,
+            "description": description,
+            "html": html,
+            "created_date": created_date,
+            "id": id,
+            "creator_id": creator_id,
+            "is_active": is_active,
+        })
 
         return field_dict
 
