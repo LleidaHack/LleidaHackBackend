@@ -6,6 +6,7 @@ from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 class CompanyUserCreate(UserCreate):
     role: str
     company_id: int
+    active: int
 
 
 class CompanyUserGet(UserGet):
@@ -14,6 +15,7 @@ class CompanyUserGet(UserGet):
 
 
 class CompanyUserGetAll(UserGetAll):
+    active: bool
     pass
 
 

@@ -19,6 +19,8 @@ from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
+from src.impl.UserConfig.model import UserConfig as ModelUserConfig
+
 
 
 class LleidaHackerService(BaseService):
@@ -44,10 +46,19 @@ class LleidaHackerService(BaseService):
         check_user(payload.email, payload.nickname, payload.telephone)
         if payload.image is not None:
             payload = check_image(payload)
-        new_lleidahacker = ModelLleidaHacker(**payload.dict(),
+        new_lleidahacker = ModelLleidaHacker(**payload.dict(exclude={"config"}),
                                              code=generate_user_code())
         new_lleidahacker.password = get_password_hash(payload.password)
         new_lleidahacker.active = True
+
+
+        new_config = ModelUserConfig(
+            **payload.config.dict()
+        ) 
+
+        db.session.add(new_config)
+        db.session.flush()
+        new_lleidahacker.config_id = new_config.id
         db.session.add(new_lleidahacker)
         db.session.commit()
         db.session.refresh(new_lleidahacker)

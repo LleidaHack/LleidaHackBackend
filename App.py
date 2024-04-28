@@ -22,6 +22,7 @@ class App:
         names.
         Should be called only after all routes have been added.
         """
+        
         for route in self.app.routes:
             if isinstance(route, APIRoute):
                 route.operation_id = route.tags[-1].replace(

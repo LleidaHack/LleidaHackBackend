@@ -15,6 +15,7 @@ from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 from src.utils.Base.BaseService import \
     BaseService  # an object to provide global access to a database session
 from src.utils.security import get_password_hash
@@ -66,15 +67,22 @@ class HackerService(BaseService):
 
     def add_hacker(self, payload: HackerCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)
-        new_hacker = ModelHacker(**payload.dict(), code=generate_user_code())
+        new_hacker = ModelHacker(**payload.dict(exclude={"config"}),
+                                 code=generate_user_code())
         if payload.image is not None:
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)
 
+        new_config = ModelUserConfig(
+            **payload.config.dict()
+        ) ##TODO 
+
+        db.session.add(new_config)
+        db.session.flush()
+
+        new_hacker.config_id = new_config.id
         db.session.add(new_hacker)
         db.session.commit()
-        db.session.refresh(new_hacker)
-        db.session.flush()
         return new_hacker
 
     # @Token.check_token()

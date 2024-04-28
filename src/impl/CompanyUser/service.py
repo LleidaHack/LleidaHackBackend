@@ -18,6 +18,7 @@ from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
+from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 
 
 class CompanyUserService(BaseService):
@@ -35,19 +36,28 @@ class CompanyUserService(BaseService):
 
     def get_company_user(self, companyUserId: int, data: BaseToken):
         user = self.get_by_id(companyUserId)
-        if data.check([UserType.LLEIDAHACKER.value, UserType.COMPANYUSER],
+        if data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER],
                       companyUserId):
             return CompanyUserGetAllSchema.from_orm(user)
         return CompanyUserGetSchema.from_orm(user)
 
     def add_company_user(self, payload: CompanyUserCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)
-        new_company_user = ModelCompanyUser(**payload.dict(),
+        new_company_user = ModelCompanyUser(**payload.dict(exclude={"config"}),
                                             code=generate_user_code())
         new_company_user.password = get_password_hash(payload.password)
         new_company_user.active = True
         if payload.image is not None:
             payload = check_image(payload)
+
+        
+        new_config = ModelUserConfig(
+            **payload.config.dict()
+        ) 
+
+        db.session.add(new_config)
+        db.session.flush()
+        new_company_user.config_id = new_config.id
         db.session.add(new_company_user)
         db.session.commit()
         db.session.refresh(new_company_user)

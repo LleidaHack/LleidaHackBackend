@@ -30,7 +30,6 @@ def send_bulk_mails(lst: List):
 
 
 def send_email(user, body: str, subject: str, queue: bool = False):
-    pass
     # mail = user
     # if not queue:
     #     try:
@@ -46,6 +45,7 @@ def send_email(user, body: str, subject: str, queue: bool = False):
     #     mail.body = body
     #     db.add(mail)
     #     db.commit()
+    pass
 
 
 def generate_registration_confirmation_template(user: ModelUser):

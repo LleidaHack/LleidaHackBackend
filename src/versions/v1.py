@@ -9,7 +9,11 @@ from src.impl.HackerGroup import router as HackerGroup
 from src.impl.LleidaHacker import router as LleidaHacker
 from src.impl.LleidaHackerGroup import router as LleidaHackerGroup
 from src.impl.Meal import router as Meal
+from src.impl.Event import router as Event
+from src.impl.Authentication import router as Authentication
 from src.impl.User import router as User
+from src.impl.UserConfig import router_v1 as UserConfig
+from src.impl.Hacker import router as Hacker
 
 router = APIRouter(prefix="/v1")
 
@@ -23,3 +27,4 @@ router.include_router(Meal.router)
 router.include_router(Event.router)
 router.include_router(Authentication.router)
 router.include_router(Hacker.router)
+router.include_router(UserConfig.router)

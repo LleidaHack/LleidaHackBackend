@@ -26,9 +26,9 @@ companyuser_service = CompanyUserService()
 def signup(payload: CompanyUserCreateSchema):
     new_companyuser = companyuser_service.add_company_user(payload)
 
-    access_token = AccesToken(new_companyuser).user_set(new_companyuser)
-    refresh_token = RefreshToken(new_companyuser).user_set(new_companyuser)
-    VerificationToken(new_companyuser).user_set(new_companyuser)
+    access_token = AccesToken(new_companyuser).user_set()
+    refresh_token = RefreshToken(new_companyuser).user_set()
+    VerificationToken(new_companyuser).user_set()
     return {
         "success": True,
         "user_id": new_companyuser.id,
