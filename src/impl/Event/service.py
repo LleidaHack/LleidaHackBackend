@@ -450,7 +450,7 @@ class EventService(BaseService):
             raise InvalidDataException("User not registered")
         if not user_registration.confirmed_assistance:
             user_registration.confirmed_assistance = True
-            message = "user haven't confirmed so we frced confirmation"
+            message = "user haven't confirmed so we forced confirmation"
             # raise InvalidDataException("User not confirmed assitence")
         event.participants.append(hacker)
         db.session.commit()
