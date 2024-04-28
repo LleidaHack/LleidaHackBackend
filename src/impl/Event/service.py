@@ -119,8 +119,8 @@ class EventService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         db_event = self.get_by_id(id)
-        # if db_event.archived:
-        #     raise InvalidDataException("Unable to delete an archived event, unarchive it first")
+        if db_event.archived:
+            raise InvalidDataException("Unable to delete an archived event, unarchive it first")
         db.session.delete(db_event)
         db.session.commit()
         return db_event
