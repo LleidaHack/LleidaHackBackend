@@ -113,6 +113,7 @@ class AuthenticationService(BaseService):
         user = self.user_service.get_user_by_email(email)
         if user.is_verified:
             raise InvalidDataException("User already verified")
+        AccesToken(user).user_set()
         RefreshToken(user).user_set()
         VerificationToken(user).user_set()
         send_registration_confirmation_email(user)
