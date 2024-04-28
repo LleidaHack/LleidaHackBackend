@@ -142,7 +142,7 @@ class EventService(BaseService):
         hacker = self.hacker_service.get_by_id(hacker_id)
         return hacker in event.accepted_hackers
 
-    def has_confirmed(self, id:int, hacker_id:int, data:BaseToken):
+    def has_confirmed(self, id: int, hacker_id: int, data: BaseToken):
         user_registration = db.session.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == hacker_id,
             ModelHackerRegistration.event_id == id).first()
