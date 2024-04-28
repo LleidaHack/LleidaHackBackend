@@ -119,8 +119,8 @@ class EventService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         db_event = self.get_by_id(id)
-        if db_event.archived:
-            raise InvalidDataException("Unable to delete an archived event, unarchive it first")
+        # if db_event.archived:
+        #     raise InvalidDataException("Unable to delete an archived event, unarchive it first")
         db.session.delete(db_event)
         db.session.commit()
         return db_event
@@ -169,19 +169,15 @@ class EventService(BaseService):
 
     @BaseService.needs_service(HackerService)
     def add_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.is_admin:
-            if not (data.available and
-                    (data.type == UserType.LLEIDAHACKER.value or
-                     (data.type == UserType.HACKER.value
-                      and hacker_id != data.user_id))):
-                raise Exception("Not authorized")
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check([UserType.HACKER], hacker_id):
+            raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
             raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
-        hacker = self.hacker_service.get_by_id(hacker_id)
         if not data.is_admin:
-            if event.max_participants <= len(event.hackers):
+            if event.max_participants <= len(event.registered_hackers):
                 raise Exception("Event is full")
+        hacker = self.hacker_service.get_by_id(hacker_id)
         event.registered_hackers.append(hacker)
         db.session.commit()
         db.session.refresh(event)
