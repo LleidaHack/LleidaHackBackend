@@ -50,10 +50,7 @@ class CompanyUserService(BaseService):
         if payload.image is not None:
             payload = check_image(payload)
 
-        
-        new_config = ModelUserConfig(
-            **payload.config.dict()
-        ) 
+        new_config = ModelUserConfig(**payload.config.dict())
 
         db.session.add(new_config)
         db.session.flush()
