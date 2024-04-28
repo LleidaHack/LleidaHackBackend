@@ -30,18 +30,20 @@ class EventService(BaseService):
     company_service = None
 
     def get_all(self):
-        return db.session.query(ModelEvent).filter(ModelEvent.archived == True).all()
+        return db.session.query(ModelEvent).filter(
+            ModelEvent.archived == True).all()
 
     def get_archived(self):
-        return db.session.query(ModelEvent).filter(ModelEvent.archived == False).all()
-    
+        return db.session.query(ModelEvent).filter(
+            ModelEvent.archived == False).all()
+
     def get_by_id(self, id: int) -> ModelEvent:
         event = db.session.query(ModelEvent).filter(
             ModelEvent.id == id).first()
         if event is None:
             raise NotFoundException('event not found')
         return event
-    
+
     def get_hackeps(self, year: int):
         #return and event called HackEPS year ignoring caps
         e = db.session.query(ModelEvent).filter(
@@ -50,7 +52,8 @@ class EventService(BaseService):
             return db.session.query(ModelEvent).filter(
                 ModelEvent.name.ilike(f'%HackEPS {str(year-1)}%')).first()
         return e
-    def archive(self, id:int, data:BaseToken):
+
+    def archive(self, id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
@@ -60,7 +63,7 @@ class EventService(BaseService):
         db.session.commit()
         db.session.refresh(event)
         return event
-    
+
     def unarchive(self, id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
@@ -71,7 +74,7 @@ class EventService(BaseService):
         db.session.commit()
         db.session.refresh(event)
         return event
-    
+
     @BaseService.needs_service(HackerService)
     def get_hacker_group(self, event_id: int, hacker_id: int, data: BaseToken):
         event = self.get_by_id(event_id)
@@ -108,7 +111,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         db_event = self.get_by_id(id)
         if event.archived:
-            raise InvalidDataException("Unable to update an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to update an archived event, unarchive it first")
         if event.image is not None:
             event = check_image(event)
         updated = set_existing_data(db_event, event)
@@ -120,7 +124,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         db_event = self.get_by_id(id)
         if db_event.archived:
-            raise InvalidDataException("Unable to delete an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to delete an archived event, unarchive it first")
         db.session.delete(db_event)
         db.session.commit()
         return db_event
@@ -159,7 +164,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         company = self.company_service.get_by_id(company_id)
         event.sponsors.append(company)
         db.session.commit()
@@ -177,7 +183,8 @@ class EventService(BaseService):
                 raise Exception("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         hacker = self.hacker_service.get_by_id(hacker_id)
         if not data.is_admin:
             if event.max_participants <= len(event.hackers):
@@ -194,7 +201,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         hacker_group = self.hackergroup_service.get_by_id(hacker_group_id)
         grou_hackers = [hacker.id for hacker in hacker_group.hackers]
         if not data.is_admin and (data.user_id not in grou_hackers
@@ -217,7 +225,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         company = self.company_service.get_by_id(company_id)
         company_users = [user.id for user in company.users]
         if not data.is_admin or data.user_id not in company_users:
@@ -237,7 +246,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         hacker_group = self.hackergroup_service.get_by_id(hacker_group_id)
         group_hackers = [hacker.id for hacker in hacker_group.members]
         if not data.is_admin or data.user_id not in group_hackers or hacker_group.leader_id != data.user_id:
@@ -393,7 +403,8 @@ class EventService(BaseService):
         # if data.expt < datetime.utcnow().isoformat():
         event = self.get_by_id(data.event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         user = self.hacker_service.get_by_id(data.user_id)
         user_registration = db.session.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == data.user_id,
@@ -440,7 +451,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         hacker = self.hacker_service.get_by_code(hacker_code)
         message = ''
         if hacker in event.participants:
@@ -478,7 +490,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         hacker = self.hacker_service.get_by_code(hacker_code)
         if not hacker in event.participants:
             raise InvalidDataException("Hacker not participating")
@@ -494,7 +507,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         hacker = self.hacker_service.get_by_id(hacker_id)
         if not hacker in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
@@ -520,7 +534,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         hacker = self.hacker_service.get_by_id(hacker_id)
         if not hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker not accepted")
@@ -536,7 +551,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         group = self.hackergroup_service.get_by_id(group_id)
         for hacker in group.members and hacker not in event.accepted_hackers:
             if hacker not in event.registered_hackers:
@@ -555,7 +571,8 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         hacker = self.hacker_service.get_by_id(hacker_id)
         if not hacker in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
@@ -573,12 +590,11 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
-            raise InvalidDataException("Unable to operate with an archived event, unarchive it first")
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
         group = self.hackergroup_service.get_by_id(group_id)
         for hacker in subtract_lists(group.members, event.accepted_hackers):
             if hacker not in event.registered_hackers:
                 raise InvalidDataException("Hacker not registered")
             hacker_user = self.hacker_service.get_by_id(hacker.id)
             self.accept_hacker(event.id, hacker_user.id, data)
-
-    
