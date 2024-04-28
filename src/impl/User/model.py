@@ -44,6 +44,3 @@ class User(Base):
         "polymorphic_identity": "my_user",
         "polymorphic_on": type,
     }
-
-
-#class Relationship(Base):

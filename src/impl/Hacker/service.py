@@ -74,10 +74,7 @@ class HackerService(BaseService):
         new_hacker.password = get_password_hash(payload.password)
 
         new_config = ModelUserConfig(
-            reciveNotifications=payload.config.reciveNotifications,
-            defaultLang=payload.config.defaultLang,
-            comercialNotifications=payload.config.comercialNotifications,
-            terms_and_conditions=payload.config.terms_and_conditions
+            **payload.config.dict()
         ) ##TODO 
 
         db.session.add(new_config)

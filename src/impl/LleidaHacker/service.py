@@ -53,10 +53,7 @@ class LleidaHackerService(BaseService):
 
 
         new_config = ModelUserConfig(
-            reciveNotifications=payload.config.reciveNotifications,
-            defaultLang=payload.config.defaultLang,
-            comercialNotifications=payload.config.comercialNotifications,
-            terms_and_conditions=payload.config.terms_and_conditions
+            **payload.config.dict()
         ) 
 
         db.session.add(new_config)
