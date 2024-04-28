@@ -18,7 +18,6 @@ class EventCreate(BaseSchema):
     max_participants: int
     max_group_size: int
     max_sponsors: int
-    status: int
     image: Optional[str] = None
     is_image_url: Optional[bool] = None
 
@@ -57,7 +56,6 @@ class EventGet(BaseSchema):
     max_participants: int
     max_group_size: int
     max_sponsors: int
-    status: int
     image: Optional[str] = None
     is_image_url: Optional[bool] = None
 
@@ -76,7 +74,6 @@ class EventUpdate(BaseSchema):
     price: Optional[int] = None
     max_participants: Optional[int] = None
     max_sponsors: Optional[int] = None
-    status: Optional[int] = None
     image: Optional[str] = None
     is_image_url: Optional[bool] = None
     is_open: Optional[bool] = None

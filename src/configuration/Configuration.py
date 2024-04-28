@@ -47,7 +47,6 @@ class Configuration:
         with open(Configuration._FILE) as f:
             data = yaml.safe_load(f)
             for k, v in data.items():
-            for k, v in data.items():
                 if type(v) == dict:
                     Configuration.__instanciate_nested(k, v)
                     # for kk, vv in v.items():
