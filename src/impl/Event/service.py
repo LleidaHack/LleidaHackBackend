@@ -175,7 +175,8 @@ class EventService(BaseService):
 
     @BaseService.needs_service(HackerService)
     def add_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]) or not data.check([UserType.HACKER], hacker_id):
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check(
+            [UserType.HACKER], hacker_id):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
