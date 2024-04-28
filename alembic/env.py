@@ -8,6 +8,7 @@ from src.configuration.Configuration import Configuration
 from src.utils.database import Base
 from sys import path
 from os import getcwd
+
 path.insert(0, getcwd())
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
