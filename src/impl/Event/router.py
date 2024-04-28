@@ -78,6 +78,11 @@ def is_accepted(id: int,
                 token: BaseToken = Depends(JWTBearer())):
     return event_service.is_accepted(id, hacker_id, token)
 
+@router.get("/{id}/has_confirmed/{hacker_id}")
+def has_confirmed(id: int,
+                hacker_id: int,
+                token: BaseToken = Depends(JWTBearer())):
+    return event_service.has_confirmed(id, hacker_id, token)
 
 @router.get("/{id}/meals", response_model=List[MealGetSchema])
 def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):

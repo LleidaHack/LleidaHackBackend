@@ -31,11 +31,11 @@ class EventService(BaseService):
 
     def get_all(self):
         return db.session.query(ModelEvent).filter(
-            ModelEvent.archived == True).all()
+            ModelEvent.archived == False).all()
 
     def get_archived(self):
         return db.session.query(ModelEvent).filter(
-            ModelEvent.archived == False).all()
+            ModelEvent.archived == True).all()
 
     def get_by_id(self, id: int) -> ModelEvent:
         event = db.session.query(ModelEvent).filter(
@@ -141,6 +141,12 @@ class EventService(BaseService):
         event = self.get_by_id(id)
         hacker = self.hacker_service.get_by_id(hacker_id)
         return hacker in event.accepted_hackers
+
+    def has_confirmed(self, id:int, hacker_id:int, data:BaseToken):
+        user_registration = db.session.query(ModelHackerRegistration).filter(
+            ModelHackerRegistration.user_id == hacker_id,
+            ModelHackerRegistration.event_id == id).first()
+        return user_registration.confirmed_assistance
 
     def get_event_meals(self, id: int, data: BaseToken):
         event = self.get_by_id(id)
