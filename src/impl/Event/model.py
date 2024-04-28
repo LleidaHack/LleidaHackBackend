@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from src.utils.database import Base
@@ -118,16 +118,16 @@ class Event(Base):
 
     #TODO add registered_hackers
     registered_hackers = relationship('Hacker',
-                                      secondary='hacker_event_registration', cascade='all')
+                                      secondary='hacker_event_registration')
     accepted_hackers = relationship('Hacker',
-                                    secondary='hacker_event_accepted', cascade='all')
+                                    secondary='hacker_event_accepted')
     rejected_hackers = relationship('Hacker',
-                                    secondary='hacker_event_rejected', cascade='all')
+                                    secondary='hacker_event_rejected')
     participants = relationship('Hacker',
-                                secondary='hacker_event_participation', cascade='all')
+                                secondary='hacker_event_participation')
     organizers = relationship("LleidaHacker",
-                              secondary='lleida_hacker_event_participation', cascade='all')
-    sponsors = relationship('Company', secondary='company_event_participation', cascade='all')
-    groups = relationship('HackerGroup', backref=backref('event', cascade='all'))
+                              secondary='lleida_hacker_event_participation')
+    sponsors = relationship('Company', secondary='company_event_participation')
+    groups = relationship('HackerGroup', backref='event')
     # status: int = Column(Integer, default=0)
-    meals = relationship('Meal', backref=backref('event', cascade='all'))
+    meals = relationship('Meal', backref='event')
