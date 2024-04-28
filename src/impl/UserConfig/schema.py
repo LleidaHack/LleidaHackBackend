@@ -9,6 +9,7 @@ class UserConfigCreate(BaseSchema):
     comercialNotifications: bool
     terms_and_conditions: bool
 
+
 class UserConfigGet(BaseSchema):
     defaultLang: str
 

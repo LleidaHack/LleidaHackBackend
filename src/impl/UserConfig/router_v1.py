@@ -32,8 +32,8 @@ def get(userId: int, token: BaseToken = Depends(JWTBearer())):
 
 @router.put("/{userId}")
 def update(userId: int,
-                       payload: SchemaUserConfigUpdate,
-                       token: BaseToken = Depends(JWTBearer())):
+           payload: SchemaUserConfigUpdate,
+           token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.update_user_config(userId, payload, token)
 
 
@@ -45,6 +45,6 @@ def delete_all(token: BaseToken = Depends(JWTBearer())):
     return {"message": "UserConfig deleted successfully"}
 
 
-@router.post("/userconfig_all_creator") 
+@router.post("/userconfig_all_creator")
 def create_all(token=Depends(JWTBearer())):
     return userConfig_service.create_user_configs(token)
