@@ -104,7 +104,9 @@ class AuthenticationService(BaseService):
             raise AuthenticationException(
                 "User don'have permissions to do this")
         self.user_service._verify_user(user_id)
-        return {"success": True}
+        user = self.user_service.get_by_id(user_id)
+        AccesToken(user).user_set()
+        return {"success": True, 'token': user.token}
 
     @BaseService.needs_service(U_S.UserService)
     def resend_verification(self, email: str):
