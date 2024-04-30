@@ -145,7 +145,7 @@ class EventService(BaseService):
         hacker = self.hacker_service.get_by_id(hacker_id)
         return hacker in event.accepted_hackers
 
-    def has_confirmed(self, id:int, hacker_id:int, data:BaseToken):
+    def has_confirmed(self, id: int, hacker_id: int, data: BaseToken):
         user_registration = db.session.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == hacker_id,
             ModelHackerRegistration.event_id == id).first()
@@ -183,7 +183,8 @@ class EventService(BaseService):
         return event
 
     @BaseService.needs_service(UserService)
-    def add_hacker(self, event_id: int, hacker_id: int, payload:HackerEventRegistrationSchema, data: BaseToken):
+    def add_hacker(self, event_id: int, hacker_id: int,
+                   payload: HackerEventRegistrationSchema, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) or not data.check(
             [UserType.HACKER], hacker_id):
             raise AuthenticationException("Not authorized")
@@ -197,7 +198,9 @@ class EventService(BaseService):
         hacker = self.user_service.get_by_id(hacker_id)
         if hacker in event.registered_hackers:
             raise InvalidDataException('Hacker already registered')
-        reg = ModelHackerRegistration(**payload.dict(), user_id=hacker_id, event_id=event_id)
+        reg = ModelHackerRegistration(**payload.dict(),
+                                      user_id=hacker_id,
+                                      event_id=event_id)
         db.session.add(reg)
         db.session.commit()
         db.session.refresh(event)
