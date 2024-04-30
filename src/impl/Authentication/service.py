@@ -109,7 +109,7 @@ class AuthenticationService(BaseService):
         RefreshToken(user).user_set()
         return {
             "success": True,
-            'acces_token': user.token,
+            'access_token': user.token,
             'refresh_token': user.refresh_token
         }
 
