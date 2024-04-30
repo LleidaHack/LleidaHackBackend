@@ -67,15 +67,17 @@ class UserConfigService(BaseService):
     def update_user_config(self, config_id: int,
                            payload: SchemaUserConfigUpdate, data: BaseToken):
         userConfig = self.get_by_id(config_id)
+        user_id = db.session.query(User).filter(
+            User.config_id == config_id).first().id
 
         if not data.check(
             [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
-                userConfig.user_id):
+                user_id):
             raise AuthenticationException("Not authorized")
 
-        userConfig.reciveNotifications = payload.reciveNotifications
-        userConfig.defaultLang = payload.defaultLang
-        userConfig.comercialNotifications = payload.comercialNotifications
+        userConfig.recive_notifications = payload.recive_notifications
+        userConfig.default_lang = payload.default_lang
+        userConfig.comercial_notifications = payload.comercial_notifications
         db.session.commit()
         db.session.refresh(userConfig)
         return userConfig

@@ -192,14 +192,14 @@ class AccesToken(BaseToken):
     is_verified: bool = False
     available: bool = True
 
-    def __init__(self, user: UserModel):
+    def init(self, user: UserModel):
         self.type = TokenType.ACCESS.value
-        super().__init__(user)
+        super().init(user)
         if user is None:
             return
         self.is_verified = user.is_verified
         if self.user_type == UserType.HACKER.value:
-            self.available = not bool(user.banned)
+            self.available = not bool(user.banned) and self.is_verified
         elif user.type == UserType.LLEIDAHACKER.value:
             self.available = user.active and user.accepted and not user.rejected
         else:
