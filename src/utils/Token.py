@@ -194,9 +194,9 @@ class AccesToken(BaseToken):
     is_verified: bool = False
     available: bool = True
 
-    def init(self, user: UserModel):
+    def __init__(self, user: UserModel):
         self.type = TokenType.ACCESS.value
-        super().init(user)
+        super().__init__(user)
         if user is None:
             return
         self.is_verified = user.is_verified
