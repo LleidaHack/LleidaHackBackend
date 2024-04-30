@@ -15,7 +15,7 @@ class Company(Base):
     telephone: str = Column(String)
     website: str = Column(String)
     image: str = Column(String)
-    # is_image_url: bool = Column(Boolean, default=False) 
+    # is_image_url: bool = Column(Boolean, default=False)
     linkdin: str = Column(String)
     leader_id: int = Column(Integer, ForeignKey('my_user.id'))
     users = relationship('User', secondary='company_user')

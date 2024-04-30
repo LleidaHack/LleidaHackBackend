@@ -33,7 +33,8 @@ class User(Base):
     config_id = Column(Integer, ForeignKey(UserConfig.id))
     config = relationship('UserConfig',
                           foreign_keys=[config_id],
-                          backref=backref('user', cascade='all, delete-orphan') ,
+                          backref=backref('user',
+                                          cascade='all, delete-orphan'),
                           uselist=False)
     token: str = Column(String, default="")
     refresh_token: str = Column(String, default="")

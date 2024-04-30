@@ -81,7 +81,7 @@ class UserGetAll(UserGet):
     is_verified: bool
     code: str
     type: str
-    config: UserConfigGetAll 
+    config: UserConfigGetAll
 
 
 class UserUpdate(BaseSchema):

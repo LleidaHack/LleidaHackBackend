@@ -113,21 +113,42 @@ class Event(Base):
     max_participants: int = Column(Integer)
     max_sponsors: int = Column(Integer)
     image: str = Column(String)
-    #is_image_url: bool = Column(Boolean, default=False) 
+    #is_image_url: bool = Column(Boolean, default=False)
     is_open: bool = Column(Boolean, default=True)
 
     #TODO add registered_hackers
-    registered_hackers = relationship('Hacker',
-                                      secondary='hacker_event_registration')
-    accepted_hackers = relationship('Hacker',
-                                    secondary='hacker_event_accepted')
-    rejected_hackers = relationship('Hacker',
-                                    secondary='hacker_event_rejected')
-    participants = relationship('Hacker',
-                                secondary='hacker_event_participation')
+    # registered_hackers = relationship('Hacker',
+    #                                   secondary='hacker_event_registration', uselist = True)
+    registered_hackers = relationship(
+        'User',
+        secondary='hacker_event_registration',
+        primaryjoin="Event.id==hacker_event_registration.c.event_id",
+        secondaryjoin="User.id==hacker_event_registration.c.user_id",
+        uselist=True)
+    accepted_hackers = relationship(
+        'User',
+        secondary='hacker_event_accepted',
+        primaryjoin="Event.id==hacker_event_accepted.c.event_id",
+        secondaryjoin="User.id==hacker_event_accepted.c.user_id",
+        uselist=True)
+    rejected_hackers = relationship(
+        'User',
+        secondary='hacker_event_rejected',
+        primaryjoin="Event.id==hacker_event_rejected.c.event_id",
+        secondaryjoin="User.id==hacker_event_rejected.c.user_id",
+        uselist=True)
+    participants = relationship(
+        'User',
+        secondary='hacker_event_participation',
+        primaryjoin="Event.id==hacker_event_participation.c.event_id",
+        secondaryjoin="User.id==hacker_event_participation.c.user_id",
+        uselist=True)
     organizers = relationship("LleidaHacker",
-                              secondary='lleida_hacker_event_participation')
-    sponsors = relationship('Company', secondary='company_event_participation')
+                              secondary='lleida_hacker_event_participation',
+                              uselist=True)
+    sponsors = relationship('Company',
+                            secondary='company_event_participation',
+                            uselist=True)
     groups = relationship('HackerGroup', backref='event')
     # status: int = Column(Integer, default=0)
     meals = relationship('Meal', backref='event')

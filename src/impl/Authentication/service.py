@@ -106,7 +106,12 @@ class AuthenticationService(BaseService):
         self.user_service._verify_user(user_id)
         user = self.user_service.get_by_id(user_id)
         AccesToken(user).user_set()
-        return {"success": True, 'token': user.token}
+        RefreshToken(user).user_set()
+        return {
+            "success": True,
+            'acces_token': user.token,
+            'refresh_token': user.refresh_token
+        }
 
     @BaseService.needs_service(U_S.UserService)
     def resend_verification(self, email: str):

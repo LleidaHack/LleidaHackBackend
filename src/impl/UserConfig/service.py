@@ -94,18 +94,18 @@ class UserConfigService(BaseService):
         db.session.commit()
 
     def create_user_configs(self, data: BaseToken):
-        
+
         if not data.is_admin:
             raise AuthenticationException("Not authorized")
 
         success_count = 0
         failed_count = 0
-       
-        user_config = ModelUserConfig(  defaultLang="ca-CA",
-                                        comercialNotifications=True,
-                                        reciveNotifications=True,
-                                        terms_and_conditions=True)
-            
+
+        user_config = ModelUserConfig(defaultLang="ca-CA",
+                                      comercialNotifications=True,
+                                      reciveNotifications=True,
+                                      terms_and_conditions=True)
+
         users = db.session.query(User).all().sortBy(User.id)
         for u in users:
             db.session.add(user_config)

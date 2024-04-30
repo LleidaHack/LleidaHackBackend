@@ -73,9 +73,7 @@ class HackerService(BaseService):
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)
 
-        new_config = ModelUserConfig(
-            **payload.config.dict()
-        ) ##TODO 
+        new_config = ModelUserConfig(**payload.config.dict())  ##TODO
 
         db.session.add(new_config)
         db.session.flush()

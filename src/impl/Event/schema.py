@@ -1,5 +1,5 @@
 # from __future__ import annotations
-from datetime import date
+from datetime import datetime
 from typing import Optional
 
 from pydantic import field_validator
@@ -10,8 +10,8 @@ from src.utils.Base.BaseSchema import BaseSchema
 class EventCreate(BaseSchema):
     name: str
     description: str
-    start_date: date
-    end_date: date
+    start_date: datetime
+    end_date: datetime
     location: str
     archived: bool
     price: int
@@ -19,7 +19,7 @@ class EventCreate(BaseSchema):
     max_group_size: int
     max_sponsors: int
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None 
+    #is_image_url: Optional[bool] = None
 
     # start_time: Time = Column(Time, default=func.now())
 
@@ -48,8 +48,8 @@ class EventCreate(BaseSchema):
 class EventGet(BaseSchema):
     name: str
     description: str
-    start_date: date
-    end_date: date
+    start_date: datetime
+    end_date: datetime
     location: str
     archived: bool
     price: int
@@ -57,7 +57,7 @@ class EventGet(BaseSchema):
     max_group_size: int
     max_sponsors: int
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None 
+    #is_image_url: Optional[bool] = None
 
 
 class EventGetAll(EventGet):
@@ -67,15 +67,15 @@ class EventGetAll(EventGet):
 class EventUpdate(BaseSchema):
     name: Optional[str] = None
     description: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     location: Optional[str] = None
     archived: Optional[bool] = None
     price: Optional[int] = None
     max_participants: Optional[int] = None
     max_sponsors: Optional[int] = None
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None 
+    #is_image_url: Optional[bool] = None
     is_open: Optional[bool] = None
     max_group_size: Optional[int] = None
 
