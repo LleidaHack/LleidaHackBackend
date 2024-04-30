@@ -9,6 +9,7 @@ from src.impl.Company.service import CompanyService
 from src.impl.Event.model import Event as ModelEvent
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
 from src.impl.Event.schema import EventCreate as EventCreateSchema
+from src.impl.Event.schema import HackerEventRegistration as HackerEventRegistrationSchema
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Event.schema import EventGetAll as EventGetAllSchema
 from src.impl.Event.schema import EventUpdate as EventUpdateSchema
@@ -16,6 +17,7 @@ from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.impl.User.service import UserService
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import (check_image, set_existing_data,
                                      subtract_lists)
@@ -27,6 +29,7 @@ class EventService(BaseService):
     name = 'event_service'
     hackergroup_service = None
     hacker_service = None
+    user_service = None
     company_service = None
 
     def get_all(self):
@@ -142,7 +145,7 @@ class EventService(BaseService):
         hacker = self.hacker_service.get_by_id(hacker_id)
         return hacker in event.accepted_hackers
 
-    def has_confirmed(self, id: int, hacker_id: int, data: BaseToken):
+    def has_confirmed(self, id:int, hacker_id:int, data:BaseToken):
         user_registration = db.session.query(ModelHackerRegistration).filter(
             ModelHackerRegistration.user_id == hacker_id,
             ModelHackerRegistration.event_id == id).first()
@@ -179,8 +182,8 @@ class EventService(BaseService):
         db.session.refresh(company)
         return event
 
-    @BaseService.needs_service(HackerService)
-    def add_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
+    @BaseService.needs_service(UserService)
+    def add_hacker(self, event_id: int, hacker_id: int, payload:HackerEventRegistrationSchema, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) or not data.check(
             [UserType.HACKER], hacker_id):
             raise AuthenticationException("Not authorized")
@@ -188,15 +191,16 @@ class EventService(BaseService):
         if event.archived:
             raise InvalidDataException(
                 "Unable to operate with an archived event, unarchive it first")
-        hacker = self.hacker_service.get_by_id(hacker_id)
         if not data.is_admin:
             if event.max_participants <= len(event.registered_hackers):
-                raise Exception("Event is full")
-        hacker = self.hacker_service.get_by_id(hacker_id)
-        event.registered_hackers.append(hacker)
+                raise InvalidDataException("Event is full")
+        hacker = self.user_service.get_by_id(hacker_id)
+        if hacker in event.registered_hackers:
+            raise InvalidDataException('Hacker already registered')
+        reg = ModelHackerRegistration(**payload.dict(), user_id=hacker_id, event_id=event_id)
+        db.session.add(reg)
         db.session.commit()
         db.session.refresh(event)
-        db.session.refresh(hacker)
         return event
 
     @BaseService.needs_service('HackerGroupService')

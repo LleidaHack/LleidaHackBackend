@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Response
 from src.configuration.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet as CompanyGetSchema
-from src.impl.Event.schema import EventCreate as EventCreateSchema
+from src.impl.Event.schema import EventCreate as EventCreateSchema, HackerEventRegistration
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Event.schema import EventGetAll as EventGetAllSchema
 from src.impl.Event.schema import EventUpdate as EventUpdateSchema
@@ -124,8 +124,9 @@ def remove_group(id: int,
 @router.put("/{id}/register/{hacker_id}")
 def register_hacker(id: int,
                     hacker_id: int,
+                    payload: HackerEventRegistration,
                     token: BaseToken = Depends(JWTBearer())):
-    event = event_service.add_hacker(id, hacker_id, token)
+    event = event_service.add_hacker(id, hacker_id, payload, token)
     return {'success': True, 'event_id': event.id, 'user_id': hacker_id}
 
 
