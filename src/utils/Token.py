@@ -130,10 +130,11 @@ class BaseToken:
     def decode(token):
         try:
             return jwt.decode(token.encode('utf-8'),
-                          SECRET_KEY,
-                          algorithms=[ALGORITHM])
+                              SECRET_KEY,
+                              algorithms=[ALGORITHM])
         except:
             raise Exception(f'Error decoding token with the token({token})')
+
     # @classmethod
     def encode(dict):
         return jwt.encode(dict, SECRET_KEY, algorithm=ALGORITHM)
