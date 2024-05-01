@@ -4,24 +4,24 @@ from src.utils.Base.BaseSchema import BaseSchema
 
 
 class UserConfigCreate(BaseSchema):
-    reciveNotifications: bool
-    defaultLang: str
-    comercialNotifications: bool
+    recive_notifications: bool
+    default_lang: str
+    comercial_notifications: bool
     terms_and_conditions: bool
 
 
 class UserConfigGet(BaseSchema):
-    defaultLang: str
+    default_lang: str
 
 
 class UserConfigGetAll(UserConfigGet):
     id: int
-    comercialNotifications: bool
-    reciveNotifications: bool
+    comercial_notifications: bool
+    recive_notifications: bool
     terms_and_conditions: bool
 
 
 class UserConfigUpdate(BaseSchema):
-    reciveNotifications: Optional[bool]
-    defaultLang: Optional[str]
-    comercialNotifications: Optional[bool]
+    recive_notifications: Optional[bool]
+    default_lang: Optional[str]
+    comercial_notifications: Optional[bool]
