@@ -23,4 +23,8 @@ class HackerGroup(Base):
                             nullable=False)
     event_id = Column(Integer, ForeignKey('event.id'), nullable=False)
     # event: Event = relationship('Event', secondary='hacker_event')
-    members = relationship('Hacker', secondary='hacker_group_user')
+    members = relationship('User',
+                           secondary='hacker_group_user',
+                           primaryjoin="HackerGroup.id==hacker_group_user.c.group_id",
+                           secondaryjoin="User.id==hacker_group_user.c.hacker_id",
+                           uselist=True)

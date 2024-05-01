@@ -13,6 +13,7 @@ class HackerGroupCreate(BaseSchema):
 
 
 class HackerGroupGet(BaseSchema):
+    id: int
     name: str
     description: str
     leader_id: int
@@ -20,6 +21,7 @@ class HackerGroupGet(BaseSchema):
 
 
 class HackerGroupGetAll(HackerGroupGet):
+    code: str
     pass
 
 
