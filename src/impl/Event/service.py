@@ -150,7 +150,7 @@ class EventService(BaseService):
             ModelHackerRegistration.user_id == hacker_id,
             ModelHackerRegistration.event_id == id).first()
         return user_registration.confirmed_assistance
-    
+
     @BaseService.needs_service(HackerService)
     def is_participant(self, id: int, hacker_id: int, data: BaseToken):
         event = self.get_by_id(id)
