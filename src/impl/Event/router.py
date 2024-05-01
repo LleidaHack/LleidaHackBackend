@@ -85,11 +85,13 @@ def has_confirmed(id: int,
                   token: BaseToken = Depends(JWTBearer())):
     return event_service.has_confirmed(id, hacker_id, token)
 
+
 @router.get("/{id}/is_participant/{hacker_id}")
 def is_participant(id: int,
-                  hacker_id: int,
-                  token: BaseToken = Depends(JWTBearer())):
+                   hacker_id: int,
+                   token: BaseToken = Depends(JWTBearer())):
     return event_service.is_participant(id, hacker_id, token)
+
 
 @router.get("/{id}/meals", response_model=List[MealGetSchema])
 def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):
