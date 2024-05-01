@@ -28,6 +28,7 @@ class BaseToken:
     email: str = ''
     user_type: str = ''
     is_admin: bool = False
+    available: bool = True
     user_service = UserService()
 
     # def check_token(available_users: List[UserType], user_id: int = None):

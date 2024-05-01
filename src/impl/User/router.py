@@ -27,7 +27,7 @@ def get_all(token: BaseToken = Depends(JWTBearer())):
     return user_service.get_all()
 
 
-@router.get("/{userId}", response_model=Union[UserGetSchema, UserGetAllSchema])
+@router.get("/{userId}", response_model=Union[UserGetAllSchema, UserGetSchema])
 def get(userId: int, token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user(userId, token)
 
