@@ -30,6 +30,12 @@ def get(userId: int, token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.get_user_config(userId, token)
 
 
+@router.get("/get_by_user_id/{userId}",
+            response_model=Union[SchemaUserConfigGetAll, SchemaUserConfigGet])
+def get(userId: int, token: BaseToken = Depends(JWTBearer())):
+    return userConfig_service.get_by_user_id(userId, token)
+
+
 @router.put("/{userId}")
 def update(userId: int,
            payload: SchemaUserConfigUpdate,

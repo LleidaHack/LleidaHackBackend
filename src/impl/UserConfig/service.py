@@ -30,26 +30,29 @@ class UserConfigService(BaseService):
         if config is None:
             raise NotFoundException("User config not found")
         return config
+    ##TODO: Esto esta mal!! Estan meszclados los parametros de búsqueda entre user id y config id...
 
     def get_by_user_id(self, user_id: int):
-        config = db.session.query(ModelUserConfig).filter(
+        user = db.session.query(ModelUserConfig).filter(
             ModelUserConfig.user_id == user_id).first()
+        config = user.config
         if config is None:
             raise NotFoundException("User config not found")
         return config
 
-    def get_user_config(self, userId: int, data: BaseToken):
+    def get_user_config(self, config_id: int, data: BaseToken):
+        userId = db.session.query(User).filter(
+            User.config_id == config_id).first().id
         if not data.check(
             [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
                 userId):
             raise AuthenticationException("Not authorized")
 
-        userConfig = self.get_by_user_id(userId)
+        userConfig = self.get_by_id(config_id)
         if data.check(
             [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
                 userId):
             return parse_obj_as(SchemaUserConfigGetAll, userConfig)
-
         return parse_obj_as(SchemaUserConfigGet, userConfig)
 
     def get_all_users_config(self, data: BaseToken):
