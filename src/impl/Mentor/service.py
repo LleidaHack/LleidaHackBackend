@@ -3,8 +3,10 @@ from src.utils.Base.BaseService import BaseService
 
 
 class MentorService(BaseService):
-    def _get_by_id(self, id:int):
-        out = db.session.query(MentorModel).filter(MentorModel.id == id).first()
+
+    def _get_by_id(self, id: int):
+        out = db.session.query(MentorModel).filter(
+            MentorModel.id == id).first()
         if out is None:
-            raise 
+            raise
         return out

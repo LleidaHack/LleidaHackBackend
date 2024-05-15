@@ -3,6 +3,7 @@ from src.impl.User.model import User
 from src.utils import UserType
 from sqlalchemy.orm import relationship
 
+
 class Mentor(User):
     __tablename__ = 'mentor'
     user_id = Column(Integer, ForeignKey('my_user.id'), primary_key=True)
