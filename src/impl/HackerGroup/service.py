@@ -48,6 +48,7 @@ class HackerGroupService(BaseService):
             if group is None:
                 raise NotFoundException("Hacker group not found")
         return group
+
     def generate_group_code(self):
         code = ''
         while True:
@@ -56,6 +57,7 @@ class HackerGroupService(BaseService):
             if code_exists is None:
                 break
         return code
+
     def get_hacker_group(self, id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
             raise AuthenticationException("Not authorized")
@@ -74,7 +76,8 @@ class HackerGroupService(BaseService):
             raise AuthenticationException("Not authorized")
         members = []
         # event = self.event_service.get_by_id(payload.event_id)
-        if not self.event_service.is_registered(payload.event_id, payload.leader_id, data):
+        if not self.event_service.is_registered(payload.event_id,
+                                                payload.leader_id, data):
             raise InvalidDataException('Hacker Not registered to event')
         if data.user_type == UserType.HACKER.value:
             hacker = self.hacker_service.get_by_id(data.user_id)
@@ -154,7 +157,7 @@ class HackerGroupService(BaseService):
             raise AuthenticationException("Not authorized")
         group = self.get_by_code(code)
         hacker = self.hacker_service.get_by_id(hackerId)
-        
+
         event = self.event_service.get_by_id(group.event_id)
         self._add_hacker_to_group(group, hacker, event)
         return group
