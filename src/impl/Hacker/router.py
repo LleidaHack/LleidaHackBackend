@@ -3,7 +3,7 @@ from typing import List, Union
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from services.mail import send_registration_confirmation_email
+# from services.mail import send_registration_confirmation_email
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Hacker.schema import HackerCreate as HackerCreateSchema
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
@@ -31,7 +31,7 @@ def signup(payload: HackerCreateSchema):
     access_token = AccesToken(new_hacker).user_set()
     refresh_token = RefreshToken(new_hacker).user_set()
     VerificationToken(new_hacker).user_set()
-    send_registration_confirmation_email(new_hacker)
+    # send_registration_confirmation_email(new_hacker)
     return {
         "success": True,
         "user_id": new_hacker.id,

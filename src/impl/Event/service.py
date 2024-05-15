@@ -1,7 +1,7 @@
 from fastapi_sqlalchemy import db
 
 # from src.impl.HackerGroup.service import HackerGroupService
-from services.mail import send_event_accepted_email
+# from services.mail import send_event_accepted_email
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException

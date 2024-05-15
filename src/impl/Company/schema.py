@@ -26,7 +26,7 @@ class CompanyGet(BaseSchema):
 
 
 class CompanyGetAll(CompanyGet):
-    pass
+    id: int
 
 
 class CompanyUpdate(BaseSchema):

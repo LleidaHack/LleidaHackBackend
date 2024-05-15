@@ -133,7 +133,7 @@ class BaseToken:
             return jwt.decode(token.encode('utf-8'),
                               SECRET_KEY,
                               algorithms=[ALGORITHM])
-        except:
+        except Exception as e:
             raise Exception(f'Error decoding token with the token({token})')
 
     # @classmethod

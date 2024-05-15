@@ -3,7 +3,7 @@ from typing import List, Union
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from services.mail import send_registration_confirmation_email
+# from services.mail import send_registration_confirmation_email
 from src.impl.LleidaHacker.schema import \
     LleidaHackerCreate as LleidaHackerCreateSchema
 from src.impl.LleidaHacker.schema import \
@@ -31,7 +31,7 @@ def signup(payload: LleidaHackerCreateSchema):
     access_token = AccesToken(new_lleidahacker).user_set()
     refresh_token = RefreshToken(new_lleidahacker).user_set()
     VerificationToken(new_lleidahacker).user_set()
-    send_registration_confirmation_email(new_lleidahacker)
+    # send_registration_confirmation_email(new_lleidahacker)
     return {
         "success": True,
         "user_id": new_lleidahacker.id,

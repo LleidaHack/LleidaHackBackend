@@ -3,8 +3,8 @@ from datetime import datetime
 from fastapi_sqlalchemy import db
 
 import src.impl.User.service as U_S
-from services.mail import (send_contact_email, send_password_reset_email,
-                           send_registration_confirmation_email)
+# from services.mail import (send_contact_email, send_password_reset_email,
+#                            send_registration_confirmation_email)
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InputException import InputException
 from src.error.InvalidDataException import InvalidDataException
@@ -62,7 +62,7 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("User not verified")
         self.create_access_and_refresh_token(user)
         ResetPassToken(user).user_set()
-        send_password_reset_email(user)
+        # send_password_reset_email(user)
         return {"success": True}
 
     @BaseService.needs_service(U_S.UserService)
@@ -105,12 +105,12 @@ class AuthenticationService(BaseService):
                 "User don'have permissions to do this")
         self.user_service._verify_user(user_id)
         user = self.user_service.get_by_id(user_id)
-        AccesToken(user).user_set()
-        RefreshToken(user).user_set()
+        a = AccesToken(user).user_set()
+        r = RefreshToken(user).user_set()
         return {
             "success": True,
-            'access_token': user.token,
-            'refresh_token': user.refresh_token
+            'access_token': a,
+            'refresh_token': r
         }
 
     @BaseService.needs_service(U_S.UserService)
@@ -121,9 +121,9 @@ class AuthenticationService(BaseService):
         AccesToken(user).user_set()
         RefreshToken(user).user_set()
         VerificationToken(user).user_set()
-        send_registration_confirmation_email(user)
+        # send_registration_confirmation_email(user)
         return {"success": True}
 
     def contact(name: str, email: str, title: str, message: str):
-        send_contact_email(name, email, title, message)
+        # send_contact_email(name, email, title, message)
         return {"success": True}

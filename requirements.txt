@@ -19,4 +19,4 @@ fastapi==latest
 fastapi-mail==latest
 python-dateutil==latest
 fastapi-sqlalchemy==latest
-pyjwt==latest
+pyjwt==2.8.0

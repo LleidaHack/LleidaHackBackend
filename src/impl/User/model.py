@@ -1,7 +1,7 @@
 from datetime import date
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, deferred, relationship, backref
+from sqlalchemy.orm import relationship, backref
 
 from src.impl.UserConfig.model import UserConfig
 from src.utils.database import Base
@@ -14,13 +14,13 @@ class User(Base):
     is_deleted: bool = Column(Boolean, default=False)
     name: str = Column(String)
     nickname: str = Column(String, unique=True, index=True)
-    password: str = (Column(String))
+    password: str = Column(String)
     birthdate: date = Column(DateTime)
-    food_restrictions: str = (Column(String))
+    food_restrictions: str = Column(String)
     email: str = Column(String, unique=True, index=True)
     telephone: str = Column(String, unique=True, index=True)
     address: str = Column(String)
-    shirt_size: str = (Column(String))
+    shirt_size: str = Column(String)
     type: str = Column(String)
     created_at: date = Column(DateTime, default=date.today())
     updated_at: date = Column(DateTime, default=date.today())

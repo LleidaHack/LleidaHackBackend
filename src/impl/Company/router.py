@@ -28,7 +28,7 @@ def get_all():
 @router.post("/")
 def add(payload: CompanyCreateSchema, token: BaseToken = Depends(JWTBearer())):
     new_company = company_service.add_company(payload, token)
-    return {"success": True, "user_id": new_company.id}
+    return {"success": True, "id": new_company.id}
 
 
 @router.get("/{companyId}",
