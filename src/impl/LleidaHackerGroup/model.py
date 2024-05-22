@@ -1,10 +1,10 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from src.utils.database import Base
+from src.utils.Base.BaseModel import BaseModel
 
 
-class LleidaHackerGroupUser(Base):
+class LleidaHackerGroupUser(BaseModel):
     __tablename__ = 'lleida_hacker_group_user'
     group_id = Column(Integer,
                       ForeignKey('lleida_hacker_group.id'),
@@ -14,7 +14,7 @@ class LleidaHackerGroupUser(Base):
                      primary_key=True)
 
 
-class LleidaHackerGroup(Base):
+class LleidaHackerGroup(BaseModel):
     __tablename__ = 'lleida_hacker_group'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)

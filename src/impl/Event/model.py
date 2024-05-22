@@ -6,10 +6,10 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from src.utils.database import Base
+from src.utils.Base.BaseModel import BaseModel
 
 
-class HackerParticipation(Base):
+class HackerParticipation(BaseModel):
     __tablename__ = "hacker_event_participation"
     user_id = Column(Integer,
                      ForeignKey("hacker.user_id"),
@@ -21,7 +21,7 @@ class HackerParticipation(Base):
                       index=True)
 
 
-class HackerRegistration(Base):
+class HackerRegistration(BaseModel):
     __tablename__ = "hacker_event_registration"
     user_id = Column(Integer,
                      ForeignKey("hacker.user_id"),
@@ -47,7 +47,7 @@ class HackerRegistration(Base):
     # accepted: bool = Column(Boolean, default=False)
 
 
-class HackerAccepted(Base):
+class HackerAccepted(BaseModel):
     __tablename__ = "hacker_event_accepted"
     user_id = Column(Integer,
                      ForeignKey("hacker.user_id"),
@@ -60,7 +60,7 @@ class HackerAccepted(Base):
     # accepted: bool = Column(Boolean, default=False)
 
 
-class HackerRejected(Base):
+class HackerRejected(BaseModel):
     __tablename__ = "hacker_event_rejected"
     user_id = Column(Integer,
                      ForeignKey("hacker.user_id"),
@@ -73,7 +73,7 @@ class HackerRejected(Base):
     # accepted: bool = Column(Boolean, default=False)
 
 
-class LleidaHackerParticipation(Base):
+class LleidaHackerParticipation(BaseModel):
     __tablename__ = "lleida_hacker_event_participation"
     user_id = Column(Integer,
                      ForeignKey("lleida_hacker.user_id"),
@@ -85,7 +85,7 @@ class LleidaHackerParticipation(Base):
                       index=True)
 
 
-class CompanyParticipation(Base):
+class CompanyParticipation(BaseModel):
     __tablename__ = "company_event_participation"
     company_id = Column(Integer,
                         ForeignKey("company.id"),
@@ -97,7 +97,7 @@ class CompanyParticipation(Base):
                       index=True)
 
 
-class Event(Base):
+class Event(BaseModel):
     __tablename__ = 'event'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)

@@ -1,8 +1,8 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from src.utils.database import Base
+from src.utils.Base.BaseModel import BaseModel
 
 
-class UserRegistration(Base):
+class UserRegistration(BaseModel):
     __tablename__ = "user_event_registration"
     user_id = Column(Integer,
                      ForeignKey("my_user.id"),

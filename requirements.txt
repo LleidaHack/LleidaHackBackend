@@ -5,7 +5,7 @@ fastapi-sqlalchemy==latest
 starlette==latest
 pydantic==latest
 alembic==latest
-sqlalchemy==latest
+sqlalchemy==2.0.30
 sqlalchemy-utils==latest
 gunicorn==latest
 python-jose[cryptography]==latest
