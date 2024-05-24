@@ -26,7 +26,7 @@ class AuthenticationService(BaseService):
     lleidaHacker_service = None
     companyUser_service = None
     mail_client: MailClient = None
-    
+
     def create_access_and_refresh_token(self, user: ModelUser):
         access_token = AccesToken(user)
         refresh_token = RefreshToken(user)
@@ -66,9 +66,11 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("User not verified")
         self.create_access_and_refresh_token(user)
         reset_pass_token = ResetPassToken(user).user_set()
-        mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.RESET_PASSWORD),
-                                                       subject = 'Your User Hacker was created',
-                                                       fields = f'{user.name},{reset_pass_token}'))
+        mail = self.mail_client.create_mail(
+            MailCreate(template_id=self.mail_client.get_internall_template_id(
+                InternalTemplate.RESET_PASSWORD),
+                       subject='Your User Hacker was created',
+                       fields=f'{user.name},{reset_pass_token}'))
         self.mail_client.send_mail_by_id(mail.id)
         return {"success": True}
 
@@ -126,10 +128,15 @@ class AuthenticationService(BaseService):
         VerificationToken(user).user_set()
         # send_registration_confirmation_email(user)
         return {"success": True}
-    
+
     @BaseClient.needs_client(MailClient)
     def contact(self, name: str, email: str, title: str, message: str):
-        mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.CONTACT),
-                                                       subject = 'Your User Hacker was created',
-                                                       fields = f'{name},{email},{title},{message}'))
-        return {"success": mail is not None, 'id': mail.id if mail is not None else None}
+        mail = self.mail_client.create_mail(
+            MailCreate(template_id=self.mail_client.get_internall_template_id(
+                InternalTemplate.CONTACT),
+                       subject='Your User Hacker was created',
+                       fields=f'{name},{email},{title},{message}'))
+        return {
+            "success": mail is not None,
+            'id': mail.id if mail is not None else None
+        }

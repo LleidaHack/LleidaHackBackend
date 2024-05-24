@@ -35,9 +35,11 @@ def signup(payload: HackerCreateSchema):
     access_token = AccesToken(new_hacker).user_set()
     refresh_token = RefreshToken(new_hacker).user_set()
     verification_token = VerificationToken(new_hacker).user_set()
-    mail = mail_client.create_mail(MailCreate(template_id = mail_client.get_internall_template_id(InternalTemplate.USER_CREATED),
-                                              subject = 'Your User Hacker was created',
-                                              fields = f'{new_hacker.name},{verification_token}'))
+    mail = mail_client.create_mail(
+        MailCreate(template_id=mail_client.get_internall_template_id(
+            InternalTemplate.USER_CREATED),
+                   subject='Your User Hacker was created',
+                   fields=f'{new_hacker.name},{verification_token}'))
     mail_client.send_mail_by_id(mail.id)
     return {
         "success": True,

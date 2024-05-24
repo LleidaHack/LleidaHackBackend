@@ -1,8 +1,8 @@
 import importlib
 from typing import Any, overload
 
-from generated_src.lleida_hack_mail_api_client.client import (AuthenticatedClient,
-                                                              Client)
+from generated_src.lleida_hack_mail_api_client.client import (
+    AuthenticatedClient, Client)
 from src.utils.Singleton import Singleton
 
 

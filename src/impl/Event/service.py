@@ -211,9 +211,11 @@ class EventService(BaseService):
         reg = ModelHackerRegistration(**payload.dict(),
                                       user_id=hacker_id,
                                       event_id=event_id)
-        mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.EVENT_HACKER_REGISTERED),
-                                                       subject = f'Your have registered to {event.name}',
-                                                       fields = f'{hacker.name}'))
+        mail = self.mail_client.create_mail(
+            MailCreate(template_id=self.mail_client.get_internall_template_id(
+                InternalTemplate.EVENT_HACKER_REGISTERED),
+                       subject=f'Your have registered to {event.name}',
+                       fields=f'{hacker.name}'))
         db.session.add(reg)
         db.session.commit()
         db.session.refresh(event)
@@ -547,12 +549,14 @@ class EventService(BaseService):
         token = AssistenceToken(hacker, event.id).to_token()
         hacker_registration.confirm_assistance_token = token
         event.accepted_hackers.append(hacker)
-        
-        mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.EVENT_HACKER_ACCEPTED),
-                                                       subject = 'You have been accepted',
-                                                       reciver_id=hacker.id,
-                                                       receiver_mail=f'{hacker.mail}',
-                                                       fields = f'{hacker.name},{event.name},5,{token}'))
+
+        mail = self.mail_client.create_mail(
+            MailCreate(template_id=self.mail_client.get_internall_template_id(
+                InternalTemplate.EVENT_HACKER_ACCEPTED),
+                       subject='You have been accepted',
+                       reciver_id=hacker.id,
+                       receiver_mail=f'{hacker.mail}',
+                       fields=f'{hacker.name},{event.name},5,{token}'))
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)

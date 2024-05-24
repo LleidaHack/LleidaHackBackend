@@ -29,6 +29,7 @@ from src.utils.UserType import UserType
 
 class HackerService(BaseService):
     name = 'hacker_service'
+
     def get_all(self):
         return db.session.query(ModelHacker).all()
 
@@ -65,7 +66,7 @@ class HackerService(BaseService):
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
-    
+
     def add_hacker(self, payload: HackerCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)
         new_hacker = ModelHacker(**payload.dict(exclude={"config"}),
