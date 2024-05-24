@@ -2,6 +2,7 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 
 # from services.mail import send_registration_confirmation_email
 from src.impl.Event.schema import EventGet as EventGetSchema
@@ -11,6 +12,8 @@ from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
+from src.impl.Mail.client import MailClient
+from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
                              VerificationToken)
@@ -21,6 +24,7 @@ router = APIRouter(
 )
 
 hacker_service = HackerService()
+mail_client = MailClient()
 
 
 @router.post("/signup")
@@ -30,8 +34,11 @@ def signup(payload: HackerCreateSchema):
     # return new_hacker
     access_token = AccesToken(new_hacker).user_set()
     refresh_token = RefreshToken(new_hacker).user_set()
-    VerificationToken(new_hacker).user_set()
-    # send_registration_confirmation_email(new_hacker)
+    verification_token = VerificationToken(new_hacker).user_set()
+    mail = mail_client.create_mail(MailCreate(template_id = mail_client.get_internall_template_id(InternalTemplate.USER_CREATED),
+                                              subject = 'Your User Hacker was created',
+                                              fields = f'{new_hacker.name},{verification_token}'))
+    mail_client.send_mail_by_id(mail.id)
     return {
         "success": True,
         "user_id": new_hacker.id,

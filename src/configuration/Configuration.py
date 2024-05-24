@@ -32,13 +32,13 @@ class Configuration:
             Configuration.__instanciate__()
 
     @staticmethod
-    def __instanciate_nested(k, v):
-        setattr(Configuration, k, types.SimpleNamespace())
+    def __instanciate_nested(k, v, c):
+        setattr(c, k, types.SimpleNamespace())
         for kk, vv in v.items():
             if type(vv) == dict:
-                Configuration.__instanciate_nested(kk, vv)
+                Configuration.__instanciate_nested(kk, vv, getattr(c, k))
             else:
-                setattr(getattr(Configuration, k), kk, vv)
+                setattr(getattr(c, k), kk, vv)
 
     @staticmethod
     def __instanciate__():
@@ -48,7 +48,7 @@ class Configuration:
             data = yaml.safe_load(f)
             for k, v in data.items():
                 if type(v) == dict:
-                    Configuration.__instanciate_nested(k, v)
+                    Configuration.__instanciate_nested(k, v, Configuration)
                     # for kk, vv in v.items():
                     # setattr(getattr(Configuration, k), kk, vv)
                     # setattr(Configuration.CONFIG, k, v)

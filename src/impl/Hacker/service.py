@@ -15,7 +15,9 @@ from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.impl.Mail.client import MailClient
 from src.impl.UserConfig.model import UserConfig as ModelUserConfig
+from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import \
     BaseService  # an object to provide global access to a database session
 from src.utils.security import get_password_hash
@@ -27,7 +29,6 @@ from src.utils.UserType import UserType
 
 class HackerService(BaseService):
     name = 'hacker_service'
-
     def get_all(self):
         return db.session.query(ModelHacker).all()
 
@@ -64,7 +65,7 @@ class HackerService(BaseService):
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
-
+    
     def add_hacker(self, payload: HackerCreateSchema):
         check_user(payload.email, payload.nickname, payload.telephone)
         new_hacker = ModelHacker(**payload.dict(exclude={"config"}),

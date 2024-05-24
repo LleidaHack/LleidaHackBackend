@@ -1,4 +1,5 @@
 from fastapi_sqlalchemy import db
+from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 
 # from src.impl.HackerGroup.service import HackerGroupService
 # from services.mail import send_event_accepted_email
@@ -17,7 +18,10 @@ from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.impl.Mail.client import MailClient
+from src.impl.Mail.internall_templates import InternalTemplate
 from src.impl.User.service import UserService
+from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import (check_image, set_existing_data,
                                      subtract_lists)
@@ -207,6 +211,9 @@ class EventService(BaseService):
         reg = ModelHackerRegistration(**payload.dict(),
                                       user_id=hacker_id,
                                       event_id=event_id)
+        mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.EVENT_HACKER_REGISTERED),
+                                                       subject = f'Your have registered to {event.name}',
+                                                       fields = f'{hacker.name}'))
         db.session.add(reg)
         db.session.commit()
         db.session.refresh(event)
@@ -518,6 +525,7 @@ class EventService(BaseService):
         db.session.refresh(hacker)
         return event
 
+    @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(HackerService)
     def accept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
@@ -539,10 +547,15 @@ class EventService(BaseService):
         token = AssistenceToken(hacker, event.id).to_token()
         hacker_registration.confirm_assistance_token = token
         event.accepted_hackers.append(hacker)
+        
+        mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.EVENT_HACKER_ACCEPTED),
+                                                       subject = 'You have been accepted',
+                                                       reciver_id=hacker.id,
+                                                       receiver_mail=f'{hacker.mail}',
+                                                       fields = f'{hacker.name},{event.name},5,{token}'))
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)
-        # send_event_accepted_email(hacker, event, token)
         return event
 
     @BaseService.needs_service(HackerService)
