@@ -31,4 +31,4 @@ class MailClient(BaseClient):
                 raise Exception(f'error obtaining template with name:{_.value}')
             self._internall_templates[_] = r
     def get_internall_template_id(self, it: InternalTemplate):
-        return self._internall_templates[it]
+        return self._internall_templates[it].id

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
+from src.configuration.Configuration import Configuration
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
 
@@ -67,6 +68,8 @@ class AuthenticationService(BaseService):
         self.create_access_and_refresh_token(user)
         reset_pass_token = ResetPassToken(user).user_set()
         mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.RESET_PASSWORD),
+                                                       reciver_id=user.id,
+                                                       reciver_mail=user.email,
                                                        subject = 'Your User Hacker was created',
                                                        fields = f'{user.name},{reset_pass_token}'))
         self.mail_client.send_mail_by_id(mail.id)
@@ -130,6 +133,7 @@ class AuthenticationService(BaseService):
     @BaseClient.needs_client(MailClient)
     def contact(self, name: str, email: str, title: str, message: str):
         mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.CONTACT),
+                                                       reciver_mail=Configuration.contact_mail,
                                                        subject = 'Your User Hacker was created',
                                                        fields = f'{name},{email},{title},{message}'))
         return {"success": mail is not None, 'id': mail.id if mail is not None else None}
