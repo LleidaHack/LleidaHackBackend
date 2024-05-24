@@ -6,29 +6,35 @@ from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
 from src.configuration.Configuration import Configuration
 
+
 class MailClient(BaseClient):
     name = 'mail_client'
     _internall_templates = {}
+
     def __init__(self) -> Any:
         super().__init__(Configuration.clients.mail_client.url, None)
         self._get_internall_templates()
+
     def create_mail(self, mail: MailCreate):
         r = mail_create.sync(client=self.client, body=mail)
         if r is None:
             raise Exception(f'error creating {mail}')
         return r
-    
+
     def send_mail_by_id(self, id: int):
         r = mail_send_by_id.sync_detailed(id, client=self.client)
         return r
+
     def get_template_by_name(self, name):
-        return template_get_by_name.sync(name, client = self.client)
-    
+        return template_get_by_name.sync(name, client=self.client)
+
     def _get_internall_templates(self):
         for _ in InternalTemplate:
             r = self.get_template_by_name(_.value)
-            if r is None: 
-                raise Exception(f'error obtaining template with name:{_.value}')
+            if r is None:
+                raise Exception(
+                    f'error obtaining template with name:{_.value}')
             self._internall_templates[_] = r
+
     def get_internall_template_id(self, it: InternalTemplate):
         return self._internall_templates[it].id

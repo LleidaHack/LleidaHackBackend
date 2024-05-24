@@ -211,9 +211,13 @@ class EventService(BaseService):
         reg = ModelHackerRegistration(**payload.dict(),
                                       user_id=hacker_id,
                                       event_id=event_id)
-        mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.EVENT_HACKER_REGISTERED),
-                                                       subject = f'Your have registered to {event.name}',
-                                                       fields = f'{hacker.name}'))
+        mail = self.mail_client.create_mail(
+            MailCreate(template_id=self.mail_client.get_internall_template_id(
+                InternalTemplate.EVENT_HACKER_REGISTERED),
+                       reciver_id=hacker.id,
+                       reciver_mail=hacker.email,
+                       subject=f'Your have registered to {event.name}',
+                       fields=f'{hacker.name}'))
         db.session.add(reg)
         db.session.commit()
         db.session.refresh(event)

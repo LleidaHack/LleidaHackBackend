@@ -27,7 +27,7 @@ class AuthenticationService(BaseService):
     lleidaHacker_service = None
     companyUser_service = None
     mail_client: MailClient = None
-    
+
     def create_access_and_refresh_token(self, user: ModelUser):
         access_token = AccesToken(user)
         refresh_token = RefreshToken(user)
@@ -129,7 +129,7 @@ class AuthenticationService(BaseService):
         VerificationToken(user).user_set()
         # send_registration_confirmation_email(user)
         return {"success": True}
-    
+
     @BaseClient.needs_client(MailClient)
     def contact(self, name: str, email: str, title: str, message: str):
         mail = self.mail_client.create_mail(MailCreate(template_id = self.mail_client.get_internall_template_id(InternalTemplate.CONTACT),
