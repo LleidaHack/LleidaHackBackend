@@ -21,9 +21,11 @@ class MailClient(BaseClient):
     def check_health(self):
         r = health_check.sync_detailed(client=self.client)
         if not r.status_code == HTTPStatus.OK:
-            raise Exception('Seems the Mail Backend is not up so maybe consider changing the client url in your config or maybe start the service')
+            raise Exception(
+                'Seems the Mail Backend is not up so maybe consider changing the client url in your config or maybe start the service'
+            )
         return True
-    
+
     def create_mail(self, mail: MailCreate):
         r = mail_create.sync(client=self.client, body=mail)
         if r is None:
