@@ -36,6 +36,6 @@ jobs:
             echo > logs/gunicorn_error.log
             echo "${{ steps.date.outputs.date }}  ->  ${{ github.actor }}" >> deploy.log
             ${{ secrets.POETRY_BIN }} install --sync
-            ${{ secrets.POETRY_BIN }} alembic upgrade head
+            ${{ secrets.POETRY_BIN }} run alembic upgrade head
             sudo systemctl restart Backend.${{ steps.extract_branch.outputs.branch }}
             systemctl status Backend.${{ steps.extract_branch.outputs.branch }}.service
