@@ -22,7 +22,7 @@ from src.utils.UserType import UserType
 class AuthenticationService(BaseService):
     name = 'auth_service'
 
-    user_service = None
+    user_service: UserService = None
     hacker_service = None
     lleidaHacker_service = None
     companyUser_service = None
@@ -62,7 +62,7 @@ class AuthenticationService(BaseService):
     @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(UserService)
     def reset_password(self, email: str):
-        user = self.user_service.get_user_by_email(email)
+        user = self.user_service.get_by_email(email)
         if not user.is_verified:
             raise InvalidDataException("User not verified")
         self.create_access_and_refresh_token(user)
@@ -70,9 +70,9 @@ class AuthenticationService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.RESET_PASSWORD),
-                       reciver_id=user.id,
-                       reciver_mail=user.email,
-                       subject='Your User Hacker was created',
+                       reciver_id=str(user.id),
+                       reciver_mail=str(user.email),
+                       subject='Reset password mail',
                        fields=f'{user.name},{reset_pass_token}'))
         self.mail_client.send_mail_by_id(mail.id)
         return {"success": True}

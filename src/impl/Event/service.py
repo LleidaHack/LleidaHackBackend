@@ -32,9 +32,10 @@ from src.utils.UserType import UserType
 class EventService(BaseService):
     name = 'event_service'
     hackergroup_service = None
-    hacker_service = None
-    user_service = None
-    company_service = None
+    hacker_service: HackerService = None
+    user_service: UserService = None
+    company_service: CompanyService = None
+    mail_client: MailClient = None
 
     def get_all(self):
         return db.session.query(ModelEvent).filter(
@@ -192,6 +193,7 @@ class EventService(BaseService):
         db.session.refresh(company)
         return event
 
+    @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(UserService)
     def add_hacker(self, event_id: int, hacker_id: int,
                    payload: HackerEventRegistrationSchema, data: BaseToken):
@@ -214,10 +216,11 @@ class EventService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.EVENT_HACKER_REGISTERED),
-                       reciver_id=hacker.id,
-                       reciver_mail=hacker.email,
+                       reciver_id=str(hacker.id),
+                       reciver_mail=str(hacker.email),
                        subject=f'Your have registered to {event.name}',
                        fields=f'{hacker.name}'))
+        self.mail_client.send_mail_by_id(mail.id)
         db.session.add(reg)
         db.session.commit()
         db.session.refresh(event)
@@ -556,8 +559,8 @@ class EventService(BaseService):
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.EVENT_HACKER_ACCEPTED),
                        subject='You have been accepted',
-                       reciver_id=hacker.id,
-                       reciver_mail=f'{hacker.mail}',
+                       reciver_id=str(hacker.id),
+                       reciver_mail=str(hacker.email),
                        fields=f'{hacker.name},{event.name},5,{token}'))
         db.session.commit()
         db.session.refresh(event)
