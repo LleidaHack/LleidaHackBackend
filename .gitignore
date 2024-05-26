@@ -8,4 +8,4 @@ utils/scripts
 test/ep_test/*
 env/
 src/configuration/*.yaml
-generated_src/lleida_hack_mail_api_client/**
+generated_src/**

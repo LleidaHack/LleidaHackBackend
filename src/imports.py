@@ -6,7 +6,6 @@ from src.impl.Hacker import model
 from src.impl.HackerGroup import model
 from src.impl.LleidaHacker import model
 from src.impl.LleidaHackerGroup import model
-from src.impl.MailQueue import model
 from src.impl.Meal import model
 from src.impl.Notification import model
 from src.impl.User import model

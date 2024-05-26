@@ -1,11 +1,11 @@
 from typing import List
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
+from src.utils.Base.BaseModel import BaseModel
 
-from src.utils.database import Base
 
 
-class UserConfig(Base):
+class UserConfig(BaseModel):
     __tablename__ = 'user_config'
     id: int = Column(Integer,
                      primary_key=True,

@@ -1,12 +1,8 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
-
-from src.impl.Event.model import Event
-from src.impl.User.model import User
-from src.utils.database import Base
+from src.utils.Base.BaseModel import BaseModel
 
 
-class Notification(Base):
+class Notification(BaseModel):
     __tablename__ = 'notification'
     id: int = Column(Integer, primary_key=True, index=True)
     user_id: int = Column(Integer, ForeignKey('my_user.id'))

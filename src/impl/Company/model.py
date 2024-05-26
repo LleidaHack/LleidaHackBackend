@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+from src.utils.Base.BaseModel import BaseModel
 
-from src.utils.database import Base
 
 
-class Company(Base):
+class Company(BaseModel):
     __tablename__ = 'company'
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)

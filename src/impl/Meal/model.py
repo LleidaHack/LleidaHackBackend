@@ -4,10 +4,10 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from src.impl.Hacker.model import Hacker as ModelHacker
-from src.utils.database import Base
+from src.utils.Base.BaseModel import BaseModel
 
 
-class HackerMeal(Base):
+class HackerMeal(BaseModel):
     __tablename__ = "hacker_meal"
     user_id = Column(Integer,
                      ForeignKey("hacker.user_id"),
@@ -19,7 +19,7 @@ class HackerMeal(Base):
                      index=True)
 
 
-class Meal(Base):
+class Meal(BaseModel):
     __tablename__ = 'meal'
     id: int = Column(Integer, primary_key=True, index=True)
     event_id: int = Column(Integer, ForeignKey('event.id'), index=True)

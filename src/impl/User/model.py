@@ -4,10 +4,10 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship, backref
 
 from src.impl.UserConfig.model import UserConfig
-from src.utils.database import Base
+from src.utils.Base.BaseModel import BaseModel
 
 
-class User(Base):
+class User(BaseModel):
     __tablename__ = 'my_user'
     id: int = Column(Integer, primary_key=True, index=True)
     is_verified: bool = Column(Boolean, default=False)

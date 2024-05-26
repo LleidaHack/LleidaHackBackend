@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from src.impl.Geocaching import service as geocaching_service
-from src.utils.database import Database
 
 router = APIRouter()
 
@@ -20,18 +19,16 @@ def get_geocaching(code: str):
 
 
 @router.get("/geocaching/hacker/{user_code}")
-def get_all_hacker_geocaching(user_code: str,
-                              db: Session = Depends(Database.get_db)):
-    return geocaching_service.get_all_hacker_geocaching(db, user_code)
+def get_all_hacker_geocaching(user_code: str):
+    return geocaching_service.get_all_hacker_geocaching(user_code)
 
 
 @router.post("/geocaching/hacker/{user_code}/{code}")
 def add_user_geocaching(user_code: str,
-                        code: str,
-                        db: Session = Depends(Database.get_db)):
-    return geocaching_service.add_user_geocaching(db, user_code, code)
+                        code: str):
+    return geocaching_service.add_user_geocaching(user_code, code)
 
 
 @router.put("/geocaching/hacker/{user_code}")
-def claim_lleidacoins(user_code: str, db: Session = Depends(Database.get_db)):
-    return geocaching_service.claim_lleidacoins(db, user_code)
+def claim_lleidacoins(user_code: str):
+    return geocaching_service.claim_lleidacoins(user_code)

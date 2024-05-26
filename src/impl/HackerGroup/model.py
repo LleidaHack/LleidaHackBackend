@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+from src.utils.Base.BaseModel import BaseModel
 
-from src.utils.database import Base
 
 
-class HackerGroupUser(Base):
+class HackerGroupUser(BaseModel):
     __tablename__ = 'hacker_group_user'
     hacker_id = Column(Integer, ForeignKey('hacker.user_id'), primary_key=True)
     group_id = Column(Integer, ForeignKey('hacker_group.id'), primary_key=True)
 
 
-class HackerGroup(Base):
+class HackerGroup(BaseModel):
     __tablename__ = 'hacker_group'
     id: int = Column(Integer, primary_key=True, index=True)
     code: str = (Column(String, unique=True, index=True))

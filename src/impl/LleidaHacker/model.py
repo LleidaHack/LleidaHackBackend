@@ -4,7 +4,6 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from src.impl.User.model import User
-from src.utils.database import Base
 from src.utils.UserType import UserType
 
 

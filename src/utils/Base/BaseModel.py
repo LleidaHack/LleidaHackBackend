@@ -1,7 +1,6 @@
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from sqlalchemy.orm import DeclarativeBase
 
 
-class BaseModel(Base):
+class BaseModel(DeclarativeBase):
+    __allow_unmapped__ = True
     pass
