@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship
 from src.utils.Base.BaseModel import BaseModel
 
 
-
 class HackerGroupUser(BaseModel):
     __tablename__ = 'hacker_group_user'
     hacker_id = Column(Integer, ForeignKey('hacker.user_id'), primary_key=True)

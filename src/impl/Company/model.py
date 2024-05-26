@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship
 from src.utils.Base.BaseModel import BaseModel
 
 
-
 class Company(BaseModel):
     __tablename__ = 'company'
     id: int = Column(Integer, primary_key=True, index=True)

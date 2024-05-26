@@ -4,7 +4,6 @@ from sqlalchemy import Boolean, Column, Integer, String
 from src.utils.Base.BaseModel import BaseModel
 
 
-
 class UserConfig(BaseModel):
     __tablename__ = 'user_config'
     id: int = Column(Integer,
