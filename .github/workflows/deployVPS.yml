@@ -5,9 +5,6 @@ on:
       - main
       - integration
   workflow_dispatch:
-    
-
-      
 
 jobs:
   deploy:
@@ -29,6 +26,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            set -e
             cd ${{ secrets.PROJECT_PATH }}/${{ steps.extract_branch.outputs.branch }}
             git fetch
             git checkout ${{ steps.extract_branch.outputs.branch }}
@@ -37,7 +35,7 @@ jobs:
             echo > logs/gunicorn_access.log
             echo > logs/gunicorn_error.log
             echo "${{ steps.date.outputs.date }}  ->  ${{ github.actor }}" >> deploy.log
-            python3 -m pip install -r requirements.txt
-            alembic upgrade head
+            ${{ secrets.POETRY_BIN }} install --sync
+            ${{ secrets.POETRY_BIN }} alembic upgrade head
             sudo systemctl restart Backend.${{ steps.extract_branch.outputs.branch }}
             systemctl status Backend.${{ steps.extract_branch.outputs.branch }}.service
