@@ -1,35 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi_sqlalchemy import DBSessionMiddleware
 
-from logging.config import dictConfig
-import logging
-from log_config import LogConfig
-
-from routers import user
-from routers import hacker
-from routers import hackergroup
-from routers import lleidahacker
-from routers import lleidahackergroup
-from routers import company
-from routers import companyuser
-from routers import event
-from routers import meal
-from routers import eventmanagment
-from routers import authentication
-from routers import mail_queue
-from routers import geocaching
-
-from error import error_handler as eh
-from error.AuthenticationException import AuthenticationException
-from error.NotFoundException import NotFoundException
-from error.ValidationException import ValidationException
-from error.InvalidDataException import InvalidDataException
-from error.InputException import InputException
-
-dictConfig(LogConfig().dict())
-logger = logging.getLogger("mycoolapp")
+from App import App
+from src.configuration.Configuration import Configuration
 
 tags_metadata = [
     {
@@ -61,14 +35,16 @@ tags_metadata = [
         "description": "Event related endpoints"
     },
     {
-        "name": "EventManagment",
-        "description": "Event Managment related endpoints"
+        "name": "UserConfig",
+        "description": "UserConfig related endpoints"
     },
     {
         "name": "Authentication",
         "description": "Authentication related endpoints"
     },
 ]
+
+import logging
 
 app = FastAPI(title="LleidaHack API",
               description="LleidaHack API",
@@ -80,40 +56,14 @@ app = FastAPI(title="LleidaHack API",
               debug=True,
               swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"})
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
-
-app.add_exception_handler(AuthenticationException,
-                          eh.authentication_exception_handler)
-app.add_exception_handler(NotFoundException, eh.not_found_exception_handler)
-app.add_exception_handler(ValidationException, eh.validation_exception_handler)
-app.add_exception_handler(InvalidDataException,
-                          eh.invalid_data_exception_handler)
-app.add_exception_handler(InputException, eh.input_exception_handler)
-
-app.mount('/static', StaticFiles(directory='static'), name='static')
-
-app.include_router(user.router)
-app.include_router(hacker.router)
-app.include_router(hackergroup.router)
-app.include_router(lleidahacker.router)
-app.include_router(lleidahackergroup.router)
-app.include_router(company.router)
-app.include_router(companyuser.router)
-app.include_router(event.router)
-app.include_router(meal.router)
-app.include_router(mail_queue.router)
-app.include_router(eventmanagment.router)
-app.include_router(authentication.router)
-app.include_router(geocaching.router)
+logger = logging.getLogger(__name__)
 
 
 @app.get("/")
 def root():
     return RedirectResponse(url='/docs')
+
+
+# app.add_middleware(MaintenanceModeMiddleware, is_maintenance_mode=True)
+# Configuration()
+App(app).setup_all(logger)
