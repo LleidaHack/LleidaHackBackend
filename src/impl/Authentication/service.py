@@ -37,7 +37,7 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def login(self, mail: str, password: str):
-        user = self.user_service.get_user_by_email(mail)
+        user = self.user_service.get_by_email(mail)
         if not verify_password(password, user.password):
             raise AuthenticationException("Incorrect password")
         if not user.is_verified:
@@ -123,7 +123,7 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def resend_verification(self, email: str):
-        user = self.user_service.get_user_by_email(email)
+        user = self.user_service.get_by_email(email)
         if user.is_verified:
             raise InvalidDataException("User already verified")
         AccesToken(user).user_set()
