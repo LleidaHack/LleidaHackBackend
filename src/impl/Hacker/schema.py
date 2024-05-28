@@ -4,8 +4,8 @@ from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
 
 class HackerCreate(UserCreate):
-    github: str
-    linkedin: str
+    github: Optional[str] = None
+    linkedin: Optional[str] = None
     study_center: Optional[str] = None
     location: Optional[str] = None
     how_did_you_meet_us: Optional[str] = None
