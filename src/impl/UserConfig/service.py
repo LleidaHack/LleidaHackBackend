@@ -106,7 +106,7 @@ class UserConfigService(BaseService):
                                       recive_notifications=True,
                                       terms_and_conditions=True)
 
-        users = db.session.query(User).all().sortBy(User.id)
+        users = db.session.query(User).order_by(User.id).all()
         for u in users:
             db.session.add(user_config)
             db.session.flush()
