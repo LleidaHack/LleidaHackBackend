@@ -20,5 +20,5 @@ class CompanyUserGetAll(UserGetAll):
 
 
 class CompanyUserUpdate(UserUpdate):
-    role: Optional[str]
-    company_id: Optional[int]
+    role: Optional[str] = None
+    company_id: Optional[int] = None
