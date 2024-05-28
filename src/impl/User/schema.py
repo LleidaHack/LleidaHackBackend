@@ -13,10 +13,10 @@ class UserCreate(BaseSchema):
     nickname: str
     password: str
     birthdate: date
-    food_restrictions: str
+    food_restrictions: Optional[str] = None
     email: str
     telephone: str
-    address: str
+    address: Optional[str] = None
     shirt_size: Optional[str] = None
     image: Optional[str] = None
     config: UserConfigCreate
