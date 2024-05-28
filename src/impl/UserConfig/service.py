@@ -101,9 +101,9 @@ class UserConfigService(BaseService):
         success_count = 0
         failed_count = 0
 
-        user_config = ModelUserConfig(defaultLang="ca-CA",
-                                      comercialNotifications=True,
-                                      reciveNotifications=True,
+        user_config = ModelUserConfig(default_lang="ca-CA",
+                                      comercial_notifications=True,
+                                      recive_notifications=True,
                                       terms_and_conditions=True)
 
         users = db.session.query(User).all().sortBy(User.id)
