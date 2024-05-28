@@ -26,8 +26,8 @@ class LleidaHackerGetAll(UserGetAll, LleidaHackerGet):
 
 
 class LleidaHackerUpdate(UserUpdate):
-    role: Optional[str]
-    nif: Optional[str]
-    student: Optional[bool]
-    active: Optional[bool]
-    github: Optional[str]
+    role: Optional[str] = None
+    nif: Optional[str] = None
+    student: Optional[bool] = None
+    active: Optional[bool] = None
+    github: Optional[str] = None

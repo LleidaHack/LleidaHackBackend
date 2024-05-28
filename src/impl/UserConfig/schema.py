@@ -22,6 +22,6 @@ class UserConfigGetAll(UserConfigGet):
 
 
 class UserConfigUpdate(BaseSchema):
-    recive_notifications: Optional[bool]
-    default_lang: Optional[str]
-    comercial_notifications: Optional[bool]
+    recive_notifications: Optional[bool] = None
+    default_lang: Optional[str] = None
+    comercial_notifications: Optional[bool] = None
