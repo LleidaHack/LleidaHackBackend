@@ -11,6 +11,10 @@ tags_metadata = [
         "description": "User related endpoints"
     },
     {
+        "name": "UserConfig",
+        "description": "UserConfig related endpoints"
+    },
+    {
         "name": "Hacker",
         "description": "Hacker related endpoints"
     },
@@ -31,12 +35,16 @@ tags_metadata = [
         "description": "Company related endpoints"
     },
     {
+        "name": "CompanyUser",
+        "description": "Company user related endpoints"
+    },
+    {
         "name": "Event",
         "description": "Event related endpoints"
     },
     {
-        "name": "UserConfig",
-        "description": "UserConfig related endpoints"
+        "name": "Meal",
+        "description": "Meal related endpoints"
     },
     {
         "name": "Authentication",

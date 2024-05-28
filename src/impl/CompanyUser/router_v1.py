@@ -16,7 +16,7 @@ from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
 
 router = APIRouter(
     prefix="/company-user",
-    tags=["Company User"],
+    tags=["CompanyUser"],
 )
 
 companyuser_service = CompanyUserService()
