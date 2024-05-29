@@ -1,27 +1,21 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from src.utils.Base.BaseModel import BaseModel
+from sqlmodel import Relationship, SQLModel, Field
 
+from src.impl.LleidaHacker.model import LleidaHacker
 
-class LleidaHackerGroupUser(BaseModel):
+class LleidaHackerGroupUser(SQLModel, table=True):
     __tablename__ = 'lleida_hacker_group_user'
-    group_id = Column(Integer,
-                      ForeignKey('lleida_hacker_group.id'),
-                      primary_key=True)
-    user_id = Column(Integer,
-                     ForeignKey('lleida_hacker.user_id'),
-                     primary_key=True)
+    group_id: int = Field(foreign_key='lleida_hacker_group.id', primary_key=True)
+    user_id: int = Field(foreign_key='lleida_hacker.user_id',primary_key=True)
 
 
-class LleidaHackerGroup(BaseModel):
+class LleidaHackerGroup(SQLModel, table=True):
     __tablename__ = 'lleida_hacker_group'
-    id: int = Column(Integer, primary_key=True, index=True)
-    name: str = Column(String)
-    description: str = Column(String)
-    leader_id: int = Column(Integer,
-                            ForeignKey('lleida_hacker.user_id'),
-                            nullable=True)
+    id: int = Field(primary_key=True, index=True)
+    name: str
+    description: str
+    leader_id: int = Field(foreign_key='lleida_hacker.user_id', nullable=True)
     # members: List[LleidaHacker] = relationship('LleidaHacker', secondary='group_lleida_hacker_user', backref='lleida_hacker_group')
     # members: List[LleidaHacker] = relationship('LleidaHacker', back_populates='lleida_hacker_group')
-    members = relationship('LleidaHacker',
-                           secondary='lleida_hacker_group_user')
+    members: list['LleidaHacker'] = Relationship(link_model=LleidaHackerGroupUser)

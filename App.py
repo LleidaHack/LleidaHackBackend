@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from fastapi_sqlalchemy import DBSessionMiddleware
-
+import src.imports
 from src.configuration.Configuration import Configuration
 from src.versions.v1 import router as v1_router
 
