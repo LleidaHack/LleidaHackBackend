@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
 from sqlmodel import Field, Relationship, SQLModel
+from src.impl.Event.model import Event
 from src.impl.User.model import User
-from src.utils.Base.BaseModel import BaseModel
 
 
 class HackerGroupUser(SQLModel, table=True):
@@ -21,8 +19,10 @@ class HackerGroup(SQLModel, table=True):
     description: str
     leader_id: int = Field(foreign_key='hacker.user_id', nullable=False)
     event_id: int = Field(foreign_key='event.id', nullable=False)
-    # event: Event = relationship('Event', secondary='hacker_event')
+    # event: Event = Relationship('Event', secondary='hacker_event')
+    # event: Event = Relationship('Event', link_model=HackerE)
     members: list['User'] = Relationship(
-        link_model=HackerGroupUser, sa_relationship_args=
-        {'primaryjoin': "HackerGroup.id==hacker_group_user.c.group_id",
-        'secondaryjoin': "User.id==hacker_group_user.c.hacker_id"})
+        link_model=HackerGroupUser)
+    # , sa_relationship_args=
+    #     {'primaryjoin': "HackerGroup.id==hacker_group_user.c.group_id"}, sa_relationship_kwargs=
+    #     {'secondaryjoin': "User.id==hacker_group_user.c.hacker_id"})

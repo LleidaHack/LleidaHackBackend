@@ -21,7 +21,7 @@ class LleidaHacker(User):
     accepted: bool = Field(default=True)
     # rejected: bool = Column(Boolean, default=False)
     groups: list['LleidaHackerGroup'] = Relationship(link_model=LleidaHackerGroupUser)
-    events: list['Event'] = relationship(link_model=LleidaHackerParticipation)
+    events: list['Event'] = Relationship(link_model=LleidaHackerParticipation)
 
     __mapper_args__ = {
         "polymorphic_identity": UserType.LLEIDAHACKER.value,

@@ -24,7 +24,7 @@ class Hacker(User):
     how_did_you_meet_us: str = Field(default="")
     groups: 'HackerGroup' = Relationship(link_model=HackerGroupUser)
     # is_leader: bool = Column(Integer, default=0)
-    events: 'Event' = Relationship(link_model=HackerParticipation)
+    # events: 'Event' = Relationship(back_populates='registered_hackers', link_model=HackerParticipation)
 
     __mapper_args__ = {
         "polymorphic_identity": UserType.HACKER.value,

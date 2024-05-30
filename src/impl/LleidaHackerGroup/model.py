@@ -1,8 +1,10 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlmodel import Relationship, SQLModel, Field
 
-from src.impl.LleidaHacker.model import LleidaHacker
+if TYPE_CHECKING:
+    from src.impl.LleidaHacker.model import LleidaHacker
 
 class LleidaHackerGroupUser(SQLModel, table=True):
     __tablename__ = 'lleida_hacker_group_user'

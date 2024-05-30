@@ -1,5 +1,7 @@
 from http import HTTPStatus
 from typing import Any
+
+from fastapi import HTTPException
 from generated_src.lleida_hack_mail_api_client.api.health import health_check
 from generated_src.lleida_hack_mail_api_client.api.mail import mail_create, mail_send_by_id
 from generated_src.lleida_hack_mail_api_client.api.template import template_get_by_name
@@ -19,9 +21,13 @@ class MailClient(BaseClient):
         self._get_internall_templates()
 
     def check_health(self):
-        r = health_check.sync_detailed(client=self.client)
-        if not r.status_code == HTTPStatus.OK:
-            raise Exception(
+        r = None
+        try:
+            r = health_check.sync_detailed(client=self.client)
+        except:
+            pass
+        if r is None or not r.status_code == HTTPStatus.OK:
+            raise HTTPException(
                 'Seems the Mail Backend is not up so maybe consider changing the client url in your config or maybe start the service'
             )
         return True

@@ -20,5 +20,5 @@ class Company(SQLModel, table=True):
     # is_image_url: bool = Column(Boolean, default=False)
     linkdin: str
     leader_id: int = Field(foreign_key='my_user.id')
-    users: list['User'] = Relationship(link_model=CompanyUser)
+    # users: list['User'] = Relationship(link_model=CompanyUser)
     # events: list['Event'] = Relationship(link_model=CompanyParticipation)

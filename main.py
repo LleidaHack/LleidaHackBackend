@@ -4,7 +4,7 @@ from fastapi_sqlalchemy import DBSessionMiddleware
 
 from App import App
 from src.configuration.Configuration import Configuration
-
+import src.imports
 tags_metadata = [
     {
         "name": "User",
