@@ -39,7 +39,7 @@ def add(payload: LleidaHackerGroupCreateSchema,
         token: BaseToken = Depends(JWTBearer())):
     new_lleidahacker_group = lleidahackergroup_service.add_lleidahackergroup(
         payload, token)
-    return {"success": True, "user_id": new_lleidahacker_group.id}
+    return {"success": True, "id": new_lleidahacker_group.id}
 
 
 @router.delete("/{groupId}")

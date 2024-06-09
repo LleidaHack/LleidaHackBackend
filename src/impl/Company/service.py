@@ -64,9 +64,8 @@ class CompanyService(BaseService):
             raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)
         users = [user.id for user in company.users]
-        if not data.is_admin or (not (data.user_id in users
-                                      and company.leader_id == data.user_id)):
-            raise AuthenticationException("Not authorized")
+        if not (data.is_admin or (data.user_id in users and company.leader_id == data.user_id)):
+            raise AuthenticationException(f"Not authorized")
         db.session.delete(company)
         db.session.commit()
         return company

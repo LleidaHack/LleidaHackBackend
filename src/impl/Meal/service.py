@@ -57,7 +57,7 @@ class MealService(BaseService):
         db.session.refresh(db_meal)
         return db_meal
 
-    def delete_meal(self, id: int, meal_id: int, data: BaseToken):
+    def delete_meal(self, meal_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException(
                 "You are not allowed to delete meals")

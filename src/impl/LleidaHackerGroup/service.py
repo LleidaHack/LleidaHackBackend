@@ -49,6 +49,7 @@ class LleidaHackerGroupService(BaseService):
         hacker = self.lleidahacker_service.get_by_id(data.user_id)
         new_lleidahacker_group = ModelLleidaHackerGroup(**payload.dict(),
                                                         leader_id=hacker.id)
+        new_lleidahacker_group.members.append(hacker)
         db.session.add(new_lleidahacker_group)
         db.session.commit()
         db.session.refresh(new_lleidahacker_group)
