@@ -41,9 +41,9 @@ def update(id: int,
     return meal_service.update_meal(id, meal_id, meal, token)
 
 
-@router.delete("/{id}/{meal_id}")
-def delete(id: int, meal_id: int, token: BaseToken = Depends(JWTBearer())):
-    return meal_service.delete_meal(id, meal_id, token)
+@router.delete("/{id}")
+def delete(id: int, token: BaseToken = Depends(JWTBearer())):
+    return meal_service.delete_meal(id, token)
 
 
 @router.put("/{meal_id}/eat/{hacker_code}")

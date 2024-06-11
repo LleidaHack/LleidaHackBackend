@@ -25,10 +25,12 @@ from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
+from src.impl.Meal.model import HackerMeal as HackerMealModel
 
 
 class HackerService(BaseService):
     name = 'hacker_service'
+    hackergroup_service = None
 
     def get_all(self):
         return db.session.query(ModelHacker).all()
@@ -85,7 +87,7 @@ class HackerService(BaseService):
         db.session.commit()
         return new_hacker
 
-    # @Token.check_token()
+    @BaseService.needs_service("HackerGroupService")
     def remove_hacker(self, hackerId: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) or not data.check(
             [UserType.HACKER], hackerId):
@@ -96,19 +98,6 @@ class HackerService(BaseService):
         hacker_groups_ids = [group.group_id for group in hacker_groups_ids]
         hacker_groups = self.hackergroup_service.get_when_id_in(
             hacker_groups_ids)
-        event_regs = db.session.query(ModelHackerRegistration).filter(
-            ModelHackerRegistration.user_id == hackerId).all()
-        for event_reg in event_regs:
-            db.session.delete(event_reg)
-        event_parts = db.session.query(ModelHackerParticipation).filter(
-            ModelHackerParticipation.user_id == hackerId).all()
-        for event_part in event_parts:
-            db.session.delete(event_part)
-        event_accs = db.session.query(ModelHackerAccepted).filter(
-            ModelHackerAccepted.user_id == hackerId).all()
-        for event_acc in event_accs:
-            db.session.delete(event_acc)
-        db.session.delete(hacker)
         for group in hacker_groups:
             if len(group.members) <= 1:
                 db.session.delete(group)
@@ -117,7 +106,17 @@ class HackerService(BaseService):
                     members_ids = [h.id for h in group.members]
                     members_ids.remove(hackerId)
                     group.leader_id = members_ids[0]
-                # db.session.delete(hacker_group_user)
+        meals = db.session.query(HackerMealModel).filter(
+            HackerMealModel.user_id == hackerId).delete()
+        event_regs = db.session.query(ModelHackerRegistration).filter(
+            ModelHackerRegistration.user_id == hackerId).delete()
+        event_parts = db.session.query(ModelHackerParticipation).filter(
+            ModelHackerParticipation.user_id == hackerId).delete()
+        event_accs = db.session.query(ModelHackerAccepted).filter(
+            ModelHackerAccepted.user_id == hackerId).delete()
+        db.session.delete(hacker)
+
+        # db.session.delete(hacker_group_user)
         db.session.commit()
         return hacker
 

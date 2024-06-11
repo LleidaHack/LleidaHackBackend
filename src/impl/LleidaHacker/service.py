@@ -13,6 +13,7 @@ from src.impl.LleidaHacker.schema import \
     LleidaHackerGetAll as LleidaHackerGetAllSchema
 from src.impl.LleidaHacker.schema import \
     LleidaHackerUpdate as LleidaHackerUpdateSchema
+from src.impl.LleidaHackerGroup.model import LleidaHackerGroup, LleidaHackerGroupUser
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (check_image, check_user,
@@ -82,6 +83,19 @@ class LleidaHackerService(BaseService):
         if not data.check([UserType.LLEIDAHACKER], userId):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(userId)
+        group_users = db.session.query(LleidaHackerGroupUser).filter(
+            LleidaHackerGroupUser.user_id == userId).all()
+        ids = [_.group_id for _ in group_users]
+        groups = db.session.query(LleidaHackerGroup).filter(
+            LleidaHackerGroup.id.in_(ids)).all()
+        for g in groups:
+            g.members.remove(lleidahacker)
+            if g.leader_id == userId:
+                if len(g.members) > 1:
+                    g.leader_id = g.members[0].id
+                else:
+                    db.session.query(LleidaHackerGroup).filter(
+                        LleidaHackerGroup.id == g.id).delete()
         db.session.delete(lleidahacker)
         db.session.commit()
         return lleidahacker

@@ -58,7 +58,8 @@ class EventService(BaseService):
             ModelEvent.name.ilike(f'%HackEPS {str(year)}%')).first()
         if e is None:
             return db.session.query(ModelEvent).filter(
-                ModelEvent.name.ilike(f'%HackEPS {str(year-1)}%')).first()
+                ModelEvent.name.ilike(f'%HackEPS%')).order_by(
+                    ModelEvent.start_date).first()
         return e
 
     def archive(self, id: int, data: BaseToken):

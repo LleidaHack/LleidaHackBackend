@@ -79,8 +79,8 @@ class CompanyUserService(BaseService):
         return company_user, updated
 
     def delete_company_user(self, companyUserId: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER
-                           ]) or data.user_id != companyUserId:
+        if not data.check([UserType.LLEIDAHACKER]) or not data.check(
+            [UserType.COMPANYUSER], companyUserId):
             raise AuthenticationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
         db.session.delete(company_user)
