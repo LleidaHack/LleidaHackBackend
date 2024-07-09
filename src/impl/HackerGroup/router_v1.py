@@ -51,7 +51,8 @@ def add(payload: HackerGroupCreateSchema,
 def update(groupId: int,
            payload: HackerGroupUpdateSchema,
            data: BaseToken = Depends(JWTBearer())):
-    hacker_group = hackergroup_service.update_hacker_group(groupId, payload, data)
+    hacker_group = hackergroup_service.update_hacker_group(
+        groupId, payload, data)
     return {"success": True, "updated_id": hacker_group.id}
 
 
