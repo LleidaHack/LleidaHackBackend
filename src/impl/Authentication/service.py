@@ -90,15 +90,9 @@ class AuthenticationService(BaseService):
         db.session.refresh(user)
         return {"success": True}
 
+    @BaseService.needs_service(UserService)
     def get_me(self, token: AccesToken):
-        if token.user_type == UserType.HACKER.value:
-            return self.hacker_service.get_by_id(token.user_id)
-        elif token.user_type == UserType.LLEIDAHACKER.value:
-            return self.lleidaHacker_service.get_by_id(token.user_id)
-        elif token.user_type == UserType.COMPANYUSER.value:
-            return self.companyUser_service.get_by_id(token.user_id)
-        else:
-            raise InputException("Invalid token")
+        return self.user_service.get_by_id(token.user_id)
 
     @BaseService.needs_service(UserService)
     def verify_user(self, token: VerificationToken):
