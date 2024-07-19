@@ -4,7 +4,7 @@ from pydantic import ConfigDict
 
 from src.utils.Base.BaseSchema import BaseSchema
 
-from src.utils.Hacker.schema import HackerGet
+from src.impl.Hacker.schema import HackerGet
 
 
 class HackerGroupCreate(BaseSchema):
