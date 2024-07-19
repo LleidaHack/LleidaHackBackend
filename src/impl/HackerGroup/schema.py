@@ -4,6 +4,8 @@ from pydantic import ConfigDict
 
 from src.utils.Base.BaseSchema import BaseSchema
 
+from src.utils.Hacker.schema import HackerGet
+
 
 class HackerGroupCreate(BaseSchema):
     name: str
@@ -18,7 +20,7 @@ class HackerGroupGet(BaseSchema):
     description: str
     leader_id: int
     event_id: int
-    members: List[object]
+    members: List[HackerGet]
 
 
 class HackerGroupGetAll(HackerGroupGet):
