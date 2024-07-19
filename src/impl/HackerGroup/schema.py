@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import ConfigDict
 
@@ -18,6 +18,7 @@ class HackerGroupGet(BaseSchema):
     description: str
     leader_id: int
     event_id: int
+    members: List
 
 
 class HackerGroupGetAll(HackerGroupGet):
