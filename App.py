@@ -75,7 +75,7 @@ class App:
         logger.addHandler(stream_handler)
 
     def setup_all(self, logger):
-        # self.setup_static_folder()
+        self.setup_static_folder()
         self.setup_middleware()
         self.setup_logger(logger)
         self.setup_exceptions()

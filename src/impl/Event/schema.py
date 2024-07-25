@@ -46,6 +46,7 @@ class EventCreate(BaseSchema):
 
 
 class EventGet(BaseSchema):
+    id: int
     name: str
     description: str
     start_date: datetime
