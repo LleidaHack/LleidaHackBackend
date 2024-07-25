@@ -14,6 +14,7 @@ class LleidaHacker(User):
     nif: str = Column(String, unique=True)
     student: bool = Column(Boolean, default=True)
     active: bool = Column(Boolean, default=True)
+    linkedin: str = Column(String, default='')
     github: str = Column(String, nullable=True)
     accepted: bool = Column(Boolean, default=True)
     # rejected: bool = Column(Boolean, default=False)

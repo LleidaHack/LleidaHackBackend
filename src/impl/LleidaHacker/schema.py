@@ -11,14 +11,17 @@ class LleidaHackerCreate(UserCreate):
     student: bool
     active: bool
     github: str
+    linkedin: str
 
 
 class LleidaHackerGet(UserGet):
+    user_id: int
     role: str
     nif: str
     student: bool
     active: bool
     github: str
+    linkedin: str
 
 
 class LleidaHackerGetAll(UserGetAll, LleidaHackerGet):
@@ -31,3 +34,4 @@ class LleidaHackerUpdate(UserUpdate):
     student: Optional[bool] = None
     active: Optional[bool] = None
     github: Optional[str] = None
+    linkedin: Optional[str] = None
