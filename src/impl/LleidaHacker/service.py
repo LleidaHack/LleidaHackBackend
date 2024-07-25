@@ -38,7 +38,8 @@ class LleidaHackerService(BaseService):
 
     def get_lleidahacker(self, userId: int, data: BaseToken):
         user = self.get_by_id(userId)
-        if data.check([UserType.LLEIDAHACKER], userId):
+        if type(data) is not bool and data.check([UserType.LLEIDAHACKER],
+                                                 userId):
             return LleidaHackerGetAllSchema.from_orm(user)
         return LleidaHackerGetSchema.from_orm(user)
 

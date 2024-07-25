@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -41,14 +41,15 @@ def signup(payload: LleidaHackerCreateSchema):
 
 
 @router.get("/all", response_model=List[LleidaHackerGetSchema])
-def get_all(str=Depends(JWTBearer())):
+def get_all(str: Optional[BaseToken] = Depends(JWTBearer(required=False))):
     return lleidahacker_service.get_all()
 
 
 @router.get("/{userId}",
             response_model=Union[LleidaHackerGetAllSchema,
                                  LleidaHackerGetSchema])
-def get(userId: int, data: BaseToken = Depends(JWTBearer())):
+def get(userId: int,
+        data: Optional[BaseToken] = Depends(JWTBearer(required=False))):
     return lleidahacker_service.get_lleidahacker(userId, data)
 
 

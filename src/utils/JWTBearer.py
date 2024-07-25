@@ -9,10 +9,12 @@ SERVICE_TOKEN = Configuration.security.service_token
 
 class JWTBearer(HTTPBearer):
 
-    def __init__(self, auto_error: bool = True):
+    def __init__(self, required = True, auto_error: bool = True):
         super(JWTBearer, self).__init__(auto_error=auto_error)
-
+        self.required = required
     async def __call__(self, request: Request):
+        if not self.required:
+            return True
         credentials: HTTPAuthorizationCredentials = await super(
             JWTBearer, self).__call__(request)
         #     return credentials.credentials
