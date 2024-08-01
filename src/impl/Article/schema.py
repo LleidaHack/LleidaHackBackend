@@ -15,8 +15,10 @@ class ArticleGet(BaseSchema):
     edition_date: date
     owner_id: int
 
+
 class ArticleGetAll(ArticleGet):
     pass
+
 
 class ArticleCreate(BaseSchema):
     title: str
@@ -25,17 +27,18 @@ class ArticleCreate(BaseSchema):
 
     @field_validator('title')
     @classmethod
-    def title_validation(cls,v):
+    def title_validation(cls, v):
         if len(v) < 5:
             raise ValueError('title must be longer')
         return v
 
     @field_validator('content')
     @classmethod
-    def content_validation(cls,v):
+    def content_validation(cls, v):
         if len(v) < 20:
             raise ValueError('content must be longer')
         return v
+
 
 class ArticleUpdate(BaseSchema):
     title: Optional[str] = None
@@ -44,14 +47,14 @@ class ArticleUpdate(BaseSchema):
 
     @field_validator('title')
     @classmethod
-    def title_validation(cls,v):
+    def title_validation(cls, v):
         if len(v) < 5:
             raise ValueError('title must be longer')
         return v
 
     @field_validator('content')
     @classmethod
-    def content_validation(cls,v):
+    def content_validation(cls, v):
         if len(v) < 20:
             raise ValueError('content must be longer')
         return v

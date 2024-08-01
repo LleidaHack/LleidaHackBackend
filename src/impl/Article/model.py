@@ -8,8 +8,13 @@ from src.utils.Base.BaseModel import BaseModel
 
 class ArticleArticleType(BaseModel):
     __tablename__ = 'article_article_type'
-    article_id: int = Column(Integer, ForeignKey('article.id'), primary_key=True)
-    article_type_id: int = Column(Integer, ForeignKey('article_type.id'), primary_key=True)
+    article_id: int = Column(Integer,
+                             ForeignKey('article.id'),
+                             primary_key=True)
+    article_type_id: int = Column(Integer,
+                                  ForeignKey('article_type.id'),
+                                  primary_key=True)
+
 
 class Article(BaseModel):
     __tablename__ = 'article'
@@ -22,8 +27,9 @@ class Article(BaseModel):
     owner_id: int = Column(Integer, ForeignKey('my_user.id'), nullable=False)
 
     owner: User = relationship('User')
-    types = relationship('ArticleType',
-                                            'article_article_type',
-                                            primaryjoin='Article.id == article_article_type.article_id',
-                                            secondaryjoin='ArticleType.id == article_article_type.id',
-                                            uselist=True)
+    types = relationship(
+        'ArticleType',
+        'article_article_type',
+        primaryjoin='Article.id == article_article_type.article_id',
+        secondaryjoin='ArticleType.id == article_article_type.id',
+        uselist=True)

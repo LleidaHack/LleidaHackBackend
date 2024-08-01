@@ -14,8 +14,8 @@ from src.utils.UserType import UserType
 
 class ArticleService(BaseService):
     name = 'article_service'
-    article_type_service : ArticleTypeService = None
-    
+    article_type_service: ArticleTypeService = None
+
     def get_all(self):
         return db.session.query(ModelArticle).all()
 
@@ -28,15 +28,15 @@ class ArticleService(BaseService):
 
     def create(self, article: ArticleCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to add articles")
+            raise AuthenticationException(
+                "You are not allowed to add articles")
         db_article = ModelArticle(**article.dict(), owner_id=data.user_id)
         db.session.add(db_article)
         db.session.commit()
         db.session.refresh(db_article)
         return db_article
 
-    def update(self, id: int, article: ArticleUpdate,
-                    data: BaseToken):
+    def update(self, id: int, article: ArticleUpdate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException(
                 "You are not allowed to update articles")
@@ -45,7 +45,7 @@ class ArticleService(BaseService):
         db.session.commit()
         db.session.refresh(db_article)
         return db_article
-    
+
     def delete(self, id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException(
@@ -54,7 +54,7 @@ class ArticleService(BaseService):
         db.session.delete(db_article)
         db.session.commit()
         return db_article
-    
+
     @BaseService.needs_service(ArticleTypeService)
     def add_type(self, article_id: int, type_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
@@ -68,7 +68,7 @@ class ArticleService(BaseService):
         db.session.commit()
         db.session.refresh(article)
         return article
-    
+
     @BaseService.needs_service(ArticleTypeService)
     def delete_type(self, article_id: int, type_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
