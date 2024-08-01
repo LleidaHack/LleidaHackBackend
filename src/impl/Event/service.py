@@ -1,6 +1,7 @@
 from fastapi_sqlalchemy import db
-from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 
+from generated_src.lleida_hack_mail_api_client.models.mail_create import \
+    MailCreate
 # from src.impl.HackerGroup.service import HackerGroupService
 # from services.mail import send_event_accepted_email
 from src.error.AuthenticationException import AuthenticationException
@@ -10,10 +11,11 @@ from src.impl.Company.service import CompanyService
 from src.impl.Event.model import Event as ModelEvent
 from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
 from src.impl.Event.schema import EventCreate as EventCreateSchema
-from src.impl.Event.schema import HackerEventRegistration as HackerEventRegistrationSchema
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Event.schema import EventGetAll as EventGetAllSchema
 from src.impl.Event.schema import EventUpdate as EventUpdateSchema
+from src.impl.Event.schema import \
+    HackerEventRegistration as HackerEventRegistrationSchema
 from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup as ModelHackerGroup

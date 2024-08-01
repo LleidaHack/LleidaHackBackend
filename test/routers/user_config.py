@@ -1,12 +1,13 @@
+import base64
+from unittest.mock import MagicMock, patch
+
+from database import Base, get_db
 from fastapi.testclient import TestClient
-from database import Base
-from database import get_db
-from unittest.mock import patch, MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+
 from main import app
-import base64
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 

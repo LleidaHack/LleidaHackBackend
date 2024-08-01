@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, String
-from src.utils.Base.BaseModel import BaseModel
 
+from src.utils.Base.BaseModel import BaseModel
 
 
 class UserGeocaching(BaseModel):

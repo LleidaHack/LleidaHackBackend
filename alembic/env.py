@@ -1,13 +1,12 @@
 from logging.config import fileConfig
+from os import getcwd
+from sys import path
 
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 from src import imports
 from src.configuration.Configuration import Configuration
-from sys import path
-from os import getcwd
-
 from src.utils.Base.BaseModel import BaseModel
 
 path.insert(0, getcwd())

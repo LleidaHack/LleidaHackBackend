@@ -16,6 +16,7 @@ from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
 from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
 from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
 from src.impl.Mail.client import MailClient
+from src.impl.Meal.model import HackerMeal as HackerMealModel
 from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import \
@@ -25,7 +26,6 @@ from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.Meal.model import HackerMeal as HackerMealModel
 
 
 class HackerService(BaseService):

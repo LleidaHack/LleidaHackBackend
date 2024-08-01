@@ -1,7 +1,7 @@
 from datetime import date
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import backref, relationship
 
 from src.impl.UserConfig.model import UserConfig
 from src.utils.Base.BaseModel import BaseModel

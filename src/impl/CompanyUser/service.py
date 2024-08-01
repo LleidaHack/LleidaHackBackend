@@ -12,13 +12,13 @@ from src.impl.CompanyUser.schema import \
     CompanyUserGetAll as CompanyUserGetAllSchema
 from src.impl.CompanyUser.schema import \
     CompanyUserUpdate as CompanyUserUpdateSchema
+from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 
 
 class CompanyUserService(BaseService):

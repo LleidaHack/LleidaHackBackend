@@ -2,8 +2,9 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 
+from generated_src.lleida_hack_mail_api_client.models.mail_create import \
+    MailCreate
 # from services.mail import send_registration_confirmation_email
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Hacker.schema import HackerCreate as HackerCreateSchema

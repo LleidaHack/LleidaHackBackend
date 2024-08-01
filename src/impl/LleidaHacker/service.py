@@ -13,14 +13,15 @@ from src.impl.LleidaHacker.schema import \
     LleidaHackerGetAll as LleidaHackerGetAllSchema
 from src.impl.LleidaHacker.schema import \
     LleidaHackerUpdate as LleidaHackerUpdateSchema
-from src.impl.LleidaHackerGroup.model import LleidaHackerGroup, LleidaHackerGroupUser
+from src.impl.LleidaHackerGroup.model import (LleidaHackerGroup,
+                                              LleidaHackerGroupUser)
+from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.UserConfig.model import UserConfig as ModelUserConfig
 
 
 class LleidaHackerService(BaseService):

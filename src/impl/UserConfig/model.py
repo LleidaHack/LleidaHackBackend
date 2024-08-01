@@ -1,6 +1,7 @@
 from typing import List
 
 from sqlalchemy import Boolean, Column, Integer, String
+
 from src.utils.Base.BaseModel import BaseModel
 
 

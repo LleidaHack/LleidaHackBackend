@@ -1,10 +1,9 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic import ConfigDict
 
-from src.utils.Base.BaseSchema import BaseSchema
-
 from src.impl.Hacker.schema import HackerGet
+from src.utils.Base.BaseSchema import BaseSchema
 
 
 class HackerGroupCreate(BaseSchema):

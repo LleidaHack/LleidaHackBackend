@@ -10,3 +10,5 @@ from src.impl.Meal import model
 from src.impl.Notification import model
 from src.impl.User import model
 from src.impl.UserConfig import model
+from src.impl.Article import model
+from src.impl.ArticleType import model

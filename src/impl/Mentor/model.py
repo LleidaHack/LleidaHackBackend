@@ -1,7 +1,8 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
 from src.impl.User.model import User
 from src.utils import UserType
-from sqlalchemy.orm import relationship
 
 
 class Mentor(User):

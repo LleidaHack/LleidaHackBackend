@@ -1,6 +1,7 @@
 from os import name
-from pydantic import parse_obj_as
+
 from fastapi_sqlalchemy import db
+from pydantic import parse_obj_as
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException

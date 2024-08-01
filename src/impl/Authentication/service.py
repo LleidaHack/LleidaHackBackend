@@ -1,16 +1,17 @@
 from datetime import datetime
 
 from fastapi_sqlalchemy import db
-from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
-from src.configuration.Configuration import Configuration
-from src.impl.Mail.client import MailClient
-from src.impl.Mail.internall_templates import InternalTemplate
 
-from src.impl.User.service import UserService
+from generated_src.lleida_hack_mail_api_client.models.mail_create import \
+    MailCreate
+from src.configuration.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InputException import InputException
 from src.error.InvalidDataException import InvalidDataException
+from src.impl.Mail.client import MailClient
+from src.impl.Mail.internall_templates import InternalTemplate
 from src.impl.User.model import User as ModelUser
+from src.impl.User.service import UserService
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash, verify_password

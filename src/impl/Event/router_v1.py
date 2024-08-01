@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, Response
 from src.configuration.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet as CompanyGetSchema
-from src.impl.Event.schema import EventCreate as EventCreateSchema, HackerEventRegistration
+from src.impl.Event.schema import EventCreate as EventCreateSchema
 from src.impl.Event.schema import EventGet as EventGetSchema
 from src.impl.Event.schema import EventGetAll as EventGetAllSchema
 from src.impl.Event.schema import EventUpdate as EventUpdateSchema
+from src.impl.Event.schema import HackerEventRegistration
 from src.impl.Event.service import EventService
 from src.impl.Hacker.schema import HackerGet as HackerGetSchema
 from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema

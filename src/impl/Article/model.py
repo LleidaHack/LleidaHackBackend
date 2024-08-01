@@ -1,9 +1,7 @@
 from datetime import date
-from typing import List
 
-from sqlalchemy.orm import relationship
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
-from src.impl.ArticleType.model import ArticleType
+from sqlalchemy.orm import relationship
 from src.impl.User.model import User
 from src.utils.Base.BaseModel import BaseModel
 
@@ -21,10 +19,10 @@ class Article(BaseModel):
     image: str = Column(String, default='')
     creation_date: date = Column(DateTime, default=func.now())
     edition_date: date = Column(DateTime, default=func.now())
-    owner_id: int = Column(Integer, ForeignKey('user.id'), nullable=False)
+    owner_id: int = Column(Integer, ForeignKey('my_user.id'), nullable=False)
 
     owner: User = relationship('User')
-    types: List[ArticleType] = relationship('ArticleType',
+    types = relationship('ArticleType',
                                             'article_article_type',
                                             primaryjoin='Article.id == article_article_type.article_id',
                                             secondaryjoin='ArticleType.id == article_article_type.id',

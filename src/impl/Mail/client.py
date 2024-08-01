@@ -1,12 +1,16 @@
 from http import HTTPStatus
 from typing import Any
+
 from generated_src.lleida_hack_mail_api_client.api.health import health_check
-from generated_src.lleida_hack_mail_api_client.api.mail import mail_create, mail_send_by_id
-from generated_src.lleida_hack_mail_api_client.api.template import template_get_by_name
-from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
+from generated_src.lleida_hack_mail_api_client.api.mail import (
+    mail_create, mail_send_by_id)
+from generated_src.lleida_hack_mail_api_client.api.template import \
+    template_get_by_name
+from generated_src.lleida_hack_mail_api_client.models.mail_create import \
+    MailCreate
+from src.configuration.Configuration import Configuration
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
-from src.configuration.Configuration import Configuration
 
 
 class MailClient(BaseClient):
