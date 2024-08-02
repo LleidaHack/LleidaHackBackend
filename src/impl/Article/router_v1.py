@@ -45,7 +45,7 @@ def delete(id: int, token: BaseToken = Depends(JWTBearer())):
     return {"success": True, "deleted_id": article.id}
 
 
-@router.put("/{article_id}/{type_id}")
+@router.put("/{article_id}/add/{type_id}")
 def add_type(article_id: int,
              type_id: int,
              token: BaseToken = Depends(JWTBearer())):
@@ -57,7 +57,7 @@ def add_type(article_id: int,
     }
 
 
-@router.put("/{article_id}/{type_id}")
+@router.put("/{article_id}/delete/{type_id}")
 def delete_type(article_id: int,
                 type_id: int,
                 token: BaseToken = Depends(JWTBearer())):
