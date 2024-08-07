@@ -2,6 +2,7 @@ from datetime import date
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import relationship
+
 from src.impl.User.model import User
 from src.utils.Base.BaseModel import BaseModel
 
