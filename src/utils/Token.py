@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import OrderedDict
 
 from datetime import datetime, timedelta
 from inspect import getfullargspec
@@ -84,7 +85,7 @@ class BaseToken:
         self.expt = data.get("expt")
         self.type = data.get("type")
         self.email = data.get("email")
-        return data
+        return self
 
     def to_token(self):
         return BaseToken.encode(self.__dict__)
@@ -138,7 +139,9 @@ class BaseToken:
 
     # @classmethod
     def encode(dict):
-        return jwt.encode(dict, SECRET_KEY, algorithm=ALGORITHM)
+        return jwt.encode(OrderedDict(sorted(dict.items())),
+                          SECRET_KEY,
+                          algorithm=ALGORITHM)
 
     def verify(token):
         if BaseToken.is_service(token):
@@ -150,7 +153,7 @@ class BaseToken:
         data = BaseToken(None).from_token(token)
         #TODO: comprovar tipus de token
 
-        if user.token != token:
+        if dict['type'] == TokenType.ACCESS and user.token != token:
             raise AuthenticationException("Invalid token")
         # Here your code for verifying the token or whatever you use
         if parser.parse(dict["expt"]) < datetime.utcnow():
@@ -180,13 +183,14 @@ class AssistenceToken(BaseToken):
     def __init__(self, user: UserModel, event_id: int):
         if user is None:
             return
-        self.type = TokenType.ASSISTENCE.value
         super().__init__(user)
+        self.type = TokenType.ASSISTENCE.value
         self.event_id = event_id
 
     def from_token(self, token):
         data = super().from_token(token)
         self.event_id = data.get("event_id")
+        return self
 
     def verify(self, user: UserModel):
         return True
@@ -197,8 +201,8 @@ class AccesToken(BaseToken):
     available: bool = True
 
     def __init__(self, user: UserModel):
-        self.type = TokenType.ACCESS.value
         super().__init__(user)
+        self.type = TokenType.ACCESS.value
         if user is None:
             return
         self.is_verified = user.is_verified
@@ -225,8 +229,8 @@ class RefreshToken(BaseToken):
     def __init__(self, user: UserModel):
         if user is None:
             return
-        self.type = TokenType.REFRESH.value
         super().__init__(user)
+        self.type = TokenType.REFRESH.value
 
 
 class VerificationToken(BaseToken):
@@ -234,8 +238,8 @@ class VerificationToken(BaseToken):
     def __init__(self, user: UserModel):
         if user is None:
             return
-        self.type = TokenType.VERIFICATION.value
         super().__init__(user)
+        self.type = TokenType.VERIFICATION.value
 
 
 class ResetPassToken(BaseToken):
@@ -243,5 +247,5 @@ class ResetPassToken(BaseToken):
     def __init__(self, user: UserModel):
         if user is None:
             return
-        self.type = TokenType.RESET_PASS.value
         super().__init__(user)
+        self.type = TokenType.RESET_PASS.value
