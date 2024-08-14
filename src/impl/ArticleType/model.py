@@ -2,6 +2,7 @@ from typing import List
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
+
 from src.impl.Article.model import Article
 from src.utils.Base.BaseModel import BaseModel
 
