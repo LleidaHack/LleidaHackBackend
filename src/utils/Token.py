@@ -139,7 +139,9 @@ class BaseToken:
 
     # @classmethod
     def encode(dict):
-        return jwt.encode(OrderedDict(sorted(dict.items())), SECRET_KEY, algorithm=ALGORITHM)
+        return jwt.encode(OrderedDict(sorted(dict.items())),
+                          SECRET_KEY,
+                          algorithm=ALGORITHM)
 
     def verify(token):
         if BaseToken.is_service(token):
