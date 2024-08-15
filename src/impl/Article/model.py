@@ -31,6 +31,6 @@ class Article(BaseModel):
     types = relationship(
         'ArticleType',
         'article_article_type',
-        primaryjoin='Article.id == article_article_type.article_id',
-        secondaryjoin='ArticleType.id == article_article_type.id',
+        primaryjoin='Article.id == article_article_type.c.article_id',
+        secondaryjoin='ArticleType.id == article_article_type.c.article_type_id',
         uselist=True)
