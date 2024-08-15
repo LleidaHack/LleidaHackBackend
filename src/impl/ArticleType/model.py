@@ -15,6 +15,6 @@ class ArticleType(BaseModel):
 
     articles: List[Article] = relationship('Article',
                                            secondary='article_article_type',
-                                           primaryjoin='ArticleType.id == article_article_type.article_type_id', 
-                                           secondaryjoin='Article.id == article_article_type.article_id', 
+                                           primaryjoin='ArticleType.id == article_article_type.c.article_type_id', 
+                                           secondaryjoin='Article.id == article_article_type.c.article_id', 
                                            uselist=True)
