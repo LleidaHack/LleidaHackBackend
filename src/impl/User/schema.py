@@ -69,6 +69,7 @@ class UserGet(BaseSchema):
     nickname: str
     birthdate: date
     email: str
+    created_at: date
     image: Optional[str] = None
 
 
