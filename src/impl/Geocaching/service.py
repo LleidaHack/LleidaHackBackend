@@ -1,26 +1,26 @@
 from sqlalchemy.orm import Session
 
-from src.impl.Geocaching.model import Geocaching as ModelGeocaching
-from src.impl.Geocaching.model import UserGeocaching as ModelUserGeocaching
-from src.impl.User.model import User as ModelUser
+from src.impl.Geocaching.model import Geocaching
+from src.impl.Geocaching.model import UserGeocaching
+from src.impl.User.model import User
 
 
 def get_all_geocachings(db: Session):
-    return db.query(ModelGeocaching).all()
+    return db.query(Geocaching).all()
 
 
 def get_geocaching(db: Session, code: str):
-    return db.query(ModelGeocaching).filter(
-        ModelGeocaching.code == code).first()
+    return db.query(Geocaching).filter(
+        Geocaching.code == code).first()
 
 
 def get_all_hacker_geocaching(db: Session, user_code: str):
-    return db.query(ModelUserGeocaching).filter(
-        ModelUserGeocaching.user_code == user_code).all()
+    return db.query(UserGeocaching).filter(
+        UserGeocaching.user_code == user_code).all()
 
 
 def add_user_geocaching(db: Session, user_code: str, code: str):
-    user_geocaching = ModelUserGeocaching(user_code=user_code, code=code)
+    user_geocaching = UserGeocaching(user_code=user_code, code=code)
     db.add(user_geocaching)
     db.commit()
     db.refresh(user_geocaching)
@@ -28,7 +28,7 @@ def add_user_geocaching(db: Session, user_code: str, code: str):
 
 
 def claim_lleidacoins(db: Session, user_code: str):
-    hacker = db.query(ModelUser).filter(ModelUser.code == user_code).first()
+    hacker = db.query(User).filter(User.code == user_code).first()
     if hacker is None:
         raise ValueError("Hacker not found")
     all_geocachings = get_all_geocachings(db)

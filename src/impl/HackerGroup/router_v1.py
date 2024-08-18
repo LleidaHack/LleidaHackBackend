@@ -2,14 +2,11 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends
 
-from src.impl.Hacker.schema import HackerGet as HackerGetSchema
-from src.impl.HackerGroup.schema import \
-    HackerGroupCreate as HackerGroupCreateSchema
-from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
-from src.impl.HackerGroup.schema import \
-    HackerGroupGetAll as HackerGroupGetAllSchema
-from src.impl.HackerGroup.schema import \
-    HackerGroupUpdate as HackerGroupUpdateSchema
+from src.impl.Hacker.schema import HackerGet
+from src.impl.HackerGroup.schema import HackerGroupCreate
+from src.impl.HackerGroup.schema import HackerGroupGet
+from src.impl.HackerGroup.schema import HackerGroupGetAll
+from src.impl.HackerGroup.schema import HackerGroupUpdate
 from src.impl.HackerGroup.service import HackerGroupService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -22,20 +19,20 @@ router = APIRouter(
 hackergroup_service = HackerGroupService()
 
 
-@router.get("/all", response_model=List[HackerGroupGetSchema])
+@router.get("/all", response_model=List[HackerGroupGet])
 def get_all(data: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_all()
 
 
 @router.get("/{groupId}",
-            response_model=Union[HackerGroupGetAllSchema,
-                                 HackerGroupGetSchema])
+            response_model=Union[HackerGroupGetAll,
+                                 HackerGroupGet])
 def get(groupId: int, data: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_hacker_group(groupId, data)
 
 
 @router.post("/")
-def add(payload: HackerGroupCreateSchema,
+def add(payload: HackerGroupCreate,
         data: BaseToken = Depends(JWTBearer())):
     new_hacker_group = hackergroup_service.add_hacker_group(payload, data)
     #hackergroup_service.add_hacker_to_group(new_hacker_group.id, data["user_id"], db)
@@ -49,7 +46,7 @@ def add(payload: HackerGroupCreateSchema,
 
 @router.put("/{groupId}")
 def update(groupId: int,
-           payload: HackerGroupUpdateSchema,
+           payload: HackerGroupUpdate,
            data: BaseToken = Depends(JWTBearer())):
     hacker_group = hackergroup_service.update_hacker_group(
         groupId, payload, data)
@@ -62,7 +59,7 @@ def delete(groupId: int, data: BaseToken = Depends(JWTBearer())):
     return {"success": True, "deleted_id": hacker_group.id}
 
 
-@router.get("/{groupId}/members", response_model=List[HackerGetSchema])
+@router.get("/{groupId}/members", response_model=List[HackerGet])
 def get_members(groupId: int, data: BaseToken = Depends(JWTBearer())):
     hacker_group = hackergroup_service.get_hacker_group(groupId, data)
     return {"success": True, "members": hacker_group.members}
