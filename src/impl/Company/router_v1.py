@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from src.impl.Company.schema import CompanyCreate as CompanyCreateSchema
 from src.impl.Company.schema import CompanyGet as CompanyGetSchema
 from src.impl.Company.schema import CompanyGetAll as CompanyGetAllSchema
+from src.impl.Company.schema import CompanyGetByTier as CompanyGetByTierSchema
 from src.impl.Company.schema import CompanyUpdate as CompanyUpdateSchema
 from src.impl.Company.service import CompanyService
 from src.impl.CompanyUser.schema import CompanyUserGet as CompanyUserGetSchema
@@ -79,3 +80,7 @@ def delete_user(companyId: int,
 @router.get("/{companyId}/events", response_model=EventGetSchema)
 def get_events(companyId: int, token: BaseToken = Depends(JWTBearer())):
     return company_service.get_company_events(companyId)
+
+@router.get("/{tier}", response_model=CompanyGetByTierSchema)
+def get_by_tier(tier: int):
+    return company_service.get_by_tier(tier)

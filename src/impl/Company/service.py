@@ -28,6 +28,12 @@ class CompanyService(BaseService):
 
     def get_company(self, companyId: int):
         return self.get_by_id(companyId)
+    
+    def get_by_tier(self, tier: int):
+        companies = db.session.query(ModelCompany).filter(
+            ModelCompany.tier == tier
+        )
+        return companies
 
     def add_company(self, payload: CompanyCreateSchema, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
