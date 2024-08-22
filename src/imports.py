@@ -1,4 +1,3 @@
-
 from src.impl.Article import model
 from src.impl.ArticleType import model
 from src.impl.Company import model
