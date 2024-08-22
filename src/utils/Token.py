@@ -214,8 +214,8 @@ class AccesToken(BaseToken):
     def from_token(self, token):
         data = super().from_token(token)
         if not self.is_admin:
-            self.is_verified = data.get("is_verified")
-            self.available = data.get("available")
+            self.is_verified = data.is_verified
+            self.available = data.available
         return self
 
     def verify(self, user):
