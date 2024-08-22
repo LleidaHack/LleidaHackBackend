@@ -139,7 +139,9 @@ class BaseToken:
 
     # @classmethod
     def encode(dict):
-        return jwt.encode(OrderedDict(sorted(dict.items())), SECRET_KEY, algorithm=ALGORITHM)
+        return jwt.encode(OrderedDict(sorted(dict.items())),
+                          SECRET_KEY,
+                          algorithm=ALGORITHM)
 
     def verify(token):
         if BaseToken.is_service(token):
@@ -181,8 +183,8 @@ class AssistenceToken(BaseToken):
     def __init__(self, user: UserModel, event_id: int):
         if user is None:
             return
-        self.type = TokenType.ASSISTENCE.value
         super().__init__(user)
+        self.type = TokenType.ASSISTENCE.value
         self.event_id = event_id
 
     def from_token(self, token):
@@ -199,8 +201,8 @@ class AccesToken(BaseToken):
     available: bool = True
 
     def __init__(self, user: UserModel):
-        self.type = TokenType.ACCESS.value
         super().__init__(user)
+        self.type = TokenType.ACCESS.value
         if user is None:
             return
         self.is_verified = user.is_verified
@@ -236,8 +238,8 @@ class VerificationToken(BaseToken):
     def __init__(self, user: UserModel):
         if user is None:
             return
-        self.type = TokenType.VERIFICATION.value
         super().__init__(user)
+        self.type = TokenType.VERIFICATION.value
 
 
 class ResetPassToken(BaseToken):
@@ -245,5 +247,5 @@ class ResetPassToken(BaseToken):
     def __init__(self, user: UserModel):
         if user is None:
             return
-        self.type = TokenType.RESET_PASS.value
         super().__init__(user)
+        self.type = TokenType.RESET_PASS.value

@@ -1,3 +1,4 @@
+
 from fastapi_sqlalchemy import db
 
 from src.error.AuthenticationException import AuthenticationException
