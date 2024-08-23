@@ -33,8 +33,8 @@ class LleidaHackerGroupService(BaseService):
         group = self.get_by_id(groupId)
         users_ids = [u.id for u in group.members]
         if data.check([UserType.LLEIDAHACKER]) and data.user_id in users_ids:
-            return LleidaHackerGroupGetAll.from_orm(group)
-        return LleidaHackerGroupGet.from_orm(group)
+            return LleidaHackerGroupGetAll.model_validate(group)
+        return LleidaHackerGroupGet.model_validate(group)
 
     @BaseService.needs_service(LleidaHackerService)
     def add_lleidahackergroup(self, payload: LleidaHackerGroupCreate,

@@ -51,8 +51,8 @@ class HackerService(BaseService):
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
         if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
-            return HackerGetAll.from_orm(user)
-        return HackerGet.from_orm(user)
+            return HackerGetAll.model_validate(user)
+        return HackerGet.model_validate(user)
 
     def get_hacker_by_code(self, code: str):
         user = db.session.query(Hacker).filter(

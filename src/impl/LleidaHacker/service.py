@@ -36,8 +36,8 @@ class LleidaHackerService(BaseService):
         user = self.get_by_id(userId)
         if type(data) is not bool and data.check([UserType.LLEIDAHACKER],
                                                  userId):
-            return LleidaHackerGetAll.from_orm(user)
-        return LleidaHackerGet.from_orm(user)
+            return LleidaHackerGetAll.model_validate(user)
+        return LleidaHackerGet.model_validate(user)
 
     def add_lleidahacker(self, payload: LleidaHackerCreate):
         check_user(payload.email, payload.nickname, payload.telephone)

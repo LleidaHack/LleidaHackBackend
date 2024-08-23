@@ -34,8 +34,8 @@ class MealService(BaseService):
     def get_meal(self, id: int, data: BaseToken):
         meal = self.get_by_id(id)
         if data.check([UserType.LLEIDAHACKER]):
-            return MealGetAll.from_orm(meal)
-        return MealGet.from_orm(meal)
+            return MealGetAll.model_validate(meal)
+        return MealGet.model_validate(meal)
 
     def add_meal(self, meal: MealCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):

@@ -35,8 +35,8 @@ class CompanyUserService(BaseService):
         user = self.get_by_id(companyUserId)
         if data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER],
                       companyUserId):
-            return CompanyUserGetAll.from_orm(user)
-        return CompanyUserGet.from_orm(user)
+            return CompanyUserGetAll.model_validate(user)
+        return CompanyUserGet.model_validate(user)
 
     def add_company_user(self, payload: CompanyUserCreate):
         check_user(payload.email, payload.nickname, payload.telephone)

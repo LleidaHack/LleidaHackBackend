@@ -62,8 +62,8 @@ class HackerGroupService(BaseService):
         members_ids = [h.id for h in group.members]
         if data.check([UserType.HACKER, UserType.LLEIDAHACKER
                        ]) and (data.is_admin or data.user_id in members_ids):
-            return HackerGroupGetAll.from_orm(group)
-        return HackerGroupGet.from_orm(group)
+            return HackerGroupGetAll.model_validate(group)
+        return HackerGroupGet.model_validate(group)
 
     @BaseService.needs_service(EventService)
     @BaseService.needs_service(HackerService)

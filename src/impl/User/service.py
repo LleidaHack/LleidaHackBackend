@@ -78,40 +78,40 @@ class UserService(BaseService):
     def get_user(self, userId: int, data):
         user = self.get_by_id(userId)
         if data.check([UserType.LLEIDAHACKER], userId):
-            return UserGetAll.from_orm(user)
-        return UserGet.from_orm(user)
+            return UserGetAll.model_validate(user)
+        return UserGet.model_validate(user)
 
     def get_user_by_email(self, email: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         user = self.get_by_email(email)
         if data.check([UserType.LLEIDAHACKER], user.id):
-            return UserGetAll.from_orm(user)
-        return UserGet.from_orm(user)
+            return UserGetAll.model_validate(user)
+        return UserGet.model_validate(user)
 
     def get_user_by_nickname(self, nickname: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         user = self.get_by_nickname(nickname)
         if data.check([UserType.LLEIDAHACKER], user.id):
-            return UserGetAll.from_orm(user)
-        return UserGet.from_orm(user)
+            return UserGetAll.model_validate(user)
+        return UserGet.model_validate(user)
 
     def get_user_by_phone(self, phone: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         user = self.get_by_phone(phone)
         if data.check([UserType.LLEIDAHACKER], user.id):
-            return UserGetAll.from_orm(user)
-        return UserGet.from_orm(user)
+            return UserGetAll.model_validate(user)
+        return UserGet.model_validate(user)
 
     def get_user_by_code(self, code: str, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         user = self.get_by_code(code)
         if data.check([UserType.LLEIDAHACKER], user.id):
-            return UserGetAll.from_orm(user)
-        return UserGet.from_orm(user)
+            return UserGetAll.model_validate(user)
+        return UserGet.model_validate(user)
 
     def _verify_user(self, user_id: int):
         user = self.get_by_id(user_id)

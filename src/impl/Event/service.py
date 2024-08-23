@@ -101,8 +101,8 @@ class EventService(BaseService):
     def get_event(self, id: int, data: BaseToken):
         event = self.get_by_id(id)
         if not data.check([UserType.LLEIDAHACKER]):
-            return EventGetAll.from_orm(event)
-        return EventGet.from_orm(event)
+            return EventGetAll.model_validate(event)
+        return EventGet.model_validate(event)
 
     def add_event(self, payload: EventCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.SERVICE]):
@@ -296,7 +296,7 @@ class EventService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
-        return HackerGetAll.from_orm(event.accepted_hackers)
+        return HackerGetAll.model_validate(event.accepted_hackers)
 
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
