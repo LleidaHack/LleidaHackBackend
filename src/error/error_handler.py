@@ -45,6 +45,7 @@ def input_exception_handler(request, exc):
         content={"message": exc.message},
     )
 
+
 def initialize_exception_handler(request, exc):
     return JSONResponse(
         status_code=503,
