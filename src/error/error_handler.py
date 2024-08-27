@@ -6,6 +6,7 @@ from src.error.InputException import InputException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
 from src.error.ValidationException import ValidationException
+from src.error.MailClientException import MailClientException
 
 
 # @app.exception_handler(AuthenticationException)
@@ -41,5 +42,11 @@ def invalid_data_exception_handler(request, exc):
 def input_exception_handler(request, exc):
     return JSONResponse(
         status_code=400,
+        content={"message": exc.message},
+    )
+
+def initialize_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=503,
         content={"message": exc.message},
     )
