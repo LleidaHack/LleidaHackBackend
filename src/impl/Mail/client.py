@@ -12,7 +12,7 @@ from src.configuration.Configuration import Configuration
 
 def initialized(func):
     def wrapper(*args, **kwargs):
-        if MailClient._initialized:
+        if args[0]._initialized:
             return func(*args, **kwargs)
         print('MailClient not initialized')
         raise MailClientException('MailClient is not available')
@@ -33,10 +33,8 @@ class MailClient(BaseClient):
             self._initialized = False
             print('MailClient not initialized')
             # raise MailClientException('MailClient is not available')
-
     
    
-    @initialized
     def check_health(self):
         r = health_check.sync_detailed(client=self.client)
         if not r.status_code == HTTPStatus.OK:
@@ -57,11 +55,9 @@ class MailClient(BaseClient):
         r = mail_send_by_id.asyncio_detailed(id, client=self.client)
         return r
 
-    @initialized
     def get_template_by_name(self, name):
         return template_get_by_name.sync(name, client=self.client)
-
-    @initialized
+    
     def _get_internall_templates(self):
         for _ in InternalTemplate:
             r = self.get_template_by_name(_.value)
