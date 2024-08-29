@@ -36,9 +36,9 @@ class MailClient(BaseClient):
 
     
    
-    @initialized
     def check_health(self):
         r = health_check.sync_detailed(client=self.client)
+        
         if not r.status_code == HTTPStatus.OK:
             raise Exception(
                 'Seems the Mail Backend is not up so maybe consider changing the client url in your config or maybe start the service'
@@ -57,11 +57,9 @@ class MailClient(BaseClient):
         r = mail_send_by_id.asyncio_detailed(id, client=self.client)
         return r
 
-    @initialized
     def get_template_by_name(self, name):
         return template_get_by_name.sync(name, client=self.client)
-
-    @initialized
+    
     def _get_internall_templates(self):
         for _ in InternalTemplate:
             r = self.get_template_by_name(_.value)
