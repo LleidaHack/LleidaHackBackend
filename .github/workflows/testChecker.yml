@@ -1,0 +1,44 @@
+name: Run tests on Checker
+on:
+  push:
+    branches: 
+      - main
+      - integration
+  pull_request:
+    branches:
+      - main
+      - integration
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-lastest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Ensure API
+        run: |
+          poetry run uvicorn main:app --port 8000
+          poetry run openapi-python .-... de integration o main
+      - name: Ensure Mail Backend
+      - uses: LleidaHack/BackendIntegrationTests/.github/actions/test-action@main
+        with:
+
+        actions/lleidaHackTest@master
