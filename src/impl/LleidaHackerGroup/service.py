@@ -155,3 +155,26 @@ class LleidaHackerGroupService(BaseService):
         db.session.commit()
         db.session.refresh(lleidahacker_group)
         return lleidahacker_group
+    # llhk_groups:[
+	# {
+	# 	nom: 'devs',
+	# 	img: ...,
+	# 	caps: [{},]
+	# 	members: [
+	# 		{id: 12, nom: ton},
+	# 	]
+	# },
+	# ]
+    @BaseService.needs_service(LleidaHackerService)
+    def get_sorted(self):
+        grps = self.get_all()
+        user_group_reg = db.session.query(LleidaHackerGroupUser)\
+                                   .filter(LleidaHackerGroupUser.primary==True).all()
+        users = {_.id: _ for _ in self.lleidahacker_service.get_all()}
+        return {'llhk_groups':[
+            {
+                'name': _.name,
+                'img': _.image,
+                'leaders': _.leaders,
+                'members': [users[u.user_id] for u in user_group_reg if u.group_id==_.id]
+            } for _ in grps]}

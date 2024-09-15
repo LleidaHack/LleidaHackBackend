@@ -28,6 +28,7 @@ class LleidaHackerGroup(BaseModel):
     id: int = Column(Integer, primary_key=True, index=True)
     name: str = Column(String)
     description: str = Column(String)
+    image: str = Column(String, default='')
     # members: List[LleidaHacker] = relationship('LleidaHacker', secondary='group_lleida_hacker_user', backref='lleida_hacker_group')
     # members: List[LleidaHacker] = relationship('LleidaHacker', back_populates='lleida_hacker_group')
     members = relationship('LleidaHacker',
