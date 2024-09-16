@@ -22,8 +22,7 @@ class MealService(BaseService):
     event_service = None
 
     def get_all(self, id: int):
-        return db.session.query(Meal).filter(
-            Meal.event_id == id).all()
+        return db.session.query(Meal).filter(Meal.event_id == id).all()
 
     def get_by_id(self, id: int):
         meal = db.session.query(Meal).filter(Meal.id == id).first()

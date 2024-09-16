@@ -40,8 +40,7 @@ def get_all(token: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{companyUserId}",
-            response_model=Union[CompanyUserGetAll,
-                                 CompanyUserGet])
+            response_model=Union[CompanyUserGetAll, CompanyUserGet])
 def get(companyUserId: int, token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_company_user(companyUserId, token)
 

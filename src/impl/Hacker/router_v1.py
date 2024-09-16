@@ -56,8 +56,7 @@ def get_all(token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_all()
 
 
-@router.get("/{hackerId}",
-            response_model=Union[HackerGetAll, HackerGet])
+@router.get("/{hackerId}", response_model=Union[HackerGetAll, HackerGet])
 def get(hackerId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker(hackerId, token)
 

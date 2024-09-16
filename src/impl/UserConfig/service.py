@@ -61,8 +61,8 @@ class UserConfigService(BaseService):
         db.session.commit()
         return userConfig
 
-    def update_user_config(self, config_id: int,
-                           payload: UserConfigUpdate, data: BaseToken):
+    def update_user_config(self, config_id: int, payload: UserConfigUpdate,
+                           data: BaseToken):
         userConfig = self.get_by_id(config_id)
         user_id = db.session.query(User).filter(
             User.config_id == config_id).first().id
@@ -99,9 +99,9 @@ class UserConfigService(BaseService):
         failed_count = 0
 
         user_config = UserConfig(default_lang="ca-CA",
-                                      comercial_notifications=True,
-                                      recive_notifications=True,
-                                      terms_and_conditions=True)
+                                 comercial_notifications=True,
+                                 recive_notifications=True,
+                                 terms_and_conditions=True)
 
         users = db.session.query(User).order_by(User.id).all()
         for u in users:

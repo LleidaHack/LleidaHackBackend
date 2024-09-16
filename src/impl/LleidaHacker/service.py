@@ -45,7 +45,7 @@ class LleidaHackerService(BaseService):
             payload = check_image(payload)
         new_lleidahacker = LleidaHacker(**payload.model_dump(
             exclude={"config"}),
-                                             code=generate_user_code())
+                                        code=generate_user_code())
         new_lleidahacker.password = get_password_hash(payload.password)
         new_lleidahacker.active = True
 
@@ -59,8 +59,7 @@ class LleidaHackerService(BaseService):
         db.session.refresh(new_lleidahacker)
         return new_lleidahacker
 
-    def update_lleidahacker(self, userId: int,
-                            payload: LleidaHackerUpdate,
+    def update_lleidahacker(self, userId: int, payload: LleidaHackerUpdate,
                             data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER], userId):
             raise AuthenticationException("Not authorized")

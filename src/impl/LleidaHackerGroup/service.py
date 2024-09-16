@@ -43,7 +43,7 @@ class LleidaHackerGroupService(BaseService):
             raise AuthenticationException("Not authorized")
         hacker = self.lleidahacker_service.get_by_id(data.user_id)
         new_lleidahacker_group = LleidaHackerGroup(**payload.model_dump(),
-                                                        leader_id=hacker.id)
+                                                   leader_id=hacker.id)
         new_lleidahacker_group.members.append(hacker)
         db.session.add(new_lleidahacker_group)
         db.session.commit()

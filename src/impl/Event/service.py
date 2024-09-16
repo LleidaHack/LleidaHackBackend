@@ -38,16 +38,13 @@ class EventService(BaseService):
     mail_client: MailClient = None
 
     def get_all(self):
-        return db.session.query(Event).filter(
-            Event.archived == False).all()
+        return db.session.query(Event).filter(Event.archived == False).all()
 
     def get_archived(self):
-        return db.session.query(Event).filter(
-            Event.archived == True).all()
+        return db.session.query(Event).filter(Event.archived == True).all()
 
     def get_by_id(self, id: int) -> Event:
-        event = db.session.query(Event).filter(
-            Event.id == id).first()
+        event = db.session.query(Event).filter(Event.id == id).first()
         if event is None:
             raise NotFoundException('event not found')
         return event
@@ -94,8 +91,8 @@ class EventService(BaseService):
             HackerGroupUser.hacker_id == hacker_id).all()
         group = db.session.query(HackerGroup).filter(
             HackerGroup.event_id == event_id).filter(
-                HackerGroup.id.in_(
-                    [g.hacker_group_id for g in user_groups])).first()
+                HackerGroup.id.in_([g.hacker_group_id
+                                    for g in user_groups])).first()
         return group
 
     def get_event(self, id: int, data: BaseToken):
@@ -212,8 +209,8 @@ class EventService(BaseService):
         if hacker in event.registered_hackers:
             raise InvalidDataException('Hacker already registered')
         reg = HackerRegistration(**payload.model_dump(),
-                                      user_id=hacker_id,
-                                      event_id=event_id)
+                                 user_id=hacker_id,
+                                 event_id=event_id)
         mail = self.mail_client.create_mail(
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.EVENT_HACKER_REGISTERED),
@@ -320,10 +317,9 @@ class EventService(BaseService):
         event = self.get_by_id(eventId)
         accepted_and_confirmed = []
         for user in event.accepted_hackers:
-            user_registration = db.session.query(
-                HackerRegistration).filter(
-                    HackerRegistration.user_id == user.id,
-                    HackerRegistration.event_id == event.id).first()
+            user_registration = db.session.query(HackerRegistration).filter(
+                HackerRegistration.user_id == user.id,
+                HackerRegistration.event_id == event.id).first()
             if user_registration and user_registration.confirmed_assistance:
                 accepted_and_confirmed.append(user)
         return accepted_and_confirmed
@@ -383,9 +379,8 @@ class EventService(BaseService):
                                          event.accepted_hackers)
         ]
         # Retrieve pending hacker groups
-        pending_groups_ids = db.session.query(
-            HackerGroupUser.group_id).filter(
-                HackerGroupUser.hacker_id.in_(pending_hackers_ids)).all()
+        pending_groups_ids = db.session.query(HackerGroupUser.group_id).filter(
+            HackerGroupUser.hacker_id.in_(pending_hackers_ids)).all()
         pending_groups_ids = [g[0] for g in pending_groups_ids]
         #remove duplicates
         pending_groups_ids = list(dict.fromkeys(pending_groups_ids))

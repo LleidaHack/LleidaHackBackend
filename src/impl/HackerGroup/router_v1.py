@@ -25,15 +25,13 @@ def get_all(data: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{groupId}",
-            response_model=Union[HackerGroupGetAll,
-                                 HackerGroupGet])
+            response_model=Union[HackerGroupGetAll, HackerGroupGet])
 def get(groupId: int, data: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_hacker_group(groupId, data)
 
 
 @router.post("/")
-def add(payload: HackerGroupCreate,
-        data: BaseToken = Depends(JWTBearer())):
+def add(payload: HackerGroupCreate, data: BaseToken = Depends(JWTBearer())):
     new_hacker_group = hackergroup_service.add_hacker_group(payload, data)
     #hackergroup_service.add_hacker_to_group(new_hacker_group.id, data["user_id"], db)
     #hackergroup_service.set_hacker_group_leader(new_hacker_group.id, data['user_id'], db)

@@ -42,8 +42,7 @@ def get_all(str: Optional[BaseToken] = Depends(JWTBearer(required=False))):
 
 
 @router.get("/{userId}",
-            response_model=Union[LleidaHackerGetAll,
-                                 LleidaHackerGet])
+            response_model=Union[LleidaHackerGetAll, LleidaHackerGet])
 def get(userId: int,
         data: Optional[BaseToken] = Depends(JWTBearer(required=False))):
     return lleidahacker_service.get_lleidahacker(userId, data)

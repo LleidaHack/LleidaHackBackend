@@ -40,8 +40,9 @@ class CompanyUserService(BaseService):
 
     def add_company_user(self, payload: CompanyUserCreate):
         check_user(payload.email, payload.nickname, payload.telephone)
-        new_company_user = CompanyUser(**payload.model_dump(exclude={"config"}),
-                                            code=generate_user_code())
+        new_company_user = CompanyUser(**payload.model_dump(
+            exclude={"config"}),
+                                       code=generate_user_code())
         new_company_user.password = get_password_hash(payload.password)
         new_company_user.active = True
         if payload.image is not None:

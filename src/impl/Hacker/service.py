@@ -35,15 +35,13 @@ class HackerService(BaseService):
         return db.session.query(Hacker).all()
 
     def get_by_id(self, hacker_id: int):
-        user = db.session.query(Hacker).filter(
-            Hacker.id == hacker_id).first()
+        user = db.session.query(Hacker).filter(Hacker.id == hacker_id).first()
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
 
     def get_by_code(self, code: str):
-        hacker = db.session.query(Hacker).filter(
-            Hacker.code == code).first()
+        hacker = db.session.query(Hacker).filter(Hacker.code == code).first()
         if hacker is None:
             raise NotFoundException('hacker not found')
         return hacker
@@ -55,15 +53,13 @@ class HackerService(BaseService):
         return HackerGet.model_validate(user)
 
     def get_hacker_by_code(self, code: str):
-        user = db.session.query(Hacker).filter(
-            Hacker.code == code).first()
+        user = db.session.query(Hacker).filter(Hacker.code == code).first()
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
 
     def get_hacker_by_email(self, email: str):
-        user = db.session.query(Hacker).filter(
-            Hacker.email == email).first()
+        user = db.session.query(Hacker).filter(Hacker.email == email).first()
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
@@ -71,7 +67,7 @@ class HackerService(BaseService):
     def add_hacker(self, payload: HackerCreate):
         check_user(payload.email, payload.nickname, payload.telephone)
         new_hacker = Hacker(**payload.model_dump(exclude={"config"}),
-                                 code=generate_user_code())
+                            code=generate_user_code())
         if payload.image is not None:
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)

@@ -12,7 +12,7 @@ from src.utils.UserType import UserType
 
 class ArticleTypeService(BaseService):
     name = 'article_type_service'
-    
+
     def get_all(self):
         return db.session.query(ArticleType).all()
 
@@ -22,18 +22,20 @@ class ArticleTypeService(BaseService):
         if article_type is None:
             raise NotFoundException('article type not found')
         return article_type
-    
+
     def create(self, article_type: ArticleTypeCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to add article types")
-        db_article_type = ArticleType(**article_type.model_dump(), owner_id=data.user_id)
+            raise AuthenticationException(
+                "You are not allowed to add article types")
+        db_article_type = ArticleType(**article_type.model_dump(),
+                                      owner_id=data.user_id)
         db.session.add(db_article_type)
         db.session.commit()
         db.session.refresh(db_article_type)
         return db_article_type
 
     def update(self, id: int, article_type: ArticleTypeUpdate,
-                    data: BaseToken):
+               data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException(
                 "You are not allowed to update article types")
@@ -42,7 +44,7 @@ class ArticleTypeService(BaseService):
         db.session.commit()
         db.session.refresh(db_article_type)
         return db_article_type
-    
+
     def delete(self, id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException(

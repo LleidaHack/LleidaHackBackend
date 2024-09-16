@@ -5,8 +5,7 @@ from src.utils.UserType import UserType
 
 
 def get_notifications(userId: int, db: Session):
-    return db.query(Notification).filter(
-        Notification.user_id == userId).all()
+    return db.query(Notification).filter(Notification.user_id == userId).all()
 
 
 def add_notification(payload: Notification, db: Session):

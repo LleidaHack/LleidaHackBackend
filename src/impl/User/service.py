@@ -37,37 +37,32 @@ class UserService(BaseService):
         return db.session.query(User).all()
 
     def get_by_id(self, userId: int):
-        user = db.session.query(User).filter(
-            User.id == userId).first()
+        user = db.session.query(User).filter(User.id == userId).first()
         if user is None:
             raise NotFoundException("User not found")
         # db.session.refresh(user)
         return user
 
     def get_by_email(self, email: str, exc=True):
-        user = db.session.query(User).filter(
-            User.email == email).first()
+        user = db.session.query(User).filter(User.email == email).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user
 
     def get_by_nickname(self, nickname: str, exc=True):
-        user = db.session.query(User).filter(
-            User.nickname == nickname).first()
+        user = db.session.query(User).filter(User.nickname == nickname).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user
 
     def get_by_phone(self, phone: str, exc=True):
-        user = db.session.query(User).filter(
-            User.telephone == phone).first()
+        user = db.session.query(User).filter(User.telephone == phone).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user
 
     def get_by_code(self, code: str, exc=True):
-        user = db.session.query(User).filter(
-            User.code == code).first()
+        user = db.session.query(User).filter(User.code == code).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user

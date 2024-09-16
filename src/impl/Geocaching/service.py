@@ -10,8 +10,7 @@ def get_all_geocachings(db: Session):
 
 
 def get_geocaching(db: Session, code: str):
-    return db.query(Geocaching).filter(
-        Geocaching.code == code).first()
+    return db.query(Geocaching).filter(Geocaching.code == code).first()
 
 
 def get_all_hacker_geocaching(db: Session, user_code: str):

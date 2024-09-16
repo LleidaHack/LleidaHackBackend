@@ -67,8 +67,7 @@ class HackerGroupService(BaseService):
 
     @BaseService.needs_service(EventService)
     @BaseService.needs_service(HackerService)
-    def add_hacker_group(self, payload: HackerGroupCreate,
-                         data: BaseToken):
+    def add_hacker_group(self, payload: HackerGroupCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
             raise AuthenticationException("Not authorized")
         members = []
@@ -82,8 +81,8 @@ class HackerGroupService(BaseService):
         # generate a random 10 letter code
         code = self.generate_group_code()
         new_hacker_group = HackerGroup(**payload.model_dump(),
-                                            code=code,
-                                            members=members)
+                                       code=code,
+                                       members=members)
         db.session.add(new_hacker_group)
         db.session.commit()
         db.session.refresh(new_hacker_group)

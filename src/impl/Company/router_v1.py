@@ -31,8 +31,7 @@ def add(payload: CompanyCreate, token: BaseToken = Depends(JWTBearer())):
     return {"success": True, "id": new_company.id}
 
 
-@router.get("/{companyId}",
-            response_model=Union[CompanyGetAll, CompanyGet])
+@router.get("/{companyId}", response_model=Union[CompanyGetAll, CompanyGet])
 def get(companyId: int):
     return company_service.get_company(companyId)
 

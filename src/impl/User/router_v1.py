@@ -32,25 +32,21 @@ def get(userId: int, token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user(userId, token)
 
 
-@router.get("/email/{email}",
-            response_model=Union[UserGetAll, UserGet])
+@router.get("/email/{email}", response_model=Union[UserGetAll, UserGet])
 def get_by_email(email: str, token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user_by_email(email, token)
 
 
-@router.get("/nickname/{nickname}",
-            response_model=Union[UserGetAll, UserGet])
+@router.get("/nickname/{nickname}", response_model=Union[UserGetAll, UserGet])
 def get_by_nickname(nickname: str, token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user_by_nickname(nickname, token)
 
 
-@router.get("/phone/{phone}",
-            response_model=Union[UserGetAll, UserGet])
+@router.get("/phone/{phone}", response_model=Union[UserGetAll, UserGet])
 def get_by_phone(phone: str, token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user_by_phone(phone, token)
 
 
-@router.get("/code/{code}",
-            response_model=Union[UserGetAll, UserGet])
+@router.get("/code/{code}", response_model=Union[UserGetAll, UserGet])
 def get_by_code(code: str, token: BaseToken = Depends(JWTBearer())):
     return user_service.get_user_by_code(code, token)
