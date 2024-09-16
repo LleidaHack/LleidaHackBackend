@@ -49,6 +49,7 @@ class App:
         from src.error.InvalidDataException import InvalidDataException
         from src.error.NotFoundException import NotFoundException
         from src.error.ValidationException import ValidationException
+        from src.error.MailClientException import MailClientException
         self.app.add_exception_handler(AuthenticationException,
                                        eh.authentication_exception_handler)
         self.app.add_exception_handler(NotFoundException,
@@ -59,6 +60,8 @@ class App:
                                        eh.invalid_data_exception_handler)
         self.app.add_exception_handler(InputException,
                                        eh.input_exception_handler)
+        self.app.add_exception_handler(MailClientException,
+                                       eh.initialize_exception_handler)
 
     def setup_static_folder(self):
         self.app.mount('/static',
