@@ -10,6 +10,7 @@ class MealCreate(BaseSchema):
 
 
 class MealGet(BaseSchema):
+    id: int
     name: str
     description: str
     event_id: int
