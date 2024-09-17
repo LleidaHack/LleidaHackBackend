@@ -34,9 +34,11 @@ def get_hackeps():
     year = datetime.now().year
     return event_service.get_hackeps(int(year))
 
+
 @router.get("/get_hackeps/{year}", response_model=EventGetSchema)
-def get_hackeps_by_year(year:str):
+def get_hackeps_by_year(year: str):
     return event_service.get_hackeps(int(year))
+
 
 @router.get("/all", response_model=List[EventGet])
 def get_all(token: BaseToken = Depends(JWTBearer())):
