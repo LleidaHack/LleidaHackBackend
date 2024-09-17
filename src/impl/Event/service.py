@@ -57,9 +57,11 @@ class EventService(BaseService):
         e = db.session.query(ModelEvent).filter(
             ModelEvent.name.ilike(f'%HackEPS {str(year)}%')).first()
         if e is None:
-            return db.session.query(ModelEvent).filter(
+            e = db.session.query(ModelEvent).filter(
                 ModelEvent.name.ilike(f'%HackEPS%')).order_by(
                     ModelEvent.start_date).first()
+        if e is None:
+            raise NotFoundException("We can't find an event for this year or earlier ")
         return e
 
     def archive(self, id: int, data: BaseToken):
