@@ -223,7 +223,7 @@ class EventService(BaseService):
                        reciver_mail=str(hacker.email),
                        subject=f'Your have registered to {event.name}',
                        fields=f'{hacker.name}'))
-        self.mail_client.send_mail_by_id(mail.id)
+        self.mail_client.send_mail(mail)
         db.session.add(reg)
         db.session.commit()
         db.session.refresh(event)

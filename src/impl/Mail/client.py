@@ -15,7 +15,7 @@ def initialized(func):
         if args[0]._initialized:
             return func(*args, **kwargs)
         print('MailClient not initialized')
-        raise MailClientException('MailClient is not available')
+        #raise MailClientException('MailClient is not available')
 
     return wrapper
 
@@ -53,6 +53,11 @@ class MailClient(BaseClient):
     @initialized
     def send_mail_by_id(self, id: int):
         r = mail_send_by_id.asyncio_detailed(id, client=self.client)
+        return r
+
+    @initialized
+    def send_mail(self, mail):
+        r = mail_send_by_id.asyncio_detailed(mail.id, client=self.client)
         return r
 
     def get_template_by_name(self, name):

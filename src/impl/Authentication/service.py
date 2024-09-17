@@ -74,7 +74,7 @@ class AuthenticationService(BaseService):
                        reciver_mail=str(user.email),
                        subject='Reset password mail',
                        fields=f'{user.name},{reset_pass_token}'))
-        self.mail_client.send_mail_by_id(mail.id)
+        self.mail_client.send_mail(mail)
         return {"success": True}
 
     @BaseService.needs_service(UserService)

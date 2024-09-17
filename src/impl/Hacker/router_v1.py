@@ -42,7 +42,7 @@ def signup(payload: HackerCreateSchema):
                    reciver_mail=new_hacker.email,
                    subject='Your User Hacker was created',
                    fields=f'{new_hacker.name},{verification_token}'))
-    mail_client.send_mail_by_id(mail.id)
+    mail_client.send_mail(mail)
     return {
         "success": True,
         "user_id": new_hacker.id,
