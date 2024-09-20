@@ -35,7 +35,7 @@ def get_hackeps():
     return event_service.get_hackeps(int(year))
 
 
-@router.get("/get_hackeps/{year}", response_model=EventGetSchema)
+@router.get("/get_hackeps/{year}", response_model=EventGet)
 def get_hackeps_by_year(year: str):
     return event_service.get_hackeps(int(year))
 
