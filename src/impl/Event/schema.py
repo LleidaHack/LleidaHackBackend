@@ -93,7 +93,7 @@ class HackerEventRegistration(BaseSchema):
     study_center: str
     location: str
     how_did_you_meet_us: str
-    wants_credit: Optional[bool] = False
+    wants_credit: bool
     update_user: bool
 
     @field_validator('shirt_size')
