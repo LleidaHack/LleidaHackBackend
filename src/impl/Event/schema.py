@@ -93,6 +93,7 @@ class HackerEventRegistration(BaseSchema):
     study_center: str
     location: str
     how_did_you_meet_us: str
+    wants_credit: Optional[bool] = False
     update_user: bool
 
     @field_validator('shirt_size')
@@ -114,3 +115,4 @@ class HackerEventRegistrationUpdate(BaseSchema):
     study_center: Optional[str] = None
     location: Optional[str] = None
     how_did_you_meet_us: Optional[str] = None
+    wants_credit: Optional[bool] = False
