@@ -5,18 +5,17 @@ from fastapi_sqlalchemy import db
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
-from src.impl.Event.model import HackerAccepted as ModelHackerAccepted
-from src.impl.Event.model import \
-    HackerParticipation as ModelHackerParticipation
-from src.impl.Event.model import HackerRegistration as ModelHackerRegistration
-from src.impl.Hacker.model import Hacker as ModelHacker
-from src.impl.Hacker.schema import HackerGet as HackerCreateSchema
-from src.impl.Hacker.schema import HackerGet as HackerGetSchema
-from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
-from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
-from src.impl.HackerGroup.model import HackerGroupUser as ModelHackerGroupUser
+from src.impl.Event.model import HackerAccepted
+from src.impl.Event.model import HackerParticipation
+from src.impl.Event.model import HackerRegistration
+from src.impl.Hacker.model import Hacker
+from src.impl.Hacker.schema import HackerCreate
+from src.impl.Hacker.schema import HackerGet
+from src.impl.Hacker.schema import HackerGetAll
+from src.impl.Hacker.schema import HackerUpdate
+from src.impl.HackerGroup.model import HackerGroupUser
 from src.impl.Mail.client import MailClient
-from src.impl.UserConfig.model import UserConfig as ModelUserConfig
+from src.impl.UserConfig.model import UserConfig
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import \
     BaseService  # an object to provide global access to a database session
@@ -25,7 +24,7 @@ from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.Meal.model import HackerMeal as HackerMealModel
+from src.impl.Meal.model import HackerMeal
 
 
 class HackerService(BaseService):
@@ -33,18 +32,16 @@ class HackerService(BaseService):
     hackergroup_service = None
 
     def get_all(self):
-        return db.session.query(ModelHacker).all()
+        return db.session.query(Hacker).all()
 
     def get_by_id(self, hacker_id: int):
-        user = db.session.query(ModelHacker).filter(
-            ModelHacker.id == hacker_id).first()
+        user = db.session.query(Hacker).filter(Hacker.id == hacker_id).first()
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
 
     def get_by_code(self, code: str):
-        hacker = db.session.query(ModelHacker).filter(
-            ModelHacker.code == code).first()
+        hacker = db.session.query(Hacker).filter(Hacker.code == code).first()
         if hacker is None:
             raise NotFoundException('hacker not found')
         return hacker
@@ -52,32 +49,30 @@ class HackerService(BaseService):
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
         if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
-            return HackerGetAllSchema.from_orm(user)
-        return HackerGetSchema.from_orm(user)
+            return HackerGetAll.model_validate(user)
+        return HackerGet.model_validate(user)
 
     def get_hacker_by_code(self, code: str):
-        user = db.session.query(ModelHacker).filter(
-            ModelHacker.code == code).first()
+        user = db.session.query(Hacker).filter(Hacker.code == code).first()
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
 
     def get_hacker_by_email(self, email: str):
-        user = db.session.query(ModelHacker).filter(
-            ModelHacker.email == email).first()
+        user = db.session.query(Hacker).filter(Hacker.email == email).first()
         if user is None:
             raise NotFoundException("Hacker not found")
         return user
 
-    def add_hacker(self, payload: HackerCreateSchema):
+    def add_hacker(self, payload: HackerCreate):
         check_user(payload.email, payload.nickname, payload.telephone)
-        new_hacker = ModelHacker(**payload.dict(exclude={"config"}),
-                                 code=generate_user_code())
+        new_hacker = Hacker(**payload.model_dump(exclude={"config"}),
+                            code=generate_user_code())
         if payload.image is not None:
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)
 
-        new_config = ModelUserConfig(**payload.config.dict())  ##TODO
+        new_config = UserConfig(**payload.config.model_dump())  ##TODO
 
         db.session.add(new_config)
         db.session.flush()
@@ -93,8 +88,8 @@ class HackerService(BaseService):
             [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
-        hacker_groups_ids = db.session.query(ModelHackerGroupUser).filter(
-            ModelHackerGroupUser.hacker_id == hackerId).all()
+        hacker_groups_ids = db.session.query(HackerGroupUser).filter(
+            HackerGroupUser.hacker_id == hackerId).all()
         hacker_groups_ids = [group.group_id for group in hacker_groups_ids]
         hacker_groups = self.hackergroup_service.get_when_id_in(
             hacker_groups_ids)
@@ -106,21 +101,21 @@ class HackerService(BaseService):
                     members_ids = [h.id for h in group.members]
                     members_ids.remove(hackerId)
                     group.leader_id = members_ids[0]
-        meals = db.session.query(HackerMealModel).filter(
-            HackerMealModel.user_id == hackerId).delete()
-        event_regs = db.session.query(ModelHackerRegistration).filter(
-            ModelHackerRegistration.user_id == hackerId).delete()
-        event_parts = db.session.query(ModelHackerParticipation).filter(
-            ModelHackerParticipation.user_id == hackerId).delete()
-        event_accs = db.session.query(ModelHackerAccepted).filter(
-            ModelHackerAccepted.user_id == hackerId).delete()
+        meals = db.session.query(HackerMeal).filter(
+            HackerMeal.user_id == hackerId).delete()
+        event_regs = db.session.query(HackerRegistration).filter(
+            HackerRegistration.user_id == hackerId).delete()
+        event_parts = db.session.query(HackerParticipation).filter(
+            HackerParticipation.user_id == hackerId).delete()
+        event_accs = db.session.query(HackerAccepted).filter(
+            HackerAccepted.user_id == hackerId).delete()
         db.session.delete(hacker)
 
         # db.session.delete(hacker_group_user)
         db.session.commit()
         return hacker
 
-    def update_hacker(self, hackerId: int, payload: HackerUpdateSchema,
+    def update_hacker(self, hackerId: int, payload: HackerUpdate,
                       data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) or not data.check(
             [UserType.HACKER], hackerId):
@@ -169,7 +164,7 @@ class HackerService(BaseService):
         hacker = self.get_by_id(hackerId)
         return hacker.groups
 
-    # def register_hacker_to_event(self, payload: EventRegistrationSchema, hacker_id: int, event_id: int, data: BaseToken):
+    # def register_hacker_to_event(self, payload: EventRegistration, hacker_id: int, event_id: int, data: BaseToken):
     #     if not data.is_admin:
     #         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
     #                                     (data.type == UserType.HACKER.value
@@ -185,7 +180,7 @@ class HackerService(BaseService):
     #         raise InvalidDataException("Event full")
     #     if payload.cv != "" and not isBase64(payload.cv):
     #         raise InvalidDataException("Invalid CV")
-    #     event_registration = ModelHackerRegistration(**payload.dict(),
+    #     event_registration = HackerRegistration(**payload.model_dump(),
     #                                                 user_id=hacker.id,
     #                                                 event_id=event.id,
     #                                                 confirmed_assistance=False,
@@ -218,7 +213,7 @@ class HackerService(BaseService):
     #     send_event_registration_email(hacker, event)
     #     return event
 
-    # def unregister_hacker_from_event(event: ModelEvent, hacker: ModelHacker,
+    # def unregister_hacker_from_event(event: Event, hacker: Hacker,
     #                                 db.session: Session, data: BaseToken):
     #     if not data.is_admin:
     #         if not (data.available and (data.type == UserType.LLEIDAHACKER.value or
@@ -243,7 +238,7 @@ class HackerService(BaseService):
     # def update_all_codes(data: BaseToken):
     #     if not data.is_admin:
     #         raise AuthenticationException("Not authorized")
-    #     hackers = db.session.query(ModelHacker).all()
+    #     hackers = db.session.query(Hacker).all()
     #     for hacker in hackers:
     #         hacker.code = generate_user_code(
     #             db.session

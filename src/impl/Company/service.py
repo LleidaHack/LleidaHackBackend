@@ -3,9 +3,9 @@ from fastapi_sqlalchemy import db
 import src.impl.User.service as U_S
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
-from src.impl.Company.model import Company as ModelCompany
-from src.impl.Company.schema import CompanyCreate as CompanyCreateSchema
-from src.impl.Company.schema import CompanyUpdate as CompanyUpdateSchema
+from src.impl.Company.model import Company
+from src.impl.Company.schema import CompanyCreate
+from src.impl.Company.schema import CompanyUpdate
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import check_image, set_existing_data
 from src.utils.Token import BaseToken
@@ -17,11 +17,11 @@ class CompanyService(BaseService):
     user_service = None
 
     def get_all(self):
-        return db.session.query(ModelCompany).all()
+        return db.session.query(Company).all()
 
     def get_by_id(self, companyId: int):
-        company = db.session.query(ModelCompany).filter(
-            ModelCompany.id == companyId).first()
+        company = db.session.query(Company).filter(
+            Company.id == companyId).first()
         if company is None:
             raise NotFoundException('company not found')
         return company
@@ -29,20 +29,20 @@ class CompanyService(BaseService):
     def get_company(self, companyId: int):
         return self.get_by_id(companyId)
 
-    def add_company(self, payload: CompanyCreateSchema, data: BaseToken):
+    def add_company(self, payload: CompanyCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         # if data.user_type == UserType.COMPANYUSER.value:
         # user = self.user_service.get_by_id(data.user_id)
         payload = check_image(payload)
-        new_company = ModelCompany(**payload.dict())
+        new_company = Company(**payload.model_dump())
         db.session.add(new_company)
         db.session.commit()
         db.session.refresh(new_company)
         return new_company
 
     @BaseService.needs_service(U_S.UserService)
-    def update_company(self, companyId: int, payload: CompanyUpdateSchema,
+    def update_company(self, companyId: int, payload: CompanyUpdate,
                        data: BaseToken):
         if not data.check([UserType.COMPANYUSER, UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")

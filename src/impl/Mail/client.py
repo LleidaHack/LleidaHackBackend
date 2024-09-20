@@ -11,6 +11,7 @@ from src.configuration.Configuration import Configuration
 
 
 def initialized(func):
+
     def wrapper(*args, **kwargs):
         if args[0]._initialized:
             return func(*args, **kwargs)
@@ -19,10 +20,12 @@ def initialized(func):
 
     return wrapper
 
+
 class MailClient(BaseClient):
     name = 'mail_client'
     _internall_templates = {}
     _initialized = False
+
     def __init__(self) -> Any:
         super().__init__(Configuration.clients.mail_client.url, None)
         try:
@@ -33,8 +36,7 @@ class MailClient(BaseClient):
             self._initialized = False
             print('MailClient not initialized')
             # raise MailClientException('MailClient is not available')
-    
-   
+
     def check_health(self):
         r = health_check.sync_detailed(client=self.client)
         if not r.status_code == HTTPStatus.OK:
@@ -42,7 +44,7 @@ class MailClient(BaseClient):
                 'Seems the Mail Backend is not up so maybe consider changing the client url in your config or maybe start the service'
             )
         return True
-    
+
     @initialized
     def create_mail(self, mail: MailCreate):
         r = mail_create.sync(client=self.client, body=mail)
@@ -57,7 +59,7 @@ class MailClient(BaseClient):
 
     def get_template_by_name(self, name):
         return template_get_by_name.sync(name, client=self.client)
-    
+
     def _get_internall_templates(self):
         for _ in InternalTemplate:
             r = self.get_template_by_name(_.value)

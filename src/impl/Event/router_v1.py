@@ -5,15 +5,15 @@ from fastapi import APIRouter, Depends, Response
 
 from src.configuration.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
-from src.impl.Company.schema import CompanyGet as CompanyGetSchema
-from src.impl.Event.schema import EventCreate as EventCreateSchema, HackerEventRegistration
-from src.impl.Event.schema import EventGet as EventGetSchema
-from src.impl.Event.schema import EventGetAll as EventGetAllSchema
-from src.impl.Event.schema import EventUpdate as EventUpdateSchema
+from src.impl.Company.schema import CompanyGet
+from src.impl.Event.schema import EventCreate, HackerEventRegistration
+from src.impl.Event.schema import EventGet
+from src.impl.Event.schema import EventGetAll
+from src.impl.Event.schema import EventUpdate
 from src.impl.Event.service import EventService
-from src.impl.Hacker.schema import HackerGet as HackerGetSchema
-from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
-from src.impl.Meal.schema import MealGet as MealGetSchema
+from src.impl.Hacker.schema import HackerGet
+from src.impl.HackerGroup.schema import HackerGroupGet
+from src.impl.Meal.schema import MealGet
 from src.utils.JWTBearer import JWTBearer
 from src.utils.service_utils import subtract_lists
 from src.utils.Token import AssistenceToken, BaseToken
@@ -28,35 +28,37 @@ router = APIRouter(
 event_service = EventService()
 
 
-@router.get("/get_hackeps", response_model=EventGetSchema)
+@router.get("/get_hackeps", response_model=EventGet)
 def get_hackeps():
     #get the current year
     year = datetime.now().year
     return event_service.get_hackeps(int(year))
 
+
 @router.get("/get_hackeps/{year}", response_model=EventGetSchema)
-def get_hackeps_by_year(year:str):
+def get_hackeps_by_year(year: str):
     return event_service.get_hackeps(int(year))
 
-@router.get("/all", response_model=List[EventGetSchema])
+
+@router.get("/all", response_model=List[EventGet])
 def get_all(token: BaseToken = Depends(JWTBearer())):
     return event_service.get_all()
 
 
-@router.get("/{id}", response_model=Union[EventGetAllSchema, EventGetSchema])
+@router.get("/{id}", response_model=Union[EventGetAll, EventGet])
 def get(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event(id, token)
 
 
 @router.post("/")
-def create(event: EventCreateSchema, token: BaseToken = Depends(JWTBearer())):
+def create(event: EventCreate, token: BaseToken = Depends(JWTBearer())):
     new_event = event_service.add_event(event, token)
     return {'success': True, 'event_id': new_event.id}
 
 
 @router.put("/{id}")
 def update(id: int,
-           event: EventUpdateSchema,
+           event: EventUpdate,
            token: BaseToken = Depends(JWTBearer())):
     new_event, updated = event_service.update_event(id, event, token)
     return {'success': True, 'event_id': new_event.id, 'updated': updated}
@@ -96,22 +98,22 @@ def is_participant(id: int,
     return event_service.is_participant(id, hacker_id, token)
 
 
-@router.get("/{id}/meals", response_model=List[MealGetSchema])
+@router.get("/{id}/meals", response_model=List[MealGet])
 def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event_meals(id, token)
 
 
-@router.get("/{id}/participants", response_model=List[HackerGetSchema])
+@router.get("/{id}/participants", response_model=List[HackerGet])
 def get_participants(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event_participants(id, token)
 
 
-@router.get("/{id}/sponsors", response_model=List[CompanyGetSchema])
+@router.get("/{id}/sponsors", response_model=List[CompanyGet])
 def get_sponsors(id: int):
     return event_service.get_event_sponsors(id)
 
 
-@router.get("/{id}/groups", response_model=List[HackerGroupGetSchema])
+@router.get("/{id}/groups", response_model=List[HackerGroupGet])
 def get_groups(id: int, token: BaseToken = Depends(JWTBearer())):
     event = event_service.get_event_groups(id, token)
     return {'success': True, 'groups': event}
@@ -166,8 +168,7 @@ def remove_sponsor(id: int,
     return {'success': True, 'event_id': event.id}
 
 
-@router.get("/{eventId}/get_approved_hackers",
-            response_model=List[HackerGetSchema])
+@router.get("/{eventId}/get_approved_hackers", response_model=List[HackerGet])
 def get_accepted_hackers(eventId: int,
                          token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)
@@ -188,7 +189,7 @@ def get_sizes(event_id: int):
 
 
 @router.get("/{event_id}/get_unregistered_hackers",
-            response_model=List[HackerGetSchema])
+            response_model=List[HackerGet])
 def get_unregistered_hackers(event_id: int,
                              token: BaseToken = Depends(JWTBearer())):
     """
