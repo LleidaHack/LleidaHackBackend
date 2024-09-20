@@ -4,14 +4,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 # from services.mail import send_registration_confirmation_email
-from src.impl.LleidaHacker.schema import \
-    LleidaHackerCreate as LleidaHackerCreateSchema
-from src.impl.LleidaHacker.schema import \
-    LleidaHackerGet as LleidaHackerGetSchema
-from src.impl.LleidaHacker.schema import \
-    LleidaHackerGetAll as LleidaHackerGetAllSchema
-from src.impl.LleidaHacker.schema import \
-    LleidaHackerUpdate as LleidaHackerUpdateSchema
+from src.impl.LleidaHacker.schema import LleidaHackerCreate
+from src.impl.LleidaHacker.schema import LleidaHackerGet
+from src.impl.LleidaHacker.schema import LleidaHackerGetAll
+from src.impl.LleidaHacker.schema import LleidaHackerUpdate
 from src.impl.LleidaHacker.service import LleidaHackerService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
@@ -26,7 +22,7 @@ lleidahacker_service = LleidaHackerService()
 
 
 @router.post("/signup")
-def signup(payload: LleidaHackerCreateSchema):
+def signup(payload: LleidaHackerCreate):
     new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
     access_token = AccesToken(new_lleidahacker).user_set()
     refresh_token = RefreshToken(new_lleidahacker).user_set()
@@ -40,21 +36,20 @@ def signup(payload: LleidaHackerCreateSchema):
     }
 
 
-@router.get("/all", response_model=List[LleidaHackerGetSchema])
+@router.get("/all", response_model=List[LleidaHackerGet])
 def get_all(str: Optional[BaseToken] = Depends(JWTBearer(required=False))):
     return lleidahacker_service.get_all()
 
 
 @router.get("/{userId}",
-            response_model=Union[LleidaHackerGetAllSchema,
-                                 LleidaHackerGetSchema])
+            response_model=Union[LleidaHackerGetAll, LleidaHackerGet])
 def get(userId: int,
         data: Optional[BaseToken] = Depends(JWTBearer(required=False))):
     return lleidahacker_service.get_lleidahacker(userId, data)
 
 
 # @router.post("/")
-# def add_lleidahacker(payload: SchemaLleidaHacker,
+# def add_lleidahacker(payload: LleidaHacker,
 #                            response: Response,
 #                            str=Depends(JWTBearer())):
 #     new_lleidahacker = lleidahacker_service.add_lleidahacker(payload, db)
@@ -69,7 +64,7 @@ def delete(userId: int, data: BaseToken = Depends(JWTBearer())):
 
 @router.put("/{userId}")
 def update(userId: int,
-           payload: LleidaHackerUpdateSchema,
+           payload: LleidaHackerUpdate,
            token: BaseToken = Depends(JWTBearer())):
     lleidahacker, updated = lleidahacker_service.update_lleidahacker(
         userId, payload, token)

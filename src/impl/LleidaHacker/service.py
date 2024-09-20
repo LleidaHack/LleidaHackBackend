@@ -4,15 +4,11 @@ from fastapi_sqlalchemy import db
 
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
-from src.impl.LleidaHacker.model import LleidaHacker as ModelLleidaHacker
-from src.impl.LleidaHacker.schema import \
-    LleidaHackerCreate as LleidaHackerCreateSchema
-from src.impl.LleidaHacker.schema import \
-    LleidaHackerGet as LleidaHackerGetSchema
-from src.impl.LleidaHacker.schema import \
-    LleidaHackerGetAll as LleidaHackerGetAllSchema
-from src.impl.LleidaHacker.schema import \
-    LleidaHackerUpdate as LleidaHackerUpdateSchema
+from src.impl.LleidaHacker.model import LleidaHacker
+from src.impl.LleidaHacker.schema import LleidaHackerCreate
+from src.impl.LleidaHacker.schema import LleidaHackerGet
+from src.impl.LleidaHacker.schema import LleidaHackerGetAll
+from src.impl.LleidaHacker.schema import LleidaHackerUpdate
 from src.impl.LleidaHackerGroup.model import LleidaHackerGroup, LleidaHackerGroupUser
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
@@ -20,18 +16,18 @@ from src.utils.service_utils import (check_image, check_user,
                                      generate_user_code, set_existing_data)
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.UserConfig.model import UserConfig as ModelUserConfig
+from src.impl.UserConfig.model import UserConfig
 
 
 class LleidaHackerService(BaseService):
     name = 'lleidahacker_service'
 
     def get_all(self):
-        return db.session.query(ModelLleidaHacker).all()
+        return db.session.query(LleidaHacker).all()
 
     def get_by_id(self, id: int):
-        user = db.session.query(ModelLleidaHacker).filter(
-            ModelLleidaHacker.id == id).first()
+        user = db.session.query(LleidaHacker).filter(
+            LleidaHacker.id == id).first()
         if user is None:
             raise NotFoundException("LleidaHacker not found")
         return user
@@ -40,20 +36,20 @@ class LleidaHackerService(BaseService):
         user = self.get_by_id(userId)
         if type(data) is not bool and data.check([UserType.LLEIDAHACKER],
                                                  userId):
-            return LleidaHackerGetAllSchema.from_orm(user)
-        return LleidaHackerGetSchema.from_orm(user)
+            return LleidaHackerGetAll.model_validate(user)
+        return LleidaHackerGet.model_validate(user)
 
-    def add_lleidahacker(self, payload: LleidaHackerCreateSchema):
+    def add_lleidahacker(self, payload: LleidaHackerCreate):
         check_user(payload.email, payload.nickname, payload.telephone)
         if payload.image is not None:
             payload = check_image(payload)
-        new_lleidahacker = ModelLleidaHacker(**payload.dict(
+        new_lleidahacker = LleidaHacker(**payload.model_dump(
             exclude={"config"}),
-                                             code=generate_user_code())
+                                        code=generate_user_code())
         new_lleidahacker.password = get_password_hash(payload.password)
         new_lleidahacker.active = True
 
-        new_config = ModelUserConfig(**payload.config.dict())
+        new_config = UserConfig(**payload.config.model_dump())
 
         db.session.add(new_config)
         db.session.flush()
@@ -63,8 +59,7 @@ class LleidaHackerService(BaseService):
         db.session.refresh(new_lleidahacker)
         return new_lleidahacker
 
-    def update_lleidahacker(self, userId: int,
-                            payload: LleidaHackerUpdateSchema,
+    def update_lleidahacker(self, userId: int, payload: LleidaHackerUpdate,
                             data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER], userId):
             raise AuthenticationException("Not authorized")

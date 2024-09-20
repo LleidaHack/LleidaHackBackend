@@ -13,8 +13,9 @@ class ArticleType(BaseModel):
     name: str = Column(String, unique=True, index=True)
     description: str = Column(String)
 
-    articles: List[Article] = relationship('Article',
-                                           secondary='article_article_type',
-                                           primaryjoin='ArticleType.id == article_article_type.c.article_type_id', 
-                                           secondaryjoin='Article.id == article_article_type.c.article_id', 
-                                           uselist=True)
+    articles: List[Article] = relationship(
+        'Article',
+        secondary='article_article_type',
+        primaryjoin='ArticleType.id == article_article_type.c.article_type_id',
+        secondaryjoin='Article.id == article_article_type.c.article_id',
+        uselist=True)
