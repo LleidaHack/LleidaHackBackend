@@ -54,7 +54,7 @@ class MailClient(BaseClient):
 
     @initialized
     def send_mail_by_id(self, id: int):
-        r = mail_send_by_id.asyncio_detailed(id, client=self.client)
+        r = mail_send_by_id.sync_detailed(id, client=self.client)
         return r
 
     def get_template_by_name(self, name):
