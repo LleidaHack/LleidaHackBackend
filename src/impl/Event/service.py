@@ -227,10 +227,10 @@ class EventService(BaseService):
         db.session.commit()
         db.session.refresh(event)
         return event
-    
+
     @BaseService.needs_service(UserService)
     def update_register(self, event_id: int, hacker_id: int,
-                   payload: HackerEventRegistration, data: BaseToken):
+                        payload: HackerEventRegistration, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
             [UserType.HACKER], hacker_id):
             raise AuthenticationException("Not authorized")
@@ -244,7 +244,9 @@ class EventService(BaseService):
         hacker = self.user_service.get_by_id(hacker_id)
         if hacker not in event.registered_hackers:
             raise InvalidDataException('Hacker is not registered')
-        reg = db.session.query(HackerEventRegistration).filter(HackerRegistration.user_id == hacker_id, HackerRegistration.event_id == event_id).first()
+        reg = db.session.query(HackerEventRegistration).filter(
+            HackerRegistration.user_id == hacker_id,
+            HackerRegistration.event_id == event_id).first()
         if reg is None:
             raise InvalidDataException('Hacker is not registered')
         set_existing_data(reg, payload)
@@ -395,14 +397,16 @@ class EventService(BaseService):
                 restrictions.append(user.food_restrictions)
         # remove duplicates
         return list(set(restrictions))
-    
+
     @BaseService.needs_service(HackerService)
     def get_credits(self, eventId: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         users = {_.id: _.email for _ in self.hacker_service.get_all()}
         event = self.get_by_id(eventId)
-        regs = db.session.query(HackerRegistration).filter(HackerRegistration.event_id == eventId, HackerRegistration.wants_credit==True).all()
+        regs = db.session.query(HackerRegistration).filter(
+            HackerRegistration.event_id == eventId,
+            HackerRegistration.wants_credit == True).all()
         return [users[_.user_id] for _ in regs]
 
     @BaseService.needs_service('HackerGroupService')
