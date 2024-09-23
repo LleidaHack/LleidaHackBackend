@@ -227,10 +227,10 @@ class EventService(BaseService):
         db.session.commit()
         db.session.refresh(event)
         return event
-    
+
     @BaseService.needs_service(UserService)
     def update_register(self, event_id: int, hacker_id: int,
-                   payload: HackerEventRegistration, data: BaseToken):
+                        payload: HackerEventRegistration, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
             [UserType.HACKER], hacker_id):
             raise AuthenticationException("Not authorized")
@@ -244,7 +244,9 @@ class EventService(BaseService):
         hacker = self.user_service.get_by_id(hacker_id)
         if hacker not in event.registered_hackers:
             raise InvalidDataException('Hacker is not registered')
-        reg = db.session.query(HackerEventRegistration).filter(HackerRegistration.user_id == hacker_id, HackerRegistration.event_id == event_id).first()
+        reg = db.session.query(HackerEventRegistration).filter(
+            HackerRegistration.user_id == hacker_id,
+            HackerRegistration.event_id == event_id).first()
         if reg is None:
             raise InvalidDataException('Hacker is not registered')
         set_existing_data(reg, payload)

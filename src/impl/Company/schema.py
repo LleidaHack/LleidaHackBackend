@@ -1,7 +1,6 @@
 from typing import Optional
 from pydantic import field_validator
 
-
 from src.utils.Base.BaseSchema import BaseSchema
 
 
@@ -35,6 +34,7 @@ class CompanyGet(BaseSchema):
     linkdin: str
     telephone: str
 
+
 class CompanyGetByTier(BaseSchema):
     name: str
     description: str
@@ -45,6 +45,7 @@ class CompanyGetByTier(BaseSchema):
     address: str
     linkdin: str
     telephone: str
+
 
 class CompanyGetAll(CompanyGet):
     id: int
