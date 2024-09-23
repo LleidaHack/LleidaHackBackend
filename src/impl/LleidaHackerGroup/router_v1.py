@@ -79,13 +79,15 @@ def add_leader(groupId: int,
         groupId, lleidahackerId, token)
     return {"success": True, "updated_id": lleidahacker_group.id}
 
+
 @router.delete("/{groupId}/leader/{lleidahackerId}")
 def remove_leader(groupId: int,
-               lleidahackerId: int,
-               token: BaseToken = Depends(JWTBearer())):
+                  lleidahackerId: int,
+                  token: BaseToken = Depends(JWTBearer())):
     lleidahacker_group = lleidahackergroup_service.remove_lleidahacker_group_leader(
         groupId, lleidahackerId, token)
     return {"success": True, "updated_id": lleidahacker_group.id}
+
 
 @router.put("/sorted/")
 def get_sorted():

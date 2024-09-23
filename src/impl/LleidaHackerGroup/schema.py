@@ -8,10 +8,12 @@ class LleidaHackerGroupCreate(BaseSchema):
     name: str
     description: str
 
+
 class LleidaHackerGroupGet(BaseSchema):
     name: str
     description: str
     leader: List[UserGet]
+
 
 class LleidaHackerGroupGetAll(LleidaHackerGroupGet):
     pass

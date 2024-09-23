@@ -13,15 +13,16 @@ class LleidaHackerGroupUser(BaseModel):
                      primary_key=True)
     primary: bool = Column(Boolean, default=False)
 
+
 class LleidaHackerGroupLeader(BaseModel):
     __tablename__ = 'lleida_hacker_group_leader'
     group_id = Column(Integer,
                       ForeignKey('lleida_hacker_group.id'),
                       primary_key=True)
     user_id = Column(Integer,
-                        ForeignKey('lleida_hacker.user_id'),
-                        primary_key=True)
-    
+                     ForeignKey('lleida_hacker.user_id'),
+                     primary_key=True)
+
 
 class LleidaHackerGroup(BaseModel):
     __tablename__ = 'lleida_hacker_group'
@@ -34,4 +35,4 @@ class LleidaHackerGroup(BaseModel):
     members = relationship('LleidaHacker',
                            secondary='lleida_hacker_group_user')
     leaders = relationship('LleidaHacker',
-                            secondary='lleida_hacker_group_leader')
+                           secondary='lleida_hacker_group_leader')

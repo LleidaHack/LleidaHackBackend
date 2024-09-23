@@ -76,8 +76,8 @@ class LleidaHackerGroupService(BaseService):
         return lleidahacker_group
 
     @BaseService.needs_service(LleidaHackerService)
-    def add_lleidahacker_to_group(self, groupId: int, lleidahackerId: int, primary: bool,
-                                  data: BaseToken):
+    def add_lleidahacker_to_group(self, groupId: int, lleidahackerId: int,
+                                  primary: bool, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         lleidahacker_group = self.get_by_id(groupId)
@@ -87,8 +87,9 @@ class LleidaHackerGroupService(BaseService):
             raise AuthenticationException("Not authorized")
         if lleidahacker is None:
             raise NotFoundException("LleidaHacker not found")
-        grp_usr = LleidaHackerGroupUser(group_id=groupId, user_id=lleidahackerId,
-                                  primary=primary)
+        grp_usr = LleidaHackerGroupUser(group_id=groupId,
+                                        user_id=lleidahackerId,
+                                        primary=primary)
         db.session.add(grp_usr)
         db.session.commit()
         db.session.refresh(lleidahacker_group)
@@ -122,14 +123,15 @@ class LleidaHackerGroupService(BaseService):
         lleidahacker = self.get_by_id(lleidahackerId)
         if lleidahacker not in lleidahacker_group.members:
             raise InvalidDataException("LleidaHacker not in group")
-        grp_ldr = LleidaHackerGroupLeader(group_id=groupId, user_id=lleidahackerId)
+        grp_ldr = LleidaHackerGroupLeader(group_id=groupId,
+                                          user_id=lleidahackerId)
         db.session.add(grp_ldr)
         db.session.commit()
         db.session.refresh(lleidahacker_group)
         return lleidahacker_group
-    
-    def remove_lleidahacker_group_leader(self, groupId: int, lleidahackerId: int,
-                                      data: BaseToken):
+
+    def remove_lleidahacker_group_leader(self, groupId: int,
+                                         lleidahackerId: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         lleidahacker_group = self.get_by_id(groupId)
@@ -148,26 +150,36 @@ class LleidaHackerGroupService(BaseService):
         db.session.commit()
         db.session.refresh(lleidahacker_group)
         return lleidahacker_group
+
     # llhk_groups:[
-	# {
-	# 	nom: 'devs',
-	# 	img: ...,
-	# 	caps: [{},]
-	# 	members: [
-	# 		{id: 12, nom: ton},
-	# 	]
-	# },
-	# ]
+
+# {
+# 	nom: 'devs',
+# 	img: ...,
+# 	caps: [{},]
+# 	members: [
+# 		{id: 12, nom: ton},
+# 	]
+# },
+# ]
+
     @BaseService.needs_service(LleidaHackerService)
     def get_sorted(self):
         grps = self.get_all()
         user_group_reg = db.session.query(LleidaHackerGroupUser)\
                                    .filter(LleidaHackerGroupUser.primary==True).all()
         users = {_.id: _ for _ in self.lleidahacker_service.get_all()}
-        return {'llhk_groups':[
-            {
-                'name': _.name,
-                'img': _.image,
-                'leaders': _.leaders,
-                'members': [users[u.user_id] for u in user_group_reg if u.group_id==_.id]
-            } for _ in grps]}
+        return {
+            'llhk_groups': [{
+                'name':
+                _.name,
+                'img':
+                _.image,
+                'leaders':
+                _.leaders,
+                'members': [
+                    users[u.user_id] for u in user_group_reg
+                    if u.group_id == _.id
+                ]
+            } for _ in grps]
+        }
