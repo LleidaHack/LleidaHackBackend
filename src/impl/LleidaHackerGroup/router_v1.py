@@ -87,6 +87,6 @@ def remove_leader(groupId: int,
         groupId, lleidahackerId, token)
     return {"success": True, "updated_id": lleidahacker_group.id}
 
-@router.get("/sorted")
+@router.put("/sorted/")
 def get_sorted():
     return lleidahackergroup_service.get_sorted()
