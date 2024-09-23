@@ -5,13 +5,13 @@ from sqlalchemy.orm import Session
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 
 # from services.mail import send_registration_confirmation_email
-from src.impl.Event.schema import EventGet as EventGetSchema
-from src.impl.Hacker.schema import HackerCreate as HackerCreateSchema
-from src.impl.Hacker.schema import HackerGet as HackerGetSchema
-from src.impl.Hacker.schema import HackerGetAll as HackerGetAllSchema
-from src.impl.Hacker.schema import HackerUpdate as HackerUpdateSchema
+from src.impl.Event.schema import EventGet
+from src.impl.Hacker.schema import HackerCreate
+from src.impl.Hacker.schema import HackerGet
+from src.impl.Hacker.schema import HackerGetAll
+from src.impl.Hacker.schema import HackerUpdate
 from src.impl.Hacker.service import HackerService
-from src.impl.HackerGroup.schema import HackerGroupGet as HackerGroupGetSchema
+from src.impl.HackerGroup.schema import HackerGroupGet
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.JWTBearer import JWTBearer
@@ -28,7 +28,7 @@ mail_client = MailClient()
 
 
 @router.post("/signup")
-def signup(payload: HackerCreateSchema):
+def signup(payload: HackerCreate):
     new_hacker = hacker_service.add_hacker(payload)
 
     # return new_hacker
@@ -51,20 +51,19 @@ def signup(payload: HackerCreateSchema):
     }
 
 
-@router.get("/all", response_model=List[HackerGetSchema])
+@router.get("/all", response_model=List[HackerGet])
 def get_all(token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_all()
 
 
-@router.get("/{hackerId}",
-            response_model=Union[HackerGetAllSchema, HackerGetSchema])
+@router.get("/{hackerId}", response_model=Union[HackerGetAll, HackerGet])
 def get(hackerId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker(hackerId, token)
 
 
 @router.put("/{hackerId}")
 def update(hackerId: int,
-           payload: HackerUpdateSchema,
+           payload: HackerUpdate,
            token: BaseToken = Depends(JWTBearer())):
     hacker, updated = hacker_service.update_hacker(hackerId, payload, token)
     return {"success": True, "updated_id": hacker.id, "updated": updated}
@@ -88,12 +87,12 @@ def delete(userId: int, token: BaseToken = Depends(JWTBearer())):
     return {"success": True, "deleted_id": hacker.id}
 
 
-@router.get("/{userId}/events", response_model=List[EventGetSchema])
+@router.get("/{userId}/events", response_model=List[EventGet])
 def get_events(userId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_events(userId)
 
 
-@router.get("/{userId}/groups", response_model=List[HackerGroupGetSchema])
+@router.get("/{userId}/groups", response_model=List[HackerGroupGet])
 def get_groups(userId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_groups(userId)
 

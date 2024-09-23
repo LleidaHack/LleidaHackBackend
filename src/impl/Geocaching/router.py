@@ -24,8 +24,7 @@ def get_all_hacker_geocaching(user_code: str):
 
 
 @router.post("/geocaching/hacker/{user_code}/{code}")
-def add_user_geocaching(user_code: str,
-                        code: str):
+def add_user_geocaching(user_code: str, code: str):
     return geocaching_service.add_user_geocaching(user_code, code)
 
 

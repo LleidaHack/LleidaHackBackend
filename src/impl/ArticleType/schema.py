@@ -10,8 +10,10 @@ class ArticleTypeGet(BaseSchema):
     name: str
     description: str
 
+
 class ArticleTypeGetAll(ArticleTypeGet):
     pass
+
 
 class ArticleTypeCreate(BaseSchema):
     name: str
@@ -19,34 +21,33 @@ class ArticleTypeCreate(BaseSchema):
 
     @field_validator('name')
     @classmethod
-    def name_validation(cls,v):
+    def name_validation(cls, v):
         if len(v) < 3:
             raise ValueError('name must be longer')
         return v
 
     @field_validator('description')
     @classmethod
-    def description_validation(cls,v):
+    def description_validation(cls, v):
         if len(v) < 10:
             raise ValueError('description must be longer')
         return v
 
-    
+
 class ArticleTypeUpdate(BaseSchema):
     name: Optional[str] = None
     description: Optional[str] = None
 
     @field_validator('name')
     @classmethod
-    def name_validation(cls,v):
+    def name_validation(cls, v):
         if len(v) < 3:
             raise ValueError('name must be longer')
         return v
 
     @field_validator('description')
     @classmethod
-    def description_validation(cls,v):
+    def description_validation(cls, v):
         if len(v) < 10:
             raise ValueError('description must be longer')
         return v
-    

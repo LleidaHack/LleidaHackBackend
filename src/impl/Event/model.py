@@ -43,6 +43,7 @@ class HackerRegistration(BaseModel):
     update_user: bool = Column(Boolean, default=True)
     confirmed_assistance: bool = Column(Boolean, default=False)
     confirm_assistance_token: str = Column(String, default="")
+    wants_credit: bool = Column(Boolean, default=False)
     # accepted: bool = Column(Boolean, default=False)
 
 
