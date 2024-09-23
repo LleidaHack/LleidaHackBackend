@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Response
 from src.configuration.Configuration import Configuration
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet
-from src.impl.Event.schema import EventCreate, HackerEventRegistration
+from src.impl.Event.schema import EventCreate, HackerEventRegistration, HackerEventRegistrationUpdate
 from src.impl.Event.schema import EventGet
 from src.impl.Event.schema import EventGetAll
 from src.impl.Event.schema import EventUpdate
@@ -139,6 +139,15 @@ def register_hacker(id: int,
                     payload: HackerEventRegistration,
                     token: BaseToken = Depends(JWTBearer())):
     event = event_service.add_hacker(id, hacker_id, payload, token)
+    return {'success': True, 'event_id': event.id, 'user_id': hacker_id}
+
+
+@router.put("/{id}/update-register/{hacker_id}")
+def register_hacker(id: int,
+                    hacker_id: int,
+                    payload: HackerEventRegistrationUpdate,
+                    token: BaseToken = Depends(JWTBearer())):
+    event = event_service.update_register(id, hacker_id, payload, token)
     return {'success': True, 'event_id': event.id, 'user_id': hacker_id}
 
 
