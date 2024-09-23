@@ -80,6 +80,6 @@ def get_events(companyId: int, token: BaseToken = Depends(JWTBearer())):
     return company_service.get_company_events(companyId)
 
 
-@router.get("/{tier}", response_model=CompanyGetByTier)
+@router.get("/tier/{tier}", response_model=CompanyGetByTier)
 def get_by_tier(tier: int):
     return company_service.get_by_tier(tier)
