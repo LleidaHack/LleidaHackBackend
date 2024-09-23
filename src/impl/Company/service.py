@@ -30,8 +30,8 @@ class CompanyService(BaseService):
         return self.get_by_id(companyId)
 
     def get_by_tier(self, tier: int):
-        companies = db.session.query(ModelCompany).filter(
-            ModelCompany.tier == tier)
+        companies = db.session.query(Company).filter(
+            Company.tier == tier)
         return companies
 
     def add_company(self, payload: CompanyCreate, data: BaseToken):
