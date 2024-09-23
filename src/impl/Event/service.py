@@ -397,6 +397,15 @@ class EventService(BaseService):
                 restrictions.append(user.food_restrictions)
         # remove duplicates
         return list(set(restrictions))
+    
+    @BaseService.needs_service(HackerService)
+    def get_credits(self, eventId: int, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        users = {_.id: _.email for _ in self.hacker_service.get_all()}
+        event = self.get_by_id(eventId)
+        regs = db.session.query(HackerRegistration).filter(HackerRegistration.event_id == eventId, HackerRegistration.wants_credit==True).all()
+        return [users[_.user_id] for _ in regs]
 
     @BaseService.needs_service('HackerGroupService')
     def get_pending_hackers_gruped(self, event_id: int, data: BaseToken):
