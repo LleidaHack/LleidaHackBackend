@@ -84,7 +84,7 @@ class HackerService(BaseService):
 
     @BaseService.needs_service("HackerGroupService")
     def remove_hacker(self, hackerId: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]) or not data.check(
+        if not data.check([UserType.LLEIDAHACKER]) and not data.check(
             [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
@@ -117,7 +117,7 @@ class HackerService(BaseService):
 
     def update_hacker(self, hackerId: int, payload: HackerUpdate,
                       data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]) or not data.check(
+        if not data.check([UserType.LLEIDAHACKER]) and not data.check(
             [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)

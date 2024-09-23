@@ -148,7 +148,7 @@ class HackerGroupService(BaseService):
     @BaseService.needs_service(HackerService)
     def add_hacker_to_group_by_code(self, code: str, hackerId: int,
                                     data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]) or not data.check(
+        if not data.check([UserType.LLEIDAHACKER]) and not data.check(
             [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         group = self.get_by_code(code)
