@@ -2,7 +2,7 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends
 
-from src.impl.Article.schema import ArticleGet, ArticleGetAll, ArticleUpdate
+from src.impl.Article.schema import ArticleCreate, ArticleGet, ArticleGetAll, ArticleUpdate
 from src.impl.Article.service import ArticleService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -33,9 +33,9 @@ def update(id: int,
     return {"success": True, "updated_id": article.id, "updated": updated}
 
 
-@router.post("/{id}")
-def create(id: int, token: BaseToken = Depends(JWTBearer())):
-    article = article_service.create(id, token)
+@router.post("/")
+def create(payload: ArticleCreate, token: BaseToken = Depends(JWTBearer())):
+    article = article_service.create(payload, token)
     return {"success": True, "created_id": article.id}
 
 
