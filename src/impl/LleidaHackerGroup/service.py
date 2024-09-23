@@ -153,6 +153,7 @@ class LleidaHackerGroupService(BaseService):
 
     # llhk_groups:[
 
+
 # {
 # 	nom: 'devs',
 # 	img: ...,
