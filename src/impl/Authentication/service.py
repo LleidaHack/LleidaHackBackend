@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
@@ -10,7 +10,7 @@ from src.impl.User.service import UserService
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InputException import InputException
 from src.error.InvalidDataException import InvalidDataException
-from src.impl.User.model import User as ModelUser
+from src.impl.User.model import User
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash, verify_password
@@ -28,7 +28,7 @@ class AuthenticationService(BaseService):
     companyUser_service = None
     mail_client: MailClient = None
 
-    def create_access_and_refresh_token(self, user: ModelUser):
+    def create_access_and_refresh_token(self, user: User):
         access_token = AccesToken(user)
         refresh_token = RefreshToken(user)
         access_token.user_set()
@@ -79,7 +79,7 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def confirm_reset_password(self, token: ResetPassToken, password: str):
-        if token.expt < datetime.utcnow().isoformat():
+        if token.expt < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
         user = self.user_service.get_by_id(token.user_id)
         if not (token.to_token() == user.rest_password_token):
@@ -96,7 +96,7 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def verify_user(self, token: VerificationToken):
-        if token.expt < datetime.utcnow().isoformat():
+        if token.expt < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
         user = self.user_service.get_by_id(token.user_id)
         if user.verification_token != token.to_token():

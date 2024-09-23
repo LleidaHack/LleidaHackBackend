@@ -32,5 +32,6 @@ class Article(BaseModel):
         'ArticleType',
         'article_article_type',
         primaryjoin='Article.id == article_article_type.c.article_id',
-        secondaryjoin='ArticleType.id == article_article_type.c.article_type_id',
+        secondaryjoin=
+        'ArticleType.id == article_article_type.c.article_type_id',
         uselist=True)
