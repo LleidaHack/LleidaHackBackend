@@ -343,8 +343,8 @@ def get_food_restrictions(event_id: int):
     return event_service.get_food_restrictions(event_id)
 
 @router.get("/{event_id}/credits")
-def get_credits(event_id: int):
-    return event_service.get_credits(event_id)
+def get_credits(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    return event_service.get_credits(event_id, token)
 
 
 @router.get("/{event_id}/pendinggruped")
