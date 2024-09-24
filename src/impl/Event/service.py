@@ -219,7 +219,7 @@ class EventService(BaseService):
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.EVENT_HACKER_REGISTERED),
                        receiver_id=str(hacker.id),
-                       reciver_mail=str(hacker.email),
+                       receiver_mail=str(hacker.email),
                        subject=f'Your have registered to {event.name}',
                        fields=f'{hacker.name}'))
         self.mail_client.send_mail_by_id(mail.id)
@@ -597,7 +597,7 @@ class EventService(BaseService):
                 InternalTemplate.EVENT_HACKER_ACCEPTED),
                        subject='You have been accepted',
                        receiver_id=str(hacker.id),
-                       reciver_mail=str(hacker.email),
+                       receiver_mail=str(hacker.email),
                        fields=f'{hacker.name},{event.name},5,{token}'))
         db.session.commit()
         db.session.refresh(event)

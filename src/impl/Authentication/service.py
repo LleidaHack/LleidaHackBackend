@@ -71,7 +71,7 @@ class AuthenticationService(BaseService):
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.RESET_PASSWORD),
                        receiver_id=str(user.id),
-                       reciver_mail=str(user.email),
+                       receiver_mail=str(user.email),
                        subject='Reset password mail',
                        fields=f'{user.name},{reset_pass_token}'))
         self.mail_client.send_mail_by_id(mail.id)
@@ -131,7 +131,7 @@ class AuthenticationService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.CONTACT),
-                       reciver_mail=Configuration.contact_mail,
+                       receiver_mail=Configuration.contact_mail,
                        subject='Your User Hacker was created',
                        fields=f'{name},{email},{title},{message}'))
         return {

@@ -39,7 +39,7 @@ def signup(payload: HackerCreate):
         MailCreate(template_id=mail_client.get_internall_template_id(
             InternalTemplate.USER_CREATED),
                    receiver_id=str(new_hacker.id),
-                   reciver_mail=new_hacker.email,
+                   receiver_mail=new_hacker.email,
                    subject='Your User Hacker was created',
                    fields=f'{new_hacker.name},{verification_token}'))
     mail_client.send_mail_by_id(mail.id)
