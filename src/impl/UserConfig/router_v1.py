@@ -32,16 +32,3 @@ def update(userId: int,
            payload: UserConfigUpdate,
            token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.update_user_config(userId, payload, token)
-
-
-##TODO: BORRAR DESPRES D'UTILITZAR
-@router.delete("/")
-def delete_all(token: BaseToken = Depends(JWTBearer())):
-    userConfig_service.delete_user_config(token)
-
-    return {"message": "UserConfig deleted successfully"}
-
-
-@router.post("/userconfig_all_creator")
-def create_all(token=Depends(JWTBearer())):
-    return userConfig_service.create_user_configs(token)
