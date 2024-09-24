@@ -24,24 +24,13 @@ class CompanyCreate(BaseSchema):
 
 
 class CompanyGet(BaseSchema):
+    id: int
     name: str
     description: str
     website: str
     image: str
     tier: int
     #is_image_url: bool
-    address: str
-    linkdin: str
-    telephone: str
-
-
-class CompanyGetByTier(BaseSchema):
-    name: str
-    description: str
-    website: str
-    tier: int
-    image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
     address: str
     linkdin: str
     telephone: str
