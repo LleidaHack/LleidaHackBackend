@@ -96,7 +96,7 @@ class CompanyParticipation(BaseModel):
                       primary_key=True,
                       index=True)
     tier: int = Column(Integer, nullable=False, default=3)
-    
+
 
 class Event(BaseModel):
     __tablename__ = 'event'
