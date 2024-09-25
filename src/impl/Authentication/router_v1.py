@@ -64,6 +64,6 @@ def check_token(token: BaseToken = Depends(JWTBearer())):
     return {"success": True}
 
 
-@router.get("/contact")
+@router.post("/contact")
 def contact(payload: ContactMail):
     return auth_service.contact(payload)
