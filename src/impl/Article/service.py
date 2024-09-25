@@ -3,7 +3,7 @@ from fastapi_sqlalchemy import db
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
-from src.impl.Article.model import Article as ModelArticle
+from src.impl.Article.model import Article
 from src.impl.Article.schema import ArticleCreate, ArticleUpdate
 from src.impl.ArticleType.service import ArticleTypeService
 from src.utils.Base.BaseService import BaseService
@@ -17,11 +17,11 @@ class ArticleService(BaseService):
     article_type_service: ArticleTypeService = None
 
     def get_all(self):
-        return db.session.query(ModelArticle).all()
+        return db.session.query(Article).all()
 
     def get_by_id(self, articleId: int):
-        article = db.session.query(ModelArticle).filter(
-            ModelArticle.id == articleId).first()
+        article = db.session.query(Article).filter(
+            Article.id == articleId).first()
         if article is None:
             raise NotFoundException('article not found')
         return article
@@ -30,7 +30,7 @@ class ArticleService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException(
                 "You are not allowed to add articles")
-        db_article = ModelArticle(**article.dict(), owner_id=data.user_id)
+        db_article = Article(**article.model_dump(), owner_id=data.user_id)
         db.session.add(db_article)
         db.session.commit()
         db.session.refresh(db_article)

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBasicCredentials
 
 from src.error.AuthenticationException import AuthenticationException
+from src.impl.Authentication.schema import ContactMail
 from src.impl.Authentication.service import AuthenticationService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.security import sec
@@ -64,5 +65,5 @@ def check_token(token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/contact")
-def contact(name: str, title: str, email: str, message: str):
-    return auth_service.contact(name, title, email, message)
+def contact(payload: ContactMail):
+    return auth_service.contact(payload)

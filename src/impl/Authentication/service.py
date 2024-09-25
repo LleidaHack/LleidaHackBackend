@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, UTC
 
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 from src.configuration.Configuration import Configuration
+from src.impl.Authentication.schema import ContactMail
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
 
@@ -10,7 +11,7 @@ from src.impl.User.service import UserService
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InputException import InputException
 from src.error.InvalidDataException import InvalidDataException
-from src.impl.User.model import User as ModelUser
+from src.impl.User.model import User
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash, verify_password
@@ -28,7 +29,7 @@ class AuthenticationService(BaseService):
     companyUser_service = None
     mail_client: MailClient = None
 
-    def create_access_and_refresh_token(self, user: ModelUser):
+    def create_access_and_refresh_token(self, user: User):
         access_token = AccesToken(user)
         refresh_token = RefreshToken(user)
         access_token.user_set()
@@ -70,8 +71,8 @@ class AuthenticationService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.RESET_PASSWORD),
-                       reciver_id=str(user.id),
-                       reciver_mail=str(user.email),
+                       receiver_id=str(user.id),
+                       receiver_mail=str(user.email),
                        subject='Reset password mail',
                        fields=f'{user.name},{reset_pass_token}'))
         self.mail_client.send_mail_by_id(mail.id)
@@ -79,7 +80,7 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def confirm_reset_password(self, token: ResetPassToken, password: str):
-        if token.expt < datetime.utcnow().isoformat():
+        if token.expt < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
         user = self.user_service.get_by_id(token.user_id)
         if not (token.to_token() == user.rest_password_token):
@@ -96,7 +97,7 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def verify_user(self, token: VerificationToken):
-        if token.expt < datetime.utcnow().isoformat():
+        if token.expt < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
         user = self.user_service.get_by_id(token.user_id)
         if user.verification_token != token.to_token():
@@ -127,13 +128,16 @@ class AuthenticationService(BaseService):
         return {"success": True}
 
     @BaseClient.needs_client(MailClient)
-    def contact(self, name: str, email: str, title: str, message: str):
+    def contact(self, payload: ContactMail):
         mail = self.mail_client.create_mail(
-            MailCreate(template_id=self.mail_client.get_internall_template_id(
-                InternalTemplate.CONTACT),
-                       reciver_mail=Configuration.contact_mail,
-                       subject='Your User Hacker was created',
-                       fields=f'{name},{email},{title},{message}'))
+            MailCreate(
+                template_id=self.mail_client.get_internall_template_id(
+                    InternalTemplate.CONTACT),
+                receiver_mail=Configuration.contact_mail,
+                subject='Your User Hacker was created',
+                fields=
+                f'{payload.name},{payload.email},{payload.title},{payload.message}'
+            ))
         return {
             "success": mail is not None,
             'id': mail.id if mail is not None else None

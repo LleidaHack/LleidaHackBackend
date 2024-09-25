@@ -1,9 +1,6 @@
-from typing import List
-
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from src.impl.Hacker.model import Hacker as ModelHacker
 from src.utils.Base.BaseModel import BaseModel
 
 

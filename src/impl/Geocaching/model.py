@@ -2,7 +2,6 @@ from sqlalchemy import Column, ForeignKey, String
 from src.utils.Base.BaseModel import BaseModel
 
 
-
 class UserGeocaching(BaseModel):
     __tablename__ = 'user_geocaching'
     user_code = Column(String, ForeignKey('my_user.code'), primary_key=True)
