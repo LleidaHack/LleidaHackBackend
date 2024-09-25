@@ -130,11 +130,14 @@ class AuthenticationService(BaseService):
     @BaseClient.needs_client(MailClient)
     def contact(self, payload: ContactMail):
         mail = self.mail_client.create_mail(
-            MailCreate(template_id=self.mail_client.get_internall_template_id(
-                InternalTemplate.CONTACT),
-                       receiver_mail=Configuration.contact_mail,
-                       subject='Your User Hacker was created',
-                       fields=f'{payload.name},{payload.email},{payload.title},{payload.message}'))
+            MailCreate(
+                template_id=self.mail_client.get_internall_template_id(
+                    InternalTemplate.CONTACT),
+                receiver_mail=Configuration.contact_mail,
+                subject='Your User Hacker was created',
+                fields=
+                f'{payload.name},{payload.email},{payload.title},{payload.message}'
+            ))
         return {
             "success": mail is not None,
             'id': mail.id if mail is not None else None
