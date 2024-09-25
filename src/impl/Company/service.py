@@ -31,13 +31,8 @@ class CompanyService(BaseService):
 
     def get_by_tier(self):
         comps = db.session.query(Company).all()
-        o = {}
-        for _ in comps:
-            if _.tier in o:
-                o[_.tier].append(_)
-            else:
-                o[_.tier] = [_]
-        return o
+        return {tier: [comp for comp in comps if comp.tier == tier] for tier in set(comp.tier for comp in comps)}
+    
     def add_company(self, payload: CompanyCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
