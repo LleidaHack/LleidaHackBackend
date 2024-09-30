@@ -27,7 +27,7 @@ class AuthenticationService(BaseService):
     hacker_service = None
     lleidaHacker_service = None
     companyUser_service = None
-    mail_client: MailClient = None
+    mail_client: MailClient = MailClient()
 
     def create_access_and_refresh_token(self, user: User):
         access_token = AccesToken(user)
@@ -123,8 +123,15 @@ class AuthenticationService(BaseService):
             raise InvalidDataException("User already verified")
         AccesToken(user).user_set()
         RefreshToken(user).user_set()
-        VerificationToken(user).user_set()
-        # send_registration_confirmation_email(user)
+        verification_token = VerificationToken(user).user_set()
+        mail = self.mail_client.create_mail(
+            MailCreate(template_id=self.mail_client.get_internall_template_id(
+                InternalTemplate.USER_CREATED),
+                       receiver_id=str(user.id),
+                       receiver_mail=user.email,
+                       subject='Your User Hacker was created',
+                       fields=f'{user.name},{verification_token}'))
+        self.mail_client.send_mail_by_id(mail.id)
         return {"success": True}
 
     @BaseClient.needs_client(MailClient)

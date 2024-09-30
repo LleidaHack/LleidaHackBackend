@@ -161,11 +161,11 @@ class HackerGroupService(BaseService):
     def remove_hacker_from_group(self, groupId: int, hackerId: int,
                                  data: BaseToken):
         deleted = False
-        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER.value]):
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
             raise AuthenticationException("Not authorized")
         hacker_group = self.get_by_id(groupId)
         if not data.check([
-                UserType.LLEIDAHACKER.value, UserType.HACKER
+                UserType.LLEIDAHACKER, UserType.HACKER
         ]) and not data.check(
             [UserType.HACKER], hackerId
         ) and data.user_id != hacker_group.leader_id and data.user_id == hacker_group.leader_id:
