@@ -24,13 +24,14 @@ router = APIRouter(
 lleidahacker_service = LleidaHackerService()
 mail_client = MailClient()
 
+
 @router.post("/signup")
 def signup(payload: LleidaHackerCreate):
     new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
     access_token = AccesToken(new_lleidahacker).user_set()
     refresh_token = RefreshToken(new_lleidahacker).user_set()
     verification_token = VerificationToken(new_lleidahacker).user_set()
-    
+
     mail = mail_client.create_mail(
         MailCreate(template_id=mail_client.get_internall_template_id(
             InternalTemplate.USER_CREATED),
