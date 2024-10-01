@@ -13,6 +13,10 @@ from src.configuration.Configuration import Configuration
 def initialized(func):
 
     def wrapper(*args, **kwargs):
+        try:
+            args[0].check_health()
+        except:
+            pass
         if args[0]._initialized:
             return func(*args, **kwargs)
         print('MailClient not initialized')
