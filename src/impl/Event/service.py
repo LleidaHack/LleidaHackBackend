@@ -20,7 +20,6 @@ from src.impl.HackerGroup.model import HackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
-from src.impl.User.service import UserService
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import (check_image, set_existing_data,
@@ -33,7 +32,6 @@ class EventService(BaseService):
     name = 'event_service'
     hackergroup_service = None
     hacker_service: HackerService = None
-    user_service: UserService = None
     company_service: CompanyService = None
     mail_client: MailClient = None
 
@@ -196,7 +194,7 @@ class EventService(BaseService):
         return event
 
     @BaseClient.needs_client(MailClient)
-    @BaseService.needs_service(UserService)
+    @BaseService.needs_service(HackerService)
     def add_hacker(self, event_id: int, hacker_id: int,
                    payload: HackerEventRegistration, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
@@ -209,12 +207,15 @@ class EventService(BaseService):
         if not data.is_admin:
             if event.max_participants <= len(event.registered_hackers):
                 raise InvalidDataException("Event is full")
-        hacker = self.user_service.get_by_id(hacker_id)
+        hacker = self.hacker_service.get_by_id(hacker_id)
         if hacker in event.registered_hackers:
             raise InvalidDataException('Hacker already registered')
         reg = HackerRegistration(**payload.model_dump(),
                                  user_id=hacker_id,
                                  event_id=event_id)
+        if payload.update_user:
+            set_existing_data(hacker, payload)
+            hacker.address = payload.location
         mail = self.mail_client.create_mail(
             MailCreate(template_id=self.mail_client.get_internall_template_id(
                 InternalTemplate.EVENT_HACKER_REGISTERED),
@@ -226,9 +227,10 @@ class EventService(BaseService):
         db.session.add(reg)
         db.session.commit()
         db.session.refresh(event)
+        db.session.refresh(hacker)
         return event
 
-    @BaseService.needs_service(UserService)
+    @BaseService.needs_service(HackerService)
     def update_register(self, event_id: int, hacker_id: int,
                         payload: HackerEventRegistration, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
@@ -241,7 +243,7 @@ class EventService(BaseService):
         if not data.is_admin:
             if event.max_participants <= len(event.registered_hackers):
                 raise InvalidDataException("Event is full")
-        hacker = self.user_service.get_by_id(hacker_id)
+        hacker = self.hacker_service.get_by_id(hacker_id)
         if hacker not in event.registered_hackers:
             raise InvalidDataException('Hacker is not registered')
         reg = db.session.query(HackerEventRegistration).filter(
@@ -250,8 +252,12 @@ class EventService(BaseService):
         if reg is None:
             raise InvalidDataException('Hacker is not registered')
         set_existing_data(reg, payload)
+        if payload.update_user:
+            set_existing_data(hacker, payload)
+            hacker.address = payload.location
         db.session.commit()
         db.session.refresh(event)
+        db.session.refresh(hacker)
         return event
 
     @BaseService.needs_service('HackerGroupService')
