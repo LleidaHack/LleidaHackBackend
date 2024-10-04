@@ -6,7 +6,10 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from src.utils.Base.BaseModel import BaseModel
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from src.impl.HackerGroup.model import HackerGroup
 
 class HackerParticipation(BaseModel):
     __tablename__ = "hacker_event_participation"
@@ -149,6 +152,6 @@ class Event(BaseModel):
     sponsors = relationship('Company',
                             secondary='company_event_participation',
                             uselist=True)
-    groups = relationship('HackerGroup', backref='event')
+    groups:list['HackerGroup'] = relationship('HackerGroup', backref='event')
     # status: int = Column(Integer, default=0)
     meals = relationship('Meal', backref='event')
