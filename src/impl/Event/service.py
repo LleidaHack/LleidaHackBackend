@@ -428,7 +428,7 @@ class EventService(BaseService):
         # Retrieve pending hacker groups
 
         pending_groups_ids = db.session.query(HackerGroupUser.group_id).filter(
-            HackerGroupUser.hacker_id.in_(pending_hackers_ids)).all()
+            HackerGroupUser.hacker_id.in_(pending_hackers_ids), HackerGroupUser.group_id.in_([_.id for _ in event.groups])).all()
         pending_groups_ids = [g[0] for g in pending_groups_ids]
         #remove duplicates
         pending_groups_ids = list(dict.fromkeys(pending_groups_ids))
