@@ -46,18 +46,18 @@ def add(payload: HackerGroupCreate, data: BaseToken = Depends(JWTBearer())):
 def update(groupId: int,
            payload: HackerGroupUpdate,
            data: BaseToken = Depends(JWTBearer())):
-    hacker_group = hackergroup_service.update_hacker_group(
+    hackergroup_service.update_hacker_group(
         groupId, payload, data)
-    return {"success": True, "updated_id": hacker_group.id}
+    return {"success": True, "updated_id": groupId}
 
 
 @router.delete("/{groupId}")
 def delete(groupId: int, data: BaseToken = Depends(JWTBearer())):
-    hacker_group = hackergroup_service.delete_hacker_group(groupId, data)
-    return {"success": True, "deleted_id": hacker_group.id}
+    hackergroup_service.delete_hacker_group(groupId, data)
+    return {"success": True, "deleted_id": groupId}
 
 
-@router.get("/{groupId}/members", response_model=List[HackerGet])
+@router.get("/{groupId}/members")
 def get_members(groupId: int, data: BaseToken = Depends(JWTBearer())):
     hacker_group = hackergroup_service.get_hacker_group(groupId, data)
     return {"success": True, "members": hacker_group.members}
