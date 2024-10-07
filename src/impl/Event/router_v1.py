@@ -113,7 +113,7 @@ def get_sponsors(id: int):
     return event_service.get_event_sponsors(id)
 
 
-@router.get("/{id}/groups", response_model=List[HackerGroupGet])
+@router.get("/{id}/groups")
 def get_groups(id: int, token: BaseToken = Depends(JWTBearer())):
     event = event_service.get_event_groups(id, token)
     return {'success': True, 'groups': event}
