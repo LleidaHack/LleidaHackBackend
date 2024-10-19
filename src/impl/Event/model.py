@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.impl.HackerGroup.model import HackerGroup
 
+
 class HackerParticipation(BaseModel):
     __tablename__ = "hacker_event_participation"
     user_id = Column(Integer,
@@ -152,6 +153,6 @@ class Event(BaseModel):
     sponsors = relationship('Company',
                             secondary='company_event_participation',
                             uselist=True)
-    groups:list['HackerGroup'] = relationship('HackerGroup', backref='event')
+    groups: list['HackerGroup'] = relationship('HackerGroup', backref='event')
     # status: int = Column(Integer, default=0)
     meals = relationship('Meal', backref='event')
