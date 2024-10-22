@@ -174,7 +174,7 @@ class HackerGroupService(BaseService):
         hacker = [h for h in hacker_group.members if h.id == hackerId]
         hacker_group.members.remove(hacker[0])
         if len(hacker_group.members) == 0:
-            db.session.elete(hacker_group)
+            db.session.delete(hacker_group)
             deleted = True
         elif hacker_group.leader_id == hackerId:
             hacker_group.leader_id = hacker_group.members[0].id
