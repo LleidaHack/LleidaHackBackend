@@ -305,7 +305,7 @@ def get_pending_hackers(event_id: int,
     """
     Get the pending hackers of an event
     """
-    if token.is_admin:
+    if not token.is_admin:
         raise AuthenticationException("You don't have permissions")
     event = event_service.get_by_id(event_id)
     return {
@@ -321,7 +321,7 @@ def get_rejected_hackers(event_id: int,
     """
         Get the rejected hackers of an event
         """
-    if token.is_admin:
+    if not token.is_admin:
         raise AuthenticationException("You don't have permissions")
     event = event_service.get_by_id(event_id)
     return {
