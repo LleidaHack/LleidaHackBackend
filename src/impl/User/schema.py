@@ -67,8 +67,6 @@ class UserCreate(BaseSchema):
 class UserGet(BaseSchema):
     name: str
     nickname: str
-    birthdate: date
-    email: str
     created_at: date
     image: Optional[str] = None
 
@@ -76,6 +74,8 @@ class UserGet(BaseSchema):
 class UserGetAll(UserGet):
     id: int
     food_restrictions: str
+    birthdate: date
+    email: str
     telephone: str
     address: str
     shirt_size: Optional[str]
