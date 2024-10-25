@@ -21,8 +21,8 @@ def get_all():
 
 
 @router.get("/{id}", response_model=Union[ArticleGetAll, ArticleGet])
-def get():
-    return article_service.get(id)
+def get_by_id(id: int):
+    return article_service.get_by_id(id)
 
 
 @router.put("/{id}")

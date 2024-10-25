@@ -11,7 +11,7 @@ from src.impl.Event.schema import EventGet
 from src.impl.Event.schema import EventGetAll
 from src.impl.Event.schema import EventUpdate
 from src.impl.Event.service import EventService
-from src.impl.Hacker.schema import HackerGet
+from src.impl.Hacker.schema import HackerGet, HackerGetAll
 from src.impl.HackerGroup.schema import HackerGroupGet
 from src.impl.Meal.schema import MealGet
 from src.utils.JWTBearer import JWTBearer
@@ -177,7 +177,7 @@ def remove_sponsor(id: int,
     return {'success': True, 'event_id': event.id}
 
 
-@router.get("/{eventId}/get_approved_hackers", response_model=List[HackerGet])
+@router.get("/{eventId}/get_approved_hackers", response_model=List[HackerGetAll])
 def get_accepted_hackers(eventId: int,
                          token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)
