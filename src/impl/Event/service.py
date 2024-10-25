@@ -329,7 +329,7 @@ class EventService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
-        return HackerGetAll.model_validate(event.accepted_hackers)
+        return event.accepted_hackers
 
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
