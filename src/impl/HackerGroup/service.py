@@ -120,9 +120,13 @@ class HackerGroupService(BaseService):
             raise InvalidDataException('You are already on this group')
         if hacker not in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
-        hacker_group_user = db.session.query(HackerGroupUser).filter(
-            HackerGroupUser.hacker_id == hacker.id).first()
-        if hacker_group_user is not None:
+        #hacker_group_user = db.session.query(HackerGroupUser).filter(
+        #    HackerGroupUser.hacker_id == hacker.id).all()
+
+        grups = self.hacker_service.get_hacker_groups(hacker.id)
+        grups = [i for i in grups if i.event_id == event.id]
+        
+        if len(grups) != 0:
             raise InvalidDataException("Hacker already in a group")
         if len(group.members) >= event.max_group_size:
             raise InvalidDataException("Group is full")

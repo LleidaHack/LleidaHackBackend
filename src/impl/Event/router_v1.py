@@ -143,7 +143,7 @@ def register_hacker(id: int,
 
 
 @router.put("/{id}/update-register/{hacker_id}")
-def register_hacker(id: int,
+def update_hacker_registration(id: int,
                     hacker_id: int,
                     payload: HackerEventRegistrationUpdate,
                     token: BaseToken = Depends(JWTBearer())):
