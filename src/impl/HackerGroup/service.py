@@ -125,7 +125,7 @@ class HackerGroupService(BaseService):
 
         grups = self.hacker_service.get_hacker_groups(hacker.id)
         grups = [i for i in grups if i.event_id == event.id]
-        
+
         if len(grups) != 0:
             raise InvalidDataException("Hacker already in a group")
         if len(group.members) >= event.max_group_size:
