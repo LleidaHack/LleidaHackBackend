@@ -143,10 +143,10 @@ def register_hacker(id: int,
 
 
 @router.put("/{id}/update-register/{hacker_id}")
-def register_hacker(id: int,
-                    hacker_id: int,
-                    payload: HackerEventRegistrationUpdate,
-                    token: BaseToken = Depends(JWTBearer())):
+def update_hacker_registration(id: int,
+                               hacker_id: int,
+                               payload: HackerEventRegistrationUpdate,
+                               token: BaseToken = Depends(JWTBearer())):
     event = event_service.update_register(id, hacker_id, payload, token)
     return {'success': True, 'event_id': event.id, 'user_id': hacker_id}
 
