@@ -450,6 +450,7 @@ class EventService(BaseService):
                 "members": [{
                     "id": hacker.id,
                     "name": hacker.name,
+                    "mail": hacker.mail,
                     "birthdate": hacker.birthdate,
                     "address": hacker.address,
                     "food_restrictions": hacker.food_restrictions,
@@ -462,6 +463,7 @@ class EventService(BaseService):
         nogroup_data = [{
             "id": hacker.id,
             "name": hacker.name,
+            "mail": hacker.mail,
             "birthdate": hacker.birthdate,
             "address": hacker.address,
             "food_restrictions": hacker.food_restrictions,
