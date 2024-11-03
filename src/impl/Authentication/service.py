@@ -141,7 +141,7 @@ class AuthenticationService(BaseService):
                 template_id=self.mail_client.get_internall_template_id(
                     InternalTemplate.CONTACT),
                 receiver_mail=Configuration.contact_mail,
-                subject='Your User Hacker was created',
+                subject=f'Contact {payload.title}',
                 fields=
                 f'{payload.name},{payload.email},{payload.title},{payload.message}'
             ))
