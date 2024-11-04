@@ -184,6 +184,7 @@ class AssistenceToken(BaseToken):
         if user is None:
             return
         super().__init__(user)
+        self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
         self.type = TokenType.ASSISTENCE.value
         self.event_id = event_id
 
@@ -203,7 +204,6 @@ class AccesToken(BaseToken):
     def __init__(self, user: User):
         super().__init__(user)
         self.type = TokenType.ACCESS.value
-        self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
         if user is None:
             return
         self.is_verified = user.is_verified
