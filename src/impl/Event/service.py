@@ -685,3 +685,29 @@ class EventService(BaseService):
                 raise InvalidDataException("Hacker not registered")
             hacker_user = self.hacker_service.get_by_id(hacker.id)
             self.accept_hacker(event.id, hacker_user.id, data)
+
+    @BaseService.needs_service(MailClient)
+    def resend_mails(self,event_id:int,data:BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        if event.archived:
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
+        for hacker in event.accepted_hackers:  
+            hacker_registration = db.session.query(HackerRegistration).filter(
+                HackerRegistration.user_id == hacker.id,
+                HackerRegistration.event_id == event.id).first()
+            token = AssistenceToken(hacker, event.id).to_token()
+            hacker_registration.confirm_assistance_token = token
+
+            mail = self.mail_client.create_mail(
+                MailCreate(template_id=self.mail_client.get_internall_template_id(
+                    InternalTemplate.EVENT_HACKER_ACCEPTED),
+                       subject='You have been accepted',
+                       receiver_id=str(hacker.id),
+                       receiver_mail=str(hacker.email),
+                       fields=f'{hacker.name},{event.name},5,{token}'))
+            
+        db.session.commit()
+
