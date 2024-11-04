@@ -85,7 +85,7 @@ class BaseToken:
         self.expt = data.get("expt")
         self.type = data.get("type")
         self.email = data.get("email")
-        return self
+        return data
 
     def to_token(self):
         return BaseToken.encode(self.__dict__)
@@ -190,7 +190,7 @@ class AssistenceToken(BaseToken):
 
     def from_token(self, token):
         data = super().from_token(token)
-        self.event_id = data.event_id
+        self.event_id = data.get("event_id")
         return self
 
     def verify(self, user: User):
