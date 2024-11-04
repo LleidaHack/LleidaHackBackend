@@ -30,11 +30,14 @@ class BaseToken:
     user_type: str = ''
     is_admin: bool = False
     available: bool = True
-    
+
     user_service = UserService()
-       
+
     def __set_all_data(self, data_in: dict):
-        for _ in [_ for _ in dir(self) if _.startswith('__') is False and _.endswith('__') is False]:
+        for _ in [
+                _ for _ in dir(self)
+                if _.startswith('__') is False and _.endswith('__') is False
+        ]:
             if _ in dir(data_in):
                 setattr(self, _, getattr(data_in[_], _))
 
@@ -46,16 +49,18 @@ class BaseToken:
             return
         self.__set_all_data(user.__dict__)
 
-
     def from_token(self, token: str):
         data = BaseToken.decode(token)
         if BaseToken.is_service(token):
             return self.__get_admin()
-        for _ in [_ for _ in dir(self) if _.startswith('__') is False and _.endswith('__') is False]:
-            if  _ in data:
+        for _ in [
+                _ for _ in dir(self)
+                if _.startswith('__') is False and _.endswith('__') is False
+        ]:
+            if _ in data:
                 setattr(self, _, data[_])
         return self
-        
+
     def __get_service(self):
         self.is_admin = True
         self.user_id = 0
@@ -87,7 +92,6 @@ class BaseToken:
         else:
             return False
 
-  
     # @classmethod
     def is_service(token):
         return token == SERVICE_TOKEN
