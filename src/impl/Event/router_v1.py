@@ -228,7 +228,7 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     """
     event_service.confirm_assistance(token)
     #redirect to Configuration.get('OTHERS', 'FRONT_URL')
-    return {"success":True}
+    return {"success": True}
 
 
 @router.get("/force-confirm-assistance/{event_id}/{user_id}")
