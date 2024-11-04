@@ -221,7 +221,7 @@ def count_unregistered_hackers(event_id: int,
     return event_service.count_hackers_unregistered(event_id)
 
 
-@router.get("/confirm-assistance")
+@router.get("/confirm-assistance/")
 def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     """
     Confirm assistance of a hacker to an event

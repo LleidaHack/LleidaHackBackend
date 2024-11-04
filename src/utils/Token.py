@@ -63,7 +63,6 @@ class BaseToken:
         self.user_type = UserType.SERVICE.value
         self.email = "service"
         return self.__dict__
-    
 
     def to_token(self):
         return BaseToken.encode(self.__dict__)
@@ -152,11 +151,6 @@ class AssistenceToken(BaseToken):
         self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
         self.type = TokenType.ASSISTENCE.value
         self.event_id = event_id
-
-    def from_token(self, token):
-        data = super().from_token(token)
-        self.event_id = data.get('event_id')
-        return self
 
     def verify(self, user: User):
         return True
