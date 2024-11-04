@@ -168,7 +168,7 @@ class BaseToken:
         if type == TokenType.ACCESS.value:
             return AccesToken(None).from_token(token)
         elif type == TokenType.ASSISTENCE.value:
-            return AssistenceToken(None).from_token(token)
+            return AssistenceToken(None, None).from_token(token)
         elif type == TokenType.REFRESH.value:
             return RefreshToken(None).from_token(token)
         elif type == TokenType.RESET_PASS.value:
@@ -181,7 +181,7 @@ class AssistenceToken(BaseToken):
     event_id: int = 0
 
     def __init__(self, user: User, event_id: int):
-        if user is None:
+        if user is None or event_id is None:
             return
         super().__init__(user)
         self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
