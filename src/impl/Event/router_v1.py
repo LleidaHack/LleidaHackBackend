@@ -210,7 +210,7 @@ def get_unregistered_hackers(event_id: int,
     return event_service.get_hackers_unregistered(event_id)
 
 
-@router.get("/{event_id}/count_unregistered_hackers", response_model=int)
+@router.get("/{event_id}/count_unregistered_hackers/", response_model=int)
 def count_unregistered_hackers(event_id: int,
                                token: BaseToken = Depends(JWTBearer())):
     """
