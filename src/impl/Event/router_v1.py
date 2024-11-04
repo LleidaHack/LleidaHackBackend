@@ -354,10 +354,12 @@ def get_pending_hackers_gruped(event_id: int,
                                token: BaseToken = Depends(JWTBearer())):
     return event_service.get_pending_hackers_gruped(event_id, token)
 
+
 @router.get("/{event_id}/resend-accepted-mails")
 def resend_accept_mails(event_id: int,
                         token: BaseToken = Depends(JWTBearer())):
-    return event_service.resend_mails(event_id,token)
+    return event_service.resend_mails(event_id, token)
+
 
 # @router.post("/{event_id}/send_remember")
 # def send_remember(
