@@ -85,7 +85,7 @@ class BaseToken:
         self.expt = data.get("expt")
         self.type = data.get("type")
         self.email = data.get("email")
-        return self
+        return data
 
     def to_token(self):
         return BaseToken.encode(self.__dict__)
@@ -168,7 +168,7 @@ class BaseToken:
         if type == TokenType.ACCESS.value:
             return AccesToken(None).from_token(token)
         elif type == TokenType.ASSISTENCE.value:
-            return AssistenceToken(None).from_token(token)
+            return AssistenceToken(None, None).from_token(token)
         elif type == TokenType.REFRESH.value:
             return RefreshToken(None).from_token(token)
         elif type == TokenType.RESET_PASS.value:
@@ -181,7 +181,7 @@ class AssistenceToken(BaseToken):
     event_id: int = 0
 
     def __init__(self, user: User, event_id: int):
-        if user is None:
+        if user is None or event_id is None:
             return
         super().__init__(user)
         self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
@@ -190,7 +190,7 @@ class AssistenceToken(BaseToken):
 
     def from_token(self, token):
         data = super().from_token(token)
-        self.event_id = data.event_id
+        self.event_id = data.get("event_id")
         return self
 
     def verify(self, user: User):
