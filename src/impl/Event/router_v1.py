@@ -210,7 +210,7 @@ def get_unregistered_hackers(event_id: int,
     return event_service.get_hackers_unregistered(event_id)
 
 
-@router.get("/{event_id}/count_unregistered_hackers", response_model=int)
+@router.get("/{event_id}/count_unregistered_hackers/", response_model=int)
 def count_unregistered_hackers(event_id: int,
                                token: BaseToken = Depends(JWTBearer())):
     """
@@ -221,7 +221,7 @@ def count_unregistered_hackers(event_id: int,
     return event_service.count_hackers_unregistered(event_id)
 
 
-@router.get("/confirm-assistance/")
+@router.get("/confirm_assistance/")
 def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     """
     Confirm assistance of a hacker to an event
@@ -231,7 +231,7 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     return {"success": True}
 
 
-@router.get("/force-confirm-assistance/{event_id}/{user_id}")
+@router.get("/force/confirm_assistance/{event_id}/{user_id}")
 def force_confirm_assistance(event_id: int,
                              user_id: int,
                              token: BaseToken = Depends(JWTBearer())):
