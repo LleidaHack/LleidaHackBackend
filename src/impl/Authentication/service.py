@@ -80,7 +80,7 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def confirm_reset_password(self, token: ResetPassToken, password: str):
-        if token.expt < datetime.now(UTC).isoformat():
+        if token.get("expt") < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
         user = self.user_service.get_by_id(token.user_id)
         if not (token.to_token() == user.rest_password_token):
@@ -97,7 +97,7 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def verify_user(self, token: VerificationToken):
-        if token.expt < datetime.now(UTC).isoformat():
+        if token.get("expt") < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
         user = self.user_service.get_by_id(token.user_id)
         if user.verification_token != token.to_token():
