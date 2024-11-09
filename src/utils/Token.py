@@ -233,6 +233,10 @@ class RefreshToken(BaseToken):
         super().__init__(user)
         self.type = TokenType.REFRESH.value
 
+    def from_token(self, token):
+        super().from_token(token)
+        return self
+
 
 class VerificationToken(BaseToken):
 
@@ -242,6 +246,10 @@ class VerificationToken(BaseToken):
         super().__init__(user)
         self.type = TokenType.VERIFICATION.value
 
+    def from_token(self, token):
+        super().from_token(token)
+        return self
+
 
 class ResetPassToken(BaseToken):
 
@@ -250,3 +258,7 @@ class ResetPassToken(BaseToken):
             return
         super().__init__(user)
         self.type = TokenType.RESET_PASS.value
+
+    def from_token(self, token):
+        super().from_token(token)
+        return self
