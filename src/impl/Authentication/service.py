@@ -58,7 +58,12 @@ class AuthenticationService(BaseService):
         if not (refresh_token.to_token() == user.refresh_token):
             raise InvalidDataException("Invalid token")
         acces_token, refresh_token = self.create_access_and_refresh_token(user)
-        return acces_token.to_token(), refresh_token.to_token()
+        return {
+            "user_id": user.id,
+            "access_token": acces_token.to_token(),
+            "refresh_token": refresh_token.to_token(),
+            "token_type": "Bearer"
+        }
 
     @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(UserService)
