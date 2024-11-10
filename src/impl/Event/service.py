@@ -617,7 +617,7 @@ class EventService(BaseService):
 
     @BaseService.needs_service(HackerService)
     def unaccept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.is_admin:
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
@@ -634,7 +634,7 @@ class EventService(BaseService):
 
     @BaseService.needs_service('HackerGroupService')
     def reject_group(self, event_id: int, group_id, data: BaseToken):
-        if not data.is_admin:
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
@@ -654,7 +654,7 @@ class EventService(BaseService):
 
     @BaseService.needs_service(HackerService)
     def reject_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.is_admin:
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
@@ -665,7 +665,7 @@ class EventService(BaseService):
             raise InvalidDataException("Hacker not registered")
         if hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker already accepted")
-        event.rejected_hackers.remove(hacker)
+        event.rejected_hackers.append(hacker)
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)
