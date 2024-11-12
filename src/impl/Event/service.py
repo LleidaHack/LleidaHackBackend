@@ -205,7 +205,7 @@ class EventService(BaseService):
             raise InvalidDataException(
                 "Unable to operate with an archived event, unarchive it first")
         if not data.is_admin:
-            if event.max_participants <= len(event.registered_hackers):
+            if event.max_participants <= len(event.accepted_hackers):
                 raise InvalidDataException("Event is full")
         hacker = self.hacker_service.get_by_id(hacker_id)
         if hacker in event.registered_hackers:
