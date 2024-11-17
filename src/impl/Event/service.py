@@ -665,7 +665,7 @@ class EventService(BaseService):
             raise InvalidDataException("Hacker not registered")
         if hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker already accepted")
-        event.rejected_hackers.remove(hacker)
+        event.rejected_hackers.append(hacker)
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)
