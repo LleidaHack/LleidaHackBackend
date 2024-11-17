@@ -271,6 +271,7 @@ def accept_hacker(event_id: int,
     """
     return event_service.accept_hacker(event_id, hacker_id, token)
 
+
 @router.put("/{event_id}/unaccept/{hacker_id}")
 def unaccept_hacker(event_id: int,
                     hacker_id: int,
@@ -279,6 +280,7 @@ def unaccept_hacker(event_id: int,
         Unaccept a hacker from an event
     """
     return event_service.unaccept_hacker(event_id, hacker_id, token)
+
 
 @router.put("/{event_id}/reject/{hacker_id}")
 def reject_hacker(event_id: int,
