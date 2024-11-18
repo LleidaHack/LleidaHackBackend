@@ -348,6 +348,14 @@ def get_status(event_id: int):
     return event_service.get_status(event_id)
 
 
+@router.get("/{event_id}/statistics")
+def get_statistics(event_id: int):
+    """
+    Get the status of an event
+    """
+    return event_service.get_statistics(event_id)
+
+
 @router.get("/{event_id}/food_restrictions")
 def get_food_restrictions(event_id: int):
     return event_service.get_food_restrictions(event_id)
@@ -376,6 +384,12 @@ def resend_accept_mail(event_id: int,
                        hacker_id: int,
                        token: BaseToken = Depends(JWTBearer())):
     event_service.resend_mail(event_id, hacker_id, token)
+    return {"success": True}
+
+@router.get("/{event_id}/send_slack_mail/")
+def send_slack_mail(event_id: int,
+                       token: BaseToken = Depends(JWTBearer())):
+    event_service.send_slack_mail(event_id, token)
     return {"success": True}
 
 
