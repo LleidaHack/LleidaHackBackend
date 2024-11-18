@@ -1,6 +1,6 @@
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
-
+from collections import Counter
 # from src.impl.HackerGroup.service import HackerGroupService
 # from services.mail import send_event_accepted_email
 from src.error.AuthenticationException import AuthenticationException
@@ -396,6 +396,23 @@ class EventService(BaseService):
             data[meal.name] = len(meal.users)
         return data
 
+    def get_statistics(self, eventId: int):
+        event = self.get_by_id(eventId)
+        data = {
+            "how_did_you_meet_us": [],
+            "location": [],
+            "study_center": [],
+            "studies": []
+        }
+        for hacker in event.accepted_hackers:
+            data["how_did_you_meet_us"].append(hacker.how_did_you_meet_us)
+            data["location"].append(hacker.location)
+            data["study_center"].append(hacker.study_center)
+            data["studies"].append(hacker.studies)
+        data["how_did_you_meet_us"] = dict(Counter(
+            data["how_did_you_meet_us"]))
+        return data
+
     def get_food_restrictions(self, eventId: int):
         event = self.get_by_id(eventId)
         users = event.participants + event.accepted_hackers + event.registered_hackers
@@ -740,5 +757,30 @@ class EventService(BaseService):
                        receiver_id=str(hacker.id),
                        receiver_mail=str(hacker.email),
                        fields=f'{hacker.name},{event.name},5,{token}'))
+
+        db.session.commit()
+
+    @BaseService.needs_service(MailClient)
+    def send_slack_mail(self, event_id: int, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        if event.archived:
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first")
+
+        hackers = event.accepted_hackers
+
+        for hacker in hackers:
+            mail = self.mail_client.create_mail(
+                MailCreate(
+                    template_id=self.mail_client.get_internall_template_id(
+                        InternalTemplate.EVENT_SLACK_INVITE),
+                    subject='HackEPS2024 slack invitation',
+                    receiver_id=str(hacker.id),
+                    receiver_mail=str(hacker.email),
+                    fields=
+                    "https://join.slack.com/t/hackeps2024/shared_invite/zt-2usc9qny9-z3NkybNlCXFAI9m0Cl~FsQ"
+                ))
 
         db.session.commit()
