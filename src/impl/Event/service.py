@@ -204,6 +204,9 @@ class EventService(BaseService):
         if event.archived:
             raise InvalidDataException(
                 "Unable to operate with an archived event, unarchive it first")
+        if not event.is_open:
+            raise InvalidDataException(
+                "Unable to operate with a closed event, reopen it first")
         if not data.is_admin:
             if event.max_participants <= len(event.accepted_hackers):
                 raise InvalidDataException("Event is full")
