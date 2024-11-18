@@ -399,19 +399,19 @@ class EventService(BaseService):
     def get_statistics(self, eventId: int):
         event = self.get_by_id(eventId)
         data = {
-            "how_did_you_meet_us":[],
-            "location":[],
-            "study_center":[],
-            "studies":[]
+            "how_did_you_meet_us": [],
+            "location": [],
+            "study_center": [],
+            "studies": []
         }
         for hacker in event.accepted_hackers:
             data["how_did_you_meet_us"].append(hacker.how_did_you_meet_us)
             data["location"].append(hacker.location)
             data["study_center"].append(hacker.study_center)
             data["studies"].append(hacker.studies)
-        data["how_did_you_meet_us"] = dict(Counter(data["how_did_you_meet_us"]))
+        data["how_did_you_meet_us"] = dict(Counter(
+            data["how_did_you_meet_us"]))
         return data
-
 
     def get_food_restrictions(self, eventId: int):
         event = self.get_by_id(eventId)
@@ -760,7 +760,6 @@ class EventService(BaseService):
 
         db.session.commit()
 
-
     @BaseService.needs_service(MailClient)
     def send_slack_mail(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
@@ -774,12 +773,14 @@ class EventService(BaseService):
 
         for hacker in hackers:
             mail = self.mail_client.create_mail(
-                MailCreate(template_id=self.mail_client.get_internall_template_id(
-                    InternalTemplate.EVENT_SLACK_INVITE),
+                MailCreate(
+                    template_id=self.mail_client.get_internall_template_id(
+                        InternalTemplate.EVENT_SLACK_INVITE),
                     subject='HackEPS2024 slack invitation',
                     receiver_id=str(hacker.id),
                     receiver_mail=str(hacker.email),
-                    fields="https://join.slack.com/t/hackeps2024/shared_invite/zt-2usc9qny9-z3NkybNlCXFAI9m0Cl~FsQ"
+                    fields=
+                    "https://join.slack.com/t/hackeps2024/shared_invite/zt-2usc9qny9-z3NkybNlCXFAI9m0Cl~FsQ"
                 ))
 
         db.session.commit()
