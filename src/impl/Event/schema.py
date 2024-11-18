@@ -53,6 +53,7 @@ class EventGet(BaseSchema):
     end_date: datetime
     location: str
     archived: bool
+    is_open: bool
     price: int
     max_participants: int
     max_group_size: int
