@@ -1,4 +1,6 @@
 from fastapi_sqlalchemy import db
+from sqlalchemy import asc
+from datetime import datetime
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 from collections import Counter
 # from src.impl.HackerGroup.service import HackerGroupService
@@ -50,11 +52,8 @@ class EventService(BaseService):
     def get_hackeps(self, year: int):
         #return and event called HackEPS year ignoring caps
         e = db.session.query(Event).filter(
-            Event.name.ilike(f'%HackEPS {str(year)}%')).first()
-        if e is None:
-            e = db.session.query(Event).filter(
-                Event.name.ilike(f'%HackEPS%')).order_by(
-                    Event.start_date).first()
+          Event.name.ilike(f'HackEPS%'),
+          Event.start_date >= datetime(year, 1, 1), Event.end_date <= datetime(year, 12, 31)).order_by(asc(Event.end_date)).first()
         if e is None:
             raise NotFoundException(
                 "We can't find an event for this year or earlier ")
