@@ -61,3 +61,12 @@ def generate_user_code(length=20):
 
 def subtract_lists(list1, list2):
     return [item for item in list1 if item not in list2]
+
+def get_hacker_status(hacker_id, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids):
+            if hacker_id in pending_hackers_ids:
+                return "pending"
+            elif hacker_id in accepted_hackers_ids:
+                return "accepted"
+            elif hacker_id in rejected_hackers_ids:
+                return "rejected"
+            return None
