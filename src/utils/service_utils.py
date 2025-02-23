@@ -73,8 +73,23 @@ def get_hacker_status(hacker_id, pending_hackers_ids, accepted_hackers_ids,
         return "rejected"
     return None
 
-attribute_hacker_list = ["id", "name", "email", "birthdate", "address", "food_restrictions", "shirt_size", "status",]
+
+attribute_hacker_list = [
+    "id",
+    "name",
+    "email",
+    "birthdate",
+    "address",
+    "food_restrictions",
+    "shirt_size",
+    "status",
+]
 
 get_hacker_info = lambda hacker, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids: {
-    attr: getattr(hacker, attr) for attr in attribute_hacker_list
-} | {"status": get_hacker_status(hacker.id, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids)}
+    attr: getattr(hacker, attr)
+    for attr in attribute_hacker_list
+} | {
+    "status":
+    get_hacker_status(hacker.id, pending_hackers_ids, accepted_hackers_ids,
+                      rejected_hackers_ids)
+}

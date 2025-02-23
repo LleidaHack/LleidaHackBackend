@@ -25,7 +25,8 @@ from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import (check_image, get_hacker_status,
-                                     set_existing_data, subtract_lists, get_hacker_info)
+                                     set_existing_data, subtract_lists,
+                                     get_hacker_info)
 from src.utils.Token import AssistenceToken, BaseToken
 from src.utils.UserType import UserType
 
@@ -519,9 +520,11 @@ class EventService(BaseService):
         # List hackers and add status as pending, accepted or rejected.
         output_data = []
 
-        participants_list = [get_hacker_info(
-            hacker, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids) for hacker in registered_hackers]
-
+        participants_list = [
+            get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                            rejected_hackers_ids)
+            for hacker in registered_hackers
+        ]
 
         output_data = participants_list
         # Combine group and nogroup data into a dictionary
