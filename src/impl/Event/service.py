@@ -526,9 +526,9 @@ class EventService(BaseService):
             for hacker in registered_hackers
         ]
 
-        output_data = participants_list
+        output_data.append(participants_list)
         # Combine group and nogroup data into a dictionary
-        return {output_data}
+        return {"participants": output_data}
 
     ##Esto retorna 2 listas, de la gente que va sola y de la que va en grupos. Tendran el status y el has restrictions.
     @BaseService.needs_service('HackerGroupService')
@@ -543,6 +543,8 @@ class EventService(BaseService):
                 subtract_lists(event.registered_hackers,
                                event.accepted_hackers), event.rejected_hackers)
         ]
+        # Registered hackers
+        registered_hackers = event.registered_hackers
         # Accepted hackers
         accepted_hackers_ids = [h.id for h in event.accepted_hackers]
         # Rejected hackers
@@ -559,56 +561,28 @@ class EventService(BaseService):
             subtract_lists(
                 pending_hackers_ids + accepted_hackers_ids +
                 rejected_hackers_ids, group_users), [])
+        
+        non_group_hackers = [hacker for hacker in registered_hackers if hacker.id in non_group_hackers_ids]
 
-        non_group_hackers = [{
-            "id":
-            hacker.id,
-            "name":
-            hacker.name,
-            "email":
-            hacker.email,
-            "birthdate":
-            hacker.birthdate,
-            "address":
-            hacker.address,
-            "food_restrictions":
-            hacker.food_restrictions,
-            "shirt_size":
-            hacker.shirt_size,
-            "status":
-            get_hacker_status(hacker.id, pending_hackers_ids,
-                              accepted_hackers_ids, rejected_hackers_ids)
-        } for hacker in non_group_hackers_ids]
+        non_group_hackers_participants = [
+            get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                            rejected_hackers_ids)
+            for hacker in non_group_hackers
+        ]
 
         for group in event_groups:
             group_data = {
                 "name":
                 group.name,
-                "members": [{
-                    "id":
-                    hacker.id,
-                    "name":
-                    hacker.name,
-                    "email":
-                    hacker.email,
-                    "birthdate":
-                    hacker.birthdate,
-                    "address":
-                    hacker.address,
-                    "food_restrictions":
-                    hacker.food_restrictions,
-                    "shirt_size":
-                    hacker.shirt_size,
-                    "status":
-                    get_hacker_status(hacker.id, pending_hackers_ids,
-                                      accepted_hackers_ids,
-                                      rejected_hackers_ids)
-                } for hacker in group.members]
+                "members": [
+                    get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                        rejected_hackers_ids)
+                    for hacker in group.members]
             }
             output_data.append(group_data)
         # Retrieve pending hacker groups
         # Combine group and nogroup data into a dictionary
-        return {"groups": output_data, "nogroup": non_group_hackers}
+        return {"groups": output_data, "nogroup": non_group_hackers_participants}
 
     @BaseService.needs_service(HackerService)
     def confirm_assistance(self, data: AssistenceToken):

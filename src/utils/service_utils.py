@@ -82,7 +82,6 @@ attribute_hacker_list = [
     "address",
     "food_restrictions",
     "shirt_size",
-    "status",
 ]
 
 get_hacker_info = lambda hacker, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids: {
