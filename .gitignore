@@ -9,3 +9,4 @@ test/ep_test/*
 env/
 src/configuration/*.yaml
 generated_src/**
+uv.lock
