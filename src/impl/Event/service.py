@@ -25,7 +25,7 @@ from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import (check_image, get_hacker_status,
-                                     set_existing_data, subtract_lists)
+                                     set_existing_data, subtract_lists, get_hacker_info)
 from src.utils.Token import AssistenceToken, BaseToken
 from src.utils.UserType import UserType
 
@@ -510,6 +510,7 @@ class EventService(BaseService):
                 subtract_lists(event.registered_hackers,
                                event.accepted_hackers), event.rejected_hackers)
         ]
+        registered_hackers = event.registered_hackers
         # Accepted hackers
         accepted_hackers_ids = [h.id for h in event.accepted_hackers]
         # Rejected hackers
@@ -517,40 +518,12 @@ class EventService(BaseService):
 
         # List hackers and add status as pending, accepted or rejected.
         output_data = []
-        pending_hackers = [{
-            "id": hacker.id,
-            "name": hacker.name,
-            "email": hacker.email,
-            "birthdate": hacker.birthdate,
-            "address": hacker.address,
-            "food_restrictions": hacker.food_restrictions,
-            "shirt_size": hacker.shirt_size,
-            "status": "pending",
-        } for hacker in pending_hackers_ids]
 
-        accepted_hackers = [{
-            "id": hacker.id,
-            "name": hacker.name,
-            "email": hacker.email,
-            "birthdate": hacker.birthdate,
-            "address": hacker.address,
-            "food_restrictions": hacker.food_restrictions,
-            "shirt_size": hacker.shirt_size,
-            "status": "accepted",
-        } for hacker in accepted_hackers_ids]
+        participants_list = [get_hacker_info(
+            hacker, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids) for hacker in registered_hackers]
 
-        rejected_hackers = [{
-            "id": hacker.id,
-            "name": hacker.name,
-            "email": hacker.email,
-            "birthdate": hacker.birthdate,
-            "address": hacker.address,
-            "food_restrictions": hacker.food_restrictions,
-            "shirt_size": hacker.shirt_size,
-            "status": "rejected",
-        } for hacker in rejected_hackers_ids]
 
-        output_data = pending_hackers + accepted_hackers + rejected_hackers
+        output_data = participants_list
         # Combine group and nogroup data into a dictionary
         return {output_data}
 
