@@ -33,6 +33,7 @@ description = ""
 readme = "README.md"
 package-mode = false
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -56,5 +57,7 @@ gunicorn = "^22.0.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
