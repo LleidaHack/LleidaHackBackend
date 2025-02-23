@@ -9,4 +9,10 @@ test/ep_test/*
 env/
 src/configuration/*.yaml
 generated_src/**
+<<<<<<< Updated upstream
 uv.lock
+=======
+pyproject.toml
+uv.lock
+pyproject.toml
+>>>>>>> Stashed changes
