@@ -24,8 +24,9 @@ from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
-from src.utils.service_utils import (check_image, set_existing_data,
-                                     subtract_lists)
+from src.utils.service_utils import (check_image, get_hacker_status,
+                                     set_existing_data, subtract_lists,
+                                     get_hacker_info)
 from src.utils.Token import AssistenceToken, BaseToken
 from src.utils.UserType import UserType
 
@@ -52,8 +53,9 @@ class EventService(BaseService):
     def get_hackeps(self, year: int):
         #return and event called HackEPS year ignoring caps
         e = db.session.query(Event).filter(
-          Event.name.ilike(f'HackEPS%'),
-          Event.start_date >= datetime(year, 1, 1), Event.end_date <= datetime(year, 12, 31)).order_by(asc(Event.end_date)).first()
+            Event.name.ilike(f'HackEPS%'), Event.start_date
+            >= datetime(year, 1, 1), Event.end_date
+            <= datetime(year, 12, 31)).order_by(asc(Event.end_date)).first()
         if e is None:
             raise NotFoundException(
                 "We can't find an event for this year or earlier ")
@@ -494,6 +496,93 @@ class EventService(BaseService):
 
         # Combine group and nogroup data into a dictionary
         return {"groups": output_data, "nogroup": nogroup_data}
+
+    @BaseService.needs_service('HackerGroupService')
+    def get_hackers_participants_list(
+        self, event_id: int, data: BaseToken
+    ):  ##Servei per obtindre la llista de participants amb status acceptat, rechazat o pending.
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        # Extract hacker IDs from registered_hackers
+        event = self.get_by_id(event_id)
+        # Extract pending hackers
+        pending_hackers_ids = [
+            h.id for h in subtract_lists(
+                subtract_lists(event.registered_hackers,
+                               event.accepted_hackers), event.rejected_hackers)
+        ]
+        registered_hackers = event.registered_hackers
+        # Accepted hackers
+        accepted_hackers_ids = [h.id for h in event.accepted_hackers]
+        # Rejected hackers
+        rejected_hackers_ids = [h.id for h in event.rejected_hackers]
+
+        # List hackers and add status as pending, accepted or rejected.
+        output_data = []
+
+        participants_list = [
+            get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                            rejected_hackers_ids)
+            for hacker in registered_hackers
+        ]
+
+        output_data.append(participants_list)
+        # Combine group and nogroup data into a dictionary
+        return {"participants": output_data}
+
+    ##Esto retorna 2 listas, de la gente que va sola y de la que va en grupos. Tendran el status y el has restrictions.
+    @BaseService.needs_service('HackerGroupService')
+    def get_hackers_participants_gruped_list(self, event_id: int,
+                                             data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        # Extract hacker IDs from registered_hackers
+        event = self.get_by_id(event_id)
+        pending_hackers_ids = [
+            h.id for h in subtract_lists(
+                subtract_lists(event.registered_hackers,
+                               event.accepted_hackers), event.rejected_hackers)
+        ]
+        # Registered hackers
+        registered_hackers = event.registered_hackers
+        # Accepted hackers
+        accepted_hackers_ids = [h.id for h in event.accepted_hackers]
+        # Rejected hackers
+        rejected_hackers_ids = [h.id for h in event.rejected_hackers]
+
+        event_groups = event.groups
+        group_users = []
+        for group in event_groups:
+            group_users.extend([hacker.id for hacker in group.members])
+
+        # List hackers and add status as pending, accepted or rejected.
+        output_data = []
+        non_group_hackers_ids = subtract_lists(
+            subtract_lists(
+                pending_hackers_ids + accepted_hackers_ids +
+                rejected_hackers_ids, group_users), [])
+        
+        non_group_hackers = [hacker for hacker in registered_hackers if hacker.id in non_group_hackers_ids]
+
+        non_group_hackers_participants = [
+            get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                            rejected_hackers_ids)
+            for hacker in non_group_hackers
+        ]
+
+        for group in event_groups:
+            group_data = {
+                "name":
+                group.name,
+                "members": [
+                    get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                        rejected_hackers_ids)
+                    for hacker in group.members]
+            }
+            output_data.append(group_data)
+        # Retrieve pending hacker groups
+        # Combine group and nogroup data into a dictionary
+        return {"groups": output_data, "nogroup": non_group_hackers_participants}
 
     @BaseService.needs_service(HackerService)
     def confirm_assistance(self, data: AssistenceToken):
