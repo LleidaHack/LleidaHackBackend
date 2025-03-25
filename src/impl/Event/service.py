@@ -52,8 +52,9 @@ class EventService(BaseService):
     def get_hackeps(self, year: int):
         #return and event called HackEPS year ignoring caps
         e = db.session.query(Event).filter(
-          Event.name.ilike(f'HackEPS%'),
-          Event.start_date >= datetime(year, 1, 1), Event.end_date <= datetime(year, 12, 31)).order_by(asc(Event.end_date)).first()
+            Event.name.ilike(f'HackEPS%'), Event.start_date
+            >= datetime(year, 1, 1), Event.end_date
+            <= datetime(year, 12, 31)).order_by(asc(Event.end_date)).first()
         if e is None:
             raise NotFoundException(
                 "We can't find an event for this year or earlier ")
