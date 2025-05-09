@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: lleidahack
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  backend:
+    build: .
+    restart: always
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    environment:
+      CONFIG_FILE: /app/config.ini
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "
+        alembic upgrade head &&
+        gunicorn -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:8000
+      "
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    driver: bridge
