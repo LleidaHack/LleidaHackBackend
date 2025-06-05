@@ -27,11 +27,11 @@ class BaseModel(DeclarativeBase):
             created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     """
     __allow_unmapped__ = True
-    
+
     def __repr__(self) -> str:
         """String representation of the model instance."""
         return f"<{self.__class__.__name__}(id={getattr(self, 'id', None)})>"
-    
+
     def to_dict(self) -> dict:
         """Convert model instance to dictionary."""
         return {

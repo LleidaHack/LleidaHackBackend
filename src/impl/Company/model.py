@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class Company(BaseModel):
     __tablename__ = 'company'
-    
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[Optional[str]] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(String)
@@ -24,8 +24,11 @@ class Company(BaseModel):
     tier: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     # is_image_url: Mapped[bool] = mapped_column(Boolean, default=False)
     linkdin: Mapped[Optional[str]] = mapped_column(String)
-    leader_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('my_user.id'))
-    
+    leader_id: Mapped[Optional[int]] = mapped_column(Integer,
+                                                     ForeignKey('my_user.id'))
+
     # Relationships
-    users: Mapped[List["User"]] = relationship('User', secondary='company_user')
-    events: Mapped[List["Event"]] = relationship('Event', secondary='company_event_participation')
+    users: Mapped[List["User"]] = relationship('User',
+                                               secondary='company_user')
+    events: Mapped[List["Event"]] = relationship(
+        'Event', secondary='company_event_participation')

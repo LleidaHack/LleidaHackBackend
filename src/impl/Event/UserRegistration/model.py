@@ -9,11 +9,11 @@ from src.utils.Base.BaseModel import BaseModel
 class UserRegistration(BaseModel):
     __tablename__ = "user_event_registration"
     user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"),
-                                       primary_key=True,
-                                       index=True)
+                                         primary_key=True,
+                                         index=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"),
-                                        primary_key=True,
-                                        index=True)
+                                          primary_key=True,
+                                          index=True)
     shirt_size: Mapped[str] = mapped_column(String)
     food_restrictions: Mapped[str] = mapped_column(String)
     cv: Mapped[Optional[str]] = mapped_column(String)

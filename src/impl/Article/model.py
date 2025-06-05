@@ -16,11 +16,11 @@ if TYPE_CHECKING:
 class ArticleArticleType(BaseModel):
     __tablename__ = 'article_article_type'
     article_id: Mapped[int] = mapped_column(Integer,
-                                           ForeignKey('article.id'),
-                                           primary_key=True)
+                                            ForeignKey('article.id'),
+                                            primary_key=True)
     article_type_id: Mapped[int] = mapped_column(Integer,
-                                                ForeignKey('article_type.id'),
-                                                primary_key=True)
+                                                 ForeignKey('article_type.id'),
+                                                 primary_key=True)
 
 
 class Article(BaseModel):
