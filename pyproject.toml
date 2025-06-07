@@ -22,3 +22,18 @@ dependencies = [
     "sqlalchemy>=2.0.38",
     "uvicorn>=0.34.0",
 ]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "T20"]
+ignore = ["E501"]  # Line too long (handled by formatter)
+
+[tool.ruff.lint.extend-per-file-ignores]
+"alembic/*" = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
