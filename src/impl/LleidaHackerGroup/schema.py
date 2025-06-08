@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from src.impl.User.schema import UserGet
 from src.utils.Base.BaseSchema import BaseSchema
 
@@ -12,7 +10,7 @@ class LleidaHackerGroupCreate(BaseSchema):
 class LleidaHackerGroupGet(BaseSchema):
     name: str
     description: str
-    leader: List[UserGet]
+    leader: list[UserGet]
 
 
 class LleidaHackerGroupGetAll(LleidaHackerGroupGet):
@@ -20,5 +18,5 @@ class LleidaHackerGroupGetAll(LleidaHackerGroupGet):
 
 
 class LleidaHackerGroupUpdate(BaseSchema):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: str | None = None
+    description: str | None = None

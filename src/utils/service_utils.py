@@ -1,8 +1,7 @@
-import base64
 import random
 import string
 
-from src.error.ValidationException import ValidationException
+from src.error.ValidationError import ValidationError
 from src.impl.User.service import UserService
 
 user_service = UserService()
@@ -10,11 +9,11 @@ user_service = UserService()
 
 def check_user(email, nickname, telephone):
     if user_service.get_by_email(email, False) is not None:
-        raise ValidationException("Email already exists")
+        raise ValidationError('Email already exists')
     if user_service.get_by_nickname(nickname, False) is not None:
-        raise ValidationException("Nickname already exists")
+        raise ValidationError('Nickname already exists')
     if user_service.get_by_phone(telephone, False) is not None:
-        raise ValidationException("Telephone already exists")
+        raise ValidationError('Telephone already exists')
 
 
 def set_existing_data(db_obj, req_obj):
@@ -25,15 +24,14 @@ def set_existing_data(db_obj, req_obj):
 
 
 def generate_random_code(length):
-    return ''.join(
-        random.choice(string.ascii_uppercase) for _ in range(length))
+    return ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
 
 
 def generate_complex_random_code(length):
     return ''.join(random.choice(string.printable) for _ in range(length))
 
 
-def isBase64(s):
+def is_base64(s):
     return True
     # try:
     #     return base64.b64encode(base64.b64decode(s)) == s
@@ -48,7 +46,7 @@ def check_image(payload):
     #         payload.is_image_url = True
     # if not payload.is_image_url:
     #     if not isBase64(payload.image):
-    #         raise ValidationException("Image is not a valid base64 string")
+    #         raise ValidationError("Image is not a valid base64 string")
     return payload
 
 

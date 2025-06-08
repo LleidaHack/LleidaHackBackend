@@ -1,6 +1,5 @@
 # from __future__ import annotations
 from datetime import datetime
-from typing import Optional
 
 from pydantic import field_validator
 
@@ -18,8 +17,8 @@ class EventCreate(BaseSchema):
     max_participants: int
     max_group_size: int
     max_sponsors: int
-    image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
+    image: str | None = None
+    # is_image_url: Optional[bool] = None
 
     # start_time: Time = Column(Time, default=func.now())
 
@@ -58,8 +57,8 @@ class EventGet(BaseSchema):
     max_participants: int
     max_group_size: int
     max_sponsors: int
-    image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
+    image: str | None = None
+    # is_image_url: Optional[bool] = None
 
 
 class EventGetAll(EventGet):
@@ -67,29 +66,30 @@ class EventGetAll(EventGet):
 
 
 class EventUpdate(BaseSchema):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    location: Optional[str] = None
-    archived: Optional[bool] = None
-    price: Optional[int] = None
-    max_participants: Optional[int] = None
-    max_sponsors: Optional[int] = None
-    image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
-    is_open: Optional[bool] = None
-    max_group_size: Optional[int] = None
-
+    name: str | None = None
+    description: str | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    location: str | None = None
+    archived: bool | None = None
+    price: int | None = None
+    max_participants: int | None = None
+    max_sponsors: int | None = None
+    image: str | None = None
+    # is_image_url: Optional[bool] = None
+    is_open: bool | None = None
+    max_group_size: int | None = None
 
     # start_time: Time = Column(Time, default=func.now())
+
+
 class HackerEventRegistration(BaseSchema):
     shirt_size: str
     food_restrictions: str
-    cv: Optional[str] = None
-    description: Optional[str] = None
-    github: Optional[str] = None
-    linkedin: Optional[str] = None
+    cv: str | None = None
+    description: str | None = None
+    github: str | None = None
+    linkedin: str | None = None
     studies: str
     study_center: str
     location: str
@@ -106,14 +106,14 @@ class HackerEventRegistration(BaseSchema):
 
 
 class HackerEventRegistrationUpdate(BaseSchema):
-    shirt_size: Optional[str] = None
-    food_restrictions: Optional[str] = None
-    cv: Optional[str] = None
-    description: Optional[str] = None
-    github: Optional[str] = None
-    linkedin: Optional[str] = None
-    studies: Optional[str] = None
-    study_center: Optional[str] = None
-    location: Optional[str] = None
-    how_did_you_meet_us: Optional[str] = None
-    wants_credit: Optional[bool] = False
+    shirt_size: str | None = None
+    food_restrictions: str | None = None
+    cv: str | None = None
+    description: str | None = None
+    github: str | None = None
+    linkedin: str | None = None
+    studies: str | None = None
+    study_center: str | None = None
+    location: str | None = None
+    how_did_you_meet_us: str | None = None
+    wants_credit: bool | None = False

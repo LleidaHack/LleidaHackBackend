@@ -1,25 +1,21 @@
 import importlib
-from typing import Any, overload
+from typing import Any
 
-from generated_src.lleida_hack_mail_api_client.client import (
-    AuthenticatedClient, Client)
-from src.utils.Singleton import Singleton
+from generated_src.lleida_hack_mail_api_client.client import AuthenticatedClient, Client
+from src.utils.singleton import Singleton
 
 
-#TODO: must be singleton
+# TODO: must be singleton
 class BaseClient(metaclass=Singleton):
-
-    def needs_client(client):
-
+    def needs_client(self):
         def wrapper(f):
-
             def get_client(*args):
                 s = args[0]
-                cli = client
+                cli = self
                 if type(cli) is str:
                     # equiv. of your `import matplotlib.text as text`
-                    cli = importlib.import_module('src.Clients.' + client)
-                    cli = getattr(cli, client)
+                    cli = importlib.import_module('src.Clients.' + self)
+                    cli = getattr(cli, self)
                 if getattr(s, cli.name) is None:
                     setattr(s, cli.name, cli())
                 return f(*args)

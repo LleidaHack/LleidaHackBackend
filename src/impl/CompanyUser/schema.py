@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
 
@@ -20,5 +18,5 @@ class CompanyUserGetAll(UserGetAll):
 
 
 class CompanyUserUpdate(UserUpdate):
-    role: Optional[str] = None
-    company_id: Optional[int] = None
+    role: str | None = None
+    company_id: int | None = None

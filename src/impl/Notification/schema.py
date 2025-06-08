@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.utils.Base.BaseSchema import BaseSchema
 
 
@@ -8,4 +6,4 @@ class Notification(BaseSchema):
 
 
 class NotificationUpdate(BaseSchema):
-    message: Optional[str] = None
+    message: str | None = None

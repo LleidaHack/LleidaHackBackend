@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse, Response
@@ -14,8 +14,7 @@ class MaintenanceModeMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.is_maintenance_mode = is_maintenance_mode
 
-    async def dispatch(self, request: Request,
-                       call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         """Intercept the incoming requests
 
         Args:
@@ -28,8 +27,7 @@ class MaintenanceModeMiddleware(BaseHTTPMiddleware):
         if self.is_maintenance_mode:
             return JSONResponse(
                 content={
-                    "detail":
-                    "Service is temporarily unavailable due to maintenance"
+                    'detail': 'Service is temporarily unavailable due to maintenance'
                 },
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             )

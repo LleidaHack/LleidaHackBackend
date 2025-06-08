@@ -1,5 +1,5 @@
-from src.utils.Base.BaseException import BaseException
+from src.utils.Base.BaseException import CustomBaseError
 
 
-class AuthenticationException(BaseException):
+class AuthenticationError(CustomBaseError):
     pass

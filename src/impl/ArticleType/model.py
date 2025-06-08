@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -15,9 +15,10 @@ class ArticleType(BaseModel):
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     description: Mapped[str] = mapped_column(String)
 
-    articles: Mapped[List["Article"]] = relationship(
+    articles: Mapped[list['Article']] = relationship(
         'Article',
         secondary='article_article_type',
         primaryjoin='ArticleType.id == article_article_type.c.article_type_id',
         secondaryjoin='Article.id == article_article_type.c.article_id',
-        uselist=True)
+        uselist=True,
+    )

@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import field_validator
 
@@ -41,9 +40,9 @@ class ArticleCreate(BaseSchema):
 
 
 class ArticleUpdate(BaseSchema):
-    title: Optional[str] = None
-    content: Optional[str] = None
-    image: Optional[str] = None
+    title: str | None = None
+    content: str | None = None
+    image: str | None = None
 
     @field_validator('title')
     @classmethod

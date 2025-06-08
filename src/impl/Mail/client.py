@@ -1,26 +1,28 @@
 from http import HTTPStatus
 from typing import Any
+
 from generated_src.lleida_hack_mail_api_client.api.health import health_check
-from generated_src.lleida_hack_mail_api_client.api.mail import mail_create, mail_send_by_id
+from generated_src.lleida_hack_mail_api_client.api.mail import (
+    mail_create,
+    mail_send_by_id,
+)
 from generated_src.lleida_hack_mail_api_client.api.template import template_get_by_name
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
-from src.error.MailClientException import MailClientException
+from src.configuration.Configuration import Configuration
+from src.error.MailClientError import MailClientError
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
-from src.configuration.Configuration import Configuration
 
 
 def initialized(func):
-
     def wrapper(*args, **kwargs):
         try:
             args[0].check_health()
-        except:
+        except Exception:
             pass
         if args[0]._initialized:
             return func(*args, **kwargs)
-        print('MailClient not initialized')
-        raise MailClientException('MailClient is not available')
+        raise MailClientError('MailClient is not available')
 
     return wrapper
 
@@ -36,10 +38,9 @@ class MailClient(BaseClient):
             self.check_health()
             self._get_internall_templates()
             self._initialized = True
-        except Exception as e:
+        except Exception:
             self._initialized = False
-            print('MailClient not initialized')
-            # raise MailClientException('MailClient is not available')
+            # raise MailClientError('MailClient is not available')
 
     def check_health(self):
         r = health_check.sync_detailed(client=self.client)
@@ -57,7 +58,7 @@ class MailClient(BaseClient):
         return r
 
     @initialized
-    def send_mail_by_id(self, id: int):
+    def send_mail_by_id(self, item_id: int):
         r = mail_send_by_id.sync_detailed(id, client=self.client)
         return r
 
@@ -68,8 +69,7 @@ class MailClient(BaseClient):
         for _ in InternalTemplate:
             r = self.get_template_by_name(_.value)
             if r is None:
-                raise Exception(
-                    f'error obtaining template with name:{_.value}')
+                raise Exception(f'error obtaining template with name:{_.value}')
             self._internall_templates[_] = r
 
     @initialized

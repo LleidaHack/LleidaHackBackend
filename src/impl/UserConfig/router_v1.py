@@ -1,34 +1,28 @@
-from typing import List, Union
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-
-from src.impl.UserConfig.schema import UserConfigGet
-from src.impl.UserConfig.schema import UserConfigGetAll
-from src.impl.UserConfig.schema import UserConfigUpdate
+from src.impl.UserConfig.schema import UserConfigGet, UserConfigGetAll, UserConfigUpdate
 from src.impl.UserConfig.service import UserConfigService
-from src.utils.JWTBearer import JWTBearer
-from src.utils.Token import BaseToken
+from src.utils.jwt_bearer import jwt_dependency
+from src.utils.token import BaseToken
 
 router = APIRouter(
-    prefix="/userConfig",
-    tags=["UserConfig"],
+    prefix='/userConfig',
+    tags=['UserConfig'],
 )
 
-userConfig_service = UserConfigService()
+user_config_service = UserConfigService()
 
 
-@router.get("/all", response_model=List[UserConfigGetAll])
-def get_all(token: BaseToken = Depends(JWTBearer())):
-    return userConfig_service.get_all_users_config(token)
+@router.get('/all', response_model=list[UserConfigGetAll])
+def get_all(token: BaseToken = jwt_dependency):
+    return user_config_service.get_all_users_config(token)
 
 
-@router.get("/{userId}", response_model=Union[UserConfigGetAll, UserConfigGet])
-def get(userId: int, token: BaseToken = Depends(JWTBearer())):
-    return userConfig_service.get_user_config(userId, token)
+@router.get('/{user_id}', response_model=UserConfigGetAll | UserConfigGet)
+def get(user_id: int, token: BaseToken = jwt_dependency):
+    return user_config_service.get_user_config(user_id, token)
 
 
-@router.put("/{userId}")
-def update(userId: int,
-           payload: UserConfigUpdate,
-           token: BaseToken = Depends(JWTBearer())):
-    return userConfig_service.update_user_config(userId, payload, token)
+@router.put('/{user_id}')
+def update(user_id: int, payload: UserConfigUpdate, token: BaseToken = jwt_dependency):
+    return user_config_service.update_user_config(user_id, payload, token)

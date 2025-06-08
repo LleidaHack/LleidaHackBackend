@@ -18,24 +18,22 @@ class Configuration:
         return yaml_files
 
     def __init__(self, file=None) -> None:
-        '''loads the config and returs if already loaded'''
+        """loads the config and returs if already loaded"""
 
         if Configuration._FILE is None:
             Configuration.__CONFIG_FILES = Configuration.__get_yaml_files()
             if file is None:
                 if len(Configuration.__CONFIG_FILES) > 1:
-                    raise Exception(
-                        'Please select a configuration file to load')
+                    raise Exception('Please select a configuration file to load')
                 file = Configuration.__CONFIG_FILES[0]
-            Configuration._FILE = os.path.join(Configuration.__CONFIG_PATH,
-                                               file)
+            Configuration._FILE = os.path.join(Configuration.__CONFIG_PATH, file)
             Configuration.__instanciate__()
 
     @staticmethod
     def __instanciate_nested(k, v, c):
         setattr(c, k, types.SimpleNamespace())
         for kk, vv in v.items():
-            if type(vv) == dict:
+            if isinstance(vv, dict):
                 Configuration.__instanciate_nested(kk, vv, getattr(c, k))
             else:
                 setattr(getattr(c, k), kk, vv)
@@ -47,7 +45,7 @@ class Configuration:
         with open(Configuration._FILE) as f:
             data = yaml.safe_load(f)
             for k, v in data.items():
-                if type(v) == dict:
+                if isinstance(v, dict):
                     Configuration.__instanciate_nested(k, v, Configuration)
                     # for kk, vv in v.items():
                     # setattr(getattr(Configuration, k), kk, vv)

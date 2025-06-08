@@ -33,6 +33,9 @@ ignore = ["E501"]  # Line too long (handled by formatter)
 
 [tool.ruff.lint.extend-per-file-ignores]
 "alembic/*" = ["ALL"]
+"__init__.py" = ["N999"]
+"src/__init__.py" = ["N999"]
+"src/utils/__init__.py" = ["N999"]
 
 [tool.ruff.format]
 quote-style = "single"

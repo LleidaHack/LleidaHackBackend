@@ -1,11 +1,10 @@
 from sqlalchemy.orm import Session
 
 from src.impl.Notification.model import Notification
-from src.utils.UserType import UserType
 
 
-def get_notifications(userId: int, db: Session):
-    return db.query(Notification).filter(Notification.user_id == userId).all()
+def get_notifications(user_id: int, db: Session):
+    return db.query(Notification).filter(Notification.user_id == user_id).all()
 
 
 def add_notification(payload: Notification, db: Session):
@@ -16,9 +15,10 @@ def add_notification(payload: Notification, db: Session):
     return new_notification
 
 
-def delete_notification(notificationId: int, db: Session):
-    notification = db.query(Notification).filter(
-        Notification.id == notificationId).first()
+def delete_notification(notification_id: int, db: Session):
+    notification = (
+        db.query(Notification).filter(Notification.id == notification_id).first()
+    )
     db.delete(notification)
     db.commit()
     return notification

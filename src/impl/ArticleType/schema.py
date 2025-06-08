@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import field_validator
 
 from src.utils.Base.BaseSchema import BaseSchema
@@ -35,8 +33,8 @@ class ArticleTypeCreate(BaseSchema):
 
 
 class ArticleTypeUpdate(BaseSchema):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
 
     @field_validator('name')
     @classmethod

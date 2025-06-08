@@ -1,10 +1,5 @@
-from typing import Optional, List
-
-from pydantic import ConfigDict
-
-from src.utils.Base.BaseSchema import BaseSchema
-
 from src.impl.Hacker.schema import HackerGet
+from src.utils.Base.BaseSchema import BaseSchema
 
 
 class HackerGroupCreate(BaseSchema):
@@ -20,7 +15,7 @@ class HackerGroupGet(BaseSchema):
     description: str
     leader_id: int
     event_id: int
-    members: List[HackerGet]
+    members: list[HackerGet]
 
 
 class HackerGroupGetAll(HackerGroupGet):
@@ -29,6 +24,6 @@ class HackerGroupGetAll(HackerGroupGet):
 
 
 class HackerGroupUpdate(BaseSchema):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    leader_id: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    leader_id: int | None = None

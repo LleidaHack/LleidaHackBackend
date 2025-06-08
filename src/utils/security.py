@@ -1,7 +1,9 @@
+from fastapi import Depends
 from fastapi.security import HTTPBasic
 from passlib.hash import pbkdf2_sha256
 
 sec = HTTPBasic()
+sec_dependency = Depends(sec)
 
 
 def verify_password(plain_password, hashed_password):
