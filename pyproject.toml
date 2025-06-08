@@ -37,3 +37,8 @@ ignore = ["E501"]  # Line too long (handled by formatter)
 [tool.ruff.format]
 quote-style = "single"
 indent-style = "space"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+]
