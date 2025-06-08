@@ -1,9 +1,8 @@
 import logging
 
+from app import App
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-
-from app import App
 
 tags_metadata = [
     {'name': 'User', 'description': 'User related endpoints'},
