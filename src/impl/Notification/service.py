@@ -16,9 +16,8 @@ def add_notification(payload: Notification, db: Session):
 
 
 def delete_notification(notificationId: int, db: Session):
-    notification = (
-        db.query(Notification).filter(Notification.id == notificationId).first()
-    )
+    notification = (db.query(Notification).filter(
+        Notification.id == notificationId).first())
     db.delete(notification)
     db.commit()
     return notification

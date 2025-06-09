@@ -32,8 +32,9 @@ def downgrade():
     op.drop_column("hacker_event_registration", "dailyhack_url")
     op.add_column(
         "hacker",
-        sa.Column(
-            "dailyhack_github_repo", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
+        sa.Column("dailyhack_github_repo",
+                  sa.VARCHAR(),
+                  autoincrement=False,
+                  nullable=True),
     )
     # ### end Alembic commands ###

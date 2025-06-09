@@ -23,7 +23,8 @@ def get_all(data: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_all()
 
 
-@router.get("/{groupId}", response_model=Union[HackerGroupGetAll, HackerGroupGet])
+@router.get("/{groupId}",
+            response_model=Union[HackerGroupGetAll, HackerGroupGet])
 def get(groupId: int, data: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_hacker_group(groupId, data)
 
@@ -41,9 +42,9 @@ def add(payload: HackerGroupCreate, data: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{groupId}")
-def update(
-    groupId: int, payload: HackerGroupUpdate, data: BaseToken = Depends(JWTBearer())
-):
+def update(groupId: int,
+           payload: HackerGroupUpdate,
+           data: BaseToken = Depends(JWTBearer())):
     hackergroup_service.update_hacker_group(groupId, payload, data)
     return {"success": True, "updated_id": groupId}
 
@@ -61,8 +62,11 @@ def get_members(groupId: int, data: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/{groupId}/members/{hackerId}")
-def add_hacker(groupId: int, hackerId: int, data: BaseToken = Depends(JWTBearer())):
-    hacker_group = hackergroup_service.add_hacker_to_group(groupId, hackerId, data)
+def add_hacker(groupId: int,
+               hackerId: int,
+               data: BaseToken = Depends(JWTBearer())):
+    hacker_group = hackergroup_service.add_hacker_to_group(
+        groupId, hackerId, data)
     return {
         "success": True,
         "added_hacker_id": hackerId,
@@ -71,12 +75,11 @@ def add_hacker(groupId: int, hackerId: int, data: BaseToken = Depends(JWTBearer(
 
 
 @router.post("/{group_code}/members_by_code/{hacker_id}")
-def add_hacker_by_code(
-    group_code: str, hacker_id: int, data: BaseToken = Depends(JWTBearer())
-):
+def add_hacker_by_code(group_code: str,
+                       hacker_id: int,
+                       data: BaseToken = Depends(JWTBearer())):
     hacker_group = hackergroup_service.add_hacker_to_group_by_code(
-        group_code, hacker_id, data
-    )
+        group_code, hacker_id, data)
     return {
         "success": True,
         "added_hacker_id": hacker_id,
@@ -85,12 +88,21 @@ def add_hacker_by_code(
 
 
 @router.delete("/{groupId}/members/{hackerId}")
-def remove_hacker(groupId: int, hackerId: int, data: BaseToken = Depends(JWTBearer())):
+def remove_hacker(groupId: int,
+                  hackerId: int,
+                  data: BaseToken = Depends(JWTBearer())):
     hackergroup_service.remove_hacker_from_group(groupId, hackerId, data)
-    return {"success": True, "removed_hacker_id": hackerId, "removed_group_id": groupId}
+    return {
+        "success": True,
+        "removed_hacker_id": hackerId,
+        "removed_group_id": groupId
+    }
 
 
 @router.put("/{groupId}/leader/{hackerId}")
-def set_leader(groupId: int, hackerId: int, data: BaseToken = Depends(JWTBearer())):
-    hacker_group = hackergroup_service.set_hacker_group_leader(groupId, hackerId, data)
+def set_leader(groupId: int,
+               hackerId: int,
+               data: BaseToken = Depends(JWTBearer())):
+    hacker_group = hackergroup_service.set_hacker_group_leader(
+        groupId, hackerId, data)
     return {"success": True, "new_leader_id": hacker_group.leader_id}

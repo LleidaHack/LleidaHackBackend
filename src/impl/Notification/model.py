@@ -24,9 +24,9 @@ class Notification(BaseModel):
 
 class HackerAcceptedNotification(Notification):
     __tablename__ = "hacker_accepted_notification"
-    id: Mapped[int] = mapped_column(
-        ForeignKey("notification.id"), primary_key=True, index=True
-    )
+    id: Mapped[int] = mapped_column(ForeignKey("notification.id"),
+                                    primary_key=True,
+                                    index=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"))
     __mapper_args__ = {
         "polymorphic_identity": "hacker_accepted_notification",
@@ -35,9 +35,9 @@ class HackerAcceptedNotification(Notification):
 
 class HackerRejectedNotification(Notification):
     __tablename__ = "hacker_rejected_notification"
-    id: Mapped[int] = mapped_column(
-        ForeignKey("notification.id"), primary_key=True, index=True
-    )
+    id: Mapped[int] = mapped_column(ForeignKey("notification.id"),
+                                    primary_key=True,
+                                    index=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"))
     __mapper_args__ = {
         "polymorphic_identity": "hacker_rejected_notification",
@@ -46,9 +46,9 @@ class HackerRejectedNotification(Notification):
 
 class LleidaHackerAcceptedNotification(Notification):
     __tablename__ = "lleida_hacker_accepted_notification"
-    id: Mapped[int] = mapped_column(
-        ForeignKey("notification.id"), primary_key=True, index=True
-    )
+    id: Mapped[int] = mapped_column(ForeignKey("notification.id"),
+                                    primary_key=True,
+                                    index=True)
     __mapper_args__ = {
         "polymorphic_identity": "lleida_hacker_accepted_notification",
     }
@@ -56,9 +56,9 @@ class LleidaHackerAcceptedNotification(Notification):
 
 class LleidaHackerRejectedNotification(Notification):
     __tablename__ = "lleida_hacker_rejected_notification"
-    id: Mapped[int] = mapped_column(
-        ForeignKey("notification.id"), primary_key=True, index=True
-    )
+    id: Mapped[int] = mapped_column(ForeignKey("notification.id"),
+                                    primary_key=True,
+                                    index=True)
     __mapper_args__ = {
         "polymorphic_identity": "lleida_hacker_rejected_notification",
     }

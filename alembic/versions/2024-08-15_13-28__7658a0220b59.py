@@ -25,7 +25,9 @@ def upgrade():
         sa.Column("description", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_article_type_name"), "article_type", ["name"], unique=True)
+    op.create_index(op.f("ix_article_type_name"),
+                    "article_type", ["name"],
+                    unique=True)
     op.create_table(
         "article",
         sa.Column("id", sa.Integer(), nullable=False),

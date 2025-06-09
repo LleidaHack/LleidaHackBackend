@@ -21,29 +21,29 @@ class UserConfigService(BaseService):
         return db.session.query(UserConfig).all()
 
     def get_by_id(self, id: int):
-        config = db.session.query(UserConfig).filter(UserConfig.id == id).first()
+        config = db.session.query(UserConfig).filter(
+            UserConfig.id == id).first()
         if config is None:
             raise NotFoundException("User config not found")
         return config
 
     def get_by_user_id(self, user_id: int):
-        config = (
-            db.session.query(UserConfig).filter(UserConfig.user_id == user_id).first()
-        )
+        config = (db.session.query(UserConfig).filter(
+            UserConfig.user_id == user_id).first())
         if config is None:
             raise NotFoundException("User config not found")
         return config
 
     def get_user_config(self, userId: int, data: BaseToken):
         if not data.check(
-            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER], userId
-        ):
+            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
+                userId):
             raise AuthenticationException("Not authorized")
 
         userConfig = self.get_by_user_id(userId)
         if data.check(
-            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER], userId
-        ):
+            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
+                userId):
             return TypeAdapter(UserConfigGetAll).validate_python(userConfig)
 
         return TypeAdapter(UserConfigGet).validate_python(userConfig)
@@ -60,15 +60,15 @@ class UserConfigService(BaseService):
         db.session.commit()
         return userConfig
 
-    def update_user_config(
-        self, config_id: int, payload: UserConfigUpdate, data: BaseToken
-    ):
+    def update_user_config(self, config_id: int, payload: UserConfigUpdate,
+                           data: BaseToken):
         userConfig = self.get_by_id(config_id)
-        user_id = db.session.query(User).filter(User.config_id == config_id).first().id
+        user_id = db.session.query(User).filter(
+            User.config_id == config_id).first().id
 
         if not data.check(
-            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER], user_id
-        ):
+            [UserType.LLEIDAHACKER, UserType.HACKER, UserType.COMPANYUSER],
+                user_id):
             raise AuthenticationException("Not authorized")
 
         userConfig.recive_notifications = payload.recive_notifications

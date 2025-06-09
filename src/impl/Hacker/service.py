@@ -16,8 +16,7 @@ from src.impl.Hacker.schema import HackerUpdate
 from src.impl.HackerGroup.model import HackerGroupUser
 from src.impl.UserConfig.model import UserConfig
 from src.utils.Base.BaseService import (
-    BaseService,
-)  # an object to provide global access to a database session
+    BaseService, )  # an object to provide global access to a database session
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (
     check_image,
@@ -69,9 +68,8 @@ class HackerService(BaseService):
 
     def add_hacker(self, payload: HackerCreate):
         check_user(payload.email, payload.nickname, payload.telephone)
-        new_hacker = Hacker(
-            **payload.model_dump(exclude={"config"}), code=generate_user_code()
-        )
+        new_hacker = Hacker(**payload.model_dump(exclude={"config"}),
+                            code=generate_user_code())
         if payload.image is not None:
             payload = check_image(payload)
         new_hacker.password = get_password_hash(payload.password)
@@ -89,17 +87,14 @@ class HackerService(BaseService):
     @BaseService.needs_service("HackerGroupService")
     def remove_hacker(self, hackerId: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
-            [UserType.HACKER], hackerId
-        ):
+            [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
-        hacker_groups_ids = (
-            db.session.query(HackerGroupUser)
-            .filter(HackerGroupUser.hacker_id == hackerId)
-            .all()
-        )
+        hacker_groups_ids = (db.session.query(HackerGroupUser).filter(
+            HackerGroupUser.hacker_id == hackerId).all())
         hacker_groups_ids = [group.group_id for group in hacker_groups_ids]
-        hacker_groups = self.hackergroup_service.get_when_id_in(hacker_groups_ids)
+        hacker_groups = self.hackergroup_service.get_when_id_in(
+            hacker_groups_ids)
         for group in hacker_groups:
             if len(group.members) <= 1:
                 db.session.delete(group)
@@ -108,26 +103,24 @@ class HackerService(BaseService):
                     members_ids = [h.id for h in group.members]
                     members_ids.remove(hackerId)
                     group.leader_id = members_ids[0]
-        db.session.query(HackerMeal).filter(HackerMeal.user_id == hackerId).delete()
+        db.session.query(HackerMeal).filter(
+            HackerMeal.user_id == hackerId).delete()
         db.session.query(HackerRegistration).filter(
-            HackerRegistration.user_id == hackerId
-        ).delete()
+            HackerRegistration.user_id == hackerId).delete()
         db.session.query(HackerParticipation).filter(
-            HackerParticipation.user_id == hackerId
-        ).delete()
+            HackerParticipation.user_id == hackerId).delete()
         db.session.query(HackerAccepted).filter(
-            HackerAccepted.user_id == hackerId
-        ).delete()
+            HackerAccepted.user_id == hackerId).delete()
         db.session.delete(hacker)
 
         # db.session.delete(hacker_group_user)
         db.session.commit()
         return hacker
 
-    def update_hacker(self, hackerId: int, payload: HackerUpdate, data: BaseToken):
+    def update_hacker(self, hackerId: int, payload: HackerUpdate,
+                      data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
-            [UserType.HACKER], hackerId
-        ):
+            [UserType.HACKER], hackerId):
             raise AuthenticationException("Not authorized")
         hacker = self.get_by_id(hackerId)
         if payload.image is not None:

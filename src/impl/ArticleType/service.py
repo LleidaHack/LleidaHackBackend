@@ -17,27 +17,28 @@ class ArticleTypeService(BaseService):
         return db.session.query(ArticleType).all()
 
     def get_by_id(self, id: int):
-        article_type = (
-            db.session.query(ArticleType).filter(ArticleType.id == id).first()
-        )
+        article_type = (db.session.query(ArticleType).filter(
+            ArticleType.id == id).first())
         if article_type is None:
             raise NotFoundException("article type not found")
         return article_type
 
     def create(self, article_type: ArticleTypeCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to add article types")
-        db_article_type = ArticleType(
-            **article_type.model_dump(), owner_id=data.user_id
-        )
+            raise AuthenticationException(
+                "You are not allowed to add article types")
+        db_article_type = ArticleType(**article_type.model_dump(),
+                                      owner_id=data.user_id)
         db.session.add(db_article_type)
         db.session.commit()
         db.session.refresh(db_article_type)
         return db_article_type
 
-    def update(self, id: int, article_type: ArticleTypeUpdate, data: BaseToken):
+    def update(self, id: int, article_type: ArticleTypeUpdate,
+               data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to update article types")
+            raise AuthenticationException(
+                "You are not allowed to update article types")
         db_article_type = self.get_by_id(id)
         set_existing_data(db_article_type, article_type)
         db.session.commit()
@@ -46,7 +47,8 @@ class ArticleTypeService(BaseService):
 
     def delete(self, id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to delete article types")
+            raise AuthenticationException(
+                "You are not allowed to delete article types")
         db_article_type = self.get_by_id(id)
         db.session.delete(db_article_type)
         db.session.commit()

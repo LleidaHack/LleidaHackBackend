@@ -34,12 +34,13 @@ def downgrade():
         sa.Column("subject", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column("body", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column("sent", sa.BOOLEAN(), autoincrement=False, nullable=True),
-        sa.ForeignKeyConstraint(
-            ["user_id"], ["my_user.id"], name="mail_queue_user_id_fkey"
-        ),
+        sa.ForeignKeyConstraint(["user_id"], ["my_user.id"],
+                                name="mail_queue_user_id_fkey"),
         sa.PrimaryKeyConstraint("id", name="mail_queue_pkey"),
     )
-    op.create_index("ix_mail_queue_subject", "mail_queue", ["subject"], unique=False)
+    op.create_index("ix_mail_queue_subject",
+                    "mail_queue", ["subject"],
+                    unique=False)
     op.create_index("ix_mail_queue_id", "mail_queue", ["id"], unique=False)
     op.create_index("ix_mail_queue_body", "mail_queue", ["body"], unique=False)
     # ### end Alembic commands ###

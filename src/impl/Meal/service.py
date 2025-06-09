@@ -45,9 +45,11 @@ class MealService(BaseService):
         db.session.refresh(db_meal)
         return db_meal
 
-    def update_meal(self, id: int, meal_id: int, meal: MealUpdate, data: BaseToken):
+    def update_meal(self, id: int, meal_id: int, meal: MealUpdate,
+                    data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to update meals")
+            raise AuthenticationException(
+                "You are not allowed to update meals")
         db_meal = self.get_by_id(meal_id)
         set_existing_data(db_meal, meal)
         db.session.commit()
@@ -56,7 +58,8 @@ class MealService(BaseService):
 
     def delete_meal(self, meal_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("You are not allowed to delete meals")
+            raise AuthenticationException(
+                "You are not allowed to delete meals")
         db_meal = self.get_by_id(meal_id)
         db.session.delete(db_meal)
         db.session.commit()

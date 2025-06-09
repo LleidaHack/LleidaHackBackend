@@ -11,12 +11,12 @@ if TYPE_CHECKING:
 
 class HackerGroupUser(BaseModel):
     __tablename__ = "hacker_group_user"
-    hacker_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("hacker.user_id"), primary_key=True
-    )
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("hacker_group.id"), primary_key=True
-    )
+    hacker_id: Mapped[int] = mapped_column(Integer,
+                                           ForeignKey("hacker.user_id"),
+                                           primary_key=True)
+    group_id: Mapped[int] = mapped_column(Integer,
+                                          ForeignKey("hacker_group.id"),
+                                          primary_key=True)
 
 
 class HackerGroup(BaseModel):
@@ -25,7 +25,8 @@ class HackerGroup(BaseModel):
     code: Mapped[str] = mapped_column(String, unique=True, index=True)
     name: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
-    leader_id: Mapped[int] = mapped_column(Integer, ForeignKey("hacker.user_id"))
+    leader_id: Mapped[int] = mapped_column(Integer,
+                                           ForeignKey("hacker.user_id"))
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"))
     # event: Mapped["Event"] = relationship('Event', secondary='hacker_event')
     members: Mapped[List["User"]] = relationship(

@@ -29,7 +29,8 @@ def reset_password(email: str):
 
 @router.post("/confirm-reset-password")
 def confirm_reset_password(token: str, password: str):
-    return auth_service.confirm_reset_password(BaseToken.get_data(token), password)
+    return auth_service.confirm_reset_password(BaseToken.get_data(token),
+                                               password)
 
 
 @router.post("/refresh-token")

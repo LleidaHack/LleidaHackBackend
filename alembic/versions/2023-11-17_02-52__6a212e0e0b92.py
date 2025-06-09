@@ -25,7 +25,9 @@ def upgrade():
         sa.Column("name", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("code"),
     )
-    op.create_index(op.f("ix_geocaching_code"), "geocaching", ["code"], unique=False)
+    op.create_index(op.f("ix_geocaching_code"),
+                    "geocaching", ["code"],
+                    unique=False)
     op.create_table(
         "user_geocaching",
         sa.Column("user_code", sa.String(), nullable=False),
@@ -40,7 +42,8 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("user_code", "code"),
     )
-    op.add_column("user", sa.Column("lleidacoins_claimed", sa.Boolean(), nullable=True))
+    op.add_column(
+        "user", sa.Column("lleidacoins_claimed", sa.Boolean(), nullable=True))
     # ### end Alembic commands ###
 
 

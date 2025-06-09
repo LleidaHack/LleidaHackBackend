@@ -11,23 +11,23 @@ if TYPE_CHECKING:
 
 class LleidaHackerGroupUser(BaseModel):
     __tablename__ = "lleida_hacker_group_user"
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lleida_hacker_group.id"), primary_key=True
-    )
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lleida_hacker.user_id"), primary_key=True
-    )
+    group_id: Mapped[int] = mapped_column(Integer,
+                                          ForeignKey("lleida_hacker_group.id"),
+                                          primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer,
+                                         ForeignKey("lleida_hacker.user_id"),
+                                         primary_key=True)
     primary: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class LleidaHackerGroupLeader(BaseModel):
     __tablename__ = "lleida_hacker_group_leader"
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lleida_hacker_group.id"), primary_key=True
-    )
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lleida_hacker.user_id"), primary_key=True
-    )
+    group_id: Mapped[int] = mapped_column(Integer,
+                                          ForeignKey("lleida_hacker_group.id"),
+                                          primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer,
+                                         ForeignKey("lleida_hacker.user_id"),
+                                         primary_key=True)
 
 
 class LleidaHackerGroup(BaseModel):
@@ -39,8 +39,6 @@ class LleidaHackerGroup(BaseModel):
     # members: Mapped[List["LleidaHacker"]] = relationship('LleidaHacker', secondary='group_lleida_hacker_user', backref='lleida_hacker_group')
     # members: Mapped[List["LleidaHacker"]] = relationship('LleidaHacker', back_populates='lleida_hacker_group')
     members: Mapped[List["LleidaHacker"]] = relationship(
-        "LleidaHacker", secondary="lleida_hacker_group_user"
-    )
+        "LleidaHacker", secondary="lleida_hacker_group_user")
     leaders: Mapped[List["LleidaHacker"]] = relationship(
-        "LleidaHacker", secondary="lleida_hacker_group_leader"
-    )
+        "LleidaHacker", secondary="lleida_hacker_group_leader")

@@ -32,14 +32,14 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("group_id", "user_id"),
     )
-    op.add_column("lleida_hacker_group", sa.Column("image", sa.String(), nullable=True))
-    op.drop_constraint(
-        "lleida_hacker_group_leader_id_fkey", "lleida_hacker_group", type_="foreignkey"
-    )
+    op.add_column("lleida_hacker_group",
+                  sa.Column("image", sa.String(), nullable=True))
+    op.drop_constraint("lleida_hacker_group_leader_id_fkey",
+                       "lleida_hacker_group",
+                       type_="foreignkey")
     op.drop_column("lleida_hacker_group", "leader_id")
-    op.add_column(
-        "lleida_hacker_group_user", sa.Column("primary", sa.Boolean(), nullable=True)
-    )
+    op.add_column("lleida_hacker_group_user",
+                  sa.Column("primary", sa.Boolean(), nullable=True))
     # ### end Alembic commands ###
 
 
@@ -48,7 +48,10 @@ def downgrade():
     op.drop_column("lleida_hacker_group_user", "primary")
     op.add_column(
         "lleida_hacker_group",
-        sa.Column("leader_id", sa.INTEGER(), autoincrement=False, nullable=True),
+        sa.Column("leader_id",
+                  sa.INTEGER(),
+                  autoincrement=False,
+                  nullable=True),
     )
     op.create_foreign_key(
         "lleida_hacker_group_leader_id_fkey",

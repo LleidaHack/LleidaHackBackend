@@ -7,8 +7,11 @@ from src.utils.Singleton import Singleton
 
 # TODO: must be singleton
 class BaseClient(metaclass=Singleton):
+
     def needs_client(client):
+
         def wrapper(f):
+
             def get_client(*args):
                 s = args[0]
                 cli = client

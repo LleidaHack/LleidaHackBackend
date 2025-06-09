@@ -5,22 +5,51 @@ from fastapi.responses import RedirectResponse
 from App import App
 
 tags_metadata = [
-    {"name": "User", "description": "User related endpoints"},
-    {"name": "UserConfig", "description": "UserConfig related endpoints"},
-    {"name": "Hacker", "description": "Hacker related endpoints"},
-    {"name": "Hacker Group", "description": "Hacker Group related endpoints"},
-    {"name": "LleidaHacker", "description": "LleidaHacker related endpoints"},
+    {
+        "name": "User",
+        "description": "User related endpoints"
+    },
+    {
+        "name": "UserConfig",
+        "description": "UserConfig related endpoints"
+    },
+    {
+        "name": "Hacker",
+        "description": "Hacker related endpoints"
+    },
+    {
+        "name": "Hacker Group",
+        "description": "Hacker Group related endpoints"
+    },
+    {
+        "name": "LleidaHacker",
+        "description": "LleidaHacker related endpoints"
+    },
     {
         "name": "LleidaHacker Group",
         "description": "LleidaHacker Group related endpoints",
     },
-    {"name": "Company", "description": "Company related endpoints"},
-    {"name": "CompanyUser", "description": "Company user related endpoints"},
-    {"name": "Event", "description": "Event related endpoints"},
-    {"name": "Meal", "description": "Meal related endpoints"},
-    {"name": "Authentication", "description": "Authentication related endpoints"},
+    {
+        "name": "Company",
+        "description": "Company related endpoints"
+    },
+    {
+        "name": "CompanyUser",
+        "description": "Company user related endpoints"
+    },
+    {
+        "name": "Event",
+        "description": "Event related endpoints"
+    },
+    {
+        "name": "Meal",
+        "description": "Meal related endpoints"
+    },
+    {
+        "name": "Authentication",
+        "description": "Authentication related endpoints"
+    },
 ]
-
 
 app = FastAPI(
     title="LleidaHack API",

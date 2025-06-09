@@ -12,15 +12,15 @@ if TYPE_CHECKING:
 
 class Mentor(User):
     __tablename__ = "mentor"
-    user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"),
+                                         primary_key=True)
     github: Mapped[str] = mapped_column(String, default="")
     linkedin: Mapped[str] = mapped_column(String, default="")
     cv: Mapped[str] = mapped_column(String, default="")
     location: Mapped[str] = mapped_column(String, default="")
     how_did_you_meet_us: Mapped[str] = mapped_column(String, default="")
     events: Mapped[List["Event"]] = relationship(
-        "Event", secondary="mentor_event_participation"
-    )
+        "Event", secondary="mentor_event_participation")
 
     __mapper_args__ = {
         "polymorphic_identity": UserType.MENTOR.value,

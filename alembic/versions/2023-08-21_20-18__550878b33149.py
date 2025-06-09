@@ -40,9 +40,9 @@ def upgrade():
     op.create_table(
         "role",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column(
-            "name", sa.Enum("Admin", "User", "Guest", name="roleenum"), nullable=True
-        ),
+        sa.Column("name",
+                  sa.Enum("Admin", "User", "Guest", name="roleenum"),
+                  nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_role_id"), "role", ["id"], unique=False)
@@ -127,7 +127,9 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_meal_event_id"), "meal", ["event_id"], unique=False)
+    op.create_index(op.f("ix_meal_event_id"),
+                    "meal", ["event_id"],
+                    unique=False)
     op.create_index(op.f("ix_meal_id"), "meal", ["id"], unique=False)
     op.create_table(
         "notification",
@@ -147,7 +149,9 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_notification_id"), "notification", ["id"], unique=False)
+    op.create_index(op.f("ix_notification_id"),
+                    "notification", ["id"],
+                    unique=False)
     op.create_table(
         "company_event_participation",
         sa.Column("company_id", sa.Integer(), nullable=False),
@@ -308,8 +312,12 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_hacker_group_code"), "hacker_group", ["code"], unique=True)
-    op.create_index(op.f("ix_hacker_group_id"), "hacker_group", ["id"], unique=False)
+    op.create_index(op.f("ix_hacker_group_code"),
+                    "hacker_group", ["code"],
+                    unique=True)
+    op.create_index(op.f("ix_hacker_group_id"),
+                    "hacker_group", ["id"],
+                    unique=False)
     op.create_table(
         "hacker_meal",
         sa.Column("user_id", sa.Integer(), nullable=False),
@@ -324,12 +332,12 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("user_id", "meal_id"),
     )
-    op.create_index(
-        op.f("ix_hacker_meal_meal_id"), "hacker_meal", ["meal_id"], unique=False
-    )
-    op.create_index(
-        op.f("ix_hacker_meal_user_id"), "hacker_meal", ["user_id"], unique=False
-    )
+    op.create_index(op.f("ix_hacker_meal_meal_id"),
+                    "hacker_meal", ["meal_id"],
+                    unique=False)
+    op.create_index(op.f("ix_hacker_meal_user_id"),
+                    "hacker_meal", ["user_id"],
+                    unique=False)
     op.create_table(
         "hacker_rejected_notification",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -403,9 +411,9 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        op.f("ix_lleida_hacker_group_id"), "lleida_hacker_group", ["id"], unique=False
-    )
+    op.create_index(op.f("ix_lleida_hacker_group_id"),
+                    "lleida_hacker_group", ["id"],
+                    unique=False)
     op.create_table(
         "lleida_hacker_rejected_notification",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -461,7 +469,8 @@ def downgrade():
         table_name="lleida_hacker_rejected_notification",
     )
     op.drop_table("lleida_hacker_rejected_notification")
-    op.drop_index(op.f("ix_lleida_hacker_group_id"), table_name="lleida_hacker_group")
+    op.drop_index(op.f("ix_lleida_hacker_group_id"),
+                  table_name="lleida_hacker_group")
     op.drop_table("lleida_hacker_group")
     op.drop_index(
         op.f("ix_lleida_hacker_event_participation_user_id"),
@@ -506,12 +515,10 @@ def downgrade():
         table_name="hacker_event_participation",
     )
     op.drop_table("hacker_event_participation")
-    op.drop_index(
-        op.f("ix_hacker_event_accepted_user_id"), table_name="hacker_event_accepted"
-    )
-    op.drop_index(
-        op.f("ix_hacker_event_accepted_event_id"), table_name="hacker_event_accepted"
-    )
+    op.drop_index(op.f("ix_hacker_event_accepted_user_id"),
+                  table_name="hacker_event_accepted")
+    op.drop_index(op.f("ix_hacker_event_accepted_event_id"),
+                  table_name="hacker_event_accepted")
     op.drop_table("hacker_event_accepted")
     op.drop_index(
         op.f("ix_hacker_accepted_notification_id"),

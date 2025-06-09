@@ -59,7 +59,9 @@ def create(event: EventCreate, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{id}")
-def update(id: int, event: EventUpdate, token: BaseToken = Depends(JWTBearer())):
+def update(id: int,
+           event: EventUpdate,
+           token: BaseToken = Depends(JWTBearer())):
     new_event, updated = event_service.update_event(id, event, token)
     return {"success": True, "event_id": new_event.id, "updated": updated}
 
@@ -71,22 +73,30 @@ def delete(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{id}/is_registered/{hacker_id}")
-def is_registered(id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())):
+def is_registered(id: int,
+                  hacker_id: int,
+                  token: BaseToken = Depends(JWTBearer())):
     return event_service.is_registered(id, hacker_id, token)
 
 
 @router.get("/{id}/is_accepted/{hacker_id}")
-def is_accepted(id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())):
+def is_accepted(id: int,
+                hacker_id: int,
+                token: BaseToken = Depends(JWTBearer())):
     return event_service.is_accepted(id, hacker_id, token)
 
 
 @router.get("/{id}/has_confirmed/{hacker_id}")
-def has_confirmed(id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())):
+def has_confirmed(id: int,
+                  hacker_id: int,
+                  token: BaseToken = Depends(JWTBearer())):
     return event_service.has_confirmed(id, hacker_id, token)
 
 
 @router.get("/{id}/is_participant/{hacker_id}")
-def is_participant(id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())):
+def is_participant(id: int,
+                   hacker_id: int,
+                   token: BaseToken = Depends(JWTBearer())):
     return event_service.is_participant(id, hacker_id, token)
 
 
@@ -118,17 +128,19 @@ def add_group(id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.delete("/{id}/groups/{group_id}")
-def remove_group(id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
+def remove_group(id: int,
+                 group_id: int,
+                 token: BaseToken = Depends(JWTBearer())):
     event = event_service.remove_hacker_group(id, group_id, token)
     return {"success": True, "event_id": event.id}
 
 
 @router.put("/{id}/register/{hacker_id}")
 def register_hacker(
-    id: int,
-    hacker_id: int,
-    payload: HackerEventRegistration,
-    token: BaseToken = Depends(JWTBearer()),
+        id: int,
+        hacker_id: int,
+        payload: HackerEventRegistration,
+        token: BaseToken = Depends(JWTBearer()),
 ):
     event = event_service.add_hacker(id, hacker_id, payload, token)
     return {"success": True, "event_id": event.id, "user_id": hacker_id}
@@ -136,10 +148,10 @@ def register_hacker(
 
 @router.put("/{id}/update-register/{hacker_id}")
 def update_hacker_registration(
-    id: int,
-    hacker_id: int,
-    payload: HackerEventRegistrationUpdate,
-    token: BaseToken = Depends(JWTBearer()),
+        id: int,
+        hacker_id: int,
+        payload: HackerEventRegistrationUpdate,
+        token: BaseToken = Depends(JWTBearer()),
 ):
     event = event_service.update_register(id, hacker_id, payload, token)
     return {"success": True, "event_id": event.id, "user_id": hacker_id}
@@ -156,24 +168,31 @@ def update_hacker_registration(
 
 
 @router.put("/{id}/sponsors/{company_id}")
-def add_sponsor(id: int, company_id: int, token: BaseToken = Depends(JWTBearer())):
+def add_sponsor(id: int,
+                company_id: int,
+                token: BaseToken = Depends(JWTBearer())):
     event = event_service.add_company(id, company_id, token)
     return {"success": True, "event_id": event.id}
 
 
 @router.delete("/{id}/sponsors/{company_id}")
-def remove_sponsor(id: int, company_id: int, token: BaseToken = Depends(JWTBearer())):
+def remove_sponsor(id: int,
+                   company_id: int,
+                   token: BaseToken = Depends(JWTBearer())):
     event = event_service.remove_company(id, company_id, token)
     return {"success": True, "event_id": event.id}
 
 
-@router.get("/{eventId}/get_approved_hackers", response_model=List[HackerGetAll])
-def get_accepted_hackers(eventId: int, token: BaseToken = Depends(JWTBearer())):
+@router.get("/{eventId}/get_approved_hackers",
+            response_model=List[HackerGetAll])
+def get_accepted_hackers(eventId: int,
+                         token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)
 
 
 @router.get("/{eventId}/get_approved_hackers_mails", response_model=List[str])
-def get_accepted_hackers_mails(eventId: int, token: BaseToken = Depends(JWTBearer())):
+def get_accepted_hackers_mails(eventId: int,
+                               token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers_mails(eventId, token)
 
 
@@ -185,8 +204,10 @@ def get_sizes(event_id: int):
     return event_service.get_sizes(event_id)
 
 
-@router.get("/{event_id}/get_unregistered_hackers", response_model=List[HackerGet])
-def get_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
+@router.get("/{event_id}/get_unregistered_hackers",
+            response_model=List[HackerGet])
+def get_unregistered_hackers(event_id: int,
+                             token: BaseToken = Depends(JWTBearer())):
     """
     Get the hackers who are not registered for the event
     """
@@ -196,7 +217,8 @@ def get_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBearer
 
 
 @router.get("/{event_id}/count_unregistered_hackers/", response_model=int)
-def count_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
+def count_unregistered_hackers(event_id: int,
+                               token: BaseToken = Depends(JWTBearer())):
     """
     Get the count of hackers who are not registered for the event
     """
@@ -216,9 +238,9 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
 
 
 @router.get("/force/confirm_assistance/{event_id}/{user_id}")
-def force_confirm_assistance(
-    event_id: int, user_id: int, token: BaseToken = Depends(JWTBearer())
-):
+def force_confirm_assistance(event_id: int,
+                             user_id: int,
+                             token: BaseToken = Depends(JWTBearer())):
     """
     Confirm assistance of a hacker to an event
     """
@@ -226,9 +248,9 @@ def force_confirm_assistance(
 
 
 @router.put("/{event_id}/participate/{hacker_code}")
-def participate_hacker(
-    event_id: int, hacker_code: str, token: BaseToken = Depends(JWTBearer())
-):
+def participate_hacker(event_id: int,
+                       hacker_code: str,
+                       token: BaseToken = Depends(JWTBearer())):
     """
     Participate a hacker to an event
     """
@@ -236,9 +258,9 @@ def participate_hacker(
 
 
 @router.put("/{event_id}/unparticipate/{hacker_code}")
-def unparticipate_hacker(
-    event_id: int, hacker_code: str, token: BaseToken = Depends(JWTBearer())
-):
+def unparticipate_hacker(event_id: int,
+                         hacker_code: str,
+                         token: BaseToken = Depends(JWTBearer())):
     """
     Unparticipate a hacker from an event
     """
@@ -247,9 +269,9 @@ def unparticipate_hacker(
 
 
 @router.put("/{event_id}/accept/{hacker_id}")
-def accept_hacker(
-    event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
-):
+def accept_hacker(event_id: int,
+                  hacker_id: int,
+                  token: BaseToken = Depends(JWTBearer())):
     """
     Accept a hacker to an event
     """
@@ -257,9 +279,9 @@ def accept_hacker(
 
 
 @router.put("/{event_id}/unaccept/{hacker_id}")
-def unaccept_hacker(
-    event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
-):
+def unaccept_hacker(event_id: int,
+                    hacker_id: int,
+                    token: BaseToken = Depends(JWTBearer())):
     """
     Unaccept a hacker from an event
     """
@@ -267,9 +289,9 @@ def unaccept_hacker(
 
 
 @router.put("/{event_id}/reject/{hacker_id}")
-def reject_hacker(
-    event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
-):
+def reject_hacker(event_id: int,
+                  hacker_id: int,
+                  token: BaseToken = Depends(JWTBearer())):
     """
     Reject a hacker from an event
     """
@@ -277,12 +299,16 @@ def reject_hacker(
 
 
 @router.put("/{event_id}/acceptgroup/{group_id}")
-def accept_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
+def accept_group(event_id: int,
+                 group_id: int,
+                 token: BaseToken = Depends(JWTBearer())):
     return event_service.accept_group(event_id, group_id, token)
 
 
 @router.put("/{event_id}/rejectgroup/{group_id}")
-def reject_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
+def reject_group(event_id: int,
+                 group_id: int,
+                 token: BaseToken = Depends(JWTBearer())):
     """
     Reject a group from an event
     """
@@ -290,7 +316,8 @@ def reject_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBea
 
 
 @router.get("/{event_id}/pending")
-def get_pending_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
+def get_pending_hackers(event_id: int,
+                        token: BaseToken = Depends(JWTBearer())):
     """
     Get the pending hackers of an event
     """
@@ -298,20 +325,26 @@ def get_pending_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
         raise AuthenticationException("You don't have permissions")
     event = event_service.get_by_id(event_id)
     return {
-        "size": len(event.registered_hackers),
-        "hackers": subtract_lists(event.registered_hackers, event.accepted_hackers),
+        "size":
+        len(event.registered_hackers),
+        "hackers":
+        subtract_lists(event.registered_hackers, event.accepted_hackers),
     }
 
 
 @router.get("/{event_id}/rejected")
-def get_rejected_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
+def get_rejected_hackers(event_id: int,
+                         token: BaseToken = Depends(JWTBearer())):
     """
     Get the rejected hackers of an event
     """
     if not token.is_admin:
         raise AuthenticationException("You don't have permissions")
     event = event_service.get_by_id(event_id)
-    return {"size": len(event.rejected_hackers), "hackers": event.rejected_hackers}
+    return {
+        "size": len(event.rejected_hackers),
+        "hackers": event.rejected_hackers
+    }
 
 
 @router.get("/{event_id}/status")
@@ -341,20 +374,22 @@ def get_credits(event_id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{event_id}/pendinggruped")
-def get_pending_hackers_gruped(event_id: int, token: BaseToken = Depends(JWTBearer())):
+def get_pending_hackers_gruped(event_id: int,
+                               token: BaseToken = Depends(JWTBearer())):
     return event_service.get_pending_hackers_gruped(event_id, token)
 
 
 @router.get("/{event_id}/resend-accepted-mails")
-def resend_accept_mails(event_id: int, token: BaseToken = Depends(JWTBearer())):
+def resend_accept_mails(event_id: int,
+                        token: BaseToken = Depends(JWTBearer())):
     event_service.resend_mails(event_id, token)
     return {"success": True}
 
 
 @router.get("/{event_id}/resend-accepted-mail/{hacker_id}/")
-def resend_accept_mail(
-    event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
-):
+def resend_accept_mail(event_id: int,
+                       hacker_id: int,
+                       token: BaseToken = Depends(JWTBearer())):
     event_service.resend_mail(event_id, hacker_id, token)
     return {"success": True}
 

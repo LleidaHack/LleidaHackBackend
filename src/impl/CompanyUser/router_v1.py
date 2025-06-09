@@ -38,7 +38,8 @@ def get_all(token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_all()
 
 
-@router.get("/{companyUserId}", response_model=Union[CompanyUserGetAll, CompanyUserGet])
+@router.get("/{companyUserId}",
+            response_model=Union[CompanyUserGetAll, CompanyUserGet])
 def get(companyUserId: int, token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_company_user(companyUserId, token)
 
@@ -54,13 +55,12 @@ def get(companyUserId: int, token: BaseToken = Depends(JWTBearer())):
 
 @router.put("/{companyUserId}")
 def update(
-    companyUserId: int,
-    payload: CompanyUserUpdate,
-    token: BaseToken = Depends(JWTBearer()),
+        companyUserId: int,
+        payload: CompanyUserUpdate,
+        token: BaseToken = Depends(JWTBearer()),
 ):
     companyuser, updated = companyuser_service.update_company_user(
-        payload, companyUserId, token
-    )
+        payload, companyUserId, token)
     return {"success": True, "updated_id": companyuser.id, "updated": updated}
 
 

@@ -17,25 +17,29 @@ depends_on = None
 
 def upgrade():
     # ### user config change name
-    op.alter_column("user_config", "defaultLang", new_column_name="default_lang")
+    op.alter_column("user_config",
+                    "defaultLang",
+                    new_column_name="default_lang")
     op.alter_column(
         "user_config",
         "comercialNotifications",
         new_column_name="comercial_notifications",
     )
-    op.alter_column(
-        "user_config", "reciveNotifications", new_column_name="recive_notifications"
-    )
+    op.alter_column("user_config",
+                    "reciveNotifications",
+                    new_column_name="recive_notifications")
 
 
 def downgrade():
     # ### user config change name##
-    op.alter_column("user_config", "default_lang", new_column_name="defaultLang")
+    op.alter_column("user_config",
+                    "default_lang",
+                    new_column_name="defaultLang")
     op.alter_column(
         "user_config",
         "comercial_notifications",
         new_column_name="comercialNotifications",
     )
-    op.alter_column(
-        "user_config", "recive_notifications", new_column_name="reciveNotifications"
-    )
+    op.alter_column("user_config",
+                    "recive_notifications",
+                    new_column_name="reciveNotifications")

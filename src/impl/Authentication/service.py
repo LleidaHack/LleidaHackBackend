@@ -46,7 +46,8 @@ class AuthenticationService(BaseService):
             raise AuthenticationException("Incorrect password")
         if not user.is_verified:
             raise InvalidDataException("User not verified")
-        access_token, refresh_token = self.create_access_and_refresh_token(user)
+        access_token, refresh_token = self.create_access_and_refresh_token(
+            user)
         return {
             "user_id": user.id,
             "access_token": access_token.to_token(),
@@ -78,14 +79,12 @@ class AuthenticationService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(
                 template_id=self.mail_client.get_internall_template_id(
-                    InternalTemplate.RESET_PASSWORD
-                ),
+                    InternalTemplate.RESET_PASSWORD),
                 receiver_id=str(user.id),
                 receiver_mail=str(user.email),
                 subject="Reset password mail",
                 fields=f"{user.name},{reset_pass_token}",
-            )
-        )
+            ))
         self.mail_client.send_mail_by_id(mail.id)
         return {"success": True}
 
@@ -119,7 +118,8 @@ class AuthenticationService(BaseService):
     @BaseService.needs_service(UserService)
     def force_verification(self, user_id: int, data: BaseToken):
         if not data.is_admin:
-            raise AuthenticationException("User don'have permissions to do this")
+            raise AuthenticationException(
+                "User don'have permissions to do this")
         self.user_service._verify_user(user_id)
         user = self.user_service.get_by_id(user_id)
         a = AccesToken(user).user_set()
@@ -137,14 +137,12 @@ class AuthenticationService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(
                 template_id=self.mail_client.get_internall_template_id(
-                    InternalTemplate.USER_CREATED
-                ),
+                    InternalTemplate.USER_CREATED),
                 receiver_id=str(user.id),
                 receiver_mail=user.email,
                 subject="Your User Hacker was created",
                 fields=f"{user.name},{verification_token}",
-            )
-        )
+            ))
         self.mail_client.send_mail_by_id(mail.id)
         return {"success": True}
 
@@ -153,13 +151,12 @@ class AuthenticationService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(
                 template_id=self.mail_client.get_internall_template_id(
-                    InternalTemplate.CONTACT
-                ),
+                    InternalTemplate.CONTACT),
                 receiver_mail=Configuration.contact_mail,
                 subject=f"Contact {payload.title}",
-                fields=f"{payload.name},{payload.email},{payload.title},{payload.message}",
-            )
-        )
+                fields=
+                f"{payload.name},{payload.email},{payload.title},{payload.message}",
+            ))
         return {
             "success": mail is not None,
             "id": mail.id if mail is not None else None,

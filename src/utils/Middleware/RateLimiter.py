@@ -21,8 +21,7 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
 
         # Check if IP is already present in request_counts
         request_count, last_request = self.request_counts.get(
-            client_ip, (0, datetime.min)
-        )
+            client_ip, (0, datetime.min))
 
         # Calculate the time elapsed since the last request
         elapsed_time = datetime.now() - last_request
@@ -35,7 +34,10 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
                 # If the request count exceeds the rate limit, return a JSON response with an error message
                 return JSONResponse(
                     status_code=429,
-                    content={"message": "Rate limit exceeded. Please try again later."},
+                    content={
+                        "message":
+                        "Rate limit exceeded. Please try again later."
+                    },
                 )
             request_count += 1
 

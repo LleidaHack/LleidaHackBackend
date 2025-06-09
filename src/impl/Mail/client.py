@@ -14,6 +14,7 @@ from src.configuration.Configuration import Configuration
 
 
 def initialized(func):
+
     def wrapper(*args, **kwargs):
         try:
             args[0].check_health()
@@ -70,7 +71,8 @@ class MailClient(BaseClient):
         for _ in InternalTemplate:
             r = self.get_template_by_name(_.value)
             if r is None:
-                raise Exception(f"error obtaining template with name:{_.value}")
+                raise Exception(
+                    f"error obtaining template with name:{_.value}")
             self._internall_templates[_] = r
 
     @initialized

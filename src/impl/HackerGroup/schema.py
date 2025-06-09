@@ -1,6 +1,5 @@
 from typing import Optional, List
 
-
 from src.utils.Base.BaseSchema import BaseSchema
 
 from src.impl.Hacker.schema import HackerGet

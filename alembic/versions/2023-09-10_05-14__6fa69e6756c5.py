@@ -46,30 +46,28 @@ def upgrade():
         unique=False,
     )
     op.add_column("hacker", sa.Column("cv", sa.String(), nullable=True))
-    op.add_column("hacker", sa.Column("is_verified", sa.Boolean(), nullable=True))
+    op.add_column("hacker",
+                  sa.Column("is_verified", sa.Boolean(), nullable=True))
     op.add_column(
-        "hacker", sa.Column("dailyhack_github_repo", sa.String(), nullable=True)
-    )
-    op.add_column(
-        "hacker_event_registration", sa.Column("shirt_size", sa.String(), nullable=True)
-    )
+        "hacker", sa.Column("dailyhack_github_repo",
+                            sa.String(),
+                            nullable=True))
+    op.add_column("hacker_event_registration",
+                  sa.Column("shirt_size", sa.String(), nullable=True))
     op.add_column(
         "hacker_event_registration",
         sa.Column("food_restrictions", sa.String(), nullable=True),
     )
-    op.add_column(
-        "hacker_event_registration", sa.Column("cv", sa.String(), nullable=True)
-    )
+    op.add_column("hacker_event_registration",
+                  sa.Column("cv", sa.String(), nullable=True))
     op.add_column(
         "hacker_event_registration",
         sa.Column("description", sa.String(), nullable=True),
     )
-    op.add_column(
-        "hacker_event_registration", sa.Column("github", sa.String(), nullable=True)
-    )
-    op.add_column(
-        "hacker_event_registration", sa.Column("linkedin", sa.String(), nullable=True)
-    )
+    op.add_column("hacker_event_registration",
+                  sa.Column("github", sa.String(), nullable=True))
+    op.add_column("hacker_event_registration",
+                  sa.Column("linkedin", sa.String(), nullable=True))
     op.add_column("user", sa.Column("code", sa.String(), nullable=True))
     op.create_index(op.f("ix_user_code"), "user", ["code"], unique=True)
     # ### end Alembic commands ###
@@ -88,11 +86,9 @@ def downgrade():
     op.drop_column("hacker", "dailyhack_github_repo")
     op.drop_column("hacker", "is_verified")
     op.drop_column("hacker", "cv")
-    op.drop_index(
-        op.f("ix_hacker_event_rejected_user_id"), table_name="hacker_event_rejected"
-    )
-    op.drop_index(
-        op.f("ix_hacker_event_rejected_event_id"), table_name="hacker_event_rejected"
-    )
+    op.drop_index(op.f("ix_hacker_event_rejected_user_id"),
+                  table_name="hacker_event_rejected")
+    op.drop_index(op.f("ix_hacker_event_rejected_event_id"),
+                  table_name="hacker_event_rejected")
     op.drop_table("hacker_event_rejected")
     # ### end Alembic commands ###

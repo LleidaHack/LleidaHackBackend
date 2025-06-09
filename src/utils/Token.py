@@ -60,8 +60,8 @@ class BaseToken:
     # @overload
     def __init__(self, user: User):
         self.expt = (
-            datetime.now(UTC) + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
-        ).isoformat()
+            datetime.now(UTC) +
+            timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))).isoformat()
         if user is None:
             return
         self.user_id = user.id
@@ -98,14 +98,12 @@ class BaseToken:
         if (self.user_type not in types) and (not self.is_admin):
             return False
         if self.user_type in [
-            UserType.HACKER.value,
-            UserType.COMPANYUSER.value,
-            UserType.LLEIDAHACKER.value,
+                UserType.HACKER.value,
+                UserType.COMPANYUSER.value,
+                UserType.LLEIDAHACKER.value,
         ]:
-            if (
-                user_id is not None
-                and self.user_type is not UserType.LLEIDAHACKER.value
-            ):
+            if (user_id is not None
+                    and self.user_type is not UserType.LLEIDAHACKER.value):
                 return self.available and self.user_id == user_id
             return self.available
         elif self.user_type == UserType.SERVICE.value:
@@ -134,15 +132,17 @@ class BaseToken:
     # @classmethod
     def decode(token):
         try:
-            return jwt.decode(token.encode("utf-8"), SECRET_KEY, algorithms=[ALGORITHM])
+            return jwt.decode(token.encode("utf-8"),
+                              SECRET_KEY,
+                              algorithms=[ALGORITHM])
         except Exception:
             raise Exception(f"Error decoding token with the token({token})")
 
     # @classmethod
     def encode(dict):
-        return jwt.encode(
-            OrderedDict(sorted(dict.items())), SECRET_KEY, algorithm=ALGORITHM
-        )
+        return jwt.encode(OrderedDict(sorted(dict.items())),
+                          SECRET_KEY,
+                          algorithm=ALGORITHM)
 
     def verify(token):
         if BaseToken.is_service(token):
@@ -227,6 +227,7 @@ class AccesToken(BaseToken):
 
 
 class RefreshToken(BaseToken):
+
     def __init__(self, user: User):
         if user is None:
             return
@@ -239,6 +240,7 @@ class RefreshToken(BaseToken):
 
 
 class VerificationToken(BaseToken):
+
     def __init__(self, user: User):
         if user is None:
             return
@@ -251,6 +253,7 @@ class VerificationToken(BaseToken):
 
 
 class ResetPassToken(BaseToken):
+
     def __init__(self, user: User):
         if user is None:
             return

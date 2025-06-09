@@ -14,7 +14,8 @@ def get_geocaching(db: Session, code: str):
 
 
 def get_all_hacker_geocaching(db: Session, user_code: str):
-    return db.query(UserGeocaching).filter(UserGeocaching.user_code == user_code).all()
+    return db.query(UserGeocaching).filter(
+        UserGeocaching.user_code == user_code).all()
 
 
 def add_user_geocaching(db: Session, user_code: str, code: str):

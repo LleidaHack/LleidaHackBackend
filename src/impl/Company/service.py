@@ -20,7 +20,8 @@ class CompanyService(BaseService):
         return db.session.query(Company).all()
 
     def get_by_id(self, companyId: int):
-        company = db.session.query(Company).filter(Company.id == companyId).first()
+        company = db.session.query(Company).filter(
+            Company.id == companyId).first()
         if company is None:
             raise NotFoundException("company not found")
         return company
@@ -44,7 +45,8 @@ class CompanyService(BaseService):
         return new_company
 
     @BaseService.needs_service(U_S.UserService)
-    def update_company(self, companyId: int, payload: CompanyUpdate, data: BaseToken):
+    def update_company(self, companyId: int, payload: CompanyUpdate,
+                       data: BaseToken):
         if not data.check([UserType.COMPANYUSER, UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)
@@ -65,10 +67,8 @@ class CompanyService(BaseService):
             raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)
         users = [user.id for user in company.users]
-        if not (
-            data.is_admin
-            or (data.user_id in users and company.leader_id == data.user_id)
-        ):
+        if not (data.is_admin or
+                (data.user_id in users and company.leader_id == data.user_id)):
             raise AuthenticationException("Not authorized")
         db.session.delete(company)
         db.session.commit()
@@ -84,10 +84,8 @@ class CompanyService(BaseService):
             raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)
         users = [user.id for user in company.users]
-        if (
-            not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER])
-            or data.user_id not in users
-        ):
+        if (not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER])
+                or data.user_id not in users):
             raise AuthenticationException("Not authorized")
         user = self.user_service.get_by_id(userId)
         company.users.append(user)
@@ -96,7 +94,8 @@ class CompanyService(BaseService):
         return company
 
     @BaseService.needs_service(U_S.UserService)
-    def delete_company_user(self, companyId: int, userId: int, data: BaseToken):
+    def delete_company_user(self, companyId: int, userId: int,
+                            data: BaseToken):
         if not data.check([UserType.COMPANYUSER, UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         company = self.get_by_id(companyId)

@@ -33,14 +33,12 @@ def signup(payload: LleidaHackerCreate):
     mail = mail_client.create_mail(
         MailCreate(
             template_id=mail_client.get_internall_template_id(
-                InternalTemplate.USER_CREATED
-            ),
+                InternalTemplate.USER_CREATED),
             receiver_id=str(new_lleidahacker.id),
             receiver_mail=new_lleidahacker.email,
             subject="Your User Hacker was created",
             fields=f"{new_lleidahacker.name},{verification_token}",
-        )
-    )
+        ))
     mail_client.send_mail_by_id(mail.id)
     return {
         "success": True,
@@ -55,8 +53,10 @@ def get_all(str: Optional[BaseToken] = Depends(JWTBearer(required=False))):
     return lleidahacker_service.get_all()
 
 
-@router.get("/{userId}", response_model=Union[LleidaHackerGetAll, LleidaHackerGet])
-def get(userId: int, data: Optional[BaseToken] = Depends(JWTBearer(required=False))):
+@router.get("/{userId}",
+            response_model=Union[LleidaHackerGetAll, LleidaHackerGet])
+def get(userId: int,
+        data: Optional[BaseToken] = Depends(JWTBearer(required=False))):
     return lleidahacker_service.get_lleidahacker(userId, data)
 
 
@@ -75,10 +75,11 @@ def delete(userId: int, data: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{userId}")
-def update(
-    userId: int, payload: LleidaHackerUpdate, token: BaseToken = Depends(JWTBearer())
-):
-    _, updated = lleidahacker_service.update_lleidahacker(userId, payload, token)
+def update(userId: int,
+           payload: LleidaHackerUpdate,
+           token: BaseToken = Depends(JWTBearer())):
+    _, updated = lleidahacker_service.update_lleidahacker(
+        userId, payload, token)
     return {"success": True, "updated_id": userId, "updated": updated}
 
 

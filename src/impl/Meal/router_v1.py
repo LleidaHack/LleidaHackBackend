@@ -34,9 +34,10 @@ def create(meal: MealCreate, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{id}/{meal_id}")
-def update(
-    id: int, meal_id: int, meal: MealUpdate, token: BaseToken = Depends(JWTBearer())
-):
+def update(id: int,
+           meal_id: int,
+           meal: MealUpdate,
+           token: BaseToken = Depends(JWTBearer())):
     return meal_service.update_meal(id, meal_id, meal, token)
 
 
@@ -46,7 +47,9 @@ def delete(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{meal_id}/eat/{hacker_code}")
-def eat(meal_id: int, hacker_code: str, token: BaseToken = Depends(JWTBearer())):
+def eat(meal_id: int,
+        hacker_code: str,
+        token: BaseToken = Depends(JWTBearer())):
     """
     Register a hacker to an event
     """
