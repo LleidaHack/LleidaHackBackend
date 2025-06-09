@@ -17,7 +17,7 @@ from src.utils.UserType import UserType
 
 
 class MealService(BaseService):
-    name = 'meal_service'
+    name = "meal_service"
     hacker_service = None
     event_service = None
 
@@ -45,11 +45,9 @@ class MealService(BaseService):
         db.session.refresh(db_meal)
         return db_meal
 
-    def update_meal(self, id: int, meal_id: int, meal: MealUpdate,
-                    data: BaseToken):
+    def update_meal(self, id: int, meal_id: int, meal: MealUpdate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException(
-                "You are not allowed to update meals")
+            raise AuthenticationException("You are not allowed to update meals")
         db_meal = self.get_by_id(meal_id)
         set_existing_data(db_meal, meal)
         db.session.commit()
@@ -58,8 +56,7 @@ class MealService(BaseService):
 
     def delete_meal(self, meal_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException(
-                "You are not allowed to delete meals")
+            raise AuthenticationException("You are not allowed to delete meals")
         db_meal = self.get_by_id(meal_id)
         db.session.delete(db_meal)
         db.session.commit()
@@ -73,7 +70,7 @@ class MealService(BaseService):
         hacker = self.hacker_service.get_by_code(hacker_code)
         meal = self.get_by_id(meal_id)
         event = self.event_service.get_by_id(meal.event_id)
-        if not hacker in event.participants:
+        if hacker not in event.participants:
             raise InvalidDataException("Hacker not participating")
         if hacker in meal.users:
             raise InvalidDataException("Hacker already eating")

@@ -9,7 +9,7 @@ from src.utils.Base.BaseModel import BaseModel
 
 
 class User(BaseModel):
-    __tablename__ = 'my_user'
+    __tablename__ = "my_user"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -32,11 +32,12 @@ class User(BaseModel):
     # recive_mails: bool = mapped_column(Boolean, default=True)
     # lleidacoins_claimed: Boolean = mapped_column(Boolean, default=False)
     config_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey(UserConfig.id))
-    config: Mapped[Optional["UserConfig"]] = relationship('UserConfig',
-                          foreign_keys=[config_id],
-                          backref=backref('user',
-                                          cascade='all, delete-orphan'),
-                          uselist=False)
+    config: Mapped[Optional["UserConfig"]] = relationship(
+        "UserConfig",
+        foreign_keys=[config_id],
+        backref=backref("user", cascade="all, delete-orphan"),
+        uselist=False,
+    )
     token: Mapped[str] = mapped_column(String, default="")
     refresh_token: Mapped[str] = mapped_column(String, default="")
     verification_token: Mapped[str] = mapped_column(String, default="")

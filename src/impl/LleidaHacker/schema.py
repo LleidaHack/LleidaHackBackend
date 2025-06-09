@@ -1,6 +1,5 @@
 from typing import Optional
 
-from pydantic import ConfigDict
 
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 

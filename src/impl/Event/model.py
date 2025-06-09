@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
@@ -18,26 +18,22 @@ if TYPE_CHECKING:
 
 class HackerParticipation(BaseModel):
     __tablename__ = "hacker_event_participation"
-    user_id: Mapped[int] = mapped_column(Integer,
-                                        ForeignKey("hacker.user_id"),
-                                        primary_key=True,
-                                        index=True)
-    event_id: Mapped[int] = mapped_column(Integer,
-                                         ForeignKey("event.id"),
-                                         primary_key=True,
-                                         index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("hacker.user_id"), primary_key=True, index=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id"), primary_key=True, index=True
+    )
 
 
 class HackerRegistration(BaseModel):
     __tablename__ = "hacker_event_registration"
-    user_id: Mapped[int] = mapped_column(Integer,
-                                        ForeignKey("hacker.user_id"),
-                                        primary_key=True,
-                                        index=True)
-    event_id: Mapped[int] = mapped_column(Integer,
-                                         ForeignKey("event.id"),
-                                         primary_key=True,
-                                         index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("hacker.user_id"), primary_key=True, index=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id"), primary_key=True, index=True
+    )
     shirt_size: Mapped[Optional[str]] = mapped_column(String)
     food_restrictions: Mapped[Optional[str]] = mapped_column(String)
     cv: Mapped[str] = mapped_column(String, default="")
@@ -57,56 +53,48 @@ class HackerRegistration(BaseModel):
 
 class HackerAccepted(BaseModel):
     __tablename__ = "hacker_event_accepted"
-    user_id: Mapped[int] = mapped_column(Integer,
-                                        ForeignKey("hacker.user_id"),
-                                        primary_key=True,
-                                        index=True)
-    event_id: Mapped[int] = mapped_column(Integer,
-                                         ForeignKey("event.id"),
-                                         primary_key=True,
-                                         index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("hacker.user_id"), primary_key=True, index=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id"), primary_key=True, index=True
+    )
     # accepted: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class HackerRejected(BaseModel):
     __tablename__ = "hacker_event_rejected"
-    user_id: Mapped[int] = mapped_column(Integer,
-                                        ForeignKey("hacker.user_id"),
-                                        primary_key=True,
-                                        index=True)
-    event_id: Mapped[int] = mapped_column(Integer,
-                                         ForeignKey("event.id"),
-                                         primary_key=True,
-                                         index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("hacker.user_id"), primary_key=True, index=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id"), primary_key=True, index=True
+    )
     # accepted: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class LleidaHackerParticipation(BaseModel):
     __tablename__ = "lleida_hacker_event_participation"
-    user_id: Mapped[int] = mapped_column(Integer,
-                                        ForeignKey("lleida_hacker.user_id"),
-                                        primary_key=True,
-                                        index=True)
-    event_id: Mapped[int] = mapped_column(Integer,
-                                         ForeignKey("event.id"),
-                                         primary_key=True,
-                                         index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("lleida_hacker.user_id"), primary_key=True, index=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id"), primary_key=True, index=True
+    )
 
 
 class CompanyParticipation(BaseModel):
     __tablename__ = "company_event_participation"
-    company_id: Mapped[int] = mapped_column(Integer,
-                                           ForeignKey("company.id"),
-                                           primary_key=True,
-                                           index=True)
-    event_id: Mapped[int] = mapped_column(Integer,
-                                         ForeignKey("event.id"),
-                                         primary_key=True,
-                                         index=True)
+    company_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("company.id"), primary_key=True, index=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id"), primary_key=True, index=True
+    )
 
 
 class Event(BaseModel):
-    __tablename__ = 'event'
+    __tablename__ = "event"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[Optional[str]] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(String)
@@ -121,42 +109,46 @@ class Event(BaseModel):
     max_participants: Mapped[Optional[int]] = mapped_column(Integer)
     max_sponsors: Mapped[Optional[int]] = mapped_column(Integer)
     image: Mapped[Optional[str]] = mapped_column(String)
-    #is_image_url: Mapped[bool] = mapped_column(Boolean, default=False)
+    # is_image_url: Mapped[bool] = mapped_column(Boolean, default=False)
     is_open: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    #TODO add registered_hackers
+    # TODO add registered_hackers
     # registered_hackers = relationship('Hacker',
     #                                   secondary='hacker_event_registration', uselist = True)
     registered_hackers: Mapped[List["User"]] = relationship(
-        'User',
-        secondary='hacker_event_registration',
+        "User",
+        secondary="hacker_event_registration",
         primaryjoin="Event.id==hacker_event_registration.c.event_id",
         secondaryjoin="User.id==hacker_event_registration.c.user_id",
-        uselist=True)
+        uselist=True,
+    )
     accepted_hackers: Mapped[List["User"]] = relationship(
-        'User',
-        secondary='hacker_event_accepted',
+        "User",
+        secondary="hacker_event_accepted",
         primaryjoin="Event.id==hacker_event_accepted.c.event_id",
         secondaryjoin="User.id==hacker_event_accepted.c.user_id",
-        uselist=True)
+        uselist=True,
+    )
     rejected_hackers: Mapped[List["User"]] = relationship(
-        'User',
-        secondary='hacker_event_rejected',
+        "User",
+        secondary="hacker_event_rejected",
         primaryjoin="Event.id==hacker_event_rejected.c.event_id",
         secondaryjoin="User.id==hacker_event_rejected.c.user_id",
-        uselist=True)
+        uselist=True,
+    )
     participants: Mapped[List["User"]] = relationship(
-        'User',
-        secondary='hacker_event_participation',
+        "User",
+        secondary="hacker_event_participation",
         primaryjoin="Event.id==hacker_event_participation.c.event_id",
         secondaryjoin="User.id==hacker_event_participation.c.user_id",
-        uselist=True)
-    organizers: Mapped[List["LleidaHacker"]] = relationship("LleidaHacker",
-                                                           secondary='lleida_hacker_event_participation',
-                                                           uselist=True)
-    sponsors: Mapped[List["Company"]] = relationship('Company',
-                                                    secondary='company_event_participation',
-                                                    uselist=True)
-    groups: Mapped[List["HackerGroup"]] = relationship('HackerGroup', backref='event')
+        uselist=True,
+    )
+    organizers: Mapped[List["LleidaHacker"]] = relationship(
+        "LleidaHacker", secondary="lleida_hacker_event_participation", uselist=True
+    )
+    sponsors: Mapped[List["Company"]] = relationship(
+        "Company", secondary="company_event_participation", uselist=True
+    )
+    groups: Mapped[List["HackerGroup"]] = relationship("HackerGroup", backref="event")
     # status: Mapped[int] = mapped_column(Integer, default=0)
-    meals: Mapped[List["Meal"]] = relationship('Meal', backref='event')
+    meals: Mapped[List["Meal"]] = relationship("Meal", backref="event")
