@@ -6,7 +6,6 @@ from alembic import context
 from src.configuration.Configuration import Configuration
 from sys import path
 from os import getcwd
-from src import imports
 
 from src.utils.Base.BaseModel import BaseModel
 
