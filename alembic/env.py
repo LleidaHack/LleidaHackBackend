@@ -6,7 +6,7 @@ from alembic import context
 from src.configuration.Configuration import Configuration
 from sys import path
 from os import getcwd
-
+from src import imports  # noqa: F401
 from src.utils.Base.BaseModel import BaseModel
 
 path.insert(0, getcwd())
