@@ -85,7 +85,7 @@ class BaseToken:
         self.expt = data.get("expt")
         self.type = data.get("type")
         self.email = data.get("email")
-        return self
+        return data
 
     def to_token(self):
         return BaseToken.encode(self.__dict__)
@@ -168,7 +168,7 @@ class BaseToken:
         if type == TokenType.ACCESS.value:
             return AccesToken(None).from_token(token)
         elif type == TokenType.ASSISTENCE.value:
-            return AssistenceToken(None).from_token(token)
+            return AssistenceToken(None, None).from_token(token)
         elif type == TokenType.REFRESH.value:
             return RefreshToken(None).from_token(token)
         elif type == TokenType.RESET_PASS.value:
@@ -181,15 +181,16 @@ class AssistenceToken(BaseToken):
     event_id: int = 0
 
     def __init__(self, user: User, event_id: int):
-        if user is None:
+        if user is None or event_id is None:
             return
         super().__init__(user)
+        self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
         self.type = TokenType.ASSISTENCE.value
         self.event_id = event_id
 
     def from_token(self, token):
         data = super().from_token(token)
-        self.event_id = data.event_id
+        self.event_id = data.get("event_id")
         return self
 
     def verify(self, user: User):
@@ -203,7 +204,6 @@ class AccesToken(BaseToken):
     def __init__(self, user: User):
         super().__init__(user)
         self.type = TokenType.ACCESS.value
-        self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
         if user is None:
             return
         self.is_verified = user.is_verified
@@ -217,8 +217,8 @@ class AccesToken(BaseToken):
     def from_token(self, token):
         data = super().from_token(token)
         if not self.is_admin:
-            self.is_verified = data.is_verified
-            self.available = data.available
+            self.is_verified = data.get("is_verified")
+            self.available = data.get("available")
         return self
 
     def verify(self, user):
@@ -233,6 +233,10 @@ class RefreshToken(BaseToken):
         super().__init__(user)
         self.type = TokenType.REFRESH.value
 
+    def from_token(self, token):
+        super().from_token(token)
+        return self
+
 
 class VerificationToken(BaseToken):
 
@@ -242,6 +246,10 @@ class VerificationToken(BaseToken):
         super().__init__(user)
         self.type = TokenType.VERIFICATION.value
 
+    def from_token(self, token):
+        super().from_token(token)
+        return self
+
 
 class ResetPassToken(BaseToken):
 
@@ -250,3 +258,7 @@ class ResetPassToken(BaseToken):
             return
         super().__init__(user)
         self.type = TokenType.RESET_PASS.value
+
+    def from_token(self, token):
+        super().from_token(token)
+        return self
