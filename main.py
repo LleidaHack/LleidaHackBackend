@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi_sqlalchemy import DBSessionMiddleware
 
+from src.configuration.Settings import settings
 from App import App
-from src.configuration.Configuration import Configuration
 
 tags_metadata = [
     {
