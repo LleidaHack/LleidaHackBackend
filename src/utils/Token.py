@@ -34,8 +34,9 @@ class BaseToken:
 
     def __set_all_data(self, data_in: dict):
         for _ in [
-                _ for _ in dir(self)
-                if _.startswith('__') is False and _.endswith('__') is False
+            _
+            for _ in dir(self)
+            if _.startswith("__") is False and _.endswith("__") is False
         ]:
             if _ in dir(data_in):
                 setattr(self, _, getattr(data_in[_], _))
@@ -53,8 +54,9 @@ class BaseToken:
         if BaseToken.is_service(token):
             return self.__get_admin()
         for _ in [
-                _ for _ in dir(self)
-                if _.startswith('__') is False and _.endswith('__') is False
+            _
+            for _ in dir(self)
+            if _.startswith("__") is False and _.endswith("__") is False
         ]:
             if _ in data:
                 setattr(self, _, data[_])
