@@ -10,3 +10,5 @@ test/ep_test/*
 env/
 src/configuration/*.yaml
 generated_src/**
+.claude/
+.ruff_cache/

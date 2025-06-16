@@ -10,13 +10,14 @@ from src.impl.User.model import User
 from src.impl.User.schema import UserGet
 from src.impl.User.schema import UserGetAll
 from src.utils.Base.BaseService import BaseService
+
 # from src.utils.Token import AccesToken
 from src.utils.TokenType import TokenType
 from src.utils.UserType import UserType
 
 
 class UserService(BaseService):
-    name = 'user_service'
+    name = "user_service"
 
     def update_token(self, token):
         user = self.get_by_id(token.user_id)

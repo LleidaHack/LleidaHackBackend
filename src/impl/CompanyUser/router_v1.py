@@ -8,8 +8,7 @@ from src.impl.CompanyUser.schema import CompanyUserGetAll
 from src.impl.CompanyUser.schema import CompanyUserUpdate
 from src.impl.CompanyUser.service import CompanyUserService
 from src.utils.JWTBearer import JWTBearer
-from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
-                             VerificationToken)
+from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
 
 router = APIRouter(
     prefix="/company-user",
@@ -30,7 +29,7 @@ def signup(payload: CompanyUserCreate):
         "success": True,
         "user_id": new_companyuser.id,
         "access_token": access_token,
-        "refresh_token": refresh_token
+        "refresh_token": refresh_token,
     }
 
 
@@ -39,8 +38,7 @@ def get_all(token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_all()
 
 
-@router.get("/{companyUserId}",
-            response_model=Union[CompanyUserGetAll, CompanyUserGet])
+@router.get("/{companyUserId}", response_model=Union[CompanyUserGetAll, CompanyUserGet])
 def get(companyUserId: int, token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_company_user(companyUserId, token)
 
@@ -55,12 +53,15 @@ def get(companyUserId: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{companyUserId}")
-def update(companyUserId: int,
-           payload: CompanyUserUpdate,
-           token: BaseToken = Depends(JWTBearer())):
+def update(
+    companyUserId: int,
+    payload: CompanyUserUpdate,
+    token: BaseToken = Depends(JWTBearer()),
+):
     companyuser, updated = companyuser_service.update_company_user(
-        payload, companyUserId, token)
-    return {"success": True, "updated_id": companyuser.id, 'updated': updated}
+        payload, companyUserId, token
+    )
+    return {"success": True, "updated_id": companyuser.id, "updated": updated}
 
 
 @router.delete("/{companyUserId}")

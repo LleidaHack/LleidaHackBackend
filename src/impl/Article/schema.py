@@ -25,18 +25,18 @@ class ArticleCreate(BaseSchema):
     content: str
     image: str
 
-    @field_validator('title')
+    @field_validator("title")
     @classmethod
     def title_validation(cls, v):
         if len(v) < 5:
-            raise ValueError('title must be longer')
+            raise ValueError("title must be longer")
         return v
 
-    @field_validator('content')
+    @field_validator("content")
     @classmethod
     def content_validation(cls, v):
         if len(v) < 20:
-            raise ValueError('content must be longer')
+            raise ValueError("content must be longer")
         return v
 
 
@@ -45,16 +45,16 @@ class ArticleUpdate(BaseSchema):
     content: Optional[str] = None
     image: Optional[str] = None
 
-    @field_validator('title')
+    @field_validator("title")
     @classmethod
     def title_validation(cls, v):
         if len(v) < 5:
-            raise ValueError('title must be longer')
+            raise ValueError("title must be longer")
         return v
 
-    @field_validator('content')
+    @field_validator("content")
     @classmethod
     def content_validation(cls, v):
         if len(v) < 20:
-            raise ValueError('content must be longer')
+            raise ValueError("content must be longer")
         return v
