@@ -19,29 +19,29 @@ class EventCreate(BaseSchema):
     max_group_size: int
     max_sponsors: int
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
+    # is_image_url: Optional[bool] = None
 
     # start_time: Time = Column(Time, default=func.now())
 
-    @field_validator('max_participants')
+    @field_validator("max_participants")
     @classmethod
     def max_participants_validation(cls, v):
         if v < 0:
-            raise ValueError('must be a valid number')
+            raise ValueError("must be a valid number")
         return v
 
-    @field_validator('max_group_size')
+    @field_validator("max_group_size")
     @classmethod
     def max_group_size_validation(cls, v):
         if v <= 0:
-            raise ValueError('must be a valid number')
+            raise ValueError("must be a valid number")
         return v
 
-    @field_validator('max_sponsors')
+    @field_validator("max_sponsors")
     @classmethod
     def max_sponsors_validation(cls, v):
         if v < 0:
-            raise ValueError('must be a valid number')
+            raise ValueError("must be a valid number")
         return v
 
 
@@ -53,12 +53,13 @@ class EventGet(BaseSchema):
     end_date: datetime
     location: str
     archived: bool
+    is_open: bool
     price: int
     max_participants: int
     max_group_size: int
     max_sponsors: int
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
+    # is_image_url: Optional[bool] = None
 
 
 class EventGetAll(EventGet):
@@ -76,12 +77,13 @@ class EventUpdate(BaseSchema):
     max_participants: Optional[int] = None
     max_sponsors: Optional[int] = None
     image: Optional[str] = None
-    #is_image_url: Optional[bool] = None
+    # is_image_url: Optional[bool] = None
     is_open: Optional[bool] = None
     max_group_size: Optional[int] = None
 
-
     # start_time: Time = Column(Time, default=func.now())
+
+
 class HackerEventRegistration(BaseSchema):
     shirt_size: str
     food_restrictions: str
@@ -96,11 +98,11 @@ class HackerEventRegistration(BaseSchema):
     wants_credit: bool
     update_user: bool
 
-    @field_validator('shirt_size')
+    @field_validator("shirt_size")
     @classmethod
     def shirt_size_validation(cls, v):
-        if v not in ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']:
-            raise ValueError('must be a valid shirt size')
+        if v not in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
+            raise ValueError("must be a valid shirt size")
         return v
 
 

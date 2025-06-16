@@ -1,7 +1,6 @@
 from typing import List, Union
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 
 # from services.mail import send_registration_confirmation_email
@@ -15,8 +14,7 @@ from src.impl.HackerGroup.schema import HackerGroupGet
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.JWTBearer import JWTBearer
-from src.utils.Token import (AccesToken, BaseToken, RefreshToken,
-                             VerificationToken)
+from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
 
 router = APIRouter(
     prefix="/hacker",
@@ -36,18 +34,22 @@ def signup(payload: HackerCreate):
     refresh_token = RefreshToken(new_hacker).user_set()
     verification_token = VerificationToken(new_hacker).user_set()
     mail = mail_client.create_mail(
-        MailCreate(template_id=mail_client.get_internall_template_id(
-            InternalTemplate.USER_CREATED),
-                   receiver_id=str(new_hacker.id),
-                   receiver_mail=new_hacker.email,
-                   subject='Your User Hacker was created',
-                   fields=f'{new_hacker.name},{verification_token}'))
+        MailCreate(
+            template_id=mail_client.get_internall_template_id(
+                InternalTemplate.USER_CREATED
+            ),
+            receiver_id=str(new_hacker.id),
+            receiver_mail=new_hacker.email,
+            subject="Your User Hacker was created",
+            fields=f"{new_hacker.name},{verification_token}",
+        )
+    )
     mail_client.send_mail_by_id(mail.id)
     return {
         "success": True,
         "user_id": new_hacker.id,
         "access_token": access_token,
-        "refresh_token": refresh_token
+        "refresh_token": refresh_token,
     }
 
 
@@ -62,9 +64,9 @@ def get(hackerId: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{hackerId}")
-def update(hackerId: int,
-           payload: HackerUpdate,
-           token: BaseToken = Depends(JWTBearer())):
+def update(
+    hackerId: int, payload: HackerUpdate, token: BaseToken = Depends(JWTBearer())
+):
     hacker, updated = hacker_service.update_hacker(hackerId, payload, token)
     return {"success": True, "updated_id": hacker.id, "updated": updated}
 

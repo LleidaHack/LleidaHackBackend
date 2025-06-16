@@ -37,12 +37,11 @@ def get(companyId: int):
 
 
 @router.put("/{companyId}")
-def update(companyId: int,
-           payload: CompanyUpdate,
-           token: BaseToken = Depends(JWTBearer())):
-    company, updated = company_service.update_company(companyId, payload,
-                                                      token)
-    return {"success": True, "updated_id": company.id, 'updated': updated}
+def update(
+    companyId: int, payload: CompanyUpdate, token: BaseToken = Depends(JWTBearer())
+):
+    company, updated = company_service.update_company(companyId, payload, token)
+    return {"success": True, "updated_id": company.id, "updated": updated}
 
 
 @router.delete("/{companyId}")
@@ -59,17 +58,13 @@ def get_users(companyId: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.post("/{companyId}/users/{userId}")
-def add_user(companyId: int,
-             userId: int,
-             token: BaseToken = Depends(JWTBearer())):
+def add_user(companyId: int, userId: int, token: BaseToken = Depends(JWTBearer())):
     company = company_service.add_company_user(companyId, userId, token)
     return {"success": True, "updated_id": company.id}
 
 
 @router.delete("/{companyId}/users/{userId}")
-def delete_user(companyId: int,
-                userId: int,
-                token: BaseToken = Depends(JWTBearer())):
+def delete_user(companyId: int, userId: int, token: BaseToken = Depends(JWTBearer())):
     company = company_service.delete_company_user(companyId, userId, token)
     return {"success": True, "deleted_id": company.id}
 
