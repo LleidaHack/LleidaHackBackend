@@ -3,9 +3,16 @@
 config.ini
 **/__pycache__/
 .env
+.env.local
+.env.integration
+.env.production
 utils/scripts
 .vscode/**
 test/ep_test/*
 env/
+.venv/
 src/configuration/*.yaml
 generated_src/**
+
+# Keep example files
+!.env.example

@@ -32,7 +32,7 @@ class App:
 
     def setup_middleware(self):
         self.app.add_middleware(DBSessionMiddleware,
-                                db_url=Configuration.database.url)
+                                db_url=settings.database.url)
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],

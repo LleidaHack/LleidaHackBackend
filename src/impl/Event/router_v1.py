@@ -3,7 +3,7 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends, Response
 
-from src.configuration.Configuration import Configuration
+from src.configuration.Settings import settings
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet
 from src.impl.Event.schema import EventCreate, HackerEventRegistration, HackerEventRegistrationUpdate
@@ -227,7 +227,7 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     Confirm assistance of a hacker to an event
     """
     event_service.confirm_assistance(token)
-    #redirect to Configuration.get('OTHERS', 'FRONT_URL')
+    #redirect to settings.others.front_url
     return {"success": True}
 
 

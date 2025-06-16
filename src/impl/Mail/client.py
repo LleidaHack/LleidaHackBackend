@@ -7,7 +7,7 @@ from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCre
 from src.error.MailClientException import MailClientException
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
-from src.configuration.Configuration import Configuration
+from src.configuration.Settings import settings
 
 
 def initialized(func):
@@ -31,7 +31,7 @@ class MailClient(BaseClient):
     _initialized = False
 
     def __init__(self) -> Any:
-        super().__init__(Configuration.clients.mail_client.url, None)
+        super().__init__(settings.clients.mail_client.url, None)
         try:
             self.check_health()
             self._get_internall_templates()
