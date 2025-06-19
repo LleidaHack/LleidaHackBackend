@@ -2,8 +2,7 @@ from __future__ import annotations
 from collections import OrderedDict
 
 from datetime import datetime, timedelta, UTC
-from inspect import getfullargspec
-from typing import List, overload
+from typing import List
 
 import jwt
 from dateutil import parser
@@ -25,67 +24,51 @@ ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.security.expire_time
 class BaseToken:
     user_id: int = 0
     expt: int = 0
-    type: str = ''
-    email: str = ''
-    user_type: str = ''
+    type: str = ""
+    email: str = ""
+    user_type: str = ""
     is_admin: bool = False
     available: bool = True
+
     user_service = UserService()
 
-    # def check_token(available_users: List[UserType], user_id: int = None):
-    #     def wrapper(f):
-    #         argspec = getfullargspec(f)
-    #         argument_index = argspec.args.index('data')
-    #         def c_t(*args):
-    #             token = args[argument_index]
-    #             if not isinstance(token, BaseToken):
-    #                 raise Exception("This function has not token or its name is not data")
-    #             types = [t.value for t in available_users]
-    #             if (token.user_type not in types) and (not token.is_service):
-    #                 return False
-    #             if token.user_type in [
-    #                     UserType.HACKER.value, UserType.COMPANYUSER.value,
-    #                     UserType.LLEIDAHACKER.value
-    #             ]:
-    #                 if user_id is not None and token.user_type is not UserType.LLEIDAHACKER.value:
-    #                     return token.available and token.user_id == user_id
-    #                 return token.available
-    #             elif token.user_type == UserType.SERVICE.value:
-    #                 return token.is_admin
-    #             else:
-    #                 return False
-    #         return c_t
-    #     return wrapper
-    # def __init__(self) -> None:
-    #     return self.__init__(None)
-    # @overload
+    def __set_all_data(self, data_in: dict):
+        for _ in [
+            _
+            for _ in dir(self)
+            if _.startswith("__") is False and _.endswith("__") is False
+        ]:
+            if _ in dir(data_in):
+                setattr(self, _, getattr(data_in[_], _))
+
     def __init__(self, user: User):
         self.expt = (
-            datetime.now(UTC) +
-            timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))).isoformat()
+            datetime.now(UTC) + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+        ).isoformat()
         if user is None:
             return
-        self.user_id = user.id
-        self.email = user.email
-        # self.type =
-        self.user_type = user.type
+        self.__set_all_data(user.__dict__)
 
     def from_token(self, token: str):
-        if BaseToken.is_service(token):
-            self.is_admin = True
-            # self.is_service = True
-            self.user_id = 0
-            self.available = True
-            self.user_type = UserType.SERVICE.value
-            self.email = "service"
-            return self.__dict__
         data = BaseToken.decode(token)
-        self.user_type = data.get("user_type")
-        self.user_id = data.get("user_id")
-        self.expt = data.get("expt")
-        self.type = data.get("type")
-        self.email = data.get("email")
-        return data
+        if BaseToken.is_service(token):
+            return self.__get_admin()
+        for _ in [
+            _
+            for _ in dir(self)
+            if _.startswith("__") is False and _.endswith("__") is False
+        ]:
+            if _ in data:
+                setattr(self, _, data[_])
+        return self
+
+    def __get_service(self):
+        self.is_admin = True
+        self.user_id = 0
+        self.available = True
+        self.user_type = UserType.SERVICE.value
+        self.email = "service"
+        return self.__dict__
 
     def to_token(self):
         return BaseToken.encode(self.__dict__)
@@ -99,30 +82,20 @@ class BaseToken:
         if (self.user_type not in types) and (not self.is_admin):
             return False
         if self.user_type in [
-                UserType.HACKER.value, UserType.COMPANYUSER.value,
-                UserType.LLEIDAHACKER.value
+            UserType.HACKER.value,
+            UserType.COMPANYUSER.value,
+            UserType.LLEIDAHACKER.value,
         ]:
-            if user_id is not None and self.user_type is not UserType.LLEIDAHACKER.value:
+            if (
+                user_id is not None
+                and self.user_type is not UserType.LLEIDAHACKER.value
+            ):
                 return self.available and self.user_id == user_id
             return self.available
         elif self.user_type == UserType.SERVICE.value:
             return self.is_admin
         else:
             return False
-
-    # data.check([UserType.LLEIDAHACKER, UserType.HACKER] , False, user_id)
-    # data.check(['is_admin=False',
-    #             'user_type in [LLEIDAHACKER,HACKER]',
-    #             'user_id = '+ user_id])
-    # def check(self, available_users:List[UserType], is_admin: bool, user_id: int = None):
-    #     types=[t.value for t in available_users]
-    #     if self.user_type not in types:
-    #         return False
-    #     ret = False
-    #     if is_admin:
-    #         ret = self.is_admin
-    #     if user_id is not None:
-    #         ret = ret and user_id == self.user_id
 
     # @classmethod
     def is_service(token):
@@ -131,17 +104,15 @@ class BaseToken:
     # @classmethod
     def decode(token):
         try:
-            return jwt.decode(token.encode('utf-8'),
-                              SECRET_KEY,
-                              algorithms=[ALGORITHM])
-        except Exception as e:
-            raise Exception(f'Error decoding token with the token({token})')
+            return jwt.decode(token.encode("utf-8"), SECRET_KEY, algorithms=[ALGORITHM])
+        except Exception:
+            raise Exception(f"Error decoding token with the token({token})")
 
     # @classmethod
     def encode(dict):
-        return jwt.encode(OrderedDict(sorted(dict.items())),
-                          SECRET_KEY,
-                          algorithm=ALGORITHM)
+        return jwt.encode(
+            OrderedDict(sorted(dict.items())), SECRET_KEY, algorithm=ALGORITHM
+        )
 
     def verify(token):
         if BaseToken.is_service(token):
@@ -150,10 +121,10 @@ class BaseToken:
         user = BaseToken.user_service.get_by_id(dict["user_id"])
         if user.type != dict["user_type"]:
             raise AuthenticationException("Invalid token")
-        data = BaseToken(None).from_token(token)
-        #TODO: comprovar tipus de token
+        BaseToken(None).from_token(token)
+        # TODO: comprovar tipus de token
 
-        if dict['type'] == TokenType.ACCESS and user.token != token:
+        if dict["type"] == TokenType.ACCESS and user.token != token:
             raise AuthenticationException("Invalid token")
         # Here your code for verifying the token or whatever you use
         if parser.parse(dict["expt"]) < datetime.now(UTC):
@@ -164,7 +135,7 @@ class BaseToken:
     def get_data(token: str):
         type = TokenType.ACCESS.value
         if not BaseToken.is_service(token):
-            type = BaseToken.decode(token).get('type')
+            type = BaseToken.decode(token).get("type")
         if type == TokenType.ACCESS.value:
             return AccesToken(None).from_token(token)
         elif type == TokenType.ASSISTENCE.value:
@@ -187,11 +158,6 @@ class AssistenceToken(BaseToken):
         self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
         self.type = TokenType.ASSISTENCE.value
         self.event_id = event_id
-
-    def from_token(self, token):
-        data = super().from_token(token)
-        self.event_id = data.get("event_id")
-        return self
 
     def verify(self, user: User):
         return True
@@ -226,7 +192,6 @@ class AccesToken(BaseToken):
 
 
 class RefreshToken(BaseToken):
-
     def __init__(self, user: User):
         if user is None:
             return
@@ -239,7 +204,6 @@ class RefreshToken(BaseToken):
 
 
 class VerificationToken(BaseToken):
-
     def __init__(self, user: User):
         if user is None:
             return
@@ -252,7 +216,6 @@ class VerificationToken(BaseToken):
 
 
 class ResetPassToken(BaseToken):
-
     def __init__(self, user: User):
         if user is None:
             return

@@ -1,4 +1,3 @@
-import base64
 import random
 import string
 
@@ -25,12 +24,11 @@ def set_existing_data(db_obj, req_obj):
 
 
 def generate_random_code(length):
-    return ''.join(
-        random.choice(string.ascii_uppercase) for _ in range(length))
+    return "".join(random.choice(string.ascii_uppercase) for _ in range(length))
 
 
 def generate_complex_random_code(length):
-    return ''.join(random.choice(string.printable) for _ in range(length))
+    return "".join(random.choice(string.printable) for _ in range(length))
 
 
 def isBase64(s):

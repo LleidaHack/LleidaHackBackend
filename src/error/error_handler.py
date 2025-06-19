@@ -1,17 +1,9 @@
 # from main import app
 from fastapi.responses import JSONResponse
 
-from src.error.AuthenticationException import AuthenticationException
-from src.error.InputException import InputException
-from src.error.InvalidDataException import InvalidDataException
-from src.error.NotFoundException import NotFoundException
-from src.error.ValidationException import ValidationException
-from src.error.MailClientException import MailClientException
-
 
 # @app.exception_handler(AuthenticationException)
 def authentication_exception_handler(request, exc):
-
     return JSONResponse(
         status_code=401,
         content={"message": exc.message},

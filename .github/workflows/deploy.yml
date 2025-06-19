@@ -1,0 +1,98 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: 
+      - main
+      - integration
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%H:%M_%d-%m-%Y')" >> $GITHUB_OUTPUT
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            
+            # Variables
+            BRANCH="${{ steps.extract_branch.outputs.branch }}"
+            PROJECT_PATH="${{ secrets.PROJECT_PATH }}/${BRANCH}"
+            SERVICE_NAME="Backend.${BRANCH}"
+            
+            echo "🚀 Starting deployment for branch: ${BRANCH}"
+            
+            # Navigate to project directory
+            cd "${PROJECT_PATH}"
+            
+            # Git operations
+            echo "📥 Updating code..."
+            git fetch --prune
+            git checkout "${BRANCH}"
+            git pull origin "${BRANCH}"
+            
+            # Log deployment
+            echo "${{ steps.date.outputs.date }} -> ${{ github.actor }} (commit: ${{ github.sha }})" >> deploy.log
+            
+            # Clear old logs
+            echo "🧹 Clearing logs..."
+            > logs/gunicorn_access.log
+            > logs/gunicorn_error.log
+            
+            # Install dependencies with uv (faster than poetry)
+            echo "📦 Installing dependencies..."
+            if command -v uv &> /dev/null; then
+              uv sync --frozen
+            else
+              ${{ secrets.POETRY_BIN }} install --sync --no-dev
+            fi
+            
+            # Run database migrations
+            echo "🗄️  Running migrations..."
+            if command -v uv &> /dev/null; then
+              uv run alembic upgrade head
+            else
+              ${{ secrets.POETRY_BIN }} run alembic upgrade head
+            fi
+            
+            # Restart service with better error handling
+            echo "🔄 Restarting service..."
+            sudo systemctl restart "${SERVICE_NAME}"
+            
+            # Wait for service to start
+            sleep 5
+            
+            # Check service status
+            echo "✅ Checking service status..."
+            if systemctl is-active --quiet "${SERVICE_NAME}"; then
+              echo "✅ Deployment successful! Service is running."
+              systemctl status "${SERVICE_NAME}" --no-pager -l
+            else
+              echo "❌ Deployment failed! Service is not running."
+              sudo journalctl -u "${SERVICE_NAME}" --no-pager -l --since "5 minutes ago"
+              exit 1
+            fi
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment to ${{ steps.extract_branch.outputs.branch }} completed successfully"
+          else
+            echo "❌ Deployment to ${{ steps.extract_branch.outputs.branch }} failed"
+          fi

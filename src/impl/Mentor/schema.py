@@ -1,5 +1,4 @@
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
-from src.utils.Base.BaseSchema import BaseSchema
 
 
 class MentorCreate(UserCreate):
