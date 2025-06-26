@@ -27,7 +27,7 @@ class UserCreate(BaseSchema):
     @classmethod
     def email_validation(cls, v):
         if (re.search(
-                "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
+                r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
                 v) is None):
             raise ValueError('must be a valid email')
         return v
@@ -42,7 +42,7 @@ class UserCreate(BaseSchema):
     @field_validator('password')
     @classmethod
     def password_validation(cls, v):
-        if (re.search("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$", v)
+        if (re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$", v)
                 is None):
             raise ValueError(
                 'must contain at least 8 characters, at least one uppercase letter, one lowercase letter and one number'
