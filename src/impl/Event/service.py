@@ -723,7 +723,7 @@ class EventService(BaseService):
 
     @BaseService.needs_service(HackerService)
     def unaccept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.is_admin:
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
@@ -741,7 +741,7 @@ class EventService(BaseService):
 
     @BaseService.needs_service("HackerGroupService")
     def reject_group(self, event_id: int, group_id, data: BaseToken):
-        if not data.is_admin:
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
@@ -763,7 +763,7 @@ class EventService(BaseService):
 
     @BaseService.needs_service(HackerService)
     def reject_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.is_admin:
+        if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
         if event.archived:
