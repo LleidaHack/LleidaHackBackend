@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from src.impl.Activities import router_v1 as Activities
 from src.impl.Article import router_v1 as Article
 from src.impl.ArticleType import router_v1 as ArticleType
 from src.impl.Authentication import router_v1 as Authentication
@@ -11,6 +12,7 @@ from src.impl.HackerGroup import router_v1 as HackerGroup
 from src.impl.LleidaHacker import router_v1 as LleidaHacker
 from src.impl.LleidaHackerGroup import router_v1 as LleidaHackerGroup
 from src.impl.Meal import router_v1 as Meal
+from src.impl.Mentor import router as Mentor
 from src.impl.User import router_v1 as User
 from src.impl.UserConfig import router_v1 as UserConfig
 
@@ -29,3 +31,5 @@ router.include_router(Hacker.router)
 router.include_router(UserConfig.router)
 router.include_router(Article.router)
 router.include_router(ArticleType.router)
+router.include_router(Activities.router)
+router.include_router(Mentor.router)
