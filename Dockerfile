@@ -1,15 +1,22 @@
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
+ARG GIT_BRANCH
+
 WORKDIR /app
+
+#Install git
+RUN apt-get update && apt-get install -y git
+
+
+# Copy application code
+RUN git clone https://github.com/LleidaHack/LleidaHackBackend.git . && \
+    git checkout ${GIT_BRANCH}
 
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
 # Install dependencies
 RUN uv sync --frozen
-
-# Copy application code
-COPY . .
 
 # Create required directories
 RUN mkdir -p logs generated_src
