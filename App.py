@@ -6,7 +6,7 @@ from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from fastapi_sqlalchemy import DBSessionMiddleware
 
-from src.configuration.Configuration import Configuration
+from src.configuration.Settings import settings
 from src.versions.v1 import router as v1_router
 
 
@@ -33,7 +33,8 @@ class App:
                 # print(route.operation_id)
 
     def setup_middleware(self):
-        self.app.add_middleware(DBSessionMiddleware, db_url=Configuration.database.url)
+        self.app.add_middleware(DBSessionMiddleware,
+                                db_url=settings.database.url)
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],

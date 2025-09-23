@@ -7,17 +7,17 @@ from typing import List
 import jwt
 from dateutil import parser
 
-from src.configuration.Configuration import Configuration
+from src.configuration.Settings import settings
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.User.model import User
 from src.impl.User.service import UserService
 from src.utils.TokenType import TokenType
 from src.utils.UserType import UserType
 
-SECRET_KEY = Configuration.security.secret_key
-ALGORITHM = Configuration.security.algorithm
-SERVICE_TOKEN = Configuration.security.service_token
-ACCESS_TOKEN_EXPIRE_MINUTES = Configuration.security.expire_time
+SECRET_KEY = settings.security.secret_key
+ALGORITHM = settings.security.algorithm
+SERVICE_TOKEN = settings.security.service_token
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.security.expire_time
 
 
 # TODO: fer que sigui abstracta

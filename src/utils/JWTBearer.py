@@ -1,10 +1,10 @@
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.configuration.Configuration import Configuration
+from src.configuration.Settings import settings
 from src.utils.Token import BaseToken
 
-SERVICE_TOKEN = Configuration.security.service_token
+SERVICE_TOKEN = settings.security.service_token
 
 
 class JWTBearer(HTTPBearer):

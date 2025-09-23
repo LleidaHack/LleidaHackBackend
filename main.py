@@ -2,6 +2,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
+from src.configuration.Settings import settings
 from App import App
 
 tags_metadata = [
