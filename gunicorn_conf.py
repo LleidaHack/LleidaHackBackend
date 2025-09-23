@@ -3,9 +3,9 @@ from multiprocessing import cpu_count
 #socket path
 bind = "0.0.0.0:8000"
 
-#worker options
+# worker options
 workers = cpu_count() + 1
-worker_class = 'uvicorn.workers.UvicornWorker'
+worker_class = "uvicorn.workers.UvicornWorker"
 
 #Logging options
 loglevel = 'debug'

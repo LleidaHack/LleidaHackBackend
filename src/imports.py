@@ -1,14 +1,13 @@
-from src.impl.Article import model
-from src.impl.ArticleType import model
-from src.impl.Company import model
-from src.impl.CompanyUser import model
-from src.impl.Event import model
-# from src.impl.Geocaching import model
-from src.impl.Hacker import model
-from src.impl.HackerGroup import model
-from src.impl.LleidaHacker import model
-from src.impl.LleidaHackerGroup import model
-from src.impl.Meal import model
-from src.impl.Notification import model
-from src.impl.User import model
-from src.impl.UserConfig import model
+from src.impl.Article import model_article  # noqa: F401
+from src.impl.ArticleType import model_article_type  # noqa: F401
+from src.impl.Company import model_company  # noqa: F401
+from src.impl.CompanyUser import model_company_user  # noqa: F401
+from src.impl.Event import model_event  # noqa: F401
+from src.impl.Hacker import model_hacker  # noqa: F401
+from src.impl.HackerGroup import model_hacker_group  # noqa: F401
+from src.impl.LleidaHacker import model_lleida_hacker  # noqa: F401
+from src.impl.LleidaHackerGroup import model_lleida_hacker_group  # noqa: F401
+from src.impl.Meal import model_meal  # noqa: F401
+from src.impl.Notification import model_notification  # noqa: F401
+from src.impl.User import model_user  # noqa: F401
+from src.impl.UserConfig import model_user_config  # noqa: F401

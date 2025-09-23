@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
 from src.impl.Notification.model import Notification
-from src.utils.UserType import UserType
 
 
 def get_notifications(userId: int, db: Session):
@@ -17,8 +16,9 @@ def add_notification(payload: Notification, db: Session):
 
 
 def delete_notification(notificationId: int, db: Session):
-    notification = db.query(Notification).filter(
-        Notification.id == notificationId).first()
+    notification = (
+        db.query(Notification).filter(Notification.id == notificationId).first()
+    )
     db.delete(notification)
     db.commit()
     return notification

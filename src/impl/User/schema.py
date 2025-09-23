@@ -23,7 +23,7 @@ class UserCreate(BaseSchema):
     # is_image_url: Optional[bool] = None = None
     # recive_mails: Optional[bool] = None = None
 
-    @field_validator('email')
+    @field_validator("email")
     @classmethod
     def email_validation(cls, v):
         if (re.search(
@@ -32,35 +32,35 @@ class UserCreate(BaseSchema):
             raise ValueError('must be a valid email')
         return v
 
-    @field_validator('telephone')
+    @field_validator("telephone")
     @classmethod
     def telephone_validation(cls, v):
         if re.search("^([/+][0-9]{1,2})?[0-9]{9}$", v) is None:
-            raise ValueError('must contain at least 8 digits')
+            raise ValueError("must contain at least 8 digits")
         return v
 
-    @field_validator('password')
+    @field_validator("password")
     @classmethod
     def password_validation(cls, v):
         if (re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$", v)
                 is None):
             raise ValueError(
-                'must contain at least 8 characters, at least one uppercase letter, one lowercase letter and one number'
+                "must contain at least 8 characters, at least one uppercase letter, one lowercase letter and one number"
             )
         return v
 
-    @field_validator('birthdate')
+    @field_validator("birthdate")
     @classmethod
     def birthdate_validation(cls, v):
         if v > date.today():
-            raise ValueError('must be a valid date')
+            raise ValueError("must be a valid date")
         return v
 
-    @field_validator('shirt_size')
+    @field_validator("shirt_size")
     @classmethod
     def shirt_size_validation(cls, v):
-        if v not in ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']:
-            raise ValueError('must be a valid shirt size')
+        if v not in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
+            raise ValueError("must be a valid shirt size")
         return v
 
 

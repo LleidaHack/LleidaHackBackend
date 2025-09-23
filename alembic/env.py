@@ -7,7 +7,7 @@ from src import imports
 from src.configuration.Settings import settings
 from sys import path
 from os import getcwd
-
+from src import imports  # noqa: F401
 from src.utils.Base.BaseModel import BaseModel
 
 path.insert(0, getcwd())
@@ -72,8 +72,7 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection,
-                          target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

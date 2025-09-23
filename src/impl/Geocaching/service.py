@@ -14,8 +14,7 @@ def get_geocaching(db: Session, code: str):
 
 
 def get_all_hacker_geocaching(db: Session, user_code: str):
-    return db.query(UserGeocaching).filter(
-        UserGeocaching.user_code == user_code).all()
+    return db.query(UserGeocaching).filter(UserGeocaching.user_code == user_code).all()
 
 
 def add_user_geocaching(db: Session, user_code: str, code: str):
@@ -23,7 +22,7 @@ def add_user_geocaching(db: Session, user_code: str, code: str):
     db.add(user_geocaching)
     db.commit()
     db.refresh(user_geocaching)
-    return 'point cached'
+    return "point cached"
 
 
 def claim_lleidacoins(db: Session, user_code: str):
@@ -33,8 +32,8 @@ def claim_lleidacoins(db: Session, user_code: str):
     all_geocachings = get_all_geocachings(db)
     hacker_geocachings = get_all_hacker_geocaching(db, user_code)
     if not len(all_geocachings) == len(hacker_geocachings):
-        return 'User dont have all geocachings'
+        return "User dont have all geocachings"
     hacker.lleidacoins_claimed = True
     db.commit()
     db.refresh(hacker)
-    return 'claimed succesfully'
+    return "claimed succesfully"

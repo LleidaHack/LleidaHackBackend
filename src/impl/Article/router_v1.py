@@ -2,7 +2,12 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends
 
-from src.impl.Article.schema import ArticleCreate, ArticleGet, ArticleGetAll, ArticleUpdate
+from src.impl.Article.schema import (
+    ArticleCreate,
+    ArticleGet,
+    ArticleGetAll,
+    ArticleUpdate,
+)
 from src.impl.Article.service import ArticleService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -26,9 +31,7 @@ def get_by_id(id: int):
 
 
 @router.put("/{id}")
-def update(id: int,
-           payload: ArticleUpdate,
-           token: BaseToken = Depends(JWTBearer())):
+def update(id: int, payload: ArticleUpdate, token: BaseToken = Depends(JWTBearer())):
     article, updated = article_service.update(id, payload, token)
     return {"success": True, "updated_id": article.id, "updated": updated}
 
@@ -46,24 +49,16 @@ def delete(id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.put("/{article_id}/add/{type_id}")
-def add_type(article_id: int,
-             type_id: int,
-             token: BaseToken = Depends(JWTBearer())):
+def add_type(article_id: int, type_id: int, token: BaseToken = Depends(JWTBearer())):
     article_service.add_type(article_id, type_id, token)
-    return {
-        "success": True,
-        "updated_article_id": article_id,
-        "added_type_id": type_id
-    }
+    return {"success": True, "updated_article_id": article_id, "added_type_id": type_id}
 
 
 @router.put("/{article_id}/delete/{type_id}")
-def delete_type(article_id: int,
-                type_id: int,
-                token: BaseToken = Depends(JWTBearer())):
+def delete_type(article_id: int, type_id: int, token: BaseToken = Depends(JWTBearer())):
     article_service.delete_type(article_id, type_id, token)
     return {
         "success": True,
         "updated_article_id": article_id,
-        "deleted_type_id": type_id
+        "deleted_type_id": type_id,
     }
