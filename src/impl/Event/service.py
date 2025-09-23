@@ -1,5 +1,5 @@
 from fastapi_sqlalchemy import db
-from sqlalchemy import asc
+from sqlalchemy import desc
 from datetime import datetime
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 from collections import Counter
@@ -54,10 +54,9 @@ class EventService(BaseService):
             db.session.query(Event)
             .filter(
                 Event.name.ilike("HackEPS%"),
-                Event.start_date >= datetime(year, 1, 1),
-                Event.end_date <= datetime(year, 12, 31),
+                Event.start_date <= datetime(year, 12, 31)
             )
-            .order_by(asc(Event.end_date))
+            .order_by(desc(Event.end_date))
             .first()
         )
         if e is None:
