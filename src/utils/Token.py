@@ -193,13 +193,6 @@ class AccesToken(BaseToken):
             self.available = user.active and user.accepted
         else:
             self.available = user.active
-
-    # def from_token(self, token):
-    #     data = super().from_token(token)
-    #     if not self.is_admin:
-    #         self.is_verified = data.get("is_verified")
-    #         self.available = data.get("available")
-    #     return self
     
     def from_token(self, token):
         payload = BaseToken.decode(token)  # dict real
