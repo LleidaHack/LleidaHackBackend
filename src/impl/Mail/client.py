@@ -60,6 +60,7 @@ class MailClient(BaseClient):
 
     @initialized
     def send_mail_by_id(self, id: int):
+        print(settings.clients.mail_client.url)
         r = mail_send_by_id.sync_detailed(id, client=self.client)
         return r
 
