@@ -62,7 +62,7 @@ class MailClient(BaseClient):
         return r
 
     @initialized
-    def send_mail_by_id(self, id: int):
+    async def send_mail_by_id(self, id: int):
         r = mail_send_by_id.sync_detailed(id, client=self.client)
         return r
 
