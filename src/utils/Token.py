@@ -55,6 +55,8 @@ class BaseToken:
             attribute_name = key_to_attribute_map.get(key, key)
             if hasattr(self, attribute_name):
                 setattr(self, attribute_name, value)
+            if attribute_name == 'type':
+                self.user_type = value
 
     def __init__(self, user: User):
         self.expt = (
