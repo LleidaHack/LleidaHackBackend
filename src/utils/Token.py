@@ -2,6 +2,7 @@ from __future__ import annotations
 from collections import OrderedDict
 
 from datetime import datetime, timedelta, UTC
+import token
 from typing import List
 
 import jwt
@@ -193,11 +194,19 @@ class AccesToken(BaseToken):
         else:
             self.available = user.active
 
+    # def from_token(self, token):
+    #     data = super().from_token(token)
+    #     if not self.is_admin:
+    #         self.is_verified = data.get("is_verified")
+    #         self.available = data.get("available")
+    #     return self
+    
     def from_token(self, token):
-        data = super().from_token(token)
+        payload = BaseToken.decode(token)  # dict real
+        super().from_token(token)          # llena los atributos
         if not self.is_admin:
-            self.is_verified = data.get("is_verified")
-            self.available = data.get("available")
+            self.is_verified = payload.get("is_verified")
+            self.available  = payload.get("available")
         return self
 
     def verify(self, user):
