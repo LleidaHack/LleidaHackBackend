@@ -42,12 +42,14 @@ class BaseToken:
     #             setattr(self, _, getattr(data_in[_], _))
     
     def __set_all_data(self, data_in: dict):
-        for attribute in [
-            attr for attr in dir(self)
-            if not attr.startswith("__") and not attr.endswith("__")
-        ]:
-            if attribute in data_in:
-                setattr(self, attribute, data_in[attribute])
+        key_to_attribute_map = {
+            'type': 'user_type'
+        }
+
+        for key, value in data_in.items():
+            attribute_name = key_to_attribute_map.get(key, key)
+            if hasattr(self, attribute_name):
+                setattr(self, attribute_name, value)
 
     def __init__(self, user: User):
         self.expt = (
@@ -55,7 +57,10 @@ class BaseToken:
         ).isoformat()
         if user is None:
             return
-        self.__set_all_data(user.__dict__)
+        user_dict = {c.name: getattr(user, c.name) for c in user.__table__.columns}
+        self.__set_all_data(user_dict)
+        self.user_type = user.type
+        self.email = user.email
 
     def from_token(self, token: str):
         if BaseToken.is_service(token):
