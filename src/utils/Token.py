@@ -44,6 +44,9 @@ class BaseToken:
     def __set_all_data(self, data_in: dict):
         # Diccionario para mapear las claves de entrada a los atributos de 'self'.
         # Si la clave en data_in es 'type', la asignará al atributo 'user_type' de self.
+        print("----PRINT DENTRO DEL SET ALL DATA----")
+        print(data_in)
+        print("-------END PRINT SET ALL DATA-------")
         key_to_attribute_map = {
             'type': 'user_type'
         }
