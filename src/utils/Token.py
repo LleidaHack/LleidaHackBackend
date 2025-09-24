@@ -52,13 +52,7 @@ class BaseToken:
         }
 
         for key, value in data_in.items():
-            # Obtener el nombre del atributo de 'self'.
-            # Si la clave existe en el mapeo, usa el nombre del mapeo.
-            # Si no, usa la clave tal cual.
             attribute_name = key_to_attribute_map.get(key, key)
-
-            # Asigna el valor al atributo correspondiente de 'self',
-            # solo si el atributo existe en 'self'.
             if hasattr(self, attribute_name):
                 setattr(self, attribute_name, value)
 
@@ -68,7 +62,8 @@ class BaseToken:
         ).isoformat()
         if user is None:
             return
-        self.__set_all_data(user.__dict__)
+        user_dict = {c.name: getattr(user, c.name) for c in user.__table__.columns}
+        self.__set_all_data(user_dict)
 
     def from_token(self, token: str):
         if BaseToken.is_service(token):
