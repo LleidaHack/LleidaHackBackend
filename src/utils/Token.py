@@ -42,12 +42,12 @@ class BaseToken:
     #             setattr(self, _, getattr(data_in[_], _))
     
     def __set_all_data(self, data_in: dict):
-        for attribute in [
-            attr for attr in dir(self)
-            if not attr.startswith("__") and not attr.endswith("__")
-        ]:
-            if attribute in data_in:
-                setattr(self, attribute, data_in[attribute])
+        # Claves de User -> atributos de BaseToken
+        mapping = {"type": "user_type"}
+        for key, value in data_in.items():
+            dest = mapping.get(key, key)   # usa el nombre mapeado si existe
+            if hasattr(self, dest):
+                setattr(self, dest, value)
 
     def __init__(self, user: User):
         self.expt = (
