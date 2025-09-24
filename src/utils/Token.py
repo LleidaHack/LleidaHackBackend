@@ -50,9 +50,9 @@ class BaseToken:
         self.__set_all_data(user.__dict__)
 
     def from_token(self, token: str):
-        data = BaseToken.decode(token)
         if BaseToken.is_service(token):
             return self.__get_service()
+        data = BaseToken.decode(token)
         for _ in [
             _
             for _ in dir(self)
