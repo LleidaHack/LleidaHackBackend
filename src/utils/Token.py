@@ -52,7 +52,7 @@ class BaseToken:
     def from_token(self, token: str):
         data = BaseToken.decode(token)
         if BaseToken.is_service(token):
-            return self.__get_admin()
+            return self.__get_service()
         for _ in [
             _
             for _ in dir(self)
