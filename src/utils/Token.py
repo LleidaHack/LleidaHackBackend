@@ -42,11 +42,6 @@ class BaseToken:
     #             setattr(self, _, getattr(data_in[_], _))
     
     def __set_all_data(self, data_in: dict):
-        # Diccionario para mapear las claves de entrada a los atributos de 'self'.
-        # Si la clave en data_in es 'type', la asignará al atributo 'user_type' de self.
-        print("----PRINT DENTRO DEL SET ALL DATA----")
-        print(data_in)
-        print("-------END PRINT SET ALL DATA-------")
         key_to_attribute_map = {
             'type': 'user_type'
         }
@@ -55,8 +50,6 @@ class BaseToken:
             attribute_name = key_to_attribute_map.get(key, key)
             if hasattr(self, attribute_name):
                 setattr(self, attribute_name, value)
-            if attribute_name == 'type':
-                self.user_type = value
 
     def __init__(self, user: User):
         self.expt = (
@@ -193,13 +186,6 @@ class AccesToken(BaseToken):
         if user is None:
             return
         self.is_verified = user.is_verified
-        print("-----------")
-        print(self.__dict__)
-        print("-------")
-        print(user.type)
-        print(self.user_type)
-        print(UserType.HACKER.value)
-        print("END PRINT")
         if self.user_type == UserType.HACKER.value:
             self.available = not bool(user.banned) and self.is_verified
         elif user.type == UserType.LLEIDAHACKER.value:
