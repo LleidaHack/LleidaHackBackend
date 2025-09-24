@@ -51,6 +51,9 @@ class MailClient(BaseClient):
             )
         return True
 
+    def test_health(self):
+        return health_check.sync_detailed(client=self.client)
+        
     @initialized
     def create_mail(self, mail: MailCreate):
         r = mail_create.sync(client=self.client, body=mail)
@@ -60,7 +63,6 @@ class MailClient(BaseClient):
 
     @initialized
     def send_mail_by_id(self, id: int):
-        print(settings.clients.mail_client.url)
         r = mail_send_by_id.sync_detailed(id, client=self.client)
         return r
 

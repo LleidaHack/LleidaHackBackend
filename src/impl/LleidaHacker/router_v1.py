@@ -22,7 +22,10 @@ router = APIRouter(
 lleidahacker_service = LleidaHackerService()
 mail_client = MailClient()
 
-
+@router.get("/test")
+def test()
+    return mail_client.test_health()
+    
 @router.post("/signup")
 def signup(payload: LleidaHackerCreate):
     new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
