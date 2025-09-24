@@ -181,6 +181,9 @@ class AccesToken(BaseToken):
         if user is None:
             return
         self.is_verified = user.is_verified
+        print(user.type)
+        print(self.user_type)
+        print(UserType.HACKER.value)
         if self.user_type == UserType.HACKER.value:
             self.available = not bool(user.banned) and self.is_verified
         elif user.type == UserType.LLEIDAHACKER.value:
