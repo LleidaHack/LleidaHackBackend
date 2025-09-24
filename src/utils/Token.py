@@ -42,12 +42,22 @@ class BaseToken:
     #             setattr(self, _, getattr(data_in[_], _))
     
     def __set_all_data(self, data_in: dict):
-        # Claves de User -> atributos de BaseToken
-        mapping = {"type": "user_type"}
+        # Diccionario para mapear las claves de entrada a los atributos de 'self'.
+        # Si la clave en data_in es 'type', la asignará al atributo 'user_type' de self.
+        key_to_attribute_map = {
+            'type': 'user_type'
+        }
+
         for key, value in data_in.items():
-            dest = mapping.get(key, key)   # usa el nombre mapeado si existe
-            if hasattr(self, dest):
-                setattr(self, dest, value)
+            # Obtener el nombre del atributo de 'self'.
+            # Si la clave existe en el mapeo, usa el nombre del mapeo.
+            # Si no, usa la clave tal cual.
+            attribute_name = key_to_attribute_map.get(key, key)
+
+            # Asigna el valor al atributo correspondiente de 'self',
+            # solo si el atributo existe en 'self'.
+            if hasattr(self, attribute_name):
+                setattr(self, attribute_name, value)
 
     def __init__(self, user: User):
         self.expt = (
