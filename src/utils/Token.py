@@ -32,14 +32,22 @@ class BaseToken:
 
     user_service = UserService()
 
+    # def __set_all_data(self, data_in: dict):
+    #     for _ in [
+    #         _
+    #         for _ in dir(self)
+    #         if _.startswith("__") is False and _.endswith("__") is False
+    #     ]:
+    #         if _ in dir(data_in):
+    #             setattr(self, _, getattr(data_in[_], _))
+    
     def __set_all_data(self, data_in: dict):
-        for _ in [
-            _
-            for _ in dir(self)
-            if _.startswith("__") is False and _.endswith("__") is False
+        for attribute in [
+            attr for attr in dir(self)
+            if not attr.startswith("__") and not attr.endswith("__")
         ]:
-            if _ in dir(data_in):
-                setattr(self, _, getattr(data_in[_], _))
+            if attribute in data_in:
+                setattr(self, attribute, data_in[attribute])
 
     def __init__(self, user: User):
         self.expt = (
