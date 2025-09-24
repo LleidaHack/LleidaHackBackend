@@ -40,7 +40,7 @@ class EventService(BaseService):
         return db.session.query(Event).filter(Event.archived.is_(False)).all()
 
     def get_archived(self):
-        return db.session.query(Event).filter(Event.archived).all()
+        return db.session.query(Event).filter(Event.archived.is_(True)).all()
 
     def get_by_id(self, id: int) -> Event:
         event = db.session.query(Event).filter(Event.id == id).first()
