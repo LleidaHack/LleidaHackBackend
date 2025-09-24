@@ -37,7 +37,7 @@ class EventService(BaseService):
     mail_client: MailClient = None
 
     def get_all(self):
-        return db.session.query(Event).filter(not Event.archived).all()
+        return db.session.query(Event).filter(Event.archived.is_(False)).all()
 
     def get_archived(self):
         return db.session.query(Event).filter(Event.archived).all()
