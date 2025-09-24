@@ -66,6 +66,8 @@ class BaseToken:
             return
         user_dict = {c.name: getattr(user, c.name) for c in user.__table__.columns}
         self.__set_all_data(user_dict)
+        self.user_type = user.type
+        self.email = user.email
 
     def from_token(self, token: str):
         if BaseToken.is_service(token):
