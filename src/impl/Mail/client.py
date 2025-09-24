@@ -52,7 +52,7 @@ class MailClient(BaseClient):
         return True
 
     def test_health(self):
-        return self.client.url, health_check.sync_detailed(client=self.client).status_code
+        return settings.clients.mail_client.url, health_check.sync_detailed(client=self.client).status_code
         
     @initialized
     def create_mail(self, mail: MailCreate):
