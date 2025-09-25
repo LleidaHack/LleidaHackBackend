@@ -704,7 +704,7 @@ class EventService(BaseService):
         hacker_registration.confirm_assistance_token = token
         event.accepted_hackers.append(hacker)
 
-        self.mail_client.create_mail(
+        mail = self.mail_client.create_mail(
             MailCreate(
                 template_id=self.mail_client.get_internall_template_id(
                     InternalTemplate.EVENT_HACKER_ACCEPTED
@@ -715,6 +715,7 @@ class EventService(BaseService):
                 fields=f"{hacker.name},{event.name},5,{token}",
             )
         )
+        self.mail_client.send_mail_by_id(mail.id)
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)
