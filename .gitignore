@@ -2,7 +2,6 @@
 .config
 config.ini
 **/__pycache__/
-.env
 .env.local
 .env.integration
 .env.production

@@ -5,6 +5,13 @@ import os
 
 
 class SecuritySettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
+        case_sensitive=False,
+        extra="allow"
+    )
     secret_key: str = Field(
         default="secret", 
         description="JWT secret key",
@@ -28,6 +35,13 @@ class SecuritySettings(BaseSettings):
 
 
 class DatabaseSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
+        case_sensitive=False,
+        extra="allow"
+    )
     url: str = Field(
         ..., 
         description="Database connection URL",
@@ -36,6 +50,13 @@ class DatabaseSettings(BaseSettings):
 
 
 class MailClientSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
+        case_sensitive=False,
+        extra="allow"
+    )
     url: str = Field(
         ..., 
         description="Mail service URL",
@@ -44,6 +65,13 @@ class MailClientSettings(BaseSettings):
 
 
 class ClientsSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
+        case_sensitive=False,
+        extra="allow"
+    )
     mail_client: MailClientSettings
 
 
