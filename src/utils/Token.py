@@ -151,18 +151,20 @@ class BaseToken:
     # @classmethod
     def get_data(token: str):
         type = TokenType.ACCESS.value
-        if not BaseToken.is_service(token):
+        if BaseToken.is_service(token):
+            return BaseToken(None).__get_service()
+        else:
             type = BaseToken.decode(token).get("type")
-        if type == TokenType.ACCESS.value:
-            return AccesToken(None).from_token(token)
-        elif type == TokenType.ASSISTENCE.value:
-            return AssistenceToken(None, None).from_token(token)
-        elif type == TokenType.REFRESH.value:
-            return RefreshToken(None).from_token(token)
-        elif type == TokenType.RESET_PASS.value:
-            return ResetPassToken(None).from_token(token)
-        elif type == TokenType.VERIFICATION.value:
-            return VerificationToken(None).from_token(token)
+            if type == TokenType.ACCESS.value:
+                return AccesToken(None).from_token(token)
+            elif type == TokenType.ASSISTENCE.value:
+                return AssistenceToken(None, None).from_token(token)
+            elif type == TokenType.REFRESH.value:
+                return RefreshToken(None).from_token(token)
+            elif type == TokenType.RESET_PASS.value:
+                return ResetPassToken(None).from_token(token)
+            elif type == TokenType.VERIFICATION.value:
+                return VerificationToken(None).from_token(token)
 
 
 class AssistenceToken(BaseToken):
