@@ -32,25 +32,16 @@ class BaseToken:
     available: bool = True
 
     user_service = UserService()
-
-    def __set_all_data(self, data_in: dict):
-        for _ in [
-            _
-            for _ in dir(self)
-            if _.startswith("__") is False and _.endswith("__") is False
-        ]:
-            if _ in dir(data_in):
-                setattr(self, _, getattr(data_in[_], _))
     
-    # def __set_all_data(self, data_in: dict):
-    #     key_to_attribute_map = {
-    #         'type': 'user_type'
-    #     }
+    def __set_all_data(self, data_in: dict):
+        key_to_attribute_map = {
+            'type': 'user_type'
+        }
 
-    #     for key, value in data_in.items():
-    #         attribute_name = key_to_attribute_map.get(key, key)
-    #         if hasattr(self, attribute_name):
-    #             setattr(self, attribute_name, value)
+        for key, value in data_in.items():
+            attribute_name = key_to_attribute_map.get(key, key)
+            if hasattr(self, attribute_name):
+                setattr(self, attribute_name, value)
 
     def __init__(self, user: User):
         self.expt = (
@@ -58,10 +49,10 @@ class BaseToken:
         ).isoformat()
         if user is None:
             return
-        #user_dict = {c.name: getattr(user, c.name) for c in user.__table__.columns}
-        self.__set_all_data(user.__dict__)
-        # self.user_type = user.type
-        # self.email = user.email
+        user_dict = {c.name: getattr(user, c.name) for c in user.__table__.columns}
+        self.__set_all_data(user_dict)
+        self.user_type = user.type
+        self.email = user.email
 
     def from_token(self, token: str):
         if BaseToken.is_service(token):
@@ -82,7 +73,7 @@ class BaseToken:
         self.available = True
         self.user_type = UserType.SERVICE.value
         self.email = "service"
-        return self.__dict__
+        return self
 
     def to_token(self):
         return BaseToken.encode(self.__dict__)
