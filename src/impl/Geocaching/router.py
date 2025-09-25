@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter
 
 from src.impl.Geocaching import service as geocaching_service
 
@@ -9,13 +8,13 @@ router = APIRouter()
 @router.get("/geocaching")
 def get_all_geocachings():
     # return geocaching_service
-    return 'UNAVALIABLE'
+    return "UNAVALIABLE"
 
 
 @router.get("/geocaching/{code}")
 def get_geocaching(code: str):
     # Your code here
-    return 'UNAVALIABLE'
+    return "UNAVALIABLE"
 
 
 @router.get("/geocaching/hacker/{user_code}")

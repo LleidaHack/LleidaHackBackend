@@ -1,29 +1,33 @@
-[tool.poetry]
+[project]
 name = "lleidahackbackend"
 version = "0.1.0"
 description = ""
-authors = ["tonlls"]
-readme = "README.md"
-package-mode = false
+authors = [
+    {name = "tonlls"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "openapi-python-client>=0.20.0",
+    "fastapi>=0.111.0",
+    "pydantic>=2.7.1",
+    "pydantic-settings>=2.0.0",
+    "alembic>=1.13.1",
+    "SQLAlchemy>=2.0.30",
+    "FastAPI-SQLAlchemy>=0.2.1",
+    "python-jose>=3.3.0",
+    "PyJWT>=2.8.0",
+    "python-dateutil>=2.9.0.post0",
+    "pyyaml>=6.0.1",
+    "passlib>=1.7.4",
+    "psycopg2-binary>=2.9.9",
+    "configparser>=7.0.0",
+    "gunicorn>=22.0.0",
+    "uvicorn>=0.30.0"
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-openapi-python-client = "^0.20.0"
-fastapi = "^0.111.0"
-pydantic = "^2.7.1"
-alembic = "^1.13.1"
-SQLAlchemy = "^2.0.30"
-FastAPI-SQLAlchemy = "^0.2.1"
-python-jose = "^3.3.0"
-PyJWT = "^2.8.0"
-python-dateutil = "^2.9.0.post0"
-pyyaml = "^6.0.1"
-passlib = "^1.7.4"
-psycopg2-binary = "^2.9.9"
-configparser = "^7.0.0"
-gunicorn = "^22.0.0"
-
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

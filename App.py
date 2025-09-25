@@ -6,12 +6,11 @@ from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from fastapi_sqlalchemy import DBSessionMiddleware
 
-from src.configuration.Configuration import Configuration
+from src.configuration.Settings import settings
 from src.versions.v1 import router as v1_router
 
 
 class App:
-
     def __init__(self, app):
         self.app = app
 
@@ -25,14 +24,17 @@ class App:
 
         for route in self.app.routes:
             if isinstance(route, APIRoute):
-                route.operation_id = route.tags[-1].replace(
-                    ' ', '').lower() if len(route.tags) > 0 else ''
-                route.operation_id += '_' + route.name
+                route.operation_id = (
+                    route.tags[-1].replace(" ", "").lower()
+                    if len(route.tags) > 0
+                    else ""
+                )
+                route.operation_id += "_" + route.name
                 # print(route.operation_id)
 
     def setup_middleware(self):
         self.app.add_middleware(DBSessionMiddleware,
-                                db_url=Configuration.database.url)
+                                db_url=settings.database.url)
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
@@ -50,23 +52,26 @@ class App:
         from src.error.NotFoundException import NotFoundException
         from src.error.ValidationException import ValidationException
         from src.error.MailClientException import MailClientException
-        self.app.add_exception_handler(AuthenticationException,
-                                       eh.authentication_exception_handler)
-        self.app.add_exception_handler(NotFoundException,
-                                       eh.not_found_exception_handler)
-        self.app.add_exception_handler(ValidationException,
-                                       eh.validation_exception_handler)
-        self.app.add_exception_handler(InvalidDataException,
-                                       eh.invalid_data_exception_handler)
-        self.app.add_exception_handler(InputException,
-                                       eh.input_exception_handler)
-        self.app.add_exception_handler(MailClientException,
-                                       eh.initialize_exception_handler)
+
+        self.app.add_exception_handler(
+            AuthenticationException, eh.authentication_exception_handler
+        )
+        self.app.add_exception_handler(
+            NotFoundException, eh.not_found_exception_handler
+        )
+        self.app.add_exception_handler(
+            ValidationException, eh.validation_exception_handler
+        )
+        self.app.add_exception_handler(
+            InvalidDataException, eh.invalid_data_exception_handler
+        )
+        self.app.add_exception_handler(InputException, eh.input_exception_handler)
+        self.app.add_exception_handler(
+            MailClientException, eh.initialize_exception_handler
+        )
 
     def setup_static_folder(self):
-        self.app.mount('/static',
-                       StaticFiles(directory='static'),
-                       name='static')
+        self.app.mount("/static", StaticFiles(directory="static"), name="static")
 
     def setup_logger(self, logger):
         logger.setLevel(logging.DEBUG)
