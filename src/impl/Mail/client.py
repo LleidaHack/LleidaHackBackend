@@ -63,6 +63,7 @@ class MailClient(BaseClient):
 
     @initialized
     def send_mail_by_id(self, id: int):
+        print('estem arrivant al send nanu')
         r = mail_send_by_id.sync_detailed(id, client=self.client)
         return r
 
