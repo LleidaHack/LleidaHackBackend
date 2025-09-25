@@ -12,8 +12,6 @@ RUN apt-get update && apt-get install -y git
 RUN git clone https://github.com/LleidaHack/LleidaHackBackend.git . && \
     git checkout ${GIT_BRANCH}
 
-# Copy dependency files
-COPY pyproject.toml uv.lock ./
 
 # Install dependencies
 RUN uv sync --frozen
