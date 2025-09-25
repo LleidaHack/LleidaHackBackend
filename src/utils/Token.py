@@ -113,6 +113,9 @@ class BaseToken:
 
     # @classmethod
     def is_service(token):
+        print("TOKENSS")
+        print(token)
+        print(SERVICE_TOKEN)
         return token == SERVICE_TOKEN
 
     # @classmethod
