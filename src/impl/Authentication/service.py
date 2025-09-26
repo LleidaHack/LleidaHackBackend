@@ -159,6 +159,7 @@ class AuthenticationService(BaseService):
                 fields=
                 f'{payload.name},{payload.email},{payload.title},{payload.message}'
             ))
+        self.mail_client.send_mail_by_id(mail.id)
         return {
             "success": mail is not None,
             "id": mail.id if mail is not None else None,
