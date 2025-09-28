@@ -84,6 +84,9 @@ class BaseToken:
 
     def check(self, available_users: List[UserType], user_id: int = None):
         types = [t.value for t in available_users]
+        print(self.user_type)
+        print(UserType.SERVICE.value)
+        print(self.is_admin)
         if (self.user_type not in types) and (not self.is_admin):
             return False
         if self.user_type in [
