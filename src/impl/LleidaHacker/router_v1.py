@@ -22,44 +22,40 @@ router = APIRouter(
 lleidahacker_service = LleidaHackerService()
 mail_client = MailClient()
 
-@router.get("/test")
-def test():
-    return mail_client.test_health()
-
-@router.post("/signup")
-def signup(payload: LleidaHackerCreate):
-    new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
-    access_token = AccesToken(new_lleidahacker).user_set()
-    refresh_token = RefreshToken(new_lleidahacker).user_set()
-    verification_token = VerificationToken(new_lleidahacker).user_set()
-
-    mail = mail_client.create_mail(
-        MailCreate(
-            template_id=mail_client.get_internall_template_id(
-                InternalTemplate.USER_CREATED
-            ),
-            receiver_id=str(new_lleidahacker.id),
-            receiver_mail=new_lleidahacker.email,
-            subject="Your User Hacker was created",
-            fields=f"{new_lleidahacker.name},{verification_token}",
-        )
-    )
-    mail_client.send_mail_by_id(mail.id)
-    return {
-        "success": True,
-        "user_id": new_lleidahacker.id,
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-    }
+#@router.post("/signup")
+#def signup(payload: LleidaHackerCreate):
+#    new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
+#    access_token = AccesToken(new_lleidahacker).user_set()
+#    refresh_token = RefreshToken(new_lleidahacker).user_set()
+#    verification_token = VerificationToken(new_lleidahacker).user_set()
+#
+#    mail = mail_client.create_mail(
+#        MailCreate(
+#            template_id=mail_client.get_internall_template_id(
+#                InternalTemplate.USER_CREATED
+#            ),
+#            receiver_id=str(new_lleidahacker.id),
+#            receiver_mail=new_lleidahacker.email,
+#            subject="Your User Hacker was created",
+#            fields=f"{new_lleidahacker.name},{verification_token}",
+#        )
+#    )
+#    mail_client.send_mail_by_id(mail.id)
+#    return {
+#        "success": True,
+#        "user_id": new_lleidahacker.id,
+#        "access_token": access_token,
+#        "refresh_token": refresh_token,
+#    }
 
 
 @router.get("/all", response_model=List[LleidaHackerGet])
-def get_all(str: Optional[BaseToken] = Depends(JWTBearer(required=False))):
+def get_all(str: Optional[BaseToken] = Depends(JWTBearer())):
     return lleidahacker_service.get_all()
 
 
 @router.get("/{userId}", response_model=Union[LleidaHackerGetAll, LleidaHackerGet])
-def get(userId: int, data: Optional[BaseToken] = Depends(JWTBearer(required=False))):
+def get(userId: int, data: Optional[BaseToken] = Depends(JWTBearer())):
     return lleidahacker_service.get_lleidahacker(userId, data)
 
 
