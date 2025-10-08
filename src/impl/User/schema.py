@@ -65,6 +65,7 @@ class UserCreate(BaseSchema):
 
 
 class UserGet(BaseSchema):
+    id: int
     name: str
     nickname: str
     created_at: date
