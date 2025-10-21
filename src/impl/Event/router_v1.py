@@ -346,6 +346,19 @@ def get_pending_hackers_gruped(event_id: int, token: BaseToken = Depends(JWTBear
     return event_service.get_pending_hackers_gruped(event_id, token)
 
 
+@router.get("/{event_id}/hackers_participants_gruped_list")
+def get_hackers_participants_gruped_list(event_id: int,
+                                         token: BaseToken = Depends(
+                                             JWTBearer())):
+    return event_service.get_hackers_participants_gruped_list(event_id, token)
+
+
+@router.get("/{event_id}/hackers_participants_list")
+def get_hackers_participants_list(event_id: int,
+                                  token: BaseToken = Depends(JWTBearer())):
+    return event_service.get_hackers_participants_list(event_id, token)
+
+
 @router.get("/{event_id}/resend-accepted-mails")
 def resend_accept_mails(event_id: int, token: BaseToken = Depends(JWTBearer())):
     event_service.resend_mails(event_id, token)

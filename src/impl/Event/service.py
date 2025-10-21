@@ -557,6 +557,89 @@ class EventService(BaseService):
         # Combine group and nogroup data into a dictionary
         return {"groups": output_data, "nogroup": nogroup_data}
 
+    @BaseService.needs_service('HackerGroupService')
+    def get_hackers_participants_list(
+        self, event_id: int, data: BaseToken
+    ):  ##Servei per obtindre la llista de participants amb status acceptat, rechazat o pending.
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        # Extract hacker IDs from registered_hackers
+        event = self.get_by_id(event_id)
+        # Extract pending hackers
+        pending_hackers_ids = [
+            h.id for h in subtract_lists(
+                subtract_lists(event.registered_hackers,
+                               event.accepted_hackers), event.rejected_hackers)
+        ]
+        registered_hackers = event.registered_hackers
+        # Accepted hackers
+        accepted_hackers_ids = [h.id for h in event.accepted_hackers]
+        # Rejected hackers
+        rejected_hackers_ids = [h.id for h in event.rejected_hackers]
+
+        # List hackers and add status as pending, accepted or rejected.
+        participants_list = [
+            get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                            rejected_hackers_ids)
+            for hacker in registered_hackers
+        ]
+        # Combine group and nogroup data into a dictionary
+        return {"participants": participants_list}
+
+    ## This returns 2 lists: people going alone and people in groups. They will have status and food restrictions.
+    @BaseService.needs_service('HackerGroupService')
+    def get_hackers_participants_gruped_list(self, event_id: int,
+                                             data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        # Extract hacker IDs from registered_hackers
+        event = self.get_by_id(event_id)
+        pending_hackers_ids = [
+            h.id for h in subtract_lists(
+                subtract_lists(event.registered_hackers,
+                               event.accepted_hackers), event.rejected_hackers)
+        ]
+        # Registered hackers
+        registered_hackers = event.registered_hackers
+        # Accepted hackers
+        accepted_hackers_ids = [h.id for h in event.accepted_hackers]
+        # Rejected hackers
+        rejected_hackers_ids = [h.id for h in event.rejected_hackers]
+
+        event_groups = event.groups
+        group_users = []
+        for group in event_groups:
+            group_users.extend([hacker.id for hacker in group.members])
+
+        # List hackers and add status as pending, accepted or rejected.
+        output_data = []
+        non_group_hackers_ids = subtract_lists(
+            pending_hackers_ids + accepted_hackers_ids +
+            rejected_hackers_ids, group_users)
+        
+        non_group_hackers_ids_set = set(non_group_hackers_ids)
+        non_group_hackers = [hacker for hacker in registered_hackers if hacker.id in non_group_hackers_ids_set]
+
+        non_group_hackers_participants = [
+            get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                            rejected_hackers_ids)
+            for hacker in non_group_hackers
+        ]
+
+        for group in event_groups:
+            group_data = {
+                "name":
+                group.name,
+                "members": [
+                    get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
+                        rejected_hackers_ids)
+                    for hacker in group.members]
+            }
+            output_data.append(group_data)
+        # Retrieve pending hacker groups
+        # Combine group and nogroup data into a dictionary
+        return {"groups": output_data, "nogroup": non_group_hackers_participants}
+
     @BaseService.needs_service(HackerService)
     def confirm_assistance(self, data: AssistenceToken):
         # data = get_data_from_token(token, special=True)
