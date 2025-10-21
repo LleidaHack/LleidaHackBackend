@@ -11,6 +11,7 @@ from src.impl.LleidaHacker.schema import LleidaHackerUpdate
 from src.impl.LleidaHacker.service import LleidaHackerService
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
+from src.utils import UserType
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
 
@@ -23,7 +24,10 @@ lleidahacker_service = LleidaHackerService()
 mail_client = MailClient()
 
 @router.post("/signup")
-def signup(payload: LleidaHackerCreate):
+def signup(payload: LleidaHackerCreate, data: BaseToken = Depends(JWTBearer())):
+   if data.check([UserType.LLEIDAHACKER]) is False:
+       raise Exception("Unauthorized")
+   
    new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
    access_token = AccesToken(new_lleidahacker).user_set()
    refresh_token = RefreshToken(new_lleidahacker).user_set()
