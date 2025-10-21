@@ -617,7 +617,8 @@ class EventService(BaseService):
             pending_hackers_ids + accepted_hackers_ids +
             rejected_hackers_ids, group_users)
         
-        non_group_hackers = [hacker for hacker in registered_hackers if hacker.id in non_group_hackers_ids]
+        non_group_hackers_ids_set = set(non_group_hackers_ids)
+        non_group_hackers = [hacker for hacker in registered_hackers if hacker.id in non_group_hackers_ids_set]
 
         non_group_hackers_participants = [
             get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
