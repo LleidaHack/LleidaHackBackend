@@ -49,7 +49,7 @@ class LleidaHackerService(BaseService):
             **payload.model_dump(exclude={"config"}), code=generate_user_code()
         )
         new_lleidahacker.password = get_password_hash(payload.password)
-        new_lleidahacker.active = True
+        new_lleidahacker.active = False # IMPORTANT DO NOT ACTIVATE USER AUTOMATICALLY !!!!!!!!!!!!! @Big_Lolo
 
         new_config = UserConfig(**payload.config.model_dump())
 
