@@ -586,7 +586,7 @@ class EventService(BaseService):
         # Combine group and nogroup data into a dictionary
         return {"participants": participants_list}
 
-    ##Esto retorna 2 listas, de la gente que va sola y de la que va en grupos. Tendran el status y el has restrictions.
+    ## This returns 2 lists: people going alone and people in groups. They will have status and food restrictions.
     @BaseService.needs_service('HackerGroupService')
     def get_hackers_participants_gruped_list(self, event_id: int,
                                              data: BaseToken):
