@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 
 # from services.mail import send_registration_confirmation_email
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
+from src.error import AuthenticationException
 from src.impl.LleidaHacker.schema import LleidaHackerCreate
 from src.impl.LleidaHacker.schema import LleidaHackerGet
 from src.impl.LleidaHacker.schema import LleidaHackerGetAll
@@ -11,7 +12,7 @@ from src.impl.LleidaHacker.schema import LleidaHackerUpdate
 from src.impl.LleidaHacker.service import LleidaHackerService
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
-from src.utils import UserType
+from src.utils.UserType import UserType
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
 
@@ -24,10 +25,10 @@ lleidahacker_service = LleidaHackerService()
 mail_client = MailClient()
 
 @router.post("/signup")
-def signup(payload: LleidaHackerCreate, data: BaseToken = Depends(JWTBearer())):
-   if data.check([UserType.LLEIDAHACKER]) is False:
-       raise Exception("Unauthorized")
-   
+def signup(payload: LleidaHackerCreate, token: BaseToken = Depends(JWTBearer())):
+   if not token.check([UserType.LLEIDAHACKER]):
+       raise AuthenticationException("Not authorized")
+
    new_lleidahacker = lleidahacker_service.add_lleidahacker(payload)
    access_token = AccesToken(new_lleidahacker).user_set()
    refresh_token = RefreshToken(new_lleidahacker).user_set()
