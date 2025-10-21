@@ -578,17 +578,13 @@ class EventService(BaseService):
         rejected_hackers_ids = [h.id for h in event.rejected_hackers]
 
         # List hackers and add status as pending, accepted or rejected.
-        output_data = []
-
         participants_list = [
             get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids,
                             rejected_hackers_ids)
             for hacker in registered_hackers
         ]
-
-        output_data.append(participants_list)
         # Combine group and nogroup data into a dictionary
-        return {"participants": output_data}
+        return {"participants": participants_list}
 
     ##Esto retorna 2 listas, de la gente que va sola y de la que va en grupos. Tendran el status y el has restrictions.
     @BaseService.needs_service('HackerGroupService')
