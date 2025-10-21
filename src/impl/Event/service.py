@@ -614,9 +614,8 @@ class EventService(BaseService):
         # List hackers and add status as pending, accepted or rejected.
         output_data = []
         non_group_hackers_ids = subtract_lists(
-            subtract_lists(
-                pending_hackers_ids + accepted_hackers_ids +
-                rejected_hackers_ids, group_users), [])
+            pending_hackers_ids + accepted_hackers_ids +
+            rejected_hackers_ids, group_users)
         
         non_group_hackers = [hacker for hacker in registered_hackers if hacker.id in non_group_hackers_ids]
 
