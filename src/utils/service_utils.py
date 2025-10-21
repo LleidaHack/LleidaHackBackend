@@ -59,3 +59,59 @@ def generate_user_code(length=20):
 
 def subtract_lists(list1, list2):
     return [item for item in list1 if item not in list2]
+
+
+def get_hacker_status(hacker_id, pending_hackers_ids, accepted_hackers_ids,
+                      rejected_hackers_ids):
+    """
+    Determine the status of a hacker based on their ID and lists of pending, accepted, and rejected hacker IDs.
+
+    Args:
+        hacker_id: The ID of the hacker to check.
+        pending_hackers_ids: List of IDs for hackers with pending status.
+        accepted_hackers_ids: List of IDs for hackers with accepted status.
+        rejected_hackers_ids: List of IDs for hackers with rejected status.
+
+    Returns:
+        A string representing the hacker's status ("pending", "accepted", "rejected"), or None if the ID is not found in any list.
+    """
+    if hacker_id in pending_hackers_ids:
+        return "pending"
+    elif hacker_id in accepted_hackers_ids:
+        return "accepted"
+    elif hacker_id in rejected_hackers_ids:
+        return "rejected"
+    return None
+
+
+attribute_hacker_list = [
+    "id",
+    "name",
+    "email",
+    "birthdate",
+    "address",
+    "food_restrictions",
+    "shirt_size",
+]
+
+def get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids):
+    """
+    Generate a dictionary containing hacker attributes and their status.
+
+    Args:
+        hacker: The hacker object.
+        pending_hackers_ids: List of IDs for pending hackers.
+        accepted_hackers_ids: List of IDs for accepted hackers.
+        rejected_hackers_ids: List of IDs for rejected hackers.
+
+    Returns:
+        A dictionary with hacker attributes and their status.
+    """
+    hacker_info = {
+        attr: getattr(hacker, attr)
+        for attr in attribute_hacker_list
+    }
+    hacker_info["status"] = get_hacker_status(
+        hacker.id, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids
+    )
+    return hacker_info
