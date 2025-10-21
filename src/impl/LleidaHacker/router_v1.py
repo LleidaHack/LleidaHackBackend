@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 
 # from services.mail import send_registration_confirmation_email
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
-from src.error import AuthenticationException
+from src.error.AuthenticationException import AuthenticationException
 from src.impl.LleidaHacker.schema import LleidaHackerCreate
 from src.impl.LleidaHacker.schema import LleidaHackerGet
 from src.impl.LleidaHacker.schema import LleidaHackerGetAll
