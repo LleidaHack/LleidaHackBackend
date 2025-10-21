@@ -595,7 +595,7 @@ class EventService(BaseService):
 
     ## This returns 2 lists: people going alone and people in groups. They will have status and food restrictions.
     @BaseService.needs_service("HackerGroupService")
-    def get_hackers_participants_gruped_list(self, event_id: int, data: BaseToken):
+    def get_hackers_participants_grouped_list(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         # Extract hacker IDs from registered_hackers

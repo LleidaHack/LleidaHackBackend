@@ -346,14 +346,14 @@ def get_pending_hackers_gruped(event_id: int, token: BaseToken = Depends(JWTBear
     return event_service.get_pending_hackers_gruped(event_id, token)
 
 
-@router.get("/{event_id}/hackers_participants_gruped_list")
-def get_hackers_participants_gruped_list(event_id: int,
+@router.get("/{event_id}/hackers_participants_grouped_list")
+def get_hackers_participants_grouped_list(event_id: int,
                                          token: BaseToken = Depends(
                                              JWTBearer())):
     """
     Get a grouped list of hacker participants for an event
     """
-    return event_service.get_hackers_participants_gruped_list(event_id, token)
+    return event_service.get_hackers_participants_grouped_list(event_id, token)
 
 
 @router.get("/{event_id}/hackers_participants_list")
