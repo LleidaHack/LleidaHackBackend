@@ -1,25 +1,29 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from __future__ import annotations
+
+from typing import List, TYPE_CHECKING
+from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.utils.Base.BaseModel import BaseModel
+
+if TYPE_CHECKING:
+    from src.impl.Hacker.model import Hacker
 
 
 class HackerMeal(BaseModel):
     __tablename__ = "hacker_meal"
-    user_id = Column(Integer,
-                     ForeignKey("hacker.user_id"),
-                     primary_key=True,
-                     index=True)
-    meal_id = Column(Integer,
-                     ForeignKey("meal.id"),
-                     primary_key=True,
-                     index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("hacker.user_id"), primary_key=True, index=True
+    )
+    meal_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("meal.id"), primary_key=True, index=True
+    )
 
 
 class Meal(BaseModel):
-    __tablename__ = 'meal'
-    id: int = Column(Integer, primary_key=True, index=True)
-    event_id: int = Column(Integer, ForeignKey('event.id'), index=True)
-    name: str = Column(String)
-    description: str = Column(String)
-    users = relationship('Hacker', secondary='hacker_meal')
+    __tablename__ = "meal"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), index=True)
+    name: Mapped[str] = mapped_column(String)
+    description: Mapped[str] = mapped_column(String)
+    users: Mapped[List["Hacker"]] = relationship("Hacker", secondary="hacker_meal")

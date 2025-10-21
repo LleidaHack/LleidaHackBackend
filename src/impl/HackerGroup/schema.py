@@ -1,6 +1,5 @@
 from typing import Optional, List
 
-from pydantic import ConfigDict
 
 from src.utils.Base.BaseSchema import BaseSchema
 
