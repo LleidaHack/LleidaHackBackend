@@ -8,6 +8,7 @@ class InternalTemplate(Enum):
 
     EVENT_SLACK_INVITE = "event_slack_invite"
     EVENT_REGISTRATION_REMINDER = "event_registration_reminder"
+    EVENT_CONFIRMATION_REMINDER = "event_confirmation_reminder"
 
     EVENT_HACKER_REGISTERED = "event_hacker_registered"
     EVENT_HACKER_ACCEPTED = "event_hacker_accepted"

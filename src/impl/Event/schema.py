@@ -118,3 +118,7 @@ class HackerEventRegistrationUpdate(BaseSchema):
     location: Optional[str] = None
     how_did_you_meet_us: Optional[str] = None
     wants_credit: Optional[bool] = False
+
+
+class SlackInviteRequest(BaseSchema):
+    slack_url: str

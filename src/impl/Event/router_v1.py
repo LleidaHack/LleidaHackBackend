@@ -3,13 +3,13 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends
 
-from src.configuration.Settings import settings
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet
 from src.impl.Event.schema import (
     EventCreate,
     HackerEventRegistration,
     HackerEventRegistrationUpdate,
+    SlackInviteRequest,
 )
 from src.impl.Event.schema import EventGet
 from src.impl.Event.schema import EventGetAll
@@ -212,7 +212,7 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
     Confirm assistance of a hacker to an event
     """
     event_service.confirm_assistance(token)
-    #redirect to settings.others.front_url
+    # redirect to settings.others.front_url
     return {"success": True}
 
 
@@ -347,9 +347,9 @@ def get_pending_hackers_gruped(event_id: int, token: BaseToken = Depends(JWTBear
 
 
 @router.get("/{event_id}/hackers_participants_grouped_list")
-def get_hackers_participants_grouped_list(event_id: int,
-                                         token: BaseToken = Depends(
-                                             JWTBearer())):
+def get_hackers_participants_grouped_list(
+    event_id: int, token: BaseToken = Depends(JWTBearer())
+):
     """
     Get a grouped list of hacker participants for an event
     """
@@ -357,8 +357,9 @@ def get_hackers_participants_grouped_list(event_id: int,
 
 
 @router.get("/{event_id}/hackers_participants_list")
-def get_hackers_participants_list(event_id: int,
-                                  token: BaseToken = Depends(JWTBearer())):
+def get_hackers_participants_list(
+    event_id: int, token: BaseToken = Depends(JWTBearer())
+):
     """
     Get a list of hacker participants for an event
     """
@@ -383,6 +384,26 @@ def resend_accept_mail(
 def send_slack_mail(event_id: int, token: BaseToken = Depends(JWTBearer())):
     event_service.send_slack_mail(event_id, token)
     return {"success": True}
+
+
+@router.post("/{event_id}/send_slack_invite/")
+def send_slack_invite(
+    event_id: int, payload: SlackInviteRequest, token: BaseToken = Depends(JWTBearer())
+):
+    """
+    Send Slack invitation to all accepted hackers of an event
+    """
+    result = event_service.send_slack_invite(event_id, payload.slack_url, token)
+    return {"success": True, "sent": result["sent"]}
+
+
+@router.post("/{event_id}/send_confirmation_reminder/")
+def send_confirmation_reminder(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """
+    Send confirmation reminder to accepted hackers who haven't confirmed their attendance
+    """
+    result = event_service.send_confirmation_reminder(event_id, token)
+    return {"success": True, "sent": result["sent"]}
 
 
 # @router.post("/{event_id}/send_remember")

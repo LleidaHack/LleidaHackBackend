@@ -997,3 +997,80 @@ class EventService(BaseService):
             )
 
         db.session.commit()
+
+    @BaseService.needs_service(MailClient)
+    def send_confirmation_reminder(self, event_id: int, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        if event.archived:
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first"
+            )
+
+        # Get accepted hackers who haven't confirmed yet
+        hackers = event.accepted_hackers
+        unconfirmed_hackers = []
+
+        for hacker in hackers:
+            hacker_registration = (
+                db.session.query(HackerRegistration)
+                .filter(
+                    HackerRegistration.user_id == hacker.id,
+                    HackerRegistration.event_id == event.id,
+                )
+                .first()
+            )
+            if hacker_registration and not hacker_registration.confirmed_assistance:
+                unconfirmed_hackers.append((hacker, hacker_registration))
+
+        # Send reminder emails to unconfirmed hackers
+        for hacker, hacker_registration in unconfirmed_hackers:
+            token = hacker_registration.confirm_assistance_token
+            if not token:
+                # Generate new token if one doesn't exist
+                token = AssistenceToken(hacker, event.id).to_token()
+                hacker_registration.confirm_assistance_token = token
+
+            self.mail_client.create_mail(
+                MailCreate(
+                    template_id=self.mail_client.get_internall_template_id(
+                        InternalTemplate.EVENT_CONFIRMATION_REMINDER
+                    ),
+                    subject=f"Reminder: Confirm your attendance to {event.name}",
+                    receiver_id=str(hacker.id),
+                    receiver_mail=str(hacker.email),
+                    fields=f"{hacker.name},{event.name},{token}",
+                )
+            )
+
+        db.session.commit()
+        return {"sent": len(unconfirmed_hackers)}
+
+    @BaseService.needs_service(MailClient)
+    def send_slack_invite(self, event_id: int, slack_url: str, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        if event.archived:
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first"
+            )
+
+        hackers = event.accepted_hackers
+
+        for hacker in hackers:
+            self.mail_client.create_mail(
+                MailCreate(
+                    template_id=self.mail_client.get_internall_template_id(
+                        InternalTemplate.EVENT_SLACK_INVITE
+                    ),
+                    subject=f"{event.name} Slack invitation",
+                    receiver_id=str(hacker.id),
+                    receiver_mail=str(hacker.email),
+                    fields=slack_url,
+                )
+            )
+
+        db.session.commit()
+        return {"sent": len(hackers)}
