@@ -984,7 +984,7 @@ class EventService(BaseService):
         hackers = event.accepted_hackers
 
         for hacker in hackers:
-            self.mail_client.create_mail(
+            mail = self.mail_client.create_mail(
                 MailCreate(
                     template_id=self.mail_client.get_internall_template_id(
                         InternalTemplate.EVENT_SLACK_INVITE
@@ -995,6 +995,8 @@ class EventService(BaseService):
                     fields=slackUrl,
                 )
             )
+            # send the created mail
+            self.mail_client.send_mail_by_id(mail.id)
 
         db.session.commit()
 
