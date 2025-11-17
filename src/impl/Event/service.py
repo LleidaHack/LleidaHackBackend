@@ -997,3 +997,47 @@ class EventService(BaseService):
             )
 
         db.session.commit()
+
+    @BaseService.needs_service(MailClient)
+    def send_reminder_mails(
+        self,
+        event_id: int,
+        data: BaseToken,
+    ):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        if event.archived:
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first"
+            )
+
+        hackers = event.accepted_hackers
+
+        for hacker in hackers:
+            reg = (
+                db.session.query(HackerRegistration)
+                .filter(
+                    HackerRegistration.user_id == hacker.id,
+                    HackerRegistration.event_id == event.id,
+                )
+                .first()
+            )
+            # send reminder only if registration exists and assistance not confirmed
+            if reg is None or reg.confirmed_assistance:
+                continue
+
+            mail = self.mail_client.create_mail(
+                MailCreate(
+                    template_id=self.mail_client.get_internall_template_id(
+                        InternalTemplate.EVENT_HACKER_REMINDER
+                    ),
+                    subject=f"{event.name} - Recordatori de confirmació d'assistència",
+                    receiver_id=str(hacker.id),
+                    receiver_mail=str(hacker.email),
+                    fields=f"{hacker.name},{event.name},{event.start_date.strftime('%d/%m/%Y %H:%M')}",
+                )
+            )
+            # send the created mail
+            self.mail_client.send_mail_by_id(mail.id)
+        db.session.commit()

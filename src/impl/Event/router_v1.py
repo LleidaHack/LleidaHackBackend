@@ -379,9 +379,20 @@ def resend_accept_mail(
     return {"success": True}
 
 
-@router.get("/{event_id}/send_slack_mail/")
+@router.post("/{event_id}/send_slack_mail/")
 def send_slack_mail(event_id: int, slackUrl: str, token: BaseToken = Depends(JWTBearer())):
     event_service.send_slack_mail(event_id, slackUrl, token)
+    return {"success": True}
+
+@router.post("/{event_id}/send_reminder_mails/")
+def send_reminder_mails(
+    event_id: int,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    """
+    Send reminder mails to all accepted hackers of an event
+    """
+    event_service.send_reminder_mails(event_id, token)
     return {"success": True}
 
 
