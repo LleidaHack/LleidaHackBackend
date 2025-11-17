@@ -1038,8 +1038,7 @@ class EventService(BaseService):
             except Exception:
                 days_left = 0
 
-            # fields expected: name, days_left, token, event_name
-            fields = f"{hacker.name},{days_left},{reg.confirm_assistance_token},{event.name}"
+            fields = f"{hacker.name},{event.name},{days_left},{reg.confirm_assistance_token}"
 
             mail = self.mail_client.create_mail(
                 MailCreate(
