@@ -972,7 +972,7 @@ class EventService(BaseService):
         db.session.commit()
 
     @BaseService.needs_service(MailClient)
-    def send_slack_mail(self, event_id: int, data: BaseToken):
+    def send_slack_mail(self, event_id: int, slackUrl: str, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
@@ -992,7 +992,7 @@ class EventService(BaseService):
                     subject="HackEPS2024 slack invitation",
                     receiver_id=str(hacker.id),
                     receiver_mail=str(hacker.email),
-                    fields="https://join.slack.com/t/hackeps2024/shared_invite/zt-2usc9qny9-z3NkybNlCXFAI9m0Cl~FsQ",
+                    fields=slackUrl,
                 )
             )
 

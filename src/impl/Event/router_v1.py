@@ -380,8 +380,8 @@ def resend_accept_mail(
 
 
 @router.get("/{event_id}/send_slack_mail/")
-def send_slack_mail(event_id: int, token: BaseToken = Depends(JWTBearer())):
-    event_service.send_slack_mail(event_id, token)
+def send_slack_mail(event_id: int, slackUrl: str, token: BaseToken = Depends(JWTBearer())):
+    event_service.send_slack_mail(event_id, slackUrl, token)
     return {"success": True}
 
 
