@@ -1017,42 +1017,48 @@ class EventService(BaseService):
         hackers = event.accepted_hackers
 
         for hacker in hackers:
-            reg = (
-                db.session.query(HackerRegistration)
-                .filter(
-                    HackerRegistration.user_id == hacker.id,
-                    HackerRegistration.event_id == event.id,
-                )
-                .first()
-            )
-            # send reminder only if registration exists and assistance not confirmed
-            if reg is None or reg.confirmed_assistance:
-                continue
-
-            # ensure there is a confirmation token for this registration
-            if not reg.confirm_assistance_token:
-                reg.confirm_assistance_token = AssistenceToken(hacker, event.id).to_token()
-
-            # compute days left until event (rounded down)
             try:
-                delta = event.start_date - datetime.now()
-                days_left = max(0, int(delta.total_seconds() // 86400))
-            except Exception:
-                days_left = 0
-
-            fields = f"{hacker.name},{event.name},{days_left},{reg.confirm_assistance_token}"
-
-            mail = self.mail_client.create_mail(
-                MailCreate(
-                    template_id=self.mail_client.get_internall_template_id(
-                        InternalTemplate.EVENT_HACKER_REMINDER
-                    ),
-                    subject=f"{event.name} - Recordatori de confirmació d'assistència",
-                    receiver_id=str(hacker.id),
-                    receiver_mail=str(hacker.email),
-                    fields=fields,
+                reg = (
+                    db.session.query(HackerRegistration)
+                    .filter(
+                        HackerRegistration.user_id == hacker.id,
+                        HackerRegistration.event_id == event.id,
+                    )
+                    .first()
                 )
-            )
-            # send the created mail
-            self.mail_client.send_mail_by_id(mail.id)
-        db.session.commit()
+                # send reminder only if registration exists and assistance not confirmed
+                if reg is None or reg.confirmed_assistance:
+                    continue
+
+                # ensure there is a confirmation token for this registration
+                if not reg.confirm_assistance_token:
+                    reg.confirm_assistance_token = AssistenceToken(hacker, event.id).to_token()
+
+                # compute days left until event (rounded down)
+                try:
+                    delta = event.start_date - datetime.now()
+                    days_left = max(0, int(delta.total_seconds() // 86400))
+                except Exception:
+                    days_left = 0
+
+                fields = f"{hacker.name},{event.name},{days_left},{reg.confirm_assistance_token}"
+
+                mail = self.mail_client.create_mail(
+                    MailCreate(
+                        template_id=self.mail_client.get_internall_template_id(
+                            InternalTemplate.EVENT_HACKER_REMINDER
+                        ),
+                        subject=f"{event.name} - Recordatori de confirmació d'assistència",
+                        receiver_id=str(hacker.id),
+                        receiver_mail=str(hacker.email),
+                        fields=fields,
+                    )
+                )
+                # send the created mail
+                self.mail_client.send_mail_by_id(mail.id)
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                # Optionally log the error here, e.g.:
+                # print(f"Failed to send reminder to hacker {hacker.id}: {e}")
+                continue
