@@ -1027,6 +1027,20 @@ class EventService(BaseService):
             if reg is None or reg.confirmed_assistance:
                 continue
 
+            # ensure there is a confirmation token for this registration
+            if not reg.confirm_assistance_token:
+                reg.confirm_assistance_token = AssistenceToken(hacker, event.id).to_token()
+
+            # compute days left until event (rounded down)
+            try:
+                delta = event.start_date - datetime.now()
+                days_left = max(0, int(delta.total_seconds() // 86400))
+            except Exception:
+                days_left = 0
+
+            # fields expected: name, days_left, token, event_name
+            fields = f"{hacker.name},{days_left},{reg.confirm_assistance_token},{event.name}"
+
             mail = self.mail_client.create_mail(
                 MailCreate(
                     template_id=self.mail_client.get_internall_template_id(
@@ -1035,7 +1049,7 @@ class EventService(BaseService):
                     subject=f"{event.name} - Recordatori de confirmació d'assistència",
                     receiver_id=str(hacker.id),
                     receiver_mail=str(hacker.email),
-                    fields=f"{hacker.name},{event.name},{event.start_date.strftime('%d/%m/%Y %H:%M')}",
+                    fields=fields,
                 )
             )
             # send the created mail
