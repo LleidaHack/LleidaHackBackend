@@ -972,7 +972,7 @@ class EventService(BaseService):
         db.session.commit()
 
     @BaseService.needs_service(MailClient)
-    def send_slack_mail(self, event_id: int, data: BaseToken):
+    def send_slack_mail(self, event_id: int, slackUrl: str, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
@@ -984,7 +984,7 @@ class EventService(BaseService):
         hackers = event.accepted_hackers
 
         for hacker in hackers:
-            self.mail_client.create_mail(
+            mail = self.mail_client.create_mail(
                 MailCreate(
                     template_id=self.mail_client.get_internall_template_id(
                         InternalTemplate.EVENT_SLACK_INVITE
@@ -992,8 +992,73 @@ class EventService(BaseService):
                     subject="HackEPS2024 slack invitation",
                     receiver_id=str(hacker.id),
                     receiver_mail=str(hacker.email),
-                    fields="https://join.slack.com/t/hackeps2024/shared_invite/zt-2usc9qny9-z3NkybNlCXFAI9m0Cl~FsQ",
+                    fields=slackUrl,
                 )
             )
+            # send the created mail
+            self.mail_client.send_mail_by_id(mail.id)
 
         db.session.commit()
+
+    @BaseService.needs_service(MailClient)
+    def send_reminder_mails(
+        self,
+        event_id: int,
+        data: BaseToken,
+    ):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        if event.archived:
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first"
+            )
+
+        hackers = event.accepted_hackers
+
+        for hacker in hackers:
+            try:
+                reg = (
+                    db.session.query(HackerRegistration)
+                    .filter(
+                        HackerRegistration.user_id == hacker.id,
+                        HackerRegistration.event_id == event.id,
+                    )
+                    .first()
+                )
+                # send reminder only if registration exists and assistance not confirmed
+                if reg is None or reg.confirmed_assistance:
+                    continue
+
+                # ensure there is a confirmation token for this registration
+                if not reg.confirm_assistance_token:
+                    reg.confirm_assistance_token = AssistenceToken(hacker, event.id).to_token()
+
+                # compute days left until event (rounded down)
+                try:
+                    delta = event.start_date - datetime.now()
+                    days_left = max(0, int(delta.total_seconds() // 86400))
+                except Exception:
+                    days_left = 0
+
+                fields = f"{hacker.name},{event.name},{days_left},{reg.confirm_assistance_token}"
+
+                mail = self.mail_client.create_mail(
+                    MailCreate(
+                        template_id=self.mail_client.get_internall_template_id(
+                            InternalTemplate.EVENT_HACKER_REMINDER
+                        ),
+                        subject=f"{event.name} - Recordatori de confirmació d'assistència",
+                        receiver_id=str(hacker.id),
+                        receiver_mail=str(hacker.email),
+                        fields=fields,
+                    )
+                )
+                # send the created mail
+                self.mail_client.send_mail_by_id(mail.id)
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                # Optionally log the error here, e.g.:
+                # print(f"Failed to send reminder to hacker {hacker.id}: {e}")
+                continue
