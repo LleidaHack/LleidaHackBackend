@@ -1,8 +1,7 @@
 from datetime import datetime
-import logging
 from typing import List, Union
 
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 
 from src.configuration.Settings import settings
 from src.error.AuthenticationException import AuthenticationException
@@ -395,11 +394,21 @@ def send_slack_mail(
     """
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
+    # guard: don't schedule if there's already a sending job for this event
+    if event_service.is_sending(event_id):
+        raise HTTPException(status_code=409, detail="Sending already in progress for this event")
 
     # schedule background task to avoid request timeout
-    logging.getLogger(__name__).info("Scheduling send_slack_mail_background for event_id=%s delay=%s", event_id, delay)
     background_tasks.add_task(event_service.send_slack_mail_background, event_id, slackUrl, delay)
     return {"success": True, "scheduled": True}
+
+
+@router.get("/{event_id}/send_progress")
+def get_send_progress(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """Return send progress for background jobs for an event."""
+    if not token.check([UserType.LLEIDAHACKER]):
+        raise AuthenticationException("Not authorized")
+    return event_service.get_send_progress(event_id)
 
 @router.post("/{event_id}/send_reminder_mails/")
 def send_reminder_mails(
@@ -417,7 +426,6 @@ def send_reminder_mails(
         raise AuthenticationException("Not authorized")
 
     # schedule background task to avoid request timeout
-    logging.getLogger(__name__).info("Scheduling send_reminder_mails_background for event_id=%s delay=%s", event_id, delay)
     background_tasks.add_task(event_service.send_reminder_mails_background, event_id, delay)
     return {"success": True, "scheduled": True}
 

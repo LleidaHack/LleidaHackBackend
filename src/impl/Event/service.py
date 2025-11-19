@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import time
 import logging
+import threading
 from src.configuration.Settings import settings
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 from collections import Counter
@@ -44,6 +45,65 @@ class EventService(BaseService):
     hacker_service: HackerService = None
     company_service: CompanyService = None
     mail_client: MailClient = None
+    # background sending job tracking: event_id -> job info
+    _sending_jobs = {}
+    _sending_jobs_lock = threading.Lock()
+
+    def _start_job(self, event_id: int, job_type: str, total: int):
+        with self._sending_jobs_lock:
+            self._sending_jobs[event_id] = {
+                "type": job_type,
+                "start": datetime.now(),
+                "finish": None,
+                "total": int(total) if total is not None else 0,
+                "sent": 0,
+                "status": "running",
+            }
+
+    def _increment_sent(self, event_id: int):
+        with self._sending_jobs_lock:
+            job = self._sending_jobs.get(event_id)
+            if job and job.get("status") == "running":
+                job["sent"] = job.get("sent", 0) + 1
+
+    def _finish_job(self, event_id: int):
+        with self._sending_jobs_lock:
+            job = self._sending_jobs.get(event_id)
+            if job:
+                job["status"] = "finished"
+                job["finish"] = datetime.now()
+
+    def is_sending(self, event_id: int) -> bool:
+        with self._sending_jobs_lock:
+            job = self._sending_jobs.get(event_id)
+            return bool(job and job.get("status") == "running")
+
+    def get_send_progress(self, event_id: int):
+        with self._sending_jobs_lock:
+            job = self._sending_jobs.get(event_id)
+            if not job:
+                return {"running": False}
+            # copy minimal fields to compute without lock
+            start = job.get("start")
+            sent = job.get("sent", 0)
+            total = job.get("total", 0)
+            status = job.get("status")
+            finish = job.get("finish")
+        elapsed = (datetime.now() - start).total_seconds() if start else 0
+        estimated_remaining = None
+        if sent > 0 and total > sent:
+            avg = elapsed / sent
+            estimated_remaining = int(max(0, avg * (total - sent)))
+
+        return {
+            "running": status == "running",
+            "sent": int(sent),
+            "total": int(total),
+            "elapsed_seconds": int(elapsed),
+            "estimated_remaining_seconds": estimated_remaining,
+            "started_at": start.isoformat() if start else None,
+            "finished_at": finish.isoformat() if finish else None,
+        }
 
     def get_all(self):
         return db.session.query(Event).filter(Event.archived.is_(False)).all()
@@ -999,9 +1059,8 @@ class EventService(BaseService):
                     fields=slackUrl,
                 )
             )
-            # send the created mail and log result
+            # send the created mail
             resp = self.mail_client.send_mail_by_id(mail.id)
-            logging.getLogger(__name__).info("Sent slack invite mail id=%s to=%s status=%s", getattr(mail, "id", None), hacker.email, getattr(resp, "status_code", None))
 
         db.session.commit()
 
@@ -1020,7 +1079,13 @@ class EventService(BaseService):
                 return
 
             hackers = event.accepted_hackers
-            logging.getLogger(__name__).info("[bg] send_slack_mail_background starting for event_id=%s recipients=%s", event_id, len(hackers) if hackers is not None else 0)
+            total = len(hackers) if hackers is not None else 0
+            # start tracking job
+            try:
+                self._start_job(event_id, "slack", total)
+            except Exception:
+                # best-effort tracking, don't fail send if tracking setup fails
+                pass
 
             for hacker in hackers:
                 try:
@@ -1036,14 +1101,22 @@ class EventService(BaseService):
                         )
                     )
                     resp = self.mail_client.send_mail_by_id(mail.id)
-                    logging.getLogger(__name__).info("[bg] Sent slack invite mail id=%s to=%s status=%s", getattr(mail, "id", None), hacker.email, getattr(resp, "status_code", None))
+                    # increment progress
+                    try:
+                        self._increment_sent(event_id)
+                    except Exception:
+                        pass
                     session.commit()
                     if delay and delay > 0:
                         time.sleep(delay)
                 except Exception:
-                    logging.getLogger(__name__).exception("[bg] Failed to send slack invite to hacker_id=%s email=%s", getattr(hacker, 'id', None), getattr(hacker, 'email', None))
                     session.rollback()
                     continue
+            # finish tracking
+            try:
+                self._finish_job(event_id)
+            except Exception:
+                pass
         finally:
             session.close()
 
@@ -1102,9 +1175,8 @@ class EventService(BaseService):
                         fields=fields,
                     )
                 )
-                # send the created mail and log result
+                # send the created mail
                 resp = self.mail_client.send_mail_by_id(mail.id)
-                logging.getLogger(__name__).info("Sent reminder mail id=%s to=%s status=%s", getattr(mail, "id", None), hacker.email, getattr(resp, "status_code", None))
                 db.session.commit()
             except Exception as e:
                 db.session.rollback()
@@ -1126,23 +1198,30 @@ class EventService(BaseService):
             if event is None or event.archived:
                 return
 
+            # build list of eligible (hacker, reg) to have accurate total
             hackers = event.accepted_hackers
-
+            eligible = []
             for hacker in hackers:
-                try:
-                    reg = (
-                        session.query(HackerRegistration)
-                        .filter(
-                            HackerRegistration.user_id == hacker.id,
-                            HackerRegistration.event_id == event.id,
-                        )
-                        .first()
+                reg = (
+                    session.query(HackerRegistration)
+                    .filter(
+                        HackerRegistration.user_id == hacker.id,
+                        HackerRegistration.event_id == event.id,
                     )
+                    .first()
+                )
+                if reg is None or reg.confirmed_assistance:
+                    continue
+                eligible.append((hacker, reg))
 
-                    # send reminder only if registration exists and assistance not confirmed
-                    if reg is None or reg.confirmed_assistance:
-                        continue
+            total = len(eligible)
+            try:
+                self._start_job(event_id, "reminder", total)
+            except Exception:
+                pass
 
+            for hacker, reg in eligible:
+                try:
                     # ensure there is a confirmation token for this registration
                     if not reg.confirm_assistance_token:
                         reg.confirm_assistance_token = AssistenceToken(hacker, event.id).to_token()
@@ -1168,13 +1247,19 @@ class EventService(BaseService):
                     )
 
                     resp = self.mail_client.send_mail_by_id(mail.id)
-                    logging.getLogger(__name__).info("[bg] Sent reminder mail id=%s to=%s status=%s", getattr(mail, "id", None), hacker.email, getattr(resp, "status_code", None))
+                    try:
+                        self._increment_sent(event_id)
+                    except Exception:
+                        pass
                     session.commit()
                     if delay and delay > 0:
                         time.sleep(delay)
                 except Exception:
-                    logging.getLogger(__name__).exception("[bg] Failed to send reminder to hacker_id=%s email=%s", getattr(hacker, 'id', None), getattr(hacker, 'email', None))
                     session.rollback()
                     continue
+            try:
+                self._finish_job(event_id)
+            except Exception:
+                pass
         finally:
             session.close()
