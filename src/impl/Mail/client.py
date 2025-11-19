@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from typing import Any
+import logging
 from generated_src.lleida_hack_mail_api_client.api.health import health_check
 from generated_src.lleida_hack_mail_api_client.api.mail import (
     mail_create,
@@ -11,6 +12,8 @@ from src.error.MailClientException import MailClientException
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
 from src.configuration.Settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 def initialized(func):
@@ -40,7 +43,7 @@ class MailClient(BaseClient):
             self._initialized = True
         except Exception:
             self._initialized = False
-            print("MailClient not initialized")
+            logger.warning("MailClient not initialized")
             # raise MailClientException('MailClient is not available')
 
     def check_health(self):
@@ -59,12 +62,22 @@ class MailClient(BaseClient):
         r = mail_create.sync(client=self.client, body=mail)
         if r is None:
             raise Exception(f"error creating {mail}")
+        try:
+            mail_id = getattr(r, "id", None)
+            logger.info("Mail created id=%s receiver=%s subject=%s", mail_id, mail.receiver_mail, mail.subject)
+        except Exception:
+            logger.debug("Mail created (unable to log details)")
         return r
 
     @initialized
     def send_mail_by_id(self, id: int):
-        print('estem arrivant al send nanu')
+        logger.info("Sending mail id=%s", id)
         r = mail_send_by_id.sync_detailed(id, client=self.client)
+        status = getattr(r, "status_code", None)
+        try:
+            logger.info("Mail send result id=%s status=%s", id, status)
+        except Exception:
+            logger.debug("Mail send completed id=%s", id)
         return r
 
     def get_template_by_name(self, name):
