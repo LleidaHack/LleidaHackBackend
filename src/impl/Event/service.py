@@ -1005,6 +1005,7 @@ class EventService(BaseService):
 
         db.session.commit()
 
+    @BaseService.needs_service(MailClient)
     def send_slack_mail_background(self, event_id: int, slackUrl: str, delay: float = 0.2):
         """
         Background-safe sender: creates its own DB session and sends slack invite mails
@@ -1111,6 +1112,7 @@ class EventService(BaseService):
                 # print(f"Failed to send reminder to hacker {hacker.id}: {e}")
                 continue
 
+    @BaseService.needs_service(MailClient)
     def send_reminder_mails_background(self, event_id: int, delay: float = 0.0):
         """
         Background-safe sender: creates its own DB session and sends reminder mails
