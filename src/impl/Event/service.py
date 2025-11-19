@@ -1,6 +1,9 @@
 from fastapi_sqlalchemy import db
-from sqlalchemy import desc
+from sqlalchemy import desc, create_engine
+from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+import time
+from src.configuration.Settings import settings
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 from collections import Counter
 
@@ -989,7 +992,7 @@ class EventService(BaseService):
                     template_id=self.mail_client.get_internall_template_id(
                         InternalTemplate.EVENT_SLACK_INVITE
                     ),
-                    subject="HackEPS2024 slack invitation",
+                    subject="HackEPS2025 slack invitation",
                     receiver_id=str(hacker.id),
                     receiver_mail=str(hacker.email),
                     fields=slackUrl,
@@ -999,6 +1002,44 @@ class EventService(BaseService):
             self.mail_client.send_mail_by_id(mail.id)
 
         db.session.commit()
+
+    def send_slack_mail_background(self, event_id: int, slackUrl: str, delay: float = 0.2):
+        """
+        Background-safe sender: creates its own DB session and sends slack invite mails
+        to accepted hackers with an optional `delay` between sends to avoid throttling.
+        """
+        engine = create_engine(settings.database.url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        session = SessionLocal()
+        try:
+            event = session.query(Event).filter(Event.id == event_id).first()
+            if event is None or event.archived:
+                return
+
+            hackers = event.accepted_hackers
+
+            for hacker in hackers:
+                try:
+                    mail = self.mail_client.create_mail(
+                        MailCreate(
+                            template_id=self.mail_client.get_internall_template_id(
+                                InternalTemplate.EVENT_SLACK_INVITE
+                            ),
+                            subject="HackEPS2025 slack invitation",
+                            receiver_id=str(hacker.id),
+                            receiver_mail=str(hacker.email),
+                            fields=slackUrl,
+                        )
+                    )
+                    self.mail_client.send_mail_by_id(mail.id)
+                    session.commit()
+                    if delay and delay > 0:
+                        time.sleep(delay)
+                except Exception:
+                    session.rollback()
+                    continue
+        finally:
+            session.close()
 
     @BaseService.needs_service(MailClient)
     def send_reminder_mails(
