@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from typing import List, Union
 
 from fastapi import APIRouter, Depends, BackgroundTasks
@@ -396,6 +397,7 @@ def send_slack_mail(
         raise AuthenticationException("Not authorized")
 
     # schedule background task to avoid request timeout
+    logging.getLogger(__name__).info("Scheduling send_slack_mail_background for event_id=%s delay=%s", event_id, delay)
     background_tasks.add_task(event_service.send_slack_mail_background, event_id, slackUrl, delay)
     return {"success": True, "scheduled": True}
 
@@ -415,6 +417,7 @@ def send_reminder_mails(
         raise AuthenticationException("Not authorized")
 
     # schedule background task to avoid request timeout
+    logging.getLogger(__name__).info("Scheduling send_reminder_mails_background for event_id=%s delay=%s", event_id, delay)
     background_tasks.add_task(event_service.send_reminder_mails_background, event_id, delay)
     return {"success": True, "scheduled": True}
 

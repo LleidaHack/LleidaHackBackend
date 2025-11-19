@@ -1019,6 +1019,7 @@ class EventService(BaseService):
                 return
 
             hackers = event.accepted_hackers
+            logging.getLogger(__name__).info("[bg] send_slack_mail_background starting for event_id=%s recipients=%s", event_id, len(hackers) if hackers is not None else 0)
 
             for hacker in hackers:
                 try:
@@ -1039,6 +1040,7 @@ class EventService(BaseService):
                     if delay and delay > 0:
                         time.sleep(delay)
                 except Exception:
+                    logging.getLogger(__name__).exception("[bg] Failed to send slack invite to hacker_id=%s email=%s", getattr(hacker, 'id', None), getattr(hacker, 'email', None))
                     session.rollback()
                     continue
         finally:
@@ -1169,6 +1171,7 @@ class EventService(BaseService):
                     if delay and delay > 0:
                         time.sleep(delay)
                 except Exception:
+                    logging.getLogger(__name__).exception("[bg] Failed to send reminder to hacker_id=%s email=%s", getattr(hacker, 'id', None), getattr(hacker, 'email', None))
                     session.rollback()
                     continue
         finally:
