@@ -402,13 +402,21 @@ def send_slack_mail(
 @router.post("/{event_id}/send_reminder_mails/")
 def send_reminder_mails(
     event_id: int,
+    background_tasks: BackgroundTasks,
+    delay: float = 0.0,
     token: BaseToken = Depends(JWTBearer()),
 ):
     """
-    Send reminder mails to all accepted hackers of an event
+    Schedule sending reminder mails to all accepted hackers of an event.
+    The endpoint validates permissions and immediately returns while the work
+    continues in background.
     """
-    event_service.send_reminder_mails(event_id, token)
-    return {"success": True}
+    if not token.check([UserType.LLEIDAHACKER]):
+        raise AuthenticationException("Not authorized")
+
+    # schedule background task to avoid request timeout
+    background_tasks.add_task(event_service.send_reminder_mails_background, event_id, delay)
+    return {"success": True, "scheduled": True}
 
 
 # @router.post("/{event_id}/send_remember")

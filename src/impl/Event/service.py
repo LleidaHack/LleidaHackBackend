@@ -3,6 +3,7 @@ from sqlalchemy import desc, create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import time
+import logging
 from src.configuration.Settings import settings
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 from collections import Counter
@@ -992,14 +993,15 @@ class EventService(BaseService):
                     template_id=self.mail_client.get_internall_template_id(
                         InternalTemplate.EVENT_SLACK_INVITE
                     ),
-                    subject="HackEPS2025 slack invitation",
+                    subject="HackEPS2024 slack invitation",
                     receiver_id=str(hacker.id),
                     receiver_mail=str(hacker.email),
                     fields=slackUrl,
                 )
             )
-            # send the created mail
-            self.mail_client.send_mail_by_id(mail.id)
+            # send the created mail and log result
+            resp = self.mail_client.send_mail_by_id(mail.id)
+            logging.getLogger(__name__).info("Sent slack invite mail id=%s to=%s status=%s", getattr(mail, "id", None), hacker.email, getattr(resp, "status_code", None))
 
         db.session.commit()
 
@@ -1031,7 +1033,8 @@ class EventService(BaseService):
                             fields=slackUrl,
                         )
                     )
-                    self.mail_client.send_mail_by_id(mail.id)
+                    resp = self.mail_client.send_mail_by_id(mail.id)
+                    logging.getLogger(__name__).info("[bg] Sent slack invite mail id=%s to=%s status=%s", getattr(mail, "id", None), hacker.email, getattr(resp, "status_code", None))
                     session.commit()
                     if delay and delay > 0:
                         time.sleep(delay)
@@ -1082,7 +1085,8 @@ class EventService(BaseService):
                 except Exception:
                     days_left = 0
 
-                fields = f"{hacker.name},{event.name},{days_left},{reg.confirm_assistance_token}"
+                # fields order: name, days_left, token, event_name
+                fields = f"{hacker.name},{days_left},{reg.confirm_assistance_token},{event.name}"
 
                 mail = self.mail_client.create_mail(
                     MailCreate(
@@ -1095,11 +1099,77 @@ class EventService(BaseService):
                         fields=fields,
                     )
                 )
-                # send the created mail
-                self.mail_client.send_mail_by_id(mail.id)
+                # send the created mail and log result
+                resp = self.mail_client.send_mail_by_id(mail.id)
+                logging.getLogger(__name__).info("Sent reminder mail id=%s to=%s status=%s", getattr(mail, "id", None), hacker.email, getattr(resp, "status_code", None))
                 db.session.commit()
             except Exception as e:
                 db.session.rollback()
                 # Optionally log the error here, e.g.:
                 # print(f"Failed to send reminder to hacker {hacker.id}: {e}")
                 continue
+
+    def send_reminder_mails_background(self, event_id: int, delay: float = 0.0):
+        """
+        Background-safe sender: creates its own DB session and sends reminder mails
+        to accepted hackers. Optional `delay` between sends to avoid throttling.
+        """
+        engine = create_engine(settings.database.url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        session = SessionLocal()
+        try:
+            event = session.query(Event).filter(Event.id == event_id).first()
+            if event is None or event.archived:
+                return
+
+            hackers = event.accepted_hackers
+
+            for hacker in hackers:
+                try:
+                    reg = (
+                        session.query(HackerRegistration)
+                        .filter(
+                            HackerRegistration.user_id == hacker.id,
+                            HackerRegistration.event_id == event.id,
+                        )
+                        .first()
+                    )
+
+                    # send reminder only if registration exists and assistance not confirmed
+                    if reg is None or reg.confirmed_assistance:
+                        continue
+
+                    # ensure there is a confirmation token for this registration
+                    if not reg.confirm_assistance_token:
+                        reg.confirm_assistance_token = AssistenceToken(hacker, event.id).to_token()
+
+                    try:
+                        delta = event.start_date - datetime.now()
+                        days_left = max(0, int(delta.total_seconds() // 86400))
+                    except Exception:
+                        days_left = 0
+
+                    fields = f"{hacker.name},{days_left},{reg.confirm_assistance_token},{event.name}"
+
+                    mail = self.mail_client.create_mail(
+                        MailCreate(
+                            template_id=self.mail_client.get_internall_template_id(
+                                InternalTemplate.EVENT_HACKER_REMINDER
+                            ),
+                            subject=f"{event.name} - Recordatori de confirmació d'assistència",
+                            receiver_id=str(hacker.id),
+                            receiver_mail=str(hacker.email),
+                            fields=fields,
+                        )
+                    )
+
+                    resp = self.mail_client.send_mail_by_id(mail.id)
+                    logging.getLogger(__name__).info("[bg] Sent reminder mail id=%s to=%s status=%s", getattr(mail, "id", None), hacker.email, getattr(resp, "status_code", None))
+                    session.commit()
+                    if delay and delay > 0:
+                        time.sleep(delay)
+                except Exception:
+                    session.rollback()
+                    continue
+        finally:
+            session.close()
