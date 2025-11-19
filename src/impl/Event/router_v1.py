@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Union
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 
 from src.configuration.Settings import settings
 from src.error.AuthenticationException import AuthenticationException
@@ -20,6 +20,7 @@ from src.impl.Meal.schema import MealGet
 from src.utils.JWTBearer import JWTBearer
 from src.utils.service_utils import subtract_lists
 from src.utils.Token import AssistenceToken, BaseToken
+from src.utils.UserType import UserType
 
 # from src.error.NotFoundException import NotFoundException
 
@@ -380,20 +381,53 @@ def resend_accept_mail(
 
 
 @router.post("/{event_id}/send_slack_mail/")
-def send_slack_mail(event_id: int, slackUrl: str, token: BaseToken = Depends(JWTBearer())):
-    event_service.send_slack_mail(event_id, slackUrl, token)
-    return {"success": True}
+def send_slack_mail(
+    event_id: int,
+    slackUrl: str,
+    background_tasks: BackgroundTasks,
+    delay: float = 0.5,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    """
+    Schedule sending slack invite mails in background. The endpoint validates
+    permissions and immediately returns while the work continues in background.
+    """
+    if not token.check([UserType.LLEIDAHACKER]):
+        raise AuthenticationException("Not authorized")
+    # guard: don't schedule if there's already a sending job for this event
+    if event_service.is_sending(event_id):
+        raise HTTPException(status_code=409, detail="Sending already in progress for this event")
+
+    # schedule background task to avoid request timeout
+    background_tasks.add_task(event_service.send_slack_mail_background, event_id, slackUrl, delay)
+    return {"success": True, "scheduled": True}
+
+
+@router.get("/{event_id}/send_progress")
+def get_send_progress(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """Return send progress for background jobs for an event."""
+    if not token.check([UserType.LLEIDAHACKER]):
+        raise AuthenticationException("Not authorized")
+    return event_service.get_send_progress(event_id)
 
 @router.post("/{event_id}/send_reminder_mails/")
 def send_reminder_mails(
     event_id: int,
+    background_tasks: BackgroundTasks,
+    delay: float = 0.0,
     token: BaseToken = Depends(JWTBearer()),
 ):
     """
-    Send reminder mails to all accepted hackers of an event
+    Schedule sending reminder mails to all accepted hackers of an event.
+    The endpoint validates permissions and immediately returns while the work
+    continues in background.
     """
-    event_service.send_reminder_mails(event_id, token)
-    return {"success": True}
+    if not token.check([UserType.LLEIDAHACKER]):
+        raise AuthenticationException("Not authorized")
+
+    # schedule background task to avoid request timeout
+    background_tasks.add_task(event_service.send_reminder_mails_background, event_id, delay)
+    return {"success": True, "scheduled": True}
 
 
 # @router.post("/{event_id}/send_remember")
