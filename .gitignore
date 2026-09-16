@@ -18,3 +18,5 @@ generated_src/**
 .claude/
 .ruff_cache/
 .pytest_cache/
+
+.local-backend.json
