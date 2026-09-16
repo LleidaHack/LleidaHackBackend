@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
 from src.configuration.Settings import settings
+from src import imports  # Register all ORM models before routers load services.
 from App import App
 
 tags_metadata = [

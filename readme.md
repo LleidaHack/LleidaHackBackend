@@ -32,14 +32,14 @@ Notas:
 - Sustituye los secretos de ejemplo por valores aleatorios independientes de al menos 32 caracteres.
 - Redis debe estar disponible: sin él, el backend rechaza temporalmente las peticiones con 503.
 - `DATABASE__URL` es obligatorio en entorno `ENV=main`.
-- Si quieres usar integración, puedes ejecutar con `ENV=integration` y `INTEGRATION_POSTGRES_PASSWORD`.
+- Para integración usa `ENV=integration` y configura también `DATABASE__URL`.
 
 ## 2) Preparar base de datos
 
 Aplica todas las migraciones:
 
 ```bash
-uv run alembic upgrade head
+uv run --env-file .env alembic upgrade head
 ```
 
 ## 3) Ejecutar el backend en local
@@ -53,13 +53,13 @@ uv run python install/local.py
 Modo desarrollo (autoreload), con los servicios ya configurados:
 
 ```bash
-uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uv run --env-file .env uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Modo similar a producción (Gunicorn + Uvicorn workers):
 
 ```bash
-uv run gunicorn main:app -c gunicorn_conf.py
+uv run --env-file .env gunicorn main:app -c gunicorn_conf.py
 ```
 
 ## 4) Verificar que funciona
@@ -73,8 +73,8 @@ uv run gunicorn main:app -c gunicorn_conf.py
 El `Dockerfile` ya instala dependencias, ejecuta migraciones y levanta Gunicorn.
 
 ```bash
-docker build -t lleidahack-backend --build-arg GIT_BRANCH=main .
-docker run --rm -p 8000:8000 --env-file .env lleidahack-backend
+docker build -t lleidahack-backend .
+docker run --rm -p 127.0.0.1:8000:8000 --env-file .env lleidahack-backend
 ```
 
 Asegúrate de que la `DATABASE__URL` del `.env` sea accesible desde el contenedor.
@@ -84,19 +84,19 @@ Asegúrate de que la `DATABASE__URL` del `.env` sea accesible desde el contenedo
 Crear nueva migración:
 
 ```bash
-uv run alembic revision --autogenerate -m "descripcion_del_cambio"
+uv run --env-file .env alembic revision --autogenerate -m "descripcion_del_cambio"
 ```
 
 Aplicar migraciones pendientes:
 
 ```bash
-uv run alembic upgrade head
+uv run --env-file .env alembic upgrade head
 ```
 
 Revertir última migración:
 
 ```bash
-uv run alembic downgrade -1
+uv run --env-file .env alembic downgrade -1
 ```
 
 ## Problemas comunes
@@ -104,3 +104,5 @@ uv run alembic downgrade -1
 - Error de `DATABASE__URL` faltante: revisa `.env` y que estés ejecutando en la raíz del repo.
 - Error de conexión a BD: valida host, puerto, usuario, password y permisos.
 - Fallo con `uv`: instala `uv` o usa Python 3.12 con entorno virtual y pip (no recomendado en este repo porque existe `uv.lock`).
+
+La imagen empaqueta este checkout, se ejecuta sin root y no incluye archivos de secretos. Configura `CORS_ORIGINS` con los orígenes exactos del frontend. Ver [revisión de seguridad](docs/public-repository-security.md).

@@ -143,3 +143,32 @@ def test_accept_group_returns_filtered_event(client, create_user, create_event, 
     assert response.status_code == 200, response.text
     assert response.json()["id"] == event_id
     assert_no_credentials(response.json())
+
+
+def test_cors_rejects_unconfigured_external_origin(client):
+    response = client.options('/v1/auth/login', headers={
+        'Origin': 'https://untrusted.example',
+        'Access-Control-Request-Method': 'GET',
+        'Access-Control-Request-Headers': 'authorization',
+    })
+    assert response.status_code == 400
+    assert 'access-control-allow-origin' not in response.headers
+
+
+def test_secrets_must_be_independent_and_not_placeholders():
+    import pytest
+    from src.configuration.Settings import SecuritySettings
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
+        SecuritySettings(secret_key='x' * 40, service_token='x' * 40)
+    with pytest.raises(ValidationError):
+        SecuritySettings(secret_key='${' + 'PLACEHOLDER' * 5 + '}', service_token='y' * 40)
+
+
+def test_integration_requires_explicit_database_url(monkeypatch):
+    import pytest
+    from src.configuration.Settings import Settings
+    monkeypatch.setenv('ENV', 'integration')
+    monkeypatch.delenv('DATABASE__URL')
+    with pytest.raises(ValueError, match='DATABASE__URL'):
+        Settings()

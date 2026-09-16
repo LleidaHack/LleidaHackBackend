@@ -72,6 +72,7 @@ def run():
         else:
             raise RuntimeError("Local Redis did not become ready")
     os.environ.update(
+        CORS_ORIGINS=json.dumps([f"http://{host}:{port}" for host in ("localhost", "127.0.0.1") for port in (3016, 3017, 5175, 3000)]),
         RATE_LIMIT__REDIS_URL="redis://127.0.0.1:56379/0",
         ENV="main", DATABASE__URL=f"postgresql://lleidahack_local:{config['database_password']}@127.0.0.1:55440/lleidahack_local",
         SECURITY__SECRET_KEY=config["jwt_secret"], SECURITY__SERVICE_TOKEN=config["service_token"],

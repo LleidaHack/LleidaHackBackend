@@ -1,6 +1,7 @@
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
+from urllib.parse import urlsplit
 
 
 class SecuritySettings(BaseSettings):
@@ -37,9 +38,15 @@ class SecuritySettings(BaseSettings):
     @field_validator("secret_key", "service_token")
     @classmethod
     def validate_secret(cls, value: str):
-        if not value.strip() or value.lower().startswith("your-"):
+        if not value.strip() or value.lower().startswith(("your-", "tu-", "change", "${")):
             raise ValueError("Configure a unique secret with at least 32 characters")
         return value
+
+    @model_validator(mode="after")
+    def independent_secrets(self):
+        if self.secret_key == self.service_token:
+            raise ValueError("JWT and service secrets must be independent")
+        return self
 
 
 class DatabaseSettings(BaseSettings):
@@ -109,6 +116,17 @@ class Settings(BaseSettings):
         extra="allow"
     )
     
+    cors_origins: list[str] = Field(default_factory=list)
+
+    @field_validator("cors_origins")
+    @classmethod
+    def explicit_origins(cls, values):
+        for value in values:
+            parsed = urlsplit(value)
+            if parsed.scheme not in ("http", "https") or not parsed.hostname or parsed.path or parsed.query or parsed.fragment or parsed.username:
+                raise ValueError("CORS origins must be explicit HTTP(S) origins without paths")
+        return values
+
     # General settings
     front_url: str = Field(
         default="https://frontend.integration.lleidahack.dev/hackeps",
@@ -131,7 +149,7 @@ class Settings(BaseSettings):
         env="CONTACT_MAIL"
     )
     local: bool = Field(
-        default=True,
+        default=False,
         description="Local development mode",
         env="LOCAL"
     )
@@ -155,10 +173,10 @@ class Settings(BaseSettings):
         
         if env == 'integration':
             # Integration environment defaults
-            postgres_password = os.environ.get('INTEGRATION_POSTGRES_PASSWORD', 'testpass123')
-            kwargs.setdefault('database', {
-                'url': f"postgresql://lleidahack_user:{postgres_password}@db-integration:5432/lleidahack_integration"
-            })
+            db_url = os.environ.get('DATABASE__URL')
+            if not db_url:
+                raise ValueError("DATABASE__URL is required for integration; no default password is allowed")
+            kwargs.setdefault('database', {'url': db_url})
             kwargs.setdefault('clients', {
                 'mail_client': {'url': 'http://mail-backend-integration:8001/'}
             })

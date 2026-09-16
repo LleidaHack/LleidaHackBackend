@@ -41,11 +41,11 @@ class App:
         )
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-            expose_headers=["*"],
+            allow_origins=settings.cors_origins,
+            allow_credentials=False,
+            allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type"],
+            expose_headers=["Retry-After"],
         )
 
     def setup_exceptions(self):
@@ -82,7 +82,7 @@ class App:
         self.app.mount("/static", StaticFiles(directory="static"), name="static")
 
     def setup_logger(self, logger):
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
         stream_handler = logging.StreamHandler(sys.stdout)
         log_formatter = logging.Formatter(
             "%(asctime)s [%(processName)s: %(process)d] [%(threadName)s: %(thread)d] [%(levelname)s] %(name)s: %(message)s"

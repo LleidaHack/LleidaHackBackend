@@ -11,12 +11,18 @@ concurrency:
   group: backend-deploy-${{ github.ref }}
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
+  security:
+    uses: ./.github/workflows/security.yml
+
   tests:
     uses: ./.github/workflows/tests.yml
 
   deploy:
-    needs: tests
+    needs: [tests, security]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integration'
     runs-on: ubuntu-latest
     environment: production
@@ -31,7 +37,7 @@ jobs:
         run: echo "date=$(date +'%H:%M_%d-%m-%Y')" >> $GITHUB_OUTPUT
 
       - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@d91a1af6f57cd4478ceee14d7705601dafabaa19
         with:
           host: ${{ secrets.SERVER_IP }}
           port: ${{ secrets.SERVER_PORT }}

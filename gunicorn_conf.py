@@ -8,8 +8,9 @@ workers = cpu_count() + 1
 worker_class = "uvicorn.workers.UvicornWorker"
 
 #Logging options
-loglevel = 'debug'
-accesslog = '-'
+loglevel = 'info'
+# Uvicorn request logs include query-string verification/reset credentials.
+accesslog = None
 errorlog = '-'
 capture_output = True
 enable_stdio_inheritance = True

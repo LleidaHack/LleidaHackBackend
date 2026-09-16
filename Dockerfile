@@ -1,25 +1,21 @@
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58
 
-ARG GIT_BRANCH
-
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_LINK_MODE=copy \
+    PYTHONPATH=/app/backend \
+    PATH="/app/.venv/bin:$PATH"
 WORKDIR /app
 
-#Install git
-RUN apt-get update && apt-get install -y git
-
-
-# Copy application code
-RUN git clone https://github.com/LleidaHack/LleidaHackBackend.git . && \
-    git checkout ${GIT_BRANCH}
-
-
-# Install dependencies
-RUN uv sync --frozen
-
-# Create required directories
-RUN mkdir -p logs generated_src
-
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+COPY src ./src
+COPY backend ./backend
+COPY alembic ./alembic
+COPY static ./static
+COPY App.py main.py gunicorn_conf.py alembic.ini ./
+RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app \
+    && mkdir -p logs && chown app:app logs
+USER 10001:10001
 EXPOSE 8000
-
-# Default command (can be overridden in docker-compose.yml)
-CMD sh -c 'uv run alembic upgrade head && uv run gunicorn main:app -c gunicorn_conf.py'
+CMD ["sh", "-c", "alembic upgrade head && exec gunicorn main:app -c gunicorn_conf.py"]

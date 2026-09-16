@@ -6,8 +6,8 @@ from fastapi import Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
-from jose import jwt
-from jose.exceptions import JWTError
+import jwt
+from jwt.exceptions import InvalidTokenError as JWTError
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.status import HTTP_401_UNAUTHORIZED
 

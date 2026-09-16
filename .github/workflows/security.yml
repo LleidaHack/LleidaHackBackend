@@ -1,0 +1,41 @@
+name: Repository security
+on:
+  pull_request:
+  push:
+    branches: [main, integration, refactor-backend]
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan Git history for secrets
+        run: >-
+          docker run --rm -v "$PWD:/repo:ro"
+          ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+          git /repo --log-opts=--all --redact
+      - name: Reject tracked runtime secrets
+        run: |
+          python - <<'PY'
+          import subprocess
+          from pathlib import PurePosixPath
+          files = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
+          forbidden = [p for p in files if p and (
+              (PurePosixPath(p).name.startswith('.env') and not p.endswith('.example'))
+              or PurePosixPath(p).name == '.local-backend.json'
+              or PurePosixPath(p).suffix in {'.pem', '.key', '.p12', '.pfx'}
+          )]
+          if forbidden:
+              raise SystemExit('Runtime secrets must not be tracked: ' + ', '.join(forbidden))
+          PY
+      - uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - name: Audit locked Python dependencies
+        run: uvx pip-audit==2.10.1 --path .venv/lib/python3.12/site-packages
