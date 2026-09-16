@@ -83,6 +83,23 @@ class ClientsSettings(BaseSettings):
     mail_client: MailClientSettings
 
 
+class RateLimitSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="RATE_LIMIT__", extra="ignore")
+    enabled: bool = True
+    redis_url: str = "redis://127.0.0.1:6379/0"
+    prefix: str = "lleidahack:limits"
+    requests_per_minute: int = Field(default=300, ge=1)
+    burst_per_second: int = Field(default=30, ge=1)
+    login_per_minute: int = Field(default=20, ge=1)
+    login_per_account: int = Field(default=10, ge=1)
+    signup_per_hour: int = Field(default=10, ge=1)
+    mail_per_hour: int = Field(default=20, ge=1)
+    mail_per_recipient: int = Field(default=3, ge=1)
+    mail_total_per_hour: int = Field(default=300, ge=1)
+    max_body_bytes: int = Field(default=1048576, ge=1024)
+    body_timeout_seconds: float = Field(default=10, gt=0)
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -127,6 +144,7 @@ class Settings(BaseSettings):
     )
     
     # Nested settings
+    rate_limit: RateLimitSettings = Field(default_factory=RateLimitSettings)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     database: DatabaseSettings
     clients: ClientsSettings

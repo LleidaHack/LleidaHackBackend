@@ -68,7 +68,8 @@ production deployment have not been performed.
 
 ## Separate follow-up work
 
-Shared rate limiting, a mail outbox/queue, pagination, dependency vulnerability
+Shared rate limiting is implemented; see `request-protection.md`.
+A mail outbox/queue, pagination, dependency vulnerability
 scanning and infrastructure review remain separate follow-up work from the audit.
 Existing SQLAlchemy relationship and Pydantic deprecation warnings are not resolved
 by this patch.

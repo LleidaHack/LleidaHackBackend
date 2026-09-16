@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_sqlalchemy import DBSessionMiddleware
 
 from src.configuration.Settings import settings
+from src.utils.Middleware.RateLimiter import RateLimitingMiddleware
 from src.versions.v1 import router as v1_router
 
 
@@ -35,6 +36,9 @@ class App:
     def setup_middleware(self):
         self.app.add_middleware(DBSessionMiddleware,
                                 db_url=settings.database.url)
+        self.app.add_middleware(
+            RateLimitingMiddleware, config=settings.rate_limit, secret=settings.security.secret_key,
+        )
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],

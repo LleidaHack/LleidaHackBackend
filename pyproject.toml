@@ -22,7 +22,8 @@ dependencies = [
     "psycopg2-binary>=2.9.9",
     "configparser>=7.0.0",
     "gunicorn>=22.0.0",
-    "uvicorn>=0.30.0"
+    "uvicorn>=0.30.0",
+    "redis>=5,<7",
 ]
 
 [tool.hatch.build.targets.wheel]

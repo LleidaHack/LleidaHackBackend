@@ -1,4 +1,5 @@
 import os
+import uuid
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -16,6 +17,9 @@ if not make_url(TEST_DATABASE_URL).database.endswith("_test"):
     raise RuntimeError("Tests require a disposable database with a name ending in _test")
 
 os.environ.update(
+    RATE_LIMIT__REDIS_URL=os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:56379/15"),
+    RATE_LIMIT__PREFIX=f"lleidahack:test:{uuid.uuid4().hex}",
+    RATE_LIMIT__ENABLED="true",
     ENV="main",
     DATABASE__URL=TEST_DATABASE_URL,
     SECURITY__SECRET_KEY="test-signing-key-not-for-production-123456",
@@ -54,6 +58,11 @@ def database(engine):
 
 @pytest.fixture(autouse=True)
 def clean_database(engine, database):
+    from redis import Redis
+    with Redis.from_url(os.environ["RATE_LIMIT__REDIS_URL"]) as redis:
+        keys = list(redis.scan_iter(match=os.environ["RATE_LIMIT__PREFIX"] + ":*"))
+        if keys:
+            redis.delete(*keys)
     with engine.begin() as connection:
         tables = connection.execute(text(
             "SELECT tablename FROM pg_tables WHERE schemaname = 'public' "

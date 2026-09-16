@@ -50,7 +50,29 @@ def run():
         time.sleep(0.5)
     else:
         raise RuntimeError("Local PostgreSQL did not become ready")
+    redis_container = "lleidahack-rate-limit"
+    exists = subprocess.run(["docker", "container", "inspect", redis_container], capture_output=True).returncode == 0
+    if exists:
+        subprocess.run(["docker", "start", redis_container], check=True, stdout=subprocess.DEVNULL)
+    else:
+        subprocess.run(["docker", "run", "-d", "--name", redis_container,
+                        "-p", "127.0.0.1:56379:6379", "redis:7-alpine",
+                        "redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "noeviction"],
+                       check=True, stdout=subprocess.DEVNULL)
+    from redis import Redis
+    from redis.exceptions import RedisError
+    with Redis.from_url("redis://127.0.0.1:56379/0") as limiter:
+        for _ in range(60):
+            try:
+                if limiter.ping():
+                    break
+            except RedisError:
+                pass
+            time.sleep(0.5)
+        else:
+            raise RuntimeError("Local Redis did not become ready")
     os.environ.update(
+        RATE_LIMIT__REDIS_URL="redis://127.0.0.1:56379/0",
         ENV="main", DATABASE__URL=f"postgresql://lleidahack_local:{config['database_password']}@127.0.0.1:55440/lleidahack_local",
         SECURITY__SECRET_KEY=config["jwt_secret"], SECURITY__SERVICE_TOKEN=config["service_token"],
         CLIENTS__MAIL_CLIENT__URL="http://127.0.0.1:8001/", LOCAL="true",
@@ -95,7 +117,7 @@ def run():
     print("Captured mail: http://127.0.0.1:8001/messages", flush=True)
     print(f"Local organizer: organizer@example.test (password in {config_path})", flush=True)
     try:
-        uvicorn.run(app, host="127.0.0.1", port=8000, access_log=False)
+        uvicorn.run(app, host="127.0.0.1", port=8000, access_log=False, proxy_headers=False)
     finally:
         mail_server.should_exit = True
         thread.join(timeout=5)

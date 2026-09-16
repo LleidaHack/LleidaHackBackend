@@ -13,3 +13,7 @@ accesslog = '-'
 errorlog = '-'
 capture_output = True
 enable_stdio_inheritance = True
+
+# Set only to the actual reverse-proxy addresses; never use "*".
+import os
+forwarded_allow_ips = os.environ.get("FORWARDED_ALLOW_IPS", "")
