@@ -2,13 +2,18 @@ name: Deploy to VPS
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - integration
   workflow_dispatch:
 
 jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
   deploy:
+    needs: tests
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integration'
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -30,31 +35,32 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
-            
+
             # Variables
             BRANCH="${{ steps.extract_branch.outputs.branch }}"
             PROJECT_PATH="${{ secrets.PROJECT_PATH }}/${BRANCH}"
             SERVICE_NAME="Backend.${BRANCH}"
-            
+
             echo "🚀 Starting deployment for branch: ${BRANCH}"
-            
+
             # Navigate to project directory
             cd "${PROJECT_PATH}"
-            
+
             # Git operations
             echo "📥 Updating code..."
             git fetch --prune
             git checkout "${BRANCH}"
-            git pull origin "${BRANCH}"
-            
+            git merge --ff-only "${{ github.sha }}"
+            test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+
             # Log deployment
             echo "${{ steps.date.outputs.date }} -> ${{ github.actor }} (commit: ${{ github.sha }})" >> deploy.log
-            
+
             # Clear old logs
             echo "🧹 Clearing logs..."
             > logs/gunicorn_access.log
             > logs/gunicorn_error.log
-            
+
             # Install dependencies with uv (faster than poetry)
             echo "📦 Installing dependencies..."
             if command -v uv &> /dev/null; then
@@ -62,7 +68,7 @@ jobs:
             else
               ${{ secrets.POETRY_BIN }} install --sync --no-dev
             fi
-            
+
             # Run database migrations
             echo "🗄️  Running migrations..."
             if command -v uv &> /dev/null; then
@@ -70,14 +76,14 @@ jobs:
             else
               ${{ secrets.POETRY_BIN }} run alembic upgrade head
             fi
-            
+
             # Restart service with better error handling
             echo "🔄 Restarting service..."
             sudo systemctl restart "${SERVICE_NAME}"
-            
+
             # Wait for service to start
             sleep 5
-            
+
             # Check service status
             echo "✅ Checking service status..."
             if systemctl is-active --quiet "${SERVICE_NAME}"; then
