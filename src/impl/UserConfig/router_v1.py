@@ -27,7 +27,7 @@ def get(userId: int, token: BaseToken = Depends(JWTBearer())):
     return userConfig_service.get_user_config(userId, token)
 
 
-@router.put("/{userId}")
+@router.put("/{userId}", response_model=UserConfigGetAll)
 def update(
     userId: int, payload: UserConfigUpdate, token: BaseToken = Depends(JWTBearer())
 ):

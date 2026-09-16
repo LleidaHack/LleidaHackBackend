@@ -1,4 +1,5 @@
 from typing import Optional
+from pydantic import field_validator
 
 from src.utils.Base.BaseSchema import BaseSchema
 
@@ -25,3 +26,11 @@ class UserConfigUpdate(BaseSchema):
     recive_notifications: Optional[bool] = None
     default_lang: Optional[str] = None
     comercial_notifications: Optional[bool] = None
+
+
+    @field_validator("recive_notifications", "default_lang", "comercial_notifications")
+    @classmethod
+    def reject_null(cls, value):
+        if value is None:
+            raise ValueError("Preference values cannot be null")
+        return value

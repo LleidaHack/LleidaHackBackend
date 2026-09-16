@@ -18,7 +18,7 @@ from src.impl.Company.service import CompanyService
 from src.impl.Event.model import Event
 from src.impl.Event.model import HackerRegistration
 from src.impl.Event.schema import EventCreate
-from src.impl.Event.schema import HackerEventRegistration
+from src.impl.Event.schema import HackerEventRegistration, HackerEventRegistrationUpdate
 from src.impl.Event.schema import EventGet
 from src.impl.Event.schema import EventGetAll
 from src.impl.Event.schema import EventUpdate
@@ -334,7 +334,7 @@ class EventService(BaseService):
         self,
         event_id: int,
         hacker_id: int,
-        payload: HackerEventRegistration,
+        payload: HackerEventRegistrationUpdate,
         data: BaseToken,
     ):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
@@ -346,14 +346,11 @@ class EventService(BaseService):
             raise InvalidDataException(
                 "Unable to operate with an archived event, unarchive it first"
             )
-        if not data.is_admin:
-            if event.max_participants <= len(event.registered_hackers):
-                raise InvalidDataException("Event is full")
         hacker = self.hacker_service.get_by_id(hacker_id)
         if hacker not in event.registered_hackers:
             raise InvalidDataException("Hacker is not registered")
         reg = (
-            db.session.query(HackerEventRegistration)
+            db.session.query(HackerRegistration)
             .filter(
                 HackerRegistration.user_id == hacker_id,
                 HackerRegistration.event_id == event_id,
@@ -362,10 +359,18 @@ class EventService(BaseService):
         )
         if reg is None:
             raise InvalidDataException("Hacker is not registered")
-        set_existing_data(reg, payload)
+        changes = payload.model_dump(exclude_unset=True, exclude={"update_user"})
+        for field, value in changes.items():
+            setattr(reg, field, value)
         if payload.update_user:
-            set_existing_data(hacker, payload)
-            hacker.address = payload.location
+            profile_fields = {
+                "shirt_size", "food_restrictions", "cv", "github", "linkedin",
+                "studies", "study_center", "location", "how_did_you_meet_us",
+            }
+            for field in profile_fields.intersection(changes):
+                setattr(hacker, field, changes[field])
+            if "location" in changes:
+                hacker.address = changes["location"]
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)

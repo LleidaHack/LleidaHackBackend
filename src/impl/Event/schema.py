@@ -118,3 +118,12 @@ class HackerEventRegistrationUpdate(BaseSchema):
     location: Optional[str] = None
     how_did_you_meet_us: Optional[str] = None
     wants_credit: Optional[bool] = False
+
+    update_user: bool = False
+
+    @field_validator("shirt_size")
+    @classmethod
+    def shirt_size_validation(cls, value):
+        if value not in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
+            raise ValueError("must be a valid shirt size")
+        return value
