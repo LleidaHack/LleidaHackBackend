@@ -56,7 +56,8 @@ throwaway database; see `tests/README.md`.
 4. Run the regression suite, then verify signup/verification, login/refresh,
    password recovery, team operations, registration and preferences in integration.
 5. Deploy the exact tested commit. The deployment workflow now depends on the
-   reusable PostgreSQL test workflow and checks the server checkout's SHA.
+   reusable PostgreSQL test workflow, rejects tracked server modifications and
+   checks the server checkout's SHA. Deployments to the same branch are serialized.
 6. Verify HTTP health and expected user flows after restart. Check error rates
    without recording credentials. Do not roll back to insecure secrets or code.
 

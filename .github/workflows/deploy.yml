@@ -7,6 +7,10 @@ on:
       - integration
   workflow_dispatch:
 
+concurrency:
+  group: backend-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   tests:
     uses: ./.github/workflows/tests.yml
@@ -48,6 +52,8 @@ jobs:
 
             # Git operations
             echo "📥 Updating code..."
+            git diff --quiet
+            git diff --cached --quiet
             git fetch --prune
             git checkout "${BRANCH}"
             git merge --ff-only "${{ github.sha }}"
