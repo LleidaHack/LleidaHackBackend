@@ -1,11 +1,11 @@
-from typing import Optional
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 
 
 class SecuritySettings(BaseSettings):
     model_config = SettingsConfigDict(
+        env_prefix="SECURITY__",
         env_file=".env",
         env_file_encoding="utf-8",
         env_nested_delimiter="__",
@@ -13,7 +13,7 @@ class SecuritySettings(BaseSettings):
         extra="allow"
     )
     secret_key: str = Field(
-        default="secret", 
+        min_length=32,
         description="JWT secret key",
         env="SECURITY__SECRET_KEY"
     )
@@ -28,10 +28,18 @@ class SecuritySettings(BaseSettings):
         env="SECURITY__EXPIRE_TIME"
     )
     service_token: str = Field(
-        default="HOLA", 
+        min_length=32,
         description="Service authentication token",
         env="SECURITY__SERVICE_TOKEN"
     )
+
+
+    @field_validator("secret_key", "service_token")
+    @classmethod
+    def validate_secret(cls, value: str):
+        if not value.strip() or value.lower().startswith("your-"):
+            raise ValueError("Configure a unique secret with at least 32 characters")
+        return value
 
 
 class DatabaseSettings(BaseSettings):

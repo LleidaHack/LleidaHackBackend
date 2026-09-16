@@ -110,8 +110,8 @@ class BaseToken:
     def decode(token):
         try:
             return jwt.decode(token.encode("utf-8"), SECRET_KEY, algorithms=[ALGORITHM])
-        except Exception:
-            raise Exception(f"Error decoding token with the token({token})")
+        except (jwt.InvalidTokenError, AttributeError, TypeError):
+            raise AuthenticationException("Invalid token") from None
 
     # @classmethod
     def encode(dict):

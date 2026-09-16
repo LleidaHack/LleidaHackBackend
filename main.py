@@ -31,7 +31,7 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     openapi_tags=tags_metadata,
-    debug=True,
+    debug=False,
     swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"},
 )
 

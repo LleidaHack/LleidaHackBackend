@@ -16,7 +16,6 @@ class LleidaHackerCreate(UserCreate):
 class LleidaHackerGet(UserGet):
     user_id: int
     role: str
-    nif: str
     student: bool
     active: bool
     github: str
@@ -24,7 +23,7 @@ class LleidaHackerGet(UserGet):
 
 
 class LleidaHackerGetAll(UserGetAll, LleidaHackerGet):
-    pass
+    nif: str
 
 
 class LleidaHackerUpdate(UserUpdate):

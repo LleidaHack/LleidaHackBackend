@@ -113,7 +113,7 @@ class AuthenticationService(BaseService):
         user = self.user_service.get_by_id(token.user_id)
         if user.verification_token != token.to_token():
             raise InvalidDataException("Invalid token")
-        return self.user_service._verify_user(token.user_id)
+        self.user_service._verify_user(token.user_id)
         return {"success": True}
 
     @BaseService.needs_service(UserService)
