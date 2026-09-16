@@ -3,7 +3,7 @@ from typing import List, Union
 from fastapi import APIRouter, Depends
 
 from src.impl.LleidaHacker.schema import LleidaHackerGet
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupCreate
+from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupCreate, LleidaHackerGroupsSorted
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGet
 from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGetAll
 from src.impl.LleidaHackerGroup.service import LleidaHackerGroupService
@@ -95,6 +95,6 @@ def remove_leader(
     return {"success": True, "updated_id": lleidahacker_group.id}
 
 
-@router.put("/sorted/")
+@router.put("/sorted/", response_model=LleidaHackerGroupsSorted)
 def get_sorted():
     return lleidahackergroup_service.get_sorted()

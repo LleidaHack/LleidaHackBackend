@@ -91,3 +91,44 @@ def test_invalid_jwt_does_not_leak_token_or_traceback(client):
 
 def test_application_disables_debug(app):
     assert app.debug is False
+
+
+def test_event_groups_do_not_expose_invitation_codes(client, create_user, create_event, create_group):
+    owner, outsider = create_user(), create_user()
+    event_id = create_event([owner, outsider])
+    group = create_group(event_id, [owner])
+    response = client.get(f"/v1/event/{event_id}/groups", headers=outsider.headers)
+    assert response.status_code == 200, response.text
+    assert group.code not in response.text
+    assert_no_credentials(response.json())
+
+
+def test_pending_hackers_response_filters_credentials(client, create_user, create_event):
+    from src.configuration.Settings import settings
+
+    user = create_user()
+    event_id = create_event([user])
+    response = client.get(f"/v1/event/{event_id}/pending",
+                          headers={"Authorization": f"Bearer {settings.security.service_token}"})
+    assert response.status_code == 200, response.text
+    assert response.json()["hackers"][0]["id"] == user.id
+    assert_no_credentials(response.json())
+
+
+def test_public_organizer_groups_filter_nested_credentials_and_nif(client, create_user, engine):
+    from src.impl.LleidaHackerGroup.model import LleidaHackerGroup, LleidaHackerGroupUser
+    from src.impl.User.model import User
+
+    organizer = create_user(role="organizer")
+    with Session(engine) as session:
+        user = session.get(User, organizer.id)
+        group = LleidaHackerGroup(name="Organizers", description="", image="", leaders=[user])
+        session.add(group)
+        session.flush()
+        session.add(LleidaHackerGroupUser(group_id=group.id, user_id=user.id, primary=True))
+        session.commit()
+    response = client.put("/v1/lleidahacker/group/sorted/")
+    assert response.status_code == 200, response.text
+    assert response.json()["llhk_groups"][0]["members"]
+    assert '"nif"' not in response.text
+    assert_no_credentials(response.json())

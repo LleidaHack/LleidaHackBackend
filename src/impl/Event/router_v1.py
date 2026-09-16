@@ -8,6 +8,9 @@ from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet
 from src.impl.Event.schema import (
     EventCreate,
+    EventGroupsGet,
+    EventHackersGet,
+    RegistrationConfirmationGet,
     HackerEventRegistration,
     HackerEventRegistrationUpdate,
 )
@@ -108,7 +111,7 @@ def get_sponsors(id: int):
     return event_service.get_event_sponsors(id)
 
 
-@router.get("/{id}/groups")
+@router.get("/{id}/groups", response_model=EventGroupsGet)
 def get_groups(id: int, token: BaseToken = Depends(JWTBearer())):
     event = event_service.get_event_groups(id, token)
     return {"success": True, "groups": event}
@@ -218,7 +221,7 @@ def confirm_assistance(token: AssistenceToken = Depends(JWTBearer(expected_type=
     return {"success": True}
 
 
-@router.get("/force/confirm_assistance/{event_id}/{user_id}")
+@router.get("/force/confirm_assistance/{event_id}/{user_id}", response_model=RegistrationConfirmationGet)
 def force_confirm_assistance(
     event_id: int, user_id: int, token: BaseToken = Depends(JWTBearer())
 ):
@@ -249,7 +252,7 @@ def unparticipate_hacker(
     return {"success": True}
 
 
-@router.put("/{event_id}/accept/{hacker_id}")
+@router.put("/{event_id}/accept/{hacker_id}", response_model=EventGet)
 def accept_hacker(
     event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
 ):
@@ -259,7 +262,7 @@ def accept_hacker(
     return event_service.accept_hacker(event_id, hacker_id, token)
 
 
-@router.put("/{event_id}/unaccept/{hacker_id}")
+@router.put("/{event_id}/unaccept/{hacker_id}", response_model=EventGet)
 def unaccept_hacker(
     event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
 ):
@@ -269,7 +272,7 @@ def unaccept_hacker(
     return event_service.unaccept_hacker(event_id, hacker_id, token)
 
 
-@router.put("/{event_id}/reject/{hacker_id}")
+@router.put("/{event_id}/reject/{hacker_id}", response_model=EventGet)
 def reject_hacker(
     event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
 ):
@@ -279,12 +282,12 @@ def reject_hacker(
     return event_service.reject_hacker(event_id, hacker_id, token)
 
 
-@router.put("/{event_id}/acceptgroup/{group_id}")
+@router.put("/{event_id}/acceptgroup/{group_id}", response_model=EventGet)
 def accept_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.accept_group(event_id, group_id, token)
 
 
-@router.put("/{event_id}/rejectgroup/{group_id}")
+@router.put("/{event_id}/rejectgroup/{group_id}", response_model=EventGet)
 def reject_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
     """
     Reject a group from an event
@@ -292,7 +295,7 @@ def reject_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBea
     return event_service.reject_group(event_id, group_id, token)
 
 
-@router.get("/{event_id}/pending")
+@router.get("/{event_id}/pending", response_model=EventHackersGet)
 def get_pending_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
     """
     Get the pending hackers of an event
@@ -306,7 +309,7 @@ def get_pending_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
     }
 
 
-@router.get("/{event_id}/rejected")
+@router.get("/{event_id}/rejected", response_model=EventHackersGet)
 def get_rejected_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
     """
     Get the rejected hackers of an event

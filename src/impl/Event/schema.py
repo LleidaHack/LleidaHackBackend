@@ -5,6 +5,8 @@ from typing import Optional
 from pydantic import field_validator
 
 from src.utils.Base.BaseSchema import BaseSchema
+from src.impl.Hacker.schema import HackerGetAll
+from src.impl.HackerGroup.schema import HackerGroupGet
 
 
 class EventCreate(BaseSchema):
@@ -127,3 +129,19 @@ class HackerEventRegistrationUpdate(BaseSchema):
         if value not in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
             raise ValueError("must be a valid shirt size")
         return value
+
+
+class EventGroupsGet(BaseSchema):
+    success: bool
+    groups: list[HackerGroupGet]
+
+
+class EventHackersGet(BaseSchema):
+    size: int
+    hackers: list[HackerGetAll]
+
+
+class RegistrationConfirmationGet(BaseSchema):
+    event_id: int
+    user_id: int
+    confirmed_assistance: bool
