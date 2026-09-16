@@ -14,6 +14,7 @@ class ArticleType(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     description: Mapped[str] = mapped_column(String)
+    # Afegir el article amb markdown per explicar el tipus d'article
 
     articles: Mapped[List["Article"]] = relationship(
         "Article",
