@@ -73,3 +73,13 @@ concurrent quota sharing, expiry, per-account limits across IPs, IPv6 grouping,
 mail-route budgets, spoofed forwarding headers, oversized/slow bodies, storage
 failure and signup blocked before further mail delivery. Local live HTTP checks
 confirm 429 with `Retry-After` and successful organizer login/profile afterward.
+
+## Simulated email verification in local development
+
+`install/local.py` alone registers GET/POST `/v1/auth/local-verification`.
+The public frontend probes this capability only on loopback hostnames, then offers
+“Verificar compte de prova” on the pending-verification screen. The POST accepts
+an email and runs the existing verification-token flow without sending mail.
+It does not log the user in or grant organizer privileges. It requires a loopback
+peer, loopback Host and (when present) loopback Origin. Normal `main:app` deployments
+never register these routes; the `LOCAL` setting does not enable them.

@@ -113,6 +113,8 @@ def run():
     else:
         raise RuntimeError("Local mail capture did not become ready")
     from main import app
+    from local_verification import local_verification_router
+    app.include_router(local_verification_router())
     print("Backend: http://127.0.0.1:8000/docs", flush=True)
     print("Captured mail: http://127.0.0.1:8001/messages", flush=True)
     print(f"Local organizer: organizer@example.test (password in {config_path})", flush=True)
