@@ -68,7 +68,7 @@ class CompanyService(BaseService):
         company = self.get_by_id(companyId)
         users = [user.id for user in company.users]
         if not (
-            data.is_admin
+            data.check([UserType.LLEIDAHACKER])
             or (data.user_id in users and company.leader_id == data.user_id)
         ):
             raise AuthorizationException("Not authorized")

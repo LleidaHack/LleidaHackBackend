@@ -33,3 +33,7 @@ def test_company_without_image_and_event_list(client, create_user, create_event,
     assert response.status_code == 200, response.text
     assert client.get(f"/v1/event/{event_id}/sponsors").json() == []
     assert client.delete(path, headers=organizer.headers).status_code == 400
+    assert client.delete(f"/v1/company/{company_id}", headers=hacker.headers).status_code == 403
+    response = client.delete(f"/v1/company/{company_id}", headers=organizer.headers)
+    assert response.status_code == 200, response.text
+    assert client.get(f"/v1/company/{company_id}").status_code == 404
