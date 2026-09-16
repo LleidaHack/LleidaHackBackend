@@ -6,6 +6,7 @@ from pydantic import field_validator
 
 from src.impl.UserConfig.schema import UserConfigCreate, UserConfigGetAll
 from src.utils.Base.BaseSchema import BaseSchema
+from src.utils.security import validate_password
 
 
 class UserCreate(BaseSchema):
@@ -42,12 +43,7 @@ class UserCreate(BaseSchema):
     @field_validator("password")
     @classmethod
     def password_validation(cls, v):
-        if (re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$", v)
-                is None):
-            raise ValueError(
-                "must contain at least 8 characters, at least one uppercase letter, one lowercase letter and one number"
-            )
-        return v
+        return validate_password(v)
 
     @field_validator("birthdate")
     @classmethod
@@ -99,3 +95,11 @@ class UserUpdate(BaseSchema):
     image: Optional[str] = None
     # is_image_url: Optional[bool] = None
     # recive_mails: Optional[bool] = None
+
+
+    @field_validator("password")
+    @classmethod
+    def password_validation(cls, value):
+        if value is None:
+            raise ValueError("Password cannot be null")
+        return validate_password(value)

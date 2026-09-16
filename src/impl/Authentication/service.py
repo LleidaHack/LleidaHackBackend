@@ -73,10 +73,9 @@ class AuthenticationService(BaseService):
     @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(UserService)
     def reset_password(self, email: str):
-        user = self.user_service.get_by_email(email)
-        if not user.is_verified:
-            raise InvalidDataException("User not verified")
-        self.create_access_and_refresh_token(user)
+        user = self.user_service.get_by_email(email, False)
+        if user is None or not user.is_verified or user.is_deleted:
+            return {"success": True}
         reset_pass_token = ResetPassToken(user).user_set()
         mail = self.mail_client.create_mail(
             MailCreate(
@@ -135,8 +134,6 @@ class AuthenticationService(BaseService):
         user = self.user_service.get_by_email(email)
         if user.is_verified:
             raise InvalidDataException("User already verified")
-        AccesToken(user).user_set()
-        RefreshToken(user).user_set()
         verification_token = VerificationToken(user).user_set()
         mail = self.mail_client.create_mail(
             MailCreate(

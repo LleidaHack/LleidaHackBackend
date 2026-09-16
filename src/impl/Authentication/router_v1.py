@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBasicCredentials
 
-from src.impl.Authentication.schema import ContactMail, ProfileGet, VerificationResult
+from src.impl.Authentication.schema import ContactMail, ProfileGet, VerificationResult, PasswordResetConfirm
 from src.impl.Authentication.service import AuthenticationService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.security import sec
@@ -29,8 +29,12 @@ def reset_password(email: str):
 
 
 @router.post("/confirm-reset-password")
-def confirm_reset_password(token: str, password: str):
-    return auth_service.confirm_reset_password(BaseToken.get_data(token, expected_type=TokenType.RESET_PASS, require_available=False, allow_service=False), password)
+def confirm_reset_password(payload: PasswordResetConfirm):
+    token = BaseToken.get_data(
+        payload.token, expected_type=TokenType.RESET_PASS,
+        require_available=False, allow_service=False,
+    )
+    return auth_service.confirm_reset_password(token, payload.password)
 
 
 @router.post("/refresh-token")

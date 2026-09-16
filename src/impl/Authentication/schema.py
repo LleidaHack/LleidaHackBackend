@@ -1,3 +1,5 @@
+from pydantic import field_validator
+from src.utils.security import validate_password
 from datetime import date
 from typing import Optional
 
@@ -31,3 +33,13 @@ class ProfileGet(BaseSchema):
 
 class VerificationResult(BaseSchema):
     success: bool
+
+
+class PasswordResetConfirm(BaseSchema):
+    token: str
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def password_validation(cls, value):
+        return validate_password(value)
