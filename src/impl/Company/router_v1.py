@@ -70,7 +70,7 @@ def delete_user(companyId: int, userId: int, token: BaseToken = Depends(JWTBeare
 
 
 #####################################################################################
-@router.get("/{companyId}/events", response_model=EventGet)
+@router.get("/{companyId}/events", response_model=List[EventGet])
 def get_events(companyId: int, token: BaseToken = Depends(JWTBearer())):
     return company_service.get_company_events(companyId)
 

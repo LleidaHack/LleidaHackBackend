@@ -28,7 +28,7 @@ class CompanyGet(BaseSchema):
     name: str
     description: str
     website: str
-    image: str
+    image: Optional[str] = None
     tier: int
     # is_image_url: bool
     address: str
