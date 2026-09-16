@@ -14,6 +14,7 @@ from src.impl.User.model import User
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash, verify_password
+from src.utils.UserType import UserType
 from src.utils.Token import (
     AccesToken,
     BaseToken,
@@ -123,13 +124,14 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def force_verification(self, user_id: int, data: BaseToken):
-        if not data.is_admin:
-            raise AuthenticationException("User don'have permissions to do this")
-        self.user_service._verify_user(user_id)
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         user = self.user_service.get_by_id(user_id)
-        a = AccesToken(user).user_set()
-        r = RefreshToken(user).user_set()
-        return {"success": True, "access_token": a, "refresh_token": r}
+        if user.is_deleted:
+            raise InvalidDataException("Account is not available")
+        if not user.is_verified:
+            self.user_service._verify_user(user_id)
+        return {"success": True}
 
     @BaseService.needs_service(UserService)
     def resend_verification(self, email: str):

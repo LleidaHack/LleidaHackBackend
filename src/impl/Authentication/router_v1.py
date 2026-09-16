@@ -52,8 +52,8 @@ def verify(token: str):
     return auth_service.verify_user(BaseToken.get_data(token, expected_type=TokenType.VERIFICATION, require_available=False, allow_service=False))
 
 
-@router.post("/force-verify/{user_id}")
-def force_verify(user_id, token: BaseToken = Depends(JWTBearer())):
+@router.post("/force-verify/{user_id}", response_model=VerificationResult)
+def force_verify(user_id: int, token: BaseToken = Depends(JWTBearer())):
     return auth_service.force_verification(user_id, token)
 
 

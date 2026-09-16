@@ -149,3 +149,27 @@ def test_unverified_login_has_specific_error_only_after_correct_password(client,
     assert "access_token" not in pending.json()
     assert client.post("/v1/auth/verify", params={"token": user.verification}).status_code == 200
     assert client.get("/v1/auth/login", auth=(user.email, "TestPassword123")).status_code == 200
+
+
+def test_organizer_can_verify_without_issuing_tokens_or_unblocking(client, create_user, engine):
+    from src.impl.User.model import User
+    organizer = create_user(role="organizer")
+    target = create_user(is_verified=False, banned=True)
+    response = client.post(f"/v1/auth/force-verify/{target.id}", headers=organizer.headers)
+    assert response.status_code == 200
+    assert response.json() == {"success": True}
+    with Session(engine) as session:
+        user = session.get(User, target.id)
+        assert user.is_verified and user.banned
+        assert user.token == target.access and user.refresh_token == target.refresh
+    assert client.post(f"/v1/auth/force-verify/{target.id}", headers=organizer.headers).status_code == 200
+
+
+def test_participant_cannot_manually_verify_another_account(client, create_user, engine):
+    from src.impl.User.model import User
+    participant = create_user()
+    target = create_user(is_verified=False)
+    assert client.post(f"/v1/auth/force-verify/{target.id}", headers=participant.headers).status_code == 401
+    assert client.post(f"/v1/auth/force-verify/{target.id}").status_code == 401
+    with Session(engine) as session:
+        assert not session.get(User, target.id).is_verified
