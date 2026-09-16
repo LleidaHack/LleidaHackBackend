@@ -1,3 +1,5 @@
+from functools import wraps
+from threading import RLock
 from http import HTTPStatus
 from typing import Any
 import logging
@@ -17,16 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 def initialized(func):
-    def wrapper(*args, **kwargs):
-        try:
-            args[0].check_health()
-        except Exception:
-            pass
-        if args[0]._initialized:
-            return func(*args, **kwargs)
-        print("MailClient not initialized")
-        raise MailClientException("MailClient is not available")
-
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        self.ensure_initialized()
+        return func(self, *args, **kwargs)
     return wrapper
 
 
@@ -37,14 +33,24 @@ class MailClient(BaseClient):
 
     def __init__(self) -> Any:
         super().__init__(settings.clients.mail_client.url, None)
+        self._initialization_lock = RLock()
+        self._internall_templates = {}
+        self._initialized = False
         try:
-            self.check_health()
-            self._get_internall_templates()
-            self._initialized = True
-        except Exception:
-            self._initialized = False
-            logger.warning("MailClient not initialized")
-            # raise MailClientException('MailClient is not available')
+            self.ensure_initialized()
+        except MailClientException:
+            logger.warning("MailClient is not available; initialization will be retried")
+
+    def ensure_initialized(self):
+        with self._initialization_lock:
+            try:
+                self.check_health()
+                if not self._initialized:
+                    self._get_internall_templates()
+                    self._initialized = True
+            except Exception:
+                self._initialized = False
+                raise MailClientException("MailClient is not available") from None
 
     def check_health(self):
         r = health_check.sync_detailed(client=self.client)
@@ -84,11 +90,13 @@ class MailClient(BaseClient):
         return template_get_by_name.sync(name, client=self.client)
 
     def _get_internall_templates(self):
+        templates = {}
         for _ in InternalTemplate:
             r = self.get_template_by_name(_.value)
             if r is None:
                 raise Exception(f"error obtaining template with name:{_.value}")
-            self._internall_templates[_] = r
+            templates[_] = r
+        self._internall_templates = templates
 
     @initialized
     def get_internall_template_id(self, it: InternalTemplate):
