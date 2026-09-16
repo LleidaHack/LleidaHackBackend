@@ -136,3 +136,16 @@ def test_deactivation_revokes_organizer_session(client, create_user):
         assert response.status_code == 200, response.text
     assert client.get("/v1/user/all", headers=target.headers).status_code == 401
     assert client.post("/v1/auth/refresh-token", headers={"Authorization": f"Bearer {target.refresh}"}).status_code == 401
+
+
+def test_unverified_login_has_specific_error_only_after_correct_password(client, create_user):
+    user = create_user(is_verified=False)
+    incorrect = client.get("/v1/auth/login", auth=(user.email, "wrong-password"))
+    assert incorrect.status_code == 401
+    assert "code" not in incorrect.json()
+    pending = client.get("/v1/auth/login", auth=(user.email, "TestPassword123"))
+    assert pending.status_code == 401
+    assert pending.json()["code"] == "EMAIL_NOT_VERIFIED"
+    assert "access_token" not in pending.json()
+    assert client.post("/v1/auth/verify", params={"token": user.verification}).status_code == 200
+    assert client.get("/v1/auth/login", auth=(user.email, "TestPassword123")).status_code == 200

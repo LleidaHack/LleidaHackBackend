@@ -45,6 +45,8 @@ class AuthenticationService(BaseService):
         user = self.user_service.get_by_email(mail)
         if not verify_password(password, user.password):
             raise AuthenticationException("Incorrect password")
+        if not user.is_verified and not user.is_deleted:
+            raise AuthenticationException("Email verification required", code="EMAIL_NOT_VERIFIED")
         if not BaseToken.is_available(user):
             raise AuthenticationException("Account is not available")
         access_token, refresh_token = self.create_access_and_refresh_token(user)
