@@ -132,3 +132,14 @@ def test_public_organizer_groups_filter_nested_credentials_and_nif(client, creat
     assert response.json()["llhk_groups"][0]["members"]
     assert '"nif"' not in response.text
     assert_no_credentials(response.json())
+
+
+def test_accept_group_returns_filtered_event(client, create_user, create_event, create_group):
+    organizer = create_user(role="organizer")
+    member = create_user()
+    event_id = create_event([member])
+    group = create_group(event_id, [member])
+    response = client.put(f"/v1/event/{event_id}/acceptgroup/{group.id}", headers=organizer.headers)
+    assert response.status_code == 200, response.text
+    assert response.json()["id"] == event_id
+    assert_no_credentials(response.json())

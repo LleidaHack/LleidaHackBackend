@@ -101,3 +101,38 @@ def test_service_token_is_rejected_for_personal_flows(client):
     headers = {"Authorization": f"Bearer {settings.security.service_token}"}
     assert client.get("/v1/auth/me", headers=headers).status_code == 401
     assert client.post("/v1/auth/refresh-token", headers=headers).status_code == 401
+
+
+def test_assistance_token_is_scoped_to_one_confirmation(client, create_user, create_event, engine):
+    from src.impl.Event.model import HackerRegistration, HackerAccepted
+    from src.impl.User.model import User
+    from src.utils.Token import AssistenceToken
+
+    user = create_user()
+    event_id = create_event([user])
+    with Session(engine) as session:
+        token = AssistenceToken(session.get(User, user.id), event_id).to_token()
+        registration = session.get(HackerRegistration, (user.id, event_id))
+        registration.confirm_assistance_token = token
+        session.add(HackerAccepted(user_id=user.id, event_id=event_id))
+        session.commit()
+    headers = {"Authorization": f"Bearer {token}"}
+    assert client.get("/v1/user/all", headers=headers).status_code == 401
+    assert client.post("/v1/auth/refresh-token", headers=headers).status_code == 401
+    response = client.get("/v1/event/confirm_assistance/", headers=headers)
+    assert response.status_code == 200, response.text
+    assert client.get("/v1/event/confirm_assistance/", headers=headers).status_code == 401
+    with Session(engine) as session:
+        registration = session.get(HackerRegistration, (user.id, event_id))
+        assert registration.confirmed_assistance is True
+        assert registration.confirm_assistance_token == ""
+
+
+def test_deactivation_revokes_organizer_session(client, create_user):
+    administrator = create_user(role="organizer")
+    target = create_user(role="organizer")
+    for action in ("deactivate", "activate"):
+        response = client.post(f"/v1/lleidahacker/{target.id}/{action}", headers=administrator.headers)
+        assert response.status_code == 200, response.text
+    assert client.get("/v1/user/all", headers=target.headers).status_code == 401
+    assert client.post("/v1/auth/refresh-token", headers={"Authorization": f"Bearer {target.refresh}"}).status_code == 401

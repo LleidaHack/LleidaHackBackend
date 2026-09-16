@@ -967,8 +967,9 @@ class EventService(BaseService):
         for hacker in subtract_lists(group.members, event.accepted_hackers):
             if hacker not in event.registered_hackers:
                 raise InvalidDataException("Hacker not registered")
-            hacker_user = self.hacker_service.get_by_id(hacker.id)
-            self.accept_hacker(event.id, hacker_user.id, data)
+            self.accept_hacker(event.id, hacker.id, data)
+        db.session.refresh(event)
+        return event
 
     @BaseService.needs_service(MailClient)
     def resend_mails(self, event_id: int, data: BaseToken):
