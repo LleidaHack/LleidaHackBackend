@@ -411,12 +411,9 @@ class EventService(BaseService):
                 "Unable to operate with an archived event, unarchive it first"
             )
         company = self.company_service.get_by_id(company_id)
-        company_users = [user.id for user in company.users]
-        if not data.is_admin or data.user_id not in company_users:
-            raise AuthenticationException("Not authorized")
-        if company not in event.companies:
+        if company not in event.sponsors:
             raise InvalidDataException("Company is not sponsor")
-        event.companies.remove(company)
+        event.sponsors.remove(company)
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(company)

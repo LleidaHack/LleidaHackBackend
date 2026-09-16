@@ -26,3 +26,10 @@ def test_company_without_image_and_event_list(client, create_user, create_event,
     response = client.get(f"/v1/company/{company_id}/events", headers=organizer.headers)
     assert response.status_code == 200, response.text
     assert [event["id"] for event in response.json()] == [event_id]
+    hacker = create_user()
+    path = f"/v1/event/{event_id}/sponsors/{company_id}"
+    assert client.delete(path, headers=hacker.headers).status_code in (401, 403)
+    response = client.delete(path, headers=organizer.headers)
+    assert response.status_code == 200, response.text
+    assert client.get(f"/v1/event/{event_id}/sponsors").json() == []
+    assert client.delete(path, headers=organizer.headers).status_code == 400
