@@ -47,6 +47,7 @@ class App:
     def setup_exceptions(self):
         from src.error import error_handler as eh
         from src.error.AuthenticationException import AuthenticationException
+        from src.error.AuthorizationException import AuthorizationException
         from src.error.InputException import InputException
         from src.error.InvalidDataException import InvalidDataException
         from src.error.NotFoundException import NotFoundException
@@ -55,6 +56,9 @@ class App:
 
         self.app.add_exception_handler(
             AuthenticationException, eh.authentication_exception_handler
+        )
+        self.app.add_exception_handler(
+            AuthorizationException, eh.authorization_exception_handler
         )
         self.app.add_exception_handler(
             NotFoundException, eh.not_found_exception_handler

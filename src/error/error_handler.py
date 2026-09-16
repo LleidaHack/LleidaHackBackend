@@ -43,3 +43,7 @@ def initialize_exception_handler(request, exc):
         status_code=503,
         content={"message": exc.message},
     )
+
+
+def authorization_exception_handler(request, exc):
+    return JSONResponse(status_code=403, content={"message": exc.message})

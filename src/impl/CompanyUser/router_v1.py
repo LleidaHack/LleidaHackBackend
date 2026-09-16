@@ -19,8 +19,8 @@ companyuser_service = CompanyUserService()
 
 
 @router.post("/signup")
-def signup(payload: CompanyUserCreate):
-    new_companyuser = companyuser_service.add_company_user(payload)
+def signup(payload: CompanyUserCreate, token: BaseToken = Depends(JWTBearer())):
+    new_companyuser = companyuser_service.add_company_user(payload, token)
 
     access_token = AccesToken(new_companyuser).user_set()
     refresh_token = RefreshToken(new_companyuser).user_set()

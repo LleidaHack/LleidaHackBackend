@@ -3,7 +3,8 @@ from datetime import datetime as date
 
 from fastapi_sqlalchemy import db
 
-from src.error.AuthenticationException import AuthenticationException
+from src.error.AuthorizationException import AuthorizationException
+from src.impl.Company.model import Company
 from src.error.NotFoundException import NotFoundException
 from src.impl.CompanyUser.model import CompanyUser
 from src.impl.CompanyUser.schema import CompanyUserCreate
@@ -45,7 +46,11 @@ class CompanyUserService(BaseService):
             return CompanyUserGetAll.model_validate(user)
         return CompanyUserGet.model_validate(user)
 
-    def add_company_user(self, payload: CompanyUserCreate):
+    def add_company_user(self, payload: CompanyUserCreate, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthorizationException("Not authorized")
+        if db.session.get(Company, payload.company_id) is None:
+            raise NotFoundException("Company not found")
         check_user(payload.email, payload.nickname, payload.telephone)
         new_company_user = CompanyUser(
             **payload.model_dump(exclude={"config"}), code=generate_user_code()
@@ -72,7 +77,7 @@ class CompanyUserService(BaseService):
             not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER])
             or data.user_id != companyUserId
         ):
-            raise AuthenticationException("Not authorized")
+            raise AuthorizationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
         if payload.image is not None:
             payload = check_image(payload)
@@ -91,7 +96,7 @@ class CompanyUserService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
             [UserType.COMPANYUSER], companyUserId
         ):
-            raise AuthenticationException("Not authorized")
+            raise AuthorizationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
         db.session.delete(company_user)
         db.session.commit()

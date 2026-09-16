@@ -1,4 +1,4 @@
-from typing import Optional
+from pydantic import ConfigDict
 
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
@@ -20,5 +20,4 @@ class CompanyUserGetAll(UserGetAll):
 
 
 class CompanyUserUpdate(UserUpdate):
-    role: Optional[str] = None
-    company_id: Optional[int] = None
+    model_config = ConfigDict(from_attributes=True, extra="forbid")

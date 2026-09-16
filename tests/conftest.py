@@ -133,3 +133,42 @@ def create_user(app, engine):
                 headers={"Authorization": f"Bearer {user.token}"},
             )
     return create
+
+
+@pytest.fixture
+def create_event(app, engine):
+    from sqlalchemy.orm import Session
+    from src.impl.Event.model import Event, HackerRegistration
+
+    def create(users=(), **overrides):
+        with Session(engine) as session:
+            values = dict(name="Test Event", description="", location="Test location",
+                          max_participants=100, max_group_size=4, max_sponsors=10,
+                          archived=False, is_open=True, price=0)
+            values.update(overrides)
+            event = Event(**values)
+            session.add(event)
+            session.flush()
+            for user in users:
+                session.add(HackerRegistration(user_id=user.id, event_id=event.id,
+                                              shirt_size="M", food_restrictions=""))
+            session.commit()
+            return event.id
+    return create
+
+
+@pytest.fixture
+def create_group(app, engine):
+    from sqlalchemy.orm import Session
+    from src.impl.HackerGroup.model import HackerGroup
+    from src.impl.User.model import User
+
+    def create(event_id, users):
+        with Session(engine) as session:
+            group = HackerGroup(name="Test Group", description="", leader_id=users[0].id,
+                                event_id=event_id, code=f"group-code-{users[0].id}",
+                                members=[session.get(User, user.id) for user in users])
+            session.add(group)
+            session.commit()
+            return SimpleNamespace(id=group.id, code=group.code)
+    return create
