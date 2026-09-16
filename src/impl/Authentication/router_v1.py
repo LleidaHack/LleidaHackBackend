@@ -6,6 +6,7 @@ from src.impl.Authentication.service import AuthenticationService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.security import sec
 from src.utils.Token import BaseToken
+from src.utils.TokenType import TokenType
 
 router = APIRouter(
     prefix="/auth",
@@ -29,22 +30,22 @@ def reset_password(email: str):
 
 @router.post("/confirm-reset-password")
 def confirm_reset_password(token: str, password: str):
-    return auth_service.confirm_reset_password(BaseToken.get_data(token), password)
+    return auth_service.confirm_reset_password(BaseToken.get_data(token, expected_type=TokenType.RESET_PASS, require_available=False, allow_service=False), password)
 
 
 @router.post("/refresh-token")
-def refresh_token(refresh_token: BaseToken = Depends(JWTBearer())):
+def refresh_token(refresh_token: BaseToken = Depends(JWTBearer(expected_type=TokenType.REFRESH, allow_service=False))):
     return auth_service.refresh_token(refresh_token)
 
 
 @router.get("/me", response_model=ProfileGet)
-def me(token: BaseToken = Depends(JWTBearer())):
+def me(token: BaseToken = Depends(JWTBearer(require_available=False, allow_service=False))):
     return auth_service.get_me(token)
 
 
 @router.post("/verify", response_model=VerificationResult)
 def verify(token: str):
-    return auth_service.verify_user(BaseToken.get_data(token))
+    return auth_service.verify_user(BaseToken.get_data(token, expected_type=TokenType.VERIFICATION, require_available=False, allow_service=False))
 
 
 @router.post("/force-verify/{user_id}")

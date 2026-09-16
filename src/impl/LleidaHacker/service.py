@@ -1,3 +1,4 @@
+from src.impl.User.service import UserService
 from datetime import datetime as date
 
 from fastapi_sqlalchemy import db
@@ -70,10 +71,13 @@ class LleidaHackerService(BaseService):
         if payload.image is not None:
             payload = check_image(payload)
         updated = set_existing_data(lleidahacker, payload)
+        if payload.active is False:
+            UserService.revoke_tokens(lleidahacker)
         lleidahacker.updated_at = date.now()
         updated.append("updated_at")
         if payload.password is not None:
             lleidahacker.password = get_password_hash(payload.password)
+            UserService.revoke_tokens(lleidahacker)
         db.session.commit()
         db.session.refresh(lleidahacker)
         return lleidahacker, updated
@@ -122,6 +126,7 @@ class LleidaHackerService(BaseService):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 0
+        UserService.revoke_tokens(lleidahacker)
         lleidahacker.accepted = 0
         lleidahacker.rejected = 1
         db.session.commit()
@@ -142,6 +147,7 @@ class LleidaHackerService(BaseService):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 0
+        UserService.revoke_tokens(lleidahacker)
         db.session.commit()
         db.session.refresh(lleidahacker)
         return lleidahacker

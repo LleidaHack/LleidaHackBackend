@@ -738,6 +738,8 @@ class EventService(BaseService):
                 HackerRegistration.user_id == data.user_id,
                 HackerRegistration.event_id == data.event_id,
             )
+            .populate_existing()
+            .with_for_update()
             .first()
         )
         if user_registration is None:
@@ -749,6 +751,7 @@ class EventService(BaseService):
         if user_registration.confirmed_assistance:
             raise InvalidDataException("User already confirmed assistance")
         user_registration.confirmed_assistance = True
+        user_registration.confirm_assistance_token = ""
         db.session.commit()
         db.session.refresh(user_registration)
         return user_registration

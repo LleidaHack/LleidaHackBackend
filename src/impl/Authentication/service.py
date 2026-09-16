@@ -35,8 +35,9 @@ class AuthenticationService(BaseService):
     def create_access_and_refresh_token(self, user: User):
         access_token = AccesToken(user)
         refresh_token = RefreshToken(user)
-        access_token.user_set()
-        refresh_token.user_set()
+        user.token = access_token.to_token()
+        user.refresh_token = refresh_token.to_token()
+        db.session.commit()
         return access_token, refresh_token
 
     @BaseService.needs_service(UserService)
@@ -44,8 +45,8 @@ class AuthenticationService(BaseService):
         user = self.user_service.get_by_email(mail)
         if not verify_password(password, user.password):
             raise AuthenticationException("Incorrect password")
-        if not user.is_verified:
-            raise InvalidDataException("User not verified")
+        if not BaseToken.is_available(user):
+            raise AuthenticationException("Account is not available")
         access_token, refresh_token = self.create_access_and_refresh_token(user)
         return {
             "user_id": user.id,
@@ -56,7 +57,9 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def refresh_token(self, refresh_token: RefreshToken):
-        user = self.user_service.get_by_id(refresh_token.user_id)
+        user = self.user_service.get_for_update(refresh_token.user_id)
+        if not BaseToken.is_available(user):
+            raise AuthenticationException("Account is not available")
         if not (refresh_token.to_token() == user.refresh_token):
             raise InvalidDataException("Invalid token")
         acces_token, refresh_token = self.create_access_and_refresh_token(user)
@@ -93,11 +96,12 @@ class AuthenticationService(BaseService):
     def confirm_reset_password(self, token: ResetPassToken, password: str):
         if token.expt < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
-        user = self.user_service.get_by_id(token.user_id)
+        user = self.user_service.get_for_update(token.user_id)
         if not (token.to_token() == user.rest_password_token):
             raise InvalidDataException("Invalid token")
         user.password = get_password_hash(password)
         user.rest_password_token = None
+        self.user_service.revoke_tokens(user)
         db.session.commit()
         db.session.refresh(user)
         return {"success": True}
@@ -110,7 +114,7 @@ class AuthenticationService(BaseService):
     def verify_user(self, token: VerificationToken):
         if token.expt < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
-        user = self.user_service.get_by_id(token.user_id)
+        user = self.user_service.get_for_update(token.user_id)
         if user.verification_token != token.to_token():
             raise InvalidDataException("Invalid token")
         self.user_service._verify_user(token.user_id)

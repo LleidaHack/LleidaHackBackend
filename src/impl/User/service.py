@@ -19,6 +19,18 @@ from src.utils.UserType import UserType
 class UserService(BaseService):
     name = "user_service"
 
+    @staticmethod
+    def revoke_tokens(user):
+        user.token = ""
+        user.refresh_token = ""
+
+    def get_for_update(self, user_id: int):
+        user = (db.session.query(User).filter(User.id == user_id)
+                .populate_existing().with_for_update().first())
+        if user is None:
+            raise NotFoundException("User not found")
+        return user
+
     def update_token(self, token):
         user = self.get_by_id(token.user_id)
         type = token.type

@@ -50,6 +50,11 @@ def test_hacker_cannot_read_organizer_nif(client, signup_payload, engine):
         session.add(organizer)
         session.commit()
         organizer_id = organizer.id
+    from src.impl.User.model import User
+    with Session(engine) as session:
+        user = session.get(User, signup["user_id"])
+        user.is_verified = True
+        session.commit()
     headers = {"Authorization": f"Bearer {signup['access_token']}"}
     for path in ("/v1/lleidahacker/all", f"/v1/lleidahacker/{organizer_id}"):
         response = client.get(path, headers=headers)

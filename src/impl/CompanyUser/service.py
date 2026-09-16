@@ -1,3 +1,4 @@
+from src.impl.User.service import UserService
 from datetime import datetime as date
 
 from fastapi_sqlalchemy import db
@@ -80,6 +81,7 @@ class CompanyUserService(BaseService):
         updated.append("updated_at")
         if payload.password is not None:
             company_user.password = get_password_hash(payload.password)
+            UserService.revoke_tokens(company_user)
             updated.append("password")
         db.session.commit()
         db.session.refresh(company_user)

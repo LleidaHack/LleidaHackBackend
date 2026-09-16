@@ -1,3 +1,4 @@
+from src.impl.User.service import UserService
 from datetime import datetime as date
 
 from fastapi_sqlalchemy import db
@@ -137,6 +138,7 @@ class HackerService(BaseService):
         updated.append("updated_at")
         if payload.password is not None:
             hacker.password = get_password_hash(payload.password)
+            UserService.revoke_tokens(hacker)
         db.session.commit()
         db.session.refresh(hacker)
         return hacker, updated
@@ -148,6 +150,7 @@ class HackerService(BaseService):
         if hacker.banned:
             raise InvalidDataException("Hacker already banned")
         hacker.banned = True
+        UserService.revoke_tokens(hacker)
         db.session.commit()
         db.session.refresh(hacker)
         return hacker

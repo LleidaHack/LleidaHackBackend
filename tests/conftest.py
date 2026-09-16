@@ -89,3 +89,47 @@ def signup_payload():
             "comercial_notifications": False, "terms_and_conditions": True,
         },
     }
+
+
+@pytest.fixture
+def create_user(app, engine):
+    from datetime import date
+    from sqlalchemy.orm import Session
+    from src.impl.Hacker.model import Hacker
+    from src.impl.LleidaHacker.model import LleidaHacker
+    from src.impl.UserConfig.model import UserConfig
+    from src.utils.Token import AccesToken, RefreshToken, VerificationToken, ResetPassToken
+    from src.utils.security import get_password_hash
+
+    def create(role="hacker", **overrides):
+        with Session(engine) as session:
+            config = UserConfig(default_lang="en")
+            session.add(config)
+            session.flush()
+            values = dict(
+                name="Test User", nickname=f"user-{config.id}",
+                email=f"user-{config.id}@example.test", telephone=f"600{config.id:06d}",
+                password=get_password_hash("TestPassword123"),
+                birthdate=date(2000, 1, 1), food_restrictions="", address="",
+                shirt_size="M", code=f"code-{config.id}", config_id=config.id,
+                is_verified=True, github="", linkedin="",
+            )
+            model = Hacker
+            if role == "organizer":
+                model = LleidaHacker
+                values.update(role="organizer", nif=f"test-nif-{config.id}", active=True, accepted=True)
+            values.update(overrides)
+            user = model(**values)
+            session.add(user)
+            session.flush()
+            user.token = AccesToken(user).to_token()
+            user.refresh_token = RefreshToken(user).to_token()
+            user.verification_token = VerificationToken(user).to_token()
+            user.rest_password_token = ResetPassToken(user).to_token()
+            session.commit()
+            return SimpleNamespace(
+                id=user.id, email=user.email, access=user.token, refresh=user.refresh_token,
+                verification=user.verification_token, reset=user.rest_password_token,
+                headers={"Authorization": f"Bearer {user.token}"},
+            )
+    return create

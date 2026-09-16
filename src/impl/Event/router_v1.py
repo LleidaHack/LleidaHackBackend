@@ -21,6 +21,7 @@ from src.utils.JWTBearer import JWTBearer
 from src.utils.service_utils import subtract_lists
 from src.utils.Token import AssistenceToken, BaseToken
 from src.utils.UserType import UserType
+from src.utils.TokenType import TokenType
 
 # from src.error.NotFoundException import NotFoundException
 
@@ -208,7 +209,7 @@ def count_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBear
 
 
 @router.get("/confirm_assistance/")
-def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
+def confirm_assistance(token: AssistenceToken = Depends(JWTBearer(expected_type=TokenType.ASSISTENCE, allow_service=False))):
     """
     Confirm assistance of a hacker to an event
     """
