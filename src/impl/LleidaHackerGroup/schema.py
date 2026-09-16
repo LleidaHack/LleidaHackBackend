@@ -1,4 +1,5 @@
 from typing import List, Optional
+from pydantic import Field
 
 from src.impl.User.schema import UserGet
 from src.impl.LleidaHacker.schema import LleidaHackerGet
@@ -11,9 +12,11 @@ class LleidaHackerGroupCreate(BaseSchema):
 
 
 class LleidaHackerGroupGet(BaseSchema):
+    id: int
     name: str
     description: str
-    leader: List[UserGet]
+    leader: List[UserGet] = Field(validation_alias="leaders")
+    members: List[LleidaHackerGet]
 
 
 class LleidaHackerGroupGetAll(LleidaHackerGroupGet):
