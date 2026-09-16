@@ -15,7 +15,7 @@ from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
 from src.impl.Company.service import CompanyService
-from src.impl.Event.model import Event
+from src.impl.Event.model import Event, CompanyParticipation
 from src.impl.Event.model import HackerRegistration
 from src.impl.Event.schema import EventCreate
 from src.impl.Event.schema import HackerEventRegistration, HackerEventRegistrationUpdate
@@ -122,13 +122,15 @@ class EventService(BaseService):
         e = (
             db.session.query(Event)
             .filter(
-                Event.name.ilike("HackEPS%"), Event.start_date <= datetime(year, 12, 31)
+                Event.name.ilike("HackEPS%"),
+                Event.start_date >= datetime(year, 1, 1),
+                Event.start_date < datetime(year + 1, 1, 1)
             )
             .order_by(desc(Event.end_date))
             .first()
         )
         if e is None:
-            raise NotFoundException("We can't find an event for this year or earlier ")
+            raise NotFoundException("No HackEPS event exists for this year")
 
         return e
 
@@ -255,7 +257,31 @@ class EventService(BaseService):
 
     def get_event_sponsors(self, id: int):
         event = self.get_by_id(id)
-        return event.sponsors
+        from src.impl.Company.schema import CompanyGet
+        memberships = db.session.query(CompanyParticipation).filter_by(event_id=id).all()
+        by_company = {row.company_id: row for row in memberships}
+        sponsors = []
+        for company in event.sponsors:
+            entry = CompanyGet.model_validate(company).model_dump()
+            membership = by_company[company.id]
+            entry["tier"] = membership.tier if membership.tier is not None else company.tier
+            sponsors.append((membership.display_order, company.id, entry))
+        return [entry for _, _, entry in sorted(sponsors, key=lambda row: (row[0], row[1]))]
+
+    def update_sponsor(self, event_id, company_id, payload, token):
+        if not token.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        if event.archived:
+            raise InvalidDataException("Cannot change sponsors of an archived event")
+        membership = db.session.query(CompanyParticipation).filter_by(
+            event_id=event_id, company_id=company_id).first()
+        if membership is None:
+            raise NotFoundException("Sponsor is not linked to this event")
+        membership.tier = payload.tier
+        membership.display_order = payload.display_order
+        db.session.commit()
+        return {"success": True}
 
     def get_event_groups(self, id: int, data: BaseToken):
         event = self.get_by_id(id)
@@ -271,7 +297,12 @@ class EventService(BaseService):
                 "Unable to operate with an archived event, unarchive it first"
             )
         company = self.company_service.get_by_id(company_id)
-        event.sponsors.append(company)
+        if company not in event.sponsors:
+            event.sponsors.append(company)
+            db.session.flush()
+            membership = db.session.query(CompanyParticipation).filter_by(
+                event_id=id, company_id=company_id).one()
+            membership.tier = company.tier
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(company)

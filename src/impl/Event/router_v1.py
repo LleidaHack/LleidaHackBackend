@@ -1,3 +1,4 @@
+from src.impl.Event.schema import EventSponsorUpdate
 from datetime import datetime
 from typing import List, Union
 
@@ -452,3 +453,9 @@ def send_reminder_mails(
 #         raise NotFoundException("Event not found")
 #     users = subtract_lists(all, event.registered_hackers)
 #     return mail_service.send_all_reminder_mails(users)
+
+
+@router.patch("/{id}/sponsors/{company_id}")
+def update_sponsor(id: int, company_id: int, payload: EventSponsorUpdate,
+                   token: BaseToken = Depends(JWTBearer())):
+    return event_service.update_sponsor(id, company_id, payload, token)

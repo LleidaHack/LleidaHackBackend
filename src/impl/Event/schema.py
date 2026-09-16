@@ -2,14 +2,29 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 
 from src.utils.Base.BaseSchema import BaseSchema
 from src.impl.Hacker.schema import HackerGetAll
 from src.impl.HackerGroup.schema import HackerGroupGet
 
 
+class ScheduleEntry(BaseSchema):
+    title: str
+    description: str = ""
+    starts_at: Optional[str] = None
+
+    @field_validator("starts_at")
+    @classmethod
+    def validate_start(cls, value):
+        if value is not None:
+            datetime.fromisoformat(value)
+        return value
+
+
 class EventCreate(BaseSchema):
+    schedule: list[ScheduleEntry] = Field(default_factory=list)
+    activities: list[str] = Field(default_factory=list)
     name: str
     description: str
     start_date: datetime
@@ -48,6 +63,8 @@ class EventCreate(BaseSchema):
 
 
 class EventGet(BaseSchema):
+    schedule: list[ScheduleEntry] = Field(default_factory=list)
+    activities: list[str] = Field(default_factory=list)
     id: int
     name: str
     description: str
@@ -69,6 +86,8 @@ class EventGetAll(EventGet):
 
 
 class EventUpdate(BaseSchema):
+    schedule: Optional[list[ScheduleEntry]] = None
+    activities: Optional[list[str]] = None
     name: Optional[str] = None
     description: Optional[str] = None
     start_date: Optional[datetime] = None
@@ -145,3 +164,15 @@ class RegistrationConfirmationGet(BaseSchema):
     event_id: int
     user_id: int
     confirmed_assistance: bool
+
+
+class EventSponsorUpdate(BaseSchema):
+    tier: int
+    display_order: int = 0
+
+    @field_validator("tier")
+    @classmethod
+    def validate_tier(cls, value):
+        if value not in [0, 1, 2, 3]:
+            raise ValueError("Unknown sponsor tier")
+        return value

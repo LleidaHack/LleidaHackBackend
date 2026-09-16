@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from src.utils.Base.BaseModel import BaseModel
@@ -85,6 +85,8 @@ class LleidaHackerParticipation(BaseModel):
 
 class CompanyParticipation(BaseModel):
     __tablename__ = "company_event_participation"
+    tier: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    display_order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     company_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("company.id"), primary_key=True, index=True
     )
@@ -95,6 +97,8 @@ class CompanyParticipation(BaseModel):
 
 class Event(BaseModel):
     __tablename__ = "event"
+    schedule: Mapped[list] = mapped_column(JSON, default=list, server_default="[]")
+    activities: Mapped[list] = mapped_column(JSON, default=list, server_default="[]")
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[Optional[str]] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(String)
