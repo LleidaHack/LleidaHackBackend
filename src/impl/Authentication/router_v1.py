@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBasicCredentials
 
-from src.impl.Authentication.schema import ContactMail, ProfileGet, VerificationResult, PasswordResetConfirm
+from src.impl.Authentication.schema import ContactMail, ProfileGet, VerificationResult, VerificationSession, PasswordResetConfirm
 from src.impl.Authentication.service import AuthenticationService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.security import sec
@@ -47,7 +47,7 @@ def me(token: BaseToken = Depends(JWTBearer(require_available=False, allow_servi
     return auth_service.get_me(token)
 
 
-@router.post("/verify", response_model=VerificationResult)
+@router.post("/verify", response_model=VerificationSession, response_model_exclude_none=True)
 def verify(token: str):
     return auth_service.verify_user(BaseToken.get_data(token, expected_type=TokenType.VERIFICATION, require_available=False, allow_service=False))
 

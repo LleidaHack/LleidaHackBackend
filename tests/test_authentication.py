@@ -173,3 +173,23 @@ def test_participant_cannot_manually_verify_another_account(client, create_user,
     assert client.post(f"/v1/auth/force-verify/{target.id}").status_code == 401
     with Session(engine) as session:
         assert not session.get(User, target.id).is_verified
+
+
+def test_verification_creates_a_session_for_the_verified_account(client, create_user):
+    user = create_user(is_verified=False)
+    response = client.post("/v1/auth/verify", params={"token": user.verification})
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["user_id"] == user.id
+    assert result["access_token"] and result["refresh_token"]
+    profile = client.get("/v1/auth/me", headers={"Authorization": f"Bearer {result['access_token']}"})
+    assert profile.status_code == 200
+    assert profile.json()["id"] == user.id
+    assert client.post("/v1/auth/verify", params={"token": user.verification}).status_code == 401
+
+
+def test_verification_does_not_sign_in_a_banned_account(client, create_user):
+    user = create_user(is_verified=False, banned=True)
+    response = client.post("/v1/auth/verify", params={"token": user.verification})
+    assert response.status_code == 200, response.text
+    assert response.json() == {"success": True}

@@ -35,6 +35,13 @@ class VerificationResult(BaseSchema):
     success: bool
 
 
+class VerificationSession(VerificationResult):
+    user_id: Optional[int] = None
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    token_type: Optional[str] = None
+
+
 class PasswordResetConfirm(BaseSchema):
     token: str
     password: str

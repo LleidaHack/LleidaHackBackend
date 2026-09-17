@@ -120,7 +120,13 @@ class AuthenticationService(BaseService):
         if user.verification_token != token.to_token():
             raise InvalidDataException("Invalid token")
         self.user_service._verify_user(token.user_id)
-        return {"success": True}
+        db.session.refresh(user)
+        if not BaseToken.is_available(user):
+            return {"success": True}
+        access_token, refresh_token = self.create_access_and_refresh_token(user)
+        return {"success": True, "user_id": user.id,
+                "access_token": access_token.to_token(),
+                "refresh_token": refresh_token.to_token(), "token_type": "Bearer"}
 
     @BaseService.needs_service(UserService)
     def force_verification(self, user_id: int, data: BaseToken):
