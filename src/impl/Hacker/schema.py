@@ -13,6 +13,8 @@ class HackerCreate(UserCreate):
 
 
 class HackerGet(UserGet):
+    # Exposed so group members can be identified (e.g. leader kicking a member).
+    id: int
     github: str
     linkedin: str
 
