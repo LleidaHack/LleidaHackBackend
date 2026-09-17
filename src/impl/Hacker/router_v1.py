@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 
 # from services.mail import send_registration_confirmation_email
@@ -61,6 +61,17 @@ def get_all(token: BaseToken = Depends(JWTBearer())):
 @router.get("/{hackerId}", response_model=Union[HackerGetAll, HackerGet])
 def get(hackerId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker(hackerId, token)
+
+
+@router.get("/{hackerId}/cv")
+def get_cv(hackerId: int, token: BaseToken = Depends(JWTBearer())):
+    """Return the hacker's CV as a PDF (organizers or the hacker themselves)."""
+    pdf = hacker_service.get_cv(hackerId, token)
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="cv_{hackerId}.pdf"'},
+    )
 
 
 @router.put("/{hackerId}")

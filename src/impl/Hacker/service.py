@@ -1,3 +1,5 @@
+import base64
+
 from src.impl.User.service import UserService
 from datetime import datetime as date
 
@@ -55,6 +57,21 @@ class HackerService(BaseService):
         if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
             return HackerGetAll.model_validate(user)
         return HackerGet.model_validate(user)
+
+    def get_cv(self, hackerId: int, data: BaseToken):
+        user = self.get_by_id(hackerId)
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
+            raise AuthenticationException("Not authorized to view this CV")
+        if not user.cv:
+            raise NotFoundException("This hacker has no CV")
+        raw = user.cv.strip()
+        # Accept both a bare base64 string and a data URI (data:...;base64,XXXX)
+        if raw.startswith("data:") and "," in raw:
+            raw = raw.split(",", 1)[1]
+        try:
+            return base64.b64decode(raw, validate=True)
+        except Exception:
+            raise InvalidDataException("Stored CV is not a valid base64 PDF")
 
     def get_hacker_by_code(self, code: str):
         user = db.session.query(Hacker).filter(Hacker.code == code).first()
