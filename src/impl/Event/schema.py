@@ -166,6 +166,26 @@ class RegistrationConfirmationGet(BaseSchema):
     confirmed_assistance: bool
 
 
+class HackerEventRegistrationGet(BaseSchema):
+    # Read-only view of a hacker's registration for one event. All optional and
+    # without the shirt-size validator so organizers can always read whatever was
+    # stored (CV, experience description, links) when reviewing acceptances.
+    user_id: int
+    event_id: int
+    shirt_size: Optional[str] = None
+    food_restrictions: Optional[str] = None
+    cv: Optional[str] = None
+    description: Optional[str] = None
+    github: Optional[str] = None
+    linkedin: Optional[str] = None
+    studies: Optional[str] = None
+    study_center: Optional[str] = None
+    location: Optional[str] = None
+    how_did_you_meet_us: Optional[str] = None
+    wants_credit: Optional[bool] = None
+    confirmed_assistance: Optional[bool] = None
+
+
 class EventSponsorUpdate(BaseSchema):
     tier: int
     display_order: int = 0

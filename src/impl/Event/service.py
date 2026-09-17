@@ -241,6 +241,26 @@ class EventService(BaseService):
         )
         return user_registration.confirmed_assistance
 
+    def get_registration(self, id: int, hacker_id: int, data: BaseToken):
+        """Return a hacker's registration for one event (organizers only).
+
+        Exposes the application data (CV, experience description, links) so the
+        admin panel can review it when deciding acceptances.
+        """
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        registration = (
+            db.session.query(HackerRegistration)
+            .filter(
+                HackerRegistration.user_id == hacker_id,
+                HackerRegistration.event_id == id,
+            )
+            .first()
+        )
+        if registration is None:
+            raise NotFoundException("Hacker is not registered")
+        return registration
+
     @BaseService.needs_service(HackerService)
     def is_participant(self, id: int, hacker_id: int, data: BaseToken):
         event = self.get_by_id(id)

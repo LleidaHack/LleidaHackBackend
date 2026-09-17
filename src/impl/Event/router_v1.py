@@ -14,6 +14,7 @@ from src.impl.Event.schema import (
     RegistrationConfirmationGet,
     HackerEventRegistration,
     HackerEventRegistrationUpdate,
+    HackerEventRegistrationGet,
 )
 from src.impl.Event.schema import EventGet
 from src.impl.Event.schema import EventGetAll
@@ -150,6 +151,14 @@ def update_hacker_registration(
 ):
     event = event_service.update_register(id, hacker_id, payload, token)
     return {"success": True, "event_id": event.id, "user_id": hacker_id}
+
+
+@router.get("/{id}/registration/{hacker_id}", response_model=HackerEventRegistrationGet)
+def get_hacker_registration(
+    id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
+):
+    """Registration data (CV, experience, links) of a hacker for this event."""
+    return event_service.get_registration(id, hacker_id, token)
 
 
 # @router.delete("/{id}/participants/{hacker_id}")
