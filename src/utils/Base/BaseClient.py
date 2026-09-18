@@ -9,7 +9,7 @@ from src.utils.Singleton import Singleton
 class BaseClient(metaclass=Singleton):
     def needs_client(client):
         def wrapper(f):
-            def get_client(*args):
+            def get_client(*args, **kwargs):
                 s = args[0]
                 cli = client
                 if type(cli) is str:
@@ -18,7 +18,7 @@ class BaseClient(metaclass=Singleton):
                     cli = getattr(cli, client)
                 if getattr(s, cli.name) is None:
                     setattr(s, cli.name, cli())
-                return f(*args)
+                return f(*args, **kwargs)
 
             return get_client
 
