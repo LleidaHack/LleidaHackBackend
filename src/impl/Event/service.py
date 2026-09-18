@@ -22,13 +22,16 @@ from src.impl.Event.schema import HackerEventRegistration, HackerEventRegistrati
 from src.impl.Event.schema import EventGet
 from src.impl.Event.schema import EventGetAll
 from src.impl.Event.schema import EventUpdate
+from src.impl.Hacker.model import Hacker
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup
 from src.impl.HackerGroup.model import HackerGroupUser
+from src.impl.Voucher.model import Voucher
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
+from src.utils.qr import qr_png, ticket_qr_url
 from src.utils.service_utils import (
     check_image,
     set_existing_data,
@@ -37,6 +40,9 @@ from src.utils.service_utils import (
 )
 from src.utils.Token import AssistenceToken, BaseToken
 from src.utils.UserType import UserType
+
+
+logger = logging.getLogger(__name__)
 
 
 class EventService(BaseService):
@@ -57,6 +63,7 @@ class EventService(BaseService):
                 "finish": None,
                 "total": int(total) if total is not None else 0,
                 "sent": 0,
+                "failed": 0,
                 "status": "running",
             }
 
@@ -65,6 +72,12 @@ class EventService(BaseService):
             job = self._sending_jobs.get(event_id)
             if job and job.get("status") == "running":
                 job["sent"] = job.get("sent", 0) + 1
+
+    def _increment_failed(self, event_id: int):
+        with self._sending_jobs_lock:
+            job = self._sending_jobs.get(event_id)
+            if job and job.get("status") == "running":
+                job["failed"] = job.get("failed", 0) + 1
 
     def _finish_job(self, event_id: int):
         with self._sending_jobs_lock:
@@ -86,6 +99,7 @@ class EventService(BaseService):
             # copy minimal fields to compute without lock
             start = job.get("start")
             sent = job.get("sent", 0)
+            failed = job.get("failed", 0)
             total = job.get("total", 0)
             status = job.get("status")
             finish = job.get("finish")
@@ -98,6 +112,7 @@ class EventService(BaseService):
         return {
             "running": status == "running",
             "sent": int(sent),
+            "failed": int(failed),
             "total": int(total),
             "elapsed_seconds": int(elapsed),
             "estimated_remaining_seconds": estimated_remaining,
@@ -1320,3 +1335,182 @@ class EventService(BaseService):
                 pass
         finally:
             session.close()
+
+    # ------------------------------------------------------------------
+    # Check-in tickets: the hacker's QR (their user code) mailed once they are
+    # accepted and have confirmed. Scanned at the door and bound to a voucher.
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _ticket_recipients(session, event: Event, force: bool = False):
+        """(hacker, registration) pairs that should receive the ticket mail."""
+        recipients = []
+        for hacker in event.accepted_hackers:
+            registration = (
+                session.query(HackerRegistration)
+                .filter(
+                    HackerRegistration.user_id == hacker.id,
+                    HackerRegistration.event_id == event.id,
+                )
+                .first()
+            )
+            if registration is None or not registration.confirmed_assistance:
+                continue
+            if registration.ticket_sent_at is not None and not force:
+                continue
+            recipients.append((hacker, registration))
+        return recipients
+
+    def get_tickets_status(self, event_id: int, data: BaseToken):
+        """Worker-safe progress: counts come from the DB, `running` is best-effort."""
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        eligible = sent = 0
+        for hacker in event.accepted_hackers:
+            registration = (
+                db.session.query(HackerRegistration)
+                .filter(
+                    HackerRegistration.user_id == hacker.id,
+                    HackerRegistration.event_id == event.id,
+                )
+                .first()
+            )
+            if registration is None or not registration.confirmed_assistance:
+                continue
+            eligible += 1
+            if registration.ticket_sent_at is not None:
+                sent += 1
+        progress = self.get_send_progress(event_id)
+        return {
+            "eligible": eligible,
+            "sent": sent,
+            "pending": eligible - sent,
+            "running": bool(progress.get("running")) and self._job_type(event_id) == "ticket",
+            "progress": progress,
+        }
+
+    def _job_type(self, event_id: int):
+        with self._sending_jobs_lock:
+            job = self._sending_jobs.get(event_id)
+            return job.get("type") if job else None
+
+    @BaseService.needs_service(MailClient)
+    def send_ticket_mails_background(self, event_id: int, force: bool = False, delay: float = 0.0):
+        """
+        Background-safe sender: mails the check-in QR to every accepted+confirmed
+        hacker that has not received it yet (`force` resends to all of them).
+        """
+        engine = create_engine(settings.database.url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        session = SessionLocal()
+        try:
+            event = session.query(Event).filter(Event.id == event_id).first()
+            if event is None or event.archived:
+                return
+            recipients = self._ticket_recipients(session, event, force)
+            try:
+                self._start_job(event_id, "ticket", len(recipients))
+            except Exception:
+                pass
+            for hacker, registration in recipients:
+                try:
+                    mail = self.mail_client.create_mail(
+                        MailCreate(
+                            template_id=self.mail_client.get_internall_template_id(
+                                InternalTemplate.EVENT_HACKER_TICKET
+                            ),
+                            subject=f"{event.name} - El teu tiquet de check-in",
+                            receiver_id=str(hacker.id),
+                            receiver_mail=str(hacker.email),
+                            # qr_url goes last: the template joins any extra commas into it
+                            fields=f"{hacker.name},{event.name},{hacker.code},{ticket_qr_url(event.id, hacker.code)}",
+                        )
+                    )
+                    self.mail_client.send_mail_by_id(mail.id)
+                    registration.ticket_sent_at = datetime.now()
+                    session.commit()
+                    try:
+                        self._increment_sent(event_id)
+                    except Exception:
+                        pass
+                    if delay and delay > 0:
+                        time.sleep(delay)
+                except Exception:
+                    session.rollback()
+                    logger.exception("Ticket mail failed for hacker %s", hacker.id)
+                    try:
+                        self._increment_failed(event_id)
+                    except Exception:
+                        pass
+                    continue
+            try:
+                self._finish_job(event_id)
+            except Exception:
+                pass
+        finally:
+            session.close()
+
+    @BaseService.needs_service(MailClient)
+    def check_mail_available(self):
+        """Fail fast (503) instead of scheduling a job that cannot send anything."""
+        self.mail_client.ensure_initialized()
+
+    def get_ticket_qr(self, event_id: int, code: str) -> bytes:
+        """PNG of a ticket QR; only for hackers accepted and confirmed for the event.
+
+        Public (mail clients can't authenticate) but the code is unguessable.
+        """
+        event = self.get_by_id(event_id)
+        hacker = db.session.query(Hacker).filter(Hacker.code == code).first()
+        if hacker is None or hacker not in event.accepted_hackers:
+            raise NotFoundException("Ticket not found")
+        registration = (
+            db.session.query(HackerRegistration)
+            .filter(
+                HackerRegistration.user_id == hacker.id,
+                HackerRegistration.event_id == event.id,
+            )
+            .first()
+        )
+        if registration is None or not registration.confirmed_assistance:
+            raise NotFoundException("Ticket not found")
+        return qr_png(hacker.code)
+
+    @BaseService.needs_service(HackerService)
+    def get_ticket(self, event_id: int, hacker_id: int, data: BaseToken):
+        """Ticket state shown on the hacker's profile (or to an organizer)."""
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER], hacker_id):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        hacker = self.hacker_service.get_by_id(hacker_id)
+        registration = (
+            db.session.query(HackerRegistration)
+            .filter(
+                HackerRegistration.user_id == hacker.id,
+                HackerRegistration.event_id == event.id,
+            )
+            .first()
+        )
+        accepted = hacker in event.accepted_hackers
+        confirmed = bool(registration and registration.confirmed_assistance)
+        voucher = (
+            db.session.query(Voucher)
+            .filter(Voucher.event_id == event.id, Voucher.hacker_id == hacker.id)
+            .first()
+        )
+        has_ticket = accepted and confirmed
+        return {
+            "event_id": event.id,
+            "event_name": event.name,
+            "hacker_id": hacker.id,
+            "registered": registration is not None,
+            "accepted": accepted,
+            "confirmed": confirmed,
+            "has_ticket": has_ticket,
+            "code": hacker.code if has_ticket else None,
+            "qr_url": ticket_qr_url(event.id, hacker.code) if has_ticket else None,
+            "ticket_sent_at": registration.ticket_sent_at if registration else None,
+            "checked_in": hacker in event.participants,
+            "voucher_code": voucher.code if voucher else None,
+        }

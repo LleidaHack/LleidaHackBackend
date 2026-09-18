@@ -20,6 +20,7 @@ tags_metadata = [
     {"name": "CompanyUser", "description": "Company user related endpoints"},
     {"name": "Event", "description": "Event related endpoints"},
     {"name": "Meal", "description": "Meal related endpoints"},
+    {"name": "Voucher", "description": "Physical check-in vouchers (badges) per event"},
     {"name": "Authentication", "description": "Authentication related endpoints"},
 ]
 

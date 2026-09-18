@@ -11,3 +11,4 @@ from src.impl.Meal import model  # noqa: F401
 from src.impl.Notification import model  # noqa: F401
 from src.impl.User import model  # noqa: F401
 from src.impl.UserConfig import model  # noqa: F401
+from src.impl.Voucher import model  # noqa: F401

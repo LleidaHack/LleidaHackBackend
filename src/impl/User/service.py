@@ -9,6 +9,7 @@ from src.error.NotFoundException import NotFoundException
 from src.impl.User.model import User
 from src.impl.User.schema import UserGet
 from src.impl.User.schema import UserGetAll
+from src.impl.Voucher.model import Voucher
 from src.utils.Base.BaseService import BaseService
 
 # from src.utils.Token import AccesToken
@@ -76,6 +77,15 @@ class UserService(BaseService):
 
     def get_by_code(self, code: str, exc=True):
         user = db.session.query(User).filter(User.code == code).first()
+        if user is None:
+            # an assigned physical voucher identifies its hacker as well
+            voucher = (
+                db.session.query(Voucher)
+                .filter(Voucher.code == code, Voucher.hacker_id.isnot(None))
+                .first()
+            )
+            if voucher is not None:
+                user = db.session.query(User).filter(User.id == voucher.hacker_id).first()
         if user is None and exc:
             raise NotFoundException("User not found")
         return user
