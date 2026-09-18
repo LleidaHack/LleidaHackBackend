@@ -105,6 +105,11 @@ def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event_meals(id, token)
 
 
+@router.get("/{id}/checkin-summary")
+def get_checkin_summary(id: int, token: BaseToken = Depends(JWTBearer())):
+    return event_service.get_checkin_summary(id, token)
+
+
 @router.get("/{id}/participants", response_model=List[HackerGet])
 def get_participants(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event_participants(id, token)

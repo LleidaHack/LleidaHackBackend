@@ -286,6 +286,21 @@ class EventService(BaseService):
         event = self.get_by_id(id)
         return event.meals
 
+    def get_checkin_summary(self, id: int, data: BaseToken):
+        """Live counters for the check-in app (shared by every scanning device)."""
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(id)
+        return {
+            "registered": len(event.registered_hackers),
+            "accepted": len(event.accepted_hackers),
+            "participating": len(event.participants),
+            "meals": [
+                {"id": meal.id, "name": meal.name, "eaten": len(meal.users)}
+                for meal in event.meals
+            ],
+        }
+
     def get_event_participants(self, id: int, data: BaseToken):
         event = self.get_by_id(id)
         return event.registered_hackers
