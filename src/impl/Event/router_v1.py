@@ -2,7 +2,7 @@ from src.impl.Event.schema import EventSponsorUpdate
 from datetime import datetime
 from typing import List, Union
 
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, Response
 
 from src.configuration.Settings import settings
 from src.error.AuthenticationException import AuthenticationException
@@ -11,6 +11,8 @@ from src.impl.Event.schema import (
     EventCreate,
     EventGroupsGet,
     EventHackersGet,
+    EventTicketGet,
+    EventTicketsStatus,
     RegistrationConfirmationGet,
     HackerEventRegistration,
     HackerEventRegistrationUpdate,
@@ -423,6 +425,53 @@ def get_send_progress(event_id: int, token: BaseToken = Depends(JWTBearer())):
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
     return event_service.get_send_progress(event_id)
+
+@router.post("/{event_id}/tickets/send")
+def send_ticket_mails(
+    event_id: int,
+    background_tasks: BackgroundTasks,
+    force: bool = False,
+    delay: float = 0.0,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    """
+    Mail the check-in ticket (QR) to every accepted and confirmed hacker that
+    has not received it yet. `force=true` resends it to all of them. Runs in
+    background; poll `/tickets/status` for progress.
+    """
+    if not token.check([UserType.LLEIDAHACKER]):
+        raise AuthenticationException("Not authorized")
+    if event_service.is_sending(event_id):
+        raise HTTPException(status_code=409, detail="Sending already in progress for this event")
+    event = event_service.get_by_id(event_id)
+    if event.archived:
+        raise HTTPException(status_code=400, detail="Event is archived")
+    event_service.check_mail_available()
+    background_tasks.add_task(event_service.send_ticket_mails_background, event_id, force, delay)
+    return {"success": True, "scheduled": True}
+
+
+@router.get("/{event_id}/tickets/status", response_model=EventTicketsStatus)
+def get_tickets_status(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """How many accepted+confirmed hackers have received their ticket mail."""
+    return event_service.get_tickets_status(event_id, token)
+
+
+@router.get("/{event_id}/ticket/{hacker_id}", response_model=EventTicketGet)
+def get_ticket(event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())):
+    """Ticket state of a hacker for this event (the hacker themself or an organizer)."""
+    return event_service.get_ticket(event_id, hacker_id, token)
+
+
+@router.get("/{event_id}/ticket/{code}/qr.png")
+def get_ticket_qr(event_id: int, code: str):
+    """Public PNG of a ticket QR, embedded in the ticket mail."""
+    return Response(
+        content=event_service.get_ticket_qr(event_id, code),
+        media_type="image/png",
+        headers={"Cache-Control": "private, max-age=86400"},
+    )
+
 
 @router.post("/{event_id}/send_reminder_mails/")
 def send_reminder_mails(

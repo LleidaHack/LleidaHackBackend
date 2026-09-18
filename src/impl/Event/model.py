@@ -48,6 +48,8 @@ class HackerRegistration(BaseModel):
     confirmed_assistance: Mapped[bool] = mapped_column(Boolean, default=False)
     confirm_assistance_token: Mapped[str] = mapped_column(String, default="")
     wants_credit: Mapped[bool] = mapped_column(Boolean, default=False)
+    # when the check-in ticket mail (QR) was sent; None until generated
+    ticket_sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     # accepted: bool = mapped_column(Boolean, default=False)
 
 

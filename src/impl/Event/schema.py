@@ -196,3 +196,26 @@ class EventSponsorUpdate(BaseSchema):
         if value not in [0, 1, 2, 3]:
             raise ValueError("Unknown sponsor tier")
         return value
+
+
+class EventTicketGet(BaseSchema):
+    event_id: int
+    event_name: Optional[str] = None
+    hacker_id: int
+    registered: bool
+    accepted: bool
+    confirmed: bool
+    has_ticket: bool
+    code: Optional[str] = None
+    qr_url: Optional[str] = None
+    ticket_sent_at: Optional[datetime] = None
+    checked_in: bool
+    voucher_code: Optional[str] = None
+
+
+class EventTicketsStatus(BaseSchema):
+    eligible: int
+    sent: int
+    pending: int
+    running: bool
+    progress: dict

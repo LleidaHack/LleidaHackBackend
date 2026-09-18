@@ -18,6 +18,7 @@ from src.impl.Hacker.schema import HackerGetAll
 from src.impl.Hacker.schema import HackerUpdate
 from src.impl.HackerGroup.model import HackerGroupUser
 from src.impl.UserConfig.model import UserConfig
+from src.impl.Voucher.model import Voucher
 from src.utils.Base.BaseService import (
     BaseService,
 )  # an object to provide global access to a database session
@@ -47,7 +48,16 @@ class HackerService(BaseService):
         return user
 
     def get_by_code(self, code: str):
+        """Resolve a scanned code: the hacker's own ticket code or an assigned voucher."""
         hacker = db.session.query(Hacker).filter(Hacker.code == code).first()
+        if hacker is None:
+            voucher = (
+                db.session.query(Voucher)
+                .filter(Voucher.code == code, Voucher.hacker_id.isnot(None))
+                .first()
+            )
+            if voucher is not None:
+                hacker = db.session.query(Hacker).filter(Hacker.id == voucher.hacker_id).first()
         if hacker is None:
             raise NotFoundException("hacker not found")
         return hacker
@@ -74,10 +84,7 @@ class HackerService(BaseService):
             raise InvalidDataException("Stored CV is not a valid base64 PDF")
 
     def get_hacker_by_code(self, code: str):
-        user = db.session.query(Hacker).filter(Hacker.code == code).first()
-        if user is None:
-            raise NotFoundException("Hacker not found")
-        return user
+        return self.get_by_code(code)
 
     def get_hacker_by_email(self, email: str):
         user = db.session.query(Hacker).filter(Hacker.email == email).first()

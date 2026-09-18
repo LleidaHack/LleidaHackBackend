@@ -80,6 +80,7 @@ def client(app, monkeypatch):
     monkeypatch.setattr(MailClient, "create_mail", lambda self, mail: SimpleNamespace(id=1))
     monkeypatch.setattr(MailClient, "send_mail_by_id", lambda self, mail_id: None)
     monkeypatch.setattr(MailClient, "get_internall_template_id", lambda self, template: 1)
+    monkeypatch.setattr(MailClient, "ensure_initialized", lambda self: None)
     with TestClient(app, raise_server_exceptions=False) as client:
         yield client
 
