@@ -193,7 +193,8 @@ class EventSponsorUpdate(BaseSchema):
     @field_validator("tier")
     @classmethod
     def validate_tier(cls, value):
-        if value not in [0, 1, 2, 3]:
+        # 0 Supreme, 1 Challenger, 2 Premium, 3 Supporter, 4 Col·laboradors.
+        if value not in [0, 1, 2, 3, 4]:
             raise ValueError("Unknown sponsor tier")
         return value
 
