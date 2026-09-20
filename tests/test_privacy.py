@@ -25,7 +25,7 @@ def test_pending_profile_does_not_expose_verification_token(client, signup_paylo
     assert_no_credentials(response.json())
 
 
-def test_verification_response_has_no_credentials(client, signup_payload, engine):
+def test_verification_returns_only_the_new_verified_session(client, signup_payload, engine):
     from src.impl.User.model import User
 
     signup = client.post("/v1/hacker/signup", json=signup_payload).json()
@@ -33,8 +33,18 @@ def test_verification_response_has_no_credentials(client, signup_payload, engine
         token = session.get(User, signup["user_id"]).verification_token
     response = client.post("/v1/auth/verify", params={"token": token})
     assert response.status_code == 200, response.text
-    assert response.json() == {"success": True}
-    assert_no_credentials(response.json())
+    # Verification now intentionally starts a session (existing API contract).
+    # Check the narrow response and ownership rather than treating the newly
+    # issued session tokens as leaked database credentials.
+    result = response.json()
+    assert set(result) == {"success", "user_id", "access_token", "refresh_token", "token_type"}
+    assert result["success"] is True
+    assert result["user_id"] == signup["user_id"]
+    profile = client.get("/v1/auth/me", headers={"Authorization": f"Bearer {result['access_token']}"})
+    assert profile.status_code == 200
+    assert profile.json()["id"] == signup["user_id"]
+    assert profile.json()["is_verified"] is True
+    assert_no_credentials(profile.json())
 
 
 def test_hacker_cannot_read_organizer_nif(client, signup_payload, engine):

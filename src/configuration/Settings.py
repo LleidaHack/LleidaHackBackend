@@ -103,7 +103,7 @@ class RateLimitSettings(BaseSettings):
     mail_per_hour: int = Field(default=20, ge=1)
     mail_per_recipient: int = Field(default=3, ge=1)
     mail_total_per_hour: int = Field(default=300, ge=1)
-    max_body_bytes: int = Field(default=1048576, ge=1024)
+    max_body_bytes: int = Field(default=3145728, ge=1024)
     body_timeout_seconds: float = Field(default=10, gt=0)
 
 
