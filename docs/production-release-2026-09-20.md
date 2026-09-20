@@ -43,9 +43,13 @@ Verified on the actual host:
 
 ## Outstanding release gates
 
-1. Confirm final production frontend, administration and check-in origins and
-   the frontend URL for email links. Existing frontend main sends password-reset
-   credentials as query parameters and needs its prepared compatibility patch.
+1. Production origins confirmed by the owner: `https://hackeps.dev`,
+   `https://gestio.hackeps.dev`, `https://qr.hackeps.dev`. Email frontend URL:
+   `https://hackeps.dev`. Frontends are hosted on Vercel. The old stopped frontend
+   containers/images and their Compose services were removed from the VPS after
+   backup; backend/database services were not restarted. GitHub records HackEPS
+   production commit `2de75aaf7298924488126a7ca58b611064c2eeb7`, whose reset flow
+   already uses JSON. Verify their deployed API targets before cutover.
 2. Production MailBackend lacks `event_hacker_ticket`. Prepare/update the mail
    service/templates before activating this backend; verify all internal
    templates through the mail API without sending real email.
@@ -72,7 +76,8 @@ moving branch. This builds an image but does not contact the production database
 ```sh
 bash deploy/prepare-docker-release.sh "$SHA" "$RELEASE"
 python3 deploy/prepare_production_config.py "$SHA" "$RELEASE" \
-  --rotate-secrets --origins '["https://CONFIRMED-PRODUCTION-ORIGIN"]'
+  --rotate-secrets --front-url https://hackeps.dev \
+  --origins '["https://hackeps.dev","https://gestio.hackeps.dev","https://qr.hackeps.dev"]'
 ```
 
 The second command writes mode-600 `runtime.env` and `compose.json`, preserves
@@ -100,7 +105,8 @@ from the replacement backend's startup command.
    cutover backup. Record a fresh preservation baseline before migration with
    `deploy/verify_preserved_data.py capture`, using the main database URL via
    private environment and an output file outside the repository.
-4. Start only Redis with the prepared Compose file. Verify health, private
+4. Redis-main was provisioned on the private production network during preparation.
+   Start only Redis with the prepared Compose file if it is not already running. Verify health, private
    network exposure, `maxmemory 64mb` and `maxmemory-policy noeviction`.
 5. Run `alembic upgrade head` explicitly using the candidate image and private
    runtime environment on the production network. Stop on any error. Compare

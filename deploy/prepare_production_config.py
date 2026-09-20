@@ -30,6 +30,11 @@ def main():
         action="store_true",
         help="Stage new JWT and service keys; coordinate sessions, email links and service clients at cutover",
     )
+    parser.add_argument(
+        "--front-url",
+        required=True,
+        help="Production frontend base URL for email links",
+    )
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}", args.commit):
         raise SystemExit("A full commit SHA is required")
@@ -47,6 +52,15 @@ def main():
             or parsed.username
         ):
             raise SystemExit("Origins must be HTTPS origins without paths")
+    front = urlsplit(args.front_url)
+    if (
+        front.scheme != "https"
+        or not front.hostname
+        or front.username
+        or front.query
+        or front.fragment
+    ):
+        raise SystemExit("The frontend URL must be a production HTTPS URL")
     os.umask(0o077)
     dest = args.destination.resolve()
     dest.mkdir(parents=True, exist_ok=True)
@@ -97,7 +111,7 @@ def main():
     environment = {
         "ENV": "main",
         "LOCAL": "false",
-        "FRONT_URL": settings["front_url"],
+        "FRONT_URL": args.front_url,
         "BACK_URL": settings["back_url"],
         "CONTACT_MAIL": settings["contact_mail"],
         "DATABASE__URL": settings["database"]["url"],
