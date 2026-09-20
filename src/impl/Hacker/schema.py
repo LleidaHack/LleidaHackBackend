@@ -1,4 +1,5 @@
 from typing import Optional
+from src.utils.uploads import Curriculum
 
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
@@ -9,7 +10,7 @@ class HackerCreate(UserCreate):
     study_center: Optional[str] = None
     location: Optional[str] = None
     how_did_you_meet_us: Optional[str] = None
-    cv: Optional[str] = None
+    cv: Optional[Curriculum] = None
 
 
 class HackerGet(UserGet):
@@ -35,4 +36,4 @@ class HackerUpdate(UserUpdate):
     study_center: Optional[str] = None
     location: Optional[str] = None
     how_did_you_meet_us: Optional[str] = None
-    cv: Optional[str] = None
+    cv: Optional[Curriculum] = None

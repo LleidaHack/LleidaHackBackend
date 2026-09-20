@@ -1,6 +1,7 @@
 # from __future__ import annotations
 from datetime import datetime
 from typing import Optional
+from src.utils.uploads import Curriculum
 
 from pydantic import Field, field_validator
 
@@ -108,7 +109,7 @@ class EventUpdate(BaseSchema):
 class HackerEventRegistration(BaseSchema):
     shirt_size: str
     food_restrictions: str
-    cv: Optional[str] = None
+    cv: Optional[Curriculum] = None
     description: Optional[str] = None
     github: Optional[str] = None
     linkedin: Optional[str] = None
@@ -130,7 +131,7 @@ class HackerEventRegistration(BaseSchema):
 class HackerEventRegistrationUpdate(BaseSchema):
     shirt_size: Optional[str] = None
     food_restrictions: Optional[str] = None
-    cv: Optional[str] = None
+    cv: Optional[Curriculum] = None
     description: Optional[str] = None
     github: Optional[str] = None
     linkedin: Optional[str] = None

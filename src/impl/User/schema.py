@@ -1,8 +1,9 @@
 import re
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Optional
 
-from pydantic import field_validator
+from pydantic import field_validator, field_serializer
+from src.utils.uploads import ProfileImage
 
 from src.impl.UserConfig.schema import UserConfigCreate, UserConfigGetAll
 from src.utils.Base.BaseSchema import BaseSchema
@@ -19,7 +20,7 @@ class UserCreate(BaseSchema):
     telephone: str
     address: Optional[str] = None
     shirt_size: Optional[str] = None
-    image: Optional[str] = None
+    image: Optional[ProfileImage] = None
     config: UserConfigCreate
     # is_image_url: Optional[bool] = None = None
     # recive_mails: Optional[bool] = None = None
@@ -63,9 +64,13 @@ class UserCreate(BaseSchema):
 class UserGet(BaseSchema):
     name: str
     nickname: str
-    created_at: date
+    created_at: datetime
     type: str
     image: Optional[str] = None
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, value):
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
 
 
 class UserGetAll(UserGet):
@@ -92,7 +97,7 @@ class UserUpdate(BaseSchema):
     telephone: Optional[str] = None
     address: Optional[str] = None
     shirt_size: Optional[str] = None
-    image: Optional[str] = None
+    image: Optional[ProfileImage] = None
     # is_image_url: Optional[bool] = None
     # recive_mails: Optional[bool] = None
 

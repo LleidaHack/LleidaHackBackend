@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
@@ -23,8 +23,12 @@ class User(BaseModel):
     address: Mapped[Optional[str]] = mapped_column(String)
     shirt_size: Mapped[Optional[str]] = mapped_column(String)
     type: Mapped[Optional[str]] = mapped_column(String)
-    created_at: Mapped[Optional[date]] = mapped_column(DateTime, default=date.today())
-    updated_at: Mapped[Optional[date]] = mapped_column(DateTime, default=date.today())
+    created_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None)
+    )
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None)
+    )
     image: Mapped[str] = mapped_column(String, default="")
     # is_image_url: bool = mapped_column(Boolean, default=False)
     code: Mapped[str] = mapped_column(String, default="", unique=True, index=True)

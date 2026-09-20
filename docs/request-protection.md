@@ -15,7 +15,7 @@ Redis instance, prefix and signing secret. No in-memory fallback exists.
 | Password recovery, verification resend, contact, per IP | 20/hour combined | `MAIL_PER_HOUR` |
 | Signup and public mail routes, per normalized email | 3/15 minutes combined | `MAIL_PER_RECIPIENT` |
 | Signup and public mail routes, across all clients | 300/hour combined | `MAIL_TOTAL_PER_HOUR` |
-| Request body | 1 MiB, including streamed requests | `MAX_BODY_BYTES` |
+| Request body | 3 MiB, including streamed requests (two 1 MiB files encoded as base64 plus JSON) | `MAX_BODY_BYTES` |
 | Receiving the complete request body | 10 seconds | `BODY_TIMEOUT_SECONDS` |
 
 Budgets count attempts, including invalid credentials/payloads; not just successful
