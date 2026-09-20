@@ -29,6 +29,12 @@ Verified on the actual host:
 - Backend regression suite: 114 passed. HTTP smoke checks against restored data:
   OpenAPI and the 2024/2025 public event endpoints returned 200; unauthenticated
   profile returned 401. Mail was mocked, so these checks sent no emails.
+- A non-root Docker candidate built and passed import validation on the VPS.
+  The Dockerfile now makes application files readable even when the source
+  checkout was created with a private umask.
+- Hosted backend tests, security scanning and CodeQL passed on the preparation
+  PR. Code quality remains a blocker: the unmodified refactor branch reproduces
+  1,215 Ruff findings. The new preparation Python scripts pass Ruff/format checks.
 - Build cache cleanup recovered approximately 20 GB; host had 25 GB free after
   cleanup. Existing application containers and database volumes were retained.
 - Current backend/mail images are additionally tagged
