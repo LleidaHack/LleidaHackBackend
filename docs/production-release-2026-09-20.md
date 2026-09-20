@@ -43,11 +43,11 @@ Verified on the actual host:
 2. Production MailBackend lacks `event_hacker_ticket`. Prepare/update the mail
    service/templates before activating this backend; verify all internal
    templates through the mail API without sending real email.
-3. Review credentials: effective production JWT and service keys are distinct
-   and meet the new minimum length. The JWT comes from legacy configuration,
-   not `SECURITY__SECRET_KEY` in the container environment. Preparation extracts
-   effective settings privately instead of silently changing keys. Assess
-   previous exposure and coordinate any required rotation and link reissuance.
+3. Both effective production JWT and service keys were found in the old tracked
+   `.env`. They must be rotated at cutover. Preparation refuses to preserve these
+   exposed keys and requires `--rotate-secrets` to stage fresh independent values.
+   Update all service clients and plan re-login/reissuance of verification,
+   recovery and assistance links; no live keys have been changed yet.
 4. Configure the exact Nginx proxy IP and verify client-IP handling. Nginx Proxy
    Manager currently appends incoming X-Forwarded-For; review/override its
    handling and verify spoofed headers cannot affect limiter identities. Do not
@@ -66,7 +66,7 @@ moving branch. This builds an image but does not contact the production database
 ```sh
 bash deploy/prepare-docker-release.sh "$SHA" "$RELEASE"
 python3 deploy/prepare_production_config.py "$SHA" "$RELEASE" \
-  --origins '["https://CONFIRMED-PRODUCTION-ORIGIN"]'
+  --rotate-secrets --origins '["https://CONFIRMED-PRODUCTION-ORIGIN"]'
 ```
 
 The second command writes mode-600 `runtime.env` and `compose.json`, preserves
@@ -76,7 +76,8 @@ Treat the whole release directory as private. Never commit/upload its runtime
 files to GitHub. Compose >=2.30 is required for `env_file.format: raw` (host 2.37.3).
 The prepared Compose configuration contains no database service or data volume:
 there is nothing in it that can replace the production database volume.
-It preserves the existing database URL and credentials. Frontend URLs/origins
+It preserves the existing database URL and database credentials; application
+JWT and service keys are staged separately for coordinated rotation. Frontend URLs/origins
 must be reviewed before it is used. Database migration is deliberately absent
 from the replacement backend's startup command.
 

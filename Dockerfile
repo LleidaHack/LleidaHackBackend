@@ -14,7 +14,8 @@ COPY backend ./backend
 COPY alembic ./alembic
 COPY static ./static
 COPY App.py main.py gunicorn_conf.py alembic.ini ./
-RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app \
+RUN chmod -R a+rX src backend alembic static App.py main.py gunicorn_conf.py alembic.ini \
+    && groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app \
     && mkdir -p logs && chown app:app logs
 USER 10001:10001
 EXPOSE 8000

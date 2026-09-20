@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import subprocess
 from urllib.parse import urlsplit
 
@@ -21,6 +22,7 @@ def main():
     parser.add_argument("commit")
     parser.add_argument("destination", type=Path)
     parser.add_argument("--origins", required=True, help="JSON list of exact production browser origins")
+    parser.add_argument("--rotate-secrets", action="store_true", help="Stage new JWT and service keys; coordinate sessions, email links and service clients at cutover")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}", args.commit):
         raise SystemExit("A full commit SHA is required")
@@ -45,8 +47,19 @@ def main():
     proxy_ip = proxy["NetworkSettings"]["Networks"][network]["IPAddress"]
     # Capture only to memory: effective settings may come from an old image's .env.
     settings = json.loads(docker("exec", "backend-main", "/app/.venv/bin/python", "-c",
-        "import json; from src.configuration.Settings import settings; print(json.dumps(settings.model_dump(mode='json')))"))
+        "import json, subprocess; from io import StringIO; from dotenv import dotenv_values; "
+        "from src.configuration.Settings import settings; "
+        "tracked = subprocess.check_output(['git', 'show', 'HEAD:.env'], text=True); "
+        "values = dotenv_values(stream=StringIO(tracked)); "
+        "data = settings.model_dump(mode='json'); "
+        "data['_tracked_secret_exposure'] = any(key in values.values() for key in "
+        "[settings.security.secret_key, settings.security.service_token]); print(json.dumps(data))"))
+    if settings.pop("_tracked_secret_exposure") and not args.rotate_secrets:
+        raise SystemExit("Production credentials appear in tracked history; use --rotate-secrets and coordinate client/link changes")
     security = settings["security"]
+    if args.rotate_secrets:
+        security["secret_key"] = secrets.token_urlsafe(48)
+        security["service_token"] = secrets.token_urlsafe(48)
     for key in ["secret_key", "service_token"]:
         if len(security[key]) < 32 or security[key].lower().startswith(("your-", "tu-", "change", "${")):
             raise SystemExit("Existing credentials require coordinated rotation before preparing main")
@@ -107,6 +120,8 @@ def main():
     subprocess.run(["docker", "compose", "-f", str(dest / "compose.json"), "config", "--quiet"], check=True)
     print("Private candidate configuration validated; production containers were not changed.")
     print("Review FRONT_URL, BACK_URL, origins, credential rotation and the proxy address before cutover.")
+    if args.rotate_secrets:
+        print("NEW KEYS STAGED: update service clients; existing sessions and signed email links will need reissuance at cutover.")
 
 
 if __name__ == "__main__":
