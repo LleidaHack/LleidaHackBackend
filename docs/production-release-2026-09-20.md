@@ -49,7 +49,11 @@ Verified on the actual host:
    containers/images and their Compose services were removed from the VPS after
    backup; backend/database services were not restarted. GitHub records HackEPS
    production commit `2de75aaf7298924488126a7ca58b611064c2eeb7`, whose reset flow
-   already uses JSON. Verify their deployed API targets before cutover.
+   already uses JSON. Browser checks loaded the public landing and admin login.
+   `qr.hackeps.dev` failed DNS resolution; the admin `/api/openapi.json` check
+   timed out. Verify DNS and deployed API targets before cutover. The connected
+   Vercel tool returned no teams, so deployment environment settings were not
+   inspected or changed.
 2. Production MailBackend lacks `event_hacker_ticket`. Prepare/update the mail
    service/templates before activating this backend; verify all internal
    templates through the mail API without sending real email.
@@ -62,7 +66,9 @@ Verified on the actual host:
    Manager currently appends incoming X-Forwarded-For; review/override its
    handling and verify spoofed headers cannot affect limiter identities. Do not
    trust a whole Docker subnet or `*`. Revalidate if proxy container IP changes.
-5. CI on the final PR/commit must pass. SSH deployment secrets in GitHub have not
+5. Resolve the inherited lint failure before promoting the draft PR. Tests,
+   security and CodeQL pass, but code quality is not green.
+   CI on the final PR/commit must pass. SSH deployment secrets in GitHub have not
    been exercised; the live host was accessed using a separate SSH session.
 6. Complete browser/user-flow checks on the definitive frontends. Existing
    SQLAlchemy/Pydantic deprecation warnings remain; no claim of complete browser
@@ -115,7 +121,10 @@ from the replacement backend's startup command.
 6. Start **only** the replacement backend-main service using the prepared Compose
    file, with `--no-deps`. Never use `down -v`, `--remove-orphans`, schema reset,
    `pg_restore --clean`, or a testing database URL. Other services stay in place.
-7. Verify internal and public HTTP health, CORS, mail template availability,
+7. Update the authoritative host deployment configuration to use the prepared
+   image/configuration, so a later invocation of the old Compose build cannot
+   revert the release. Keep its database services/volumes unchanged.
+   Verify internal and public HTTP health, CORS, mail template availability,
    login/refresh, recovery, edition data and organizer/check-in flows. Reopen
    writes only when checks pass; observe errors and Redis 429/503 rates.
 
