@@ -1,5 +1,3 @@
-from typing import List, Union
-
 from fastapi import APIRouter, Depends
 
 from src.impl.ArticleType.schema import (
@@ -20,12 +18,12 @@ router = APIRouter(
 article_type_service: ArticleTypeService = ArticleTypeService()
 
 
-@router.get("/all", response_model=List[ArticleTypeGet])
+@router.get("/all", response_model=list[ArticleTypeGet])
 def get_all():
     return article_type_service.get_all()
 
 
-@router.get("/{id}", response_model=Union[ArticleTypeGetAll, ArticleTypeGet])
+@router.get("/{id}", response_model=ArticleTypeGetAll | ArticleTypeGet)
 def get():
     return article_type_service.get(id)
 

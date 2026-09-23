@@ -7,6 +7,9 @@ on:
       - integration
     paths:
       - '**.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/code-quality.yml'
   workflow_dispatch:
 
 permissions:
@@ -28,11 +31,11 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
-      - name: Install ruff
-        run: uv tool install ruff
+      - name: Install locked dependencies
+        run: uv sync --frozen
 
       - name: Lint with ruff
-        run: uv tool run ruff check .
+        run: uv run --frozen ruff check .
 
       - name: Format with ruff
-        run: uv tool run ruff format --check .
+        run: uv run --frozen ruff format --check .

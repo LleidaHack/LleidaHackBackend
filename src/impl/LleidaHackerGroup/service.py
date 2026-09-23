@@ -6,7 +6,9 @@ from src.error.NotFoundException import NotFoundException
 from src.impl.LleidaHacker.service import LleidaHackerService
 from src.impl.LleidaHackerGroup.model import LleidaHackerGroup, LleidaHackerGroupUser
 from src.impl.LleidaHackerGroup.schema import (
-    LleidaHackerGroupCreate, LleidaHackerGroupGet, LleidaHackerGroupUpdate,
+    LleidaHackerGroupCreate,
+    LleidaHackerGroupGet,
+    LleidaHackerGroupUpdate,
 )
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import set_existing_data
@@ -30,11 +32,18 @@ class LleidaHackerGroupService(BaseService):
     def get_managed_group(self, group_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthorizationException("Not authorized")
-        group = (db.session.query(LleidaHackerGroup).filter_by(id=group_id)
-                 .populate_existing().with_for_update().first())
+        group = (
+            db.session.query(LleidaHackerGroup)
+            .filter_by(id=group_id)
+            .populate_existing()
+            .with_for_update()
+            .first()
+        )
         if group is None:
             raise NotFoundException("LleidaHacker group not found")
-        if not data.is_admin and data.user_id not in {leader.id for leader in group.leaders}:
+        if not data.is_admin and data.user_id not in {
+            leader.id for leader in group.leaders
+        }:
             raise AuthorizationException("Only group leaders can manage this group")
         return group
 
@@ -44,15 +53,21 @@ class LleidaHackerGroupService(BaseService):
     @BaseService.needs_service(LleidaHackerService)
     def add_lleidahackergroup(self, payload: LleidaHackerGroupCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) or data.user_id == 0:
-            raise AuthorizationException("An organizer account is required to create a group")
+            raise AuthorizationException(
+                "An organizer account is required to create a group"
+            )
         creator = self.lleidahacker_service.get_by_id(data.user_id)
-        group = LleidaHackerGroup(**payload.model_dump(), members=[creator], leaders=[creator])
+        group = LleidaHackerGroup(
+            **payload.model_dump(), members=[creator], leaders=[creator]
+        )
         db.session.add(group)
         db.session.commit()
         db.session.refresh(group)
         return group
 
-    def update_lleidahackergroup(self, groupId: int, payload: LleidaHackerGroupUpdate, data: BaseToken):
+    def update_lleidahackergroup(
+        self, groupId: int, payload: LleidaHackerGroupUpdate, data: BaseToken
+    ):
         group = self.get_managed_group(groupId, data)
         updated = set_existing_data(group, payload)
         db.session.commit()
@@ -66,25 +81,33 @@ class LleidaHackerGroupService(BaseService):
         return group
 
     @BaseService.needs_service(LleidaHackerService)
-    def add_lleidahacker_to_group(self, groupId: int, lleidahackerId: int, primary: bool, data: BaseToken):
+    def add_lleidahacker_to_group(
+        self, groupId: int, lleidahackerId: int, primary: bool, data: BaseToken
+    ):
         group = self.get_managed_group(groupId, data)
         member = self.lleidahacker_service.get_by_id(lleidahackerId)
         if member in group.members:
             raise InvalidDataException("LleidaHacker already belongs to this group")
-        db.session.add(LleidaHackerGroupUser(group_id=groupId, user_id=member.id, primary=primary))
+        db.session.add(
+            LleidaHackerGroupUser(group_id=groupId, user_id=member.id, primary=primary)
+        )
         db.session.commit()
         db.session.refresh(group)
         return group
 
     @BaseService.needs_service(LleidaHackerService)
-    def remove_lleidahacker_from_group(self, groupId: int, lleidahackerId: int, data: BaseToken):
+    def remove_lleidahacker_from_group(
+        self, groupId: int, lleidahackerId: int, data: BaseToken
+    ):
         group = self.get_managed_group(groupId, data)
         member = self.lleidahacker_service.get_by_id(lleidahackerId)
         if member not in group.members:
             raise InvalidDataException("LleidaHacker is not a member of this group")
         if member in group.leaders:
             if len(group.leaders) == 1:
-                raise InvalidDataException("Assign another leader before removing the last leader")
+                raise InvalidDataException(
+                    "Assign another leader before removing the last leader"
+                )
             group.leaders.remove(member)
         group.members.remove(member)
         db.session.commit()
@@ -92,7 +115,9 @@ class LleidaHackerGroupService(BaseService):
         return group
 
     @BaseService.needs_service(LleidaHackerService)
-    def add_lleidahacker_group_leader(self, groupId: int, lleidahackerId: int, data: BaseToken):
+    def add_lleidahacker_group_leader(
+        self, groupId: int, lleidahackerId: int, data: BaseToken
+    ):
         group = self.get_managed_group(groupId, data)
         member = self.lleidahacker_service.get_by_id(lleidahackerId)
         if member not in group.members:
@@ -105,7 +130,9 @@ class LleidaHackerGroupService(BaseService):
         return group
 
     @BaseService.needs_service(LleidaHackerService)
-    def remove_lleidahacker_group_leader(self, groupId: int, lleidahackerId: int, data: BaseToken):
+    def remove_lleidahacker_group_leader(
+        self, groupId: int, lleidahackerId: int, data: BaseToken
+    ):
         group = self.get_managed_group(groupId, data)
         member = self.lleidahacker_service.get_by_id(lleidahackerId)
         if member not in group.leaders:

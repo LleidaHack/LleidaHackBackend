@@ -1,19 +1,18 @@
 # from __future__ import annotations
 from datetime import datetime
-from typing import Optional
-from src.utils.uploads import Curriculum
 
 from pydantic import Field, field_validator
 
-from src.utils.Base.BaseSchema import BaseSchema
 from src.impl.Hacker.schema import HackerGetAll
 from src.impl.HackerGroup.schema import HackerGroupGet
+from src.utils.Base.BaseSchema import BaseSchema
+from src.utils.uploads import Curriculum
 
 
 class ScheduleEntry(BaseSchema):
     title: str
     description: str = ""
-    starts_at: Optional[str] = None
+    starts_at: str | None = None
 
     @field_validator("starts_at")
     @classmethod
@@ -36,7 +35,7 @@ class EventCreate(BaseSchema):
     max_participants: int
     max_group_size: int
     max_sponsors: int
-    image: Optional[str] = None
+    image: str | None = None
     # is_image_url: Optional[bool] = None
 
     # start_time: Time = Column(Time, default=func.now())
@@ -78,7 +77,7 @@ class EventGet(BaseSchema):
     max_participants: int
     max_group_size: int
     max_sponsors: int
-    image: Optional[str] = None
+    image: str | None = None
     # is_image_url: Optional[bool] = None
 
 
@@ -87,21 +86,21 @@ class EventGetAll(EventGet):
 
 
 class EventUpdate(BaseSchema):
-    schedule: Optional[list[ScheduleEntry]] = None
-    activities: Optional[list[str]] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    location: Optional[str] = None
-    archived: Optional[bool] = None
-    price: Optional[int] = None
-    max_participants: Optional[int] = None
-    max_sponsors: Optional[int] = None
-    image: Optional[str] = None
+    schedule: list[ScheduleEntry] | None = None
+    activities: list[str] | None = None
+    name: str | None = None
+    description: str | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    location: str | None = None
+    archived: bool | None = None
+    price: int | None = None
+    max_participants: int | None = None
+    max_sponsors: int | None = None
+    image: str | None = None
     # is_image_url: Optional[bool] = None
-    is_open: Optional[bool] = None
-    max_group_size: Optional[int] = None
+    is_open: bool | None = None
+    max_group_size: int | None = None
 
     # start_time: Time = Column(Time, default=func.now())
 
@@ -109,10 +108,10 @@ class EventUpdate(BaseSchema):
 class HackerEventRegistration(BaseSchema):
     shirt_size: str
     food_restrictions: str
-    cv: Optional[Curriculum] = None
-    description: Optional[str] = None
-    github: Optional[str] = None
-    linkedin: Optional[str] = None
+    cv: Curriculum | None = None
+    description: str | None = None
+    github: str | None = None
+    linkedin: str | None = None
     studies: str
     study_center: str
     location: str
@@ -129,17 +128,17 @@ class HackerEventRegistration(BaseSchema):
 
 
 class HackerEventRegistrationUpdate(BaseSchema):
-    shirt_size: Optional[str] = None
-    food_restrictions: Optional[str] = None
-    cv: Optional[Curriculum] = None
-    description: Optional[str] = None
-    github: Optional[str] = None
-    linkedin: Optional[str] = None
-    studies: Optional[str] = None
-    study_center: Optional[str] = None
-    location: Optional[str] = None
-    how_did_you_meet_us: Optional[str] = None
-    wants_credit: Optional[bool] = False
+    shirt_size: str | None = None
+    food_restrictions: str | None = None
+    cv: Curriculum | None = None
+    description: str | None = None
+    github: str | None = None
+    linkedin: str | None = None
+    studies: str | None = None
+    study_center: str | None = None
+    location: str | None = None
+    how_did_you_meet_us: str | None = None
+    wants_credit: bool | None = False
 
     update_user: bool = False
 
@@ -173,18 +172,18 @@ class HackerEventRegistrationGet(BaseSchema):
     # stored (CV, experience description, links) when reviewing acceptances.
     user_id: int
     event_id: int
-    shirt_size: Optional[str] = None
-    food_restrictions: Optional[str] = None
-    cv: Optional[str] = None
-    description: Optional[str] = None
-    github: Optional[str] = None
-    linkedin: Optional[str] = None
-    studies: Optional[str] = None
-    study_center: Optional[str] = None
-    location: Optional[str] = None
-    how_did_you_meet_us: Optional[str] = None
-    wants_credit: Optional[bool] = None
-    confirmed_assistance: Optional[bool] = None
+    shirt_size: str | None = None
+    food_restrictions: str | None = None
+    cv: str | None = None
+    description: str | None = None
+    github: str | None = None
+    linkedin: str | None = None
+    studies: str | None = None
+    study_center: str | None = None
+    location: str | None = None
+    how_did_you_meet_us: str | None = None
+    wants_credit: bool | None = None
+    confirmed_assistance: bool | None = None
 
 
 class EventSponsorUpdate(BaseSchema):
@@ -202,17 +201,17 @@ class EventSponsorUpdate(BaseSchema):
 
 class EventTicketGet(BaseSchema):
     event_id: int
-    event_name: Optional[str] = None
+    event_name: str | None = None
     hacker_id: int
     registered: bool
     accepted: bool
     confirmed: bool
     has_ticket: bool
-    code: Optional[str] = None
-    qr_url: Optional[str] = None
-    ticket_sent_at: Optional[datetime] = None
+    code: str | None = None
+    qr_url: str | None = None
+    ticket_sent_at: datetime | None = None
     checked_in: bool
-    voucher_code: Optional[str] = None
+    voucher_code: str | None = None
 
 
 class EventTicketsStatus(BaseSchema):

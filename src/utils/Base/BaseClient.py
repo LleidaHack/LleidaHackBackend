@@ -2,6 +2,7 @@ import importlib
 from typing import Any
 
 from generated_src.lleida_hack_mail_api_client.client import AuthenticatedClient, Client
+
 from src.utils.Singleton import Singleton
 
 
@@ -35,5 +36,5 @@ class BaseClient(metaclass=Singleton):
     @property
     def client(self) -> AuthenticatedClient:
         if self.__client is None or self._url is None:
-            raise Exception()
+            raise RuntimeError("Client URL is not configured")
         return self.__client

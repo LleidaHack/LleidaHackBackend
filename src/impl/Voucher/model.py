@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -31,10 +31,10 @@ class Voucher(BaseModel):
         Integer, ForeignKey("event.id"), nullable=False, index=True
     )
     code: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
-    hacker_id: Mapped[Optional[int]] = mapped_column(
+    hacker_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("hacker.user_id"), nullable=True, index=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
-    assigned_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    assigned_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    hacker: Mapped[Optional["Hacker"]] = relationship("Hacker", foreign_keys=[hacker_id])
+    hacker: Mapped[Hacker | None] = relationship("Hacker", foreign_keys=[hacker_id])

@@ -1,6 +1,4 @@
 import base64
-
-from src.impl.User.service import UserService
 from datetime import datetime as date
 
 from fastapi_sqlalchemy import db
@@ -8,15 +6,12 @@ from fastapi_sqlalchemy import db
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
-from src.impl.Event.model import HackerAccepted
-from src.impl.Event.model import HackerParticipation
-from src.impl.Event.model import HackerRegistration
+from src.impl.Event.model import HackerAccepted, HackerParticipation, HackerRegistration
 from src.impl.Hacker.model import Hacker
-from src.impl.Hacker.schema import HackerCreate
-from src.impl.Hacker.schema import HackerGet
-from src.impl.Hacker.schema import HackerGetAll
-from src.impl.Hacker.schema import HackerUpdate
+from src.impl.Hacker.schema import HackerCreate, HackerGet, HackerGetAll, HackerUpdate
 from src.impl.HackerGroup.model import HackerGroupUser
+from src.impl.Meal.model import HackerMeal
+from src.impl.User.service import UserService
 from src.impl.UserConfig.model import UserConfig
 from src.impl.Voucher.model import Voucher
 from src.utils.Base.BaseService import (
@@ -31,7 +26,6 @@ from src.utils.service_utils import (
 )
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.Meal.model import HackerMeal
 
 
 class HackerService(BaseService):
@@ -57,7 +51,11 @@ class HackerService(BaseService):
                 .first()
             )
             if voucher is not None:
-                hacker = db.session.query(Hacker).filter(Hacker.id == voucher.hacker_id).first()
+                hacker = (
+                    db.session.query(Hacker)
+                    .filter(Hacker.id == voucher.hacker_id)
+                    .first()
+                )
         if hacker is None:
             raise NotFoundException("hacker not found")
         return hacker
@@ -80,7 +78,8 @@ class HackerService(BaseService):
             raw = raw.split(",", 1)[1]
         try:
             return base64.b64decode(raw, validate=True)
-        except Exception:
+        # Preserve the documented service-boundary fallback.
+        except Exception:  # noqa: BLE001
             raise InvalidDataException("Stored CV is not a valid base64 PDF")
 
     def get_hacker_by_code(self, code: str):
@@ -158,7 +157,8 @@ class HackerService(BaseService):
         if payload.image is not None:
             payload = check_image(payload)
         updated = set_existing_data(hacker, payload)
-        hacker.updated_at = date.now()
+        # Keep the existing timezone-naive database/local-calendar contract.
+        hacker.updated_at = date.now()  # noqa: DTZ005
         updated.append("updated_at")
         if payload.password is not None:
             hacker.password = get_password_hash(payload.password)

@@ -1,10 +1,13 @@
 import logging
+
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
-from src.configuration.Settings import settings
-from src import imports  # Register all ORM models before routers load services.
 from App import App
+from src import (
+    # Register SQLAlchemy models through import side effects.
+    imports,  # noqa: F401
+)
 
 tags_metadata = [
     {"name": "User", "description": "User related endpoints"},

@@ -1,14 +1,9 @@
-from typing import List, Union
-
 from fastapi import APIRouter, Depends, Response
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 
 # from services.mail import send_registration_confirmation_email
 from src.impl.Event.schema import EventGet
-from src.impl.Hacker.schema import HackerCreate
-from src.impl.Hacker.schema import HackerGet
-from src.impl.Hacker.schema import HackerGetAll
-from src.impl.Hacker.schema import HackerUpdate
+from src.impl.Hacker.schema import HackerCreate, HackerGet, HackerGetAll, HackerUpdate
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.schema import HackerGroupGet
 from src.impl.Mail.client import MailClient
@@ -53,12 +48,12 @@ def signup(payload: HackerCreate):
     }
 
 
-@router.get("/all", response_model=List[HackerGet])
+@router.get("/all", response_model=list[HackerGet])
 def get_all(token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_all()
 
 
-@router.get("/{hackerId}", response_model=Union[HackerGetAll, HackerGet])
+@router.get("/{hackerId}", response_model=HackerGetAll | HackerGet)
 def get(hackerId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker(hackerId, token)
 
@@ -100,12 +95,12 @@ def delete(userId: int, token: BaseToken = Depends(JWTBearer())):
     return {"success": True, "deleted_id": hacker.id}
 
 
-@router.get("/{userId}/events", response_model=List[EventGet])
+@router.get("/{userId}/events", response_model=list[EventGet])
 def get_events(userId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_events(userId)
 
 
-@router.get("/{userId}/groups", response_model=List[HackerGroupGet])
+@router.get("/{userId}/groups", response_model=list[HackerGroupGet])
 def get_groups(userId: int, token: BaseToken = Depends(JWTBearer())):
     return hacker_service.get_hacker_groups(userId)
 

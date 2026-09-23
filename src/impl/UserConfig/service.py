@@ -4,9 +4,11 @@ from src.error.AuthorizationException import AuthorizationException
 from src.error.NotFoundException import NotFoundException
 from src.impl.User.model import User
 from src.impl.UserConfig.model import UserConfig
-from src.impl.UserConfig.schema import UserConfigCreate
-from src.impl.UserConfig.schema import UserConfigGetAll
-from src.impl.UserConfig.schema import UserConfigUpdate
+from src.impl.UserConfig.schema import (
+    UserConfigCreate,
+    UserConfigGetAll,
+    UserConfigUpdate,
+)
 from src.utils.Base.BaseService import BaseService
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
@@ -26,8 +28,10 @@ class UserConfigService(BaseService):
 
     def get_by_user_id(self, user_id: int):
         config = (
-            db.session.query(UserConfig).join(User, User.config_id == UserConfig.id)
-            .filter(User.id == user_id).first()
+            db.session.query(UserConfig)
+            .join(User, User.config_id == UserConfig.id)
+            .filter(User.id == user_id)
+            .first()
         )
         if config is None:
             raise NotFoundException("User config not found")

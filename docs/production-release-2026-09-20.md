@@ -1,4 +1,4 @@
-# Production release preparation — 2026-09-20
+# Production release preparation — updated 2026-09-23
 
 ## Scope and evidence
 
@@ -32,47 +32,51 @@ Verified on the actual host:
 - A non-root Docker candidate built and passed import validation on the VPS.
   The Dockerfile now makes application files readable even when the source
   checkout was created with a private umask.
-- Hosted backend tests, security scanning and CodeQL passed on the preparation
-  PR. Code quality remains a blocker: the unmodified refactor branch reproduces
-  1,215 Ruff findings. The new preparation Python scripts pass Ruff/format checks.
+- Hosted backend tests, security scanning and CodeQL passed on the earlier preparation
+  PR. The inherited 1,215 Ruff findings were resolved on September 23; see the
+  updated evidence below for final checks.
 - Build cache cleanup recovered approximately 20 GB; host had 25 GB free after
   cleanup. Existing application containers and database volumes were retained.
 - Current backend/mail images are additionally tagged
   `lleidahack/backend-rollback:20260920` and
   `lleidahack/mail-rollback:20260920`.
 
-## Outstanding release gates
+## September 23 validation and remaining cutover work
 
-1. Production origins confirmed by the owner: `https://hackeps.dev`,
-   `https://gestio.hackeps.dev`, `https://qr.hackeps.dev`. Email frontend URL:
-   `https://hackeps.dev`. Frontends are hosted on Vercel. The old stopped frontend
-   containers/images and their Compose services were removed from the VPS after
-   backup; backend/database services were not restarted. GitHub records HackEPS
-   production commit `2de75aaf7298924488126a7ca58b611064c2eeb7`, whose reset flow
-   already uses JSON. Browser checks loaded the public landing and admin login.
-   `qr.hackeps.dev` failed DNS resolution; the admin `/api/openapi.json` check
-   timed out. Verify DNS and deployed API targets before cutover. The connected
-   Vercel tool returned no teams, so deployment environment settings were not
-   inspected or changed.
-2. Production MailBackend lacks `event_hacker_ticket`. Prepare/update the mail
-   service/templates before activating this backend; verify all internal
-   templates through the mail API without sending real email.
-3. Both effective production JWT and service keys were found in the old tracked
-   `.env`. They must be rotated at cutover. Preparation refuses to preserve these
-   exposed keys and requires `--rotate-secrets` to stage fresh independent values.
-   Update all service clients and plan re-login/reissuance of verification,
-   recovery and assistance links; no live keys have been changed yet.
-4. Configure the exact Nginx proxy IP and verify client-IP handling. Nginx Proxy
-   Manager currently appends incoming X-Forwarded-For; review/override its
-   handling and verify spoofed headers cannot affect limiter identities. Do not
-   trust a whole Docker subnet or `*`. Revalidate if proxy container IP changes.
-5. Resolve the inherited lint failure before promoting the draft PR. Tests,
-   security and CodeQL pass, but code quality is not green.
-   CI on the final PR/commit must pass. SSH deployment secrets in GitHub have not
-   been exercised; the live host was accessed using a separate SSH session.
-6. Complete browser/user-flow checks on the definitive frontends. Existing
-   SQLAlchemy/Pydantic deprecation warnings remain; no claim of complete browser
-   verification or production mail delivery is made.
+- Backend-only scope: the owner explicitly excluded frontend/Vercel work.
+  Confirmed backend origins remain hackeps.dev, gestio.hackeps.dev and
+  qr.hackeps.dev. DNS/frontend changes are outside this preparation.
+- Fresh backend and mail dumps are held at `/root/backups/release-20260923/`
+  and `/Users/bepeslabs/.codex/private/llh-release-20260923/release-20260923/`.
+  Both off-host SHA-256 checks passed and both dumps restored to isolated PG15.
+  The new backend restore migrated to `20260918_vouchers`; all 28 existing
+  tables, 5,349 rows and 10 sequences match their pre-migration fingerprints.
+- Ruff 0.16.8 is pinned. Maintained Python code passes lint and format checks;
+  generated client code is excluded. Existing datetime and service-boundary
+  behavior is retained explicitly. OpenAPI before and after the lint cleanup
+  is byte-identical after JSON key sorting. Regression suite: **118 passed**.
+- Four actual Uvicorn proxy-middleware tests verify trusted proxy extraction,
+  forged X-Forwarded-For prefixes, untrusted peers and IPv6. NPM appends the
+  client address; Uvicorn selects the rightmost untrusted address. Trust only
+  NPM's current production-network IP, `172.18.0.7`, and revalidate after changes.
+- `deploy/ensure_ticket_template.py` was rehearsed twice on restored mail data
+  (insert, then no-op), then added ticket template 9 to the production mail DB.
+  All eight existing templates remain byte-identical; no emails were sent.
+  The insertion is transactional, checksum-gated and refuses conflicting rows.
+- `deploy/prepare_mail_config.py` staged the current mail image by immutable ID,
+  corrected FRONT_URL to https://hackeps.dev, and preserved effective SMTP/DB
+  settings in private files at
+  `/root/LleidaHackWeb/releases/mail/preparation-20260923/`.
+  It does not restart mail or run migrations. Apply this configuration during
+  the coordinated cutover; old mail processes still use the previous URL.
+- JWT and service keys exposed in old tracked history must rotate at cutover.
+  Independent replacements are staged privately; existing sessions and signed
+  email links will need reissuance. Update dependent service clients then.
+- Final hosted CI must pass. GitHub deployment SSH secrets have not been
+  exercised; preparation used a separate authenticated SSH session.
+- Production backend is still the original image and schema. There has been no
+  merge, backend restart or production schema migration. Deprecation warnings
+  remain; no production SMTP-delivery test is claimed.
 
 ## Prepare an immutable Docker candidate
 
@@ -121,7 +125,11 @@ from the replacement backend's startup command.
 6. Start **only** the replacement backend-main service using the prepared Compose
    file, with `--no-deps`. Never use `down -v`, `--remove-orphans`, schema reset,
    `pg_restore --clean`, or a testing database URL. Other services stay in place.
-7. Update the authoritative host deployment configuration to use the prepared
+7. Start only mail-backend-main with its prepared Compose file and `--no-deps`
+   to activate corrected email links, without running mail migrations. Preserve
+   the mail database and SMTP configuration. Verify template reads without
+   sending mail.
+8. Update the authoritative host deployment configuration to use the prepared
    image/configuration, so a later invocation of the old Compose build cannot
    revert the release. Keep its database services/volumes unchanged.
    Verify internal and public HTTP health, CORS, mail template availability,

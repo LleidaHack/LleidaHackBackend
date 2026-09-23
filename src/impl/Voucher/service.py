@@ -3,7 +3,6 @@ import io
 import re
 import secrets
 from datetime import datetime
-from typing import Optional
 
 from fastapi_sqlalchemy import db
 from sqlalchemy.exc import IntegrityError
@@ -24,7 +23,9 @@ from src.utils.UserType import UserType
 VOUCHER_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 VOUCHER_PREFIX = "V"
 VOUCHER_LENGTH = 8
-VOUCHER_PATTERN = re.compile(f"^{VOUCHER_PREFIX}[{VOUCHER_ALPHABET}]{{{VOUCHER_LENGTH}}}$")
+VOUCHER_PATTERN = re.compile(
+    f"^{VOUCHER_PREFIX}[{VOUCHER_ALPHABET}]{{{VOUCHER_LENGTH}}}$"
+)
 
 
 def generate_voucher_code() -> str:
@@ -44,7 +45,7 @@ class VoucherService(BaseService):
             raise NotFoundException("Voucher not found")
         return voucher
 
-    def get_by_code(self, code: str, event_id: Optional[int] = None) -> Voucher:
+    def get_by_code(self, code: str, event_id: int | None = None) -> Voucher:
         query = db.session.query(Voucher).filter(Voucher.code == code)
         if event_id is not None:
             query = query.filter(Voucher.event_id == event_id)
@@ -70,9 +71,7 @@ class VoucherService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self._event(event_id)
-        existing = {
-            code for (code,) in db.session.query(Voucher.code).all()
-        }
+        existing = {code for (code,) in db.session.query(Voucher.code).all()}
         vouchers = []
         while len(vouchers) < count:
             code = generate_voucher_code()
@@ -87,7 +86,7 @@ class VoucherService(BaseService):
         return vouchers
 
     @BaseService.needs_service(EventService)
-    def get_all(self, event_id: int, data: BaseToken, assigned: Optional[bool] = None):
+    def get_all(self, event_id: int, data: BaseToken, assigned: bool | None = None):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         self.event_service.get_by_id(event_id)
@@ -117,12 +116,14 @@ class VoucherService(BaseService):
         writer = csv.writer(buffer)
         writer.writerow(["code", "hacker_id", "hacker_name", "assigned_at"])
         for voucher in vouchers:
-            writer.writerow([
-                voucher.code,
-                voucher.hacker_id or "",
-                voucher.hacker.name if voucher.hacker else "",
-                voucher.assigned_at.isoformat() if voucher.assigned_at else "",
-            ])
+            writer.writerow(
+                [
+                    voucher.code,
+                    voucher.hacker_id or "",
+                    voucher.hacker.name if voucher.hacker else "",
+                    voucher.assigned_at.isoformat() if voucher.assigned_at else "",
+                ]
+            )
         return buffer.getvalue()
 
     @BaseService.needs_service(EventService)
@@ -134,7 +135,9 @@ class VoucherService(BaseService):
 
     @BaseService.needs_service(EventService)
     @BaseService.needs_service(HackerService)
-    def assign(self, event_id: int, voucher_code: str, hacker_code: str, data: BaseToken):
+    def assign(
+        self, event_id: int, voucher_code: str, hacker_code: str, data: BaseToken
+    ):
         """Check the hacker in and bind the physical voucher to them, atomically.
 
         Two scanning phones may race on the same voucher or the same hacker: the
@@ -181,9 +184,7 @@ class VoucherService(BaseService):
             .first()
         )
         if current is not None:
-            raise InvalidDataException(
-                f"Hacker already has voucher {current.code}"
-            )
+            raise InvalidDataException(f"Hacker already has voucher {current.code}")
         message = ""
         if not registration.confirmed_assistance:
             registration.confirmed_assistance = True
@@ -191,7 +192,8 @@ class VoucherService(BaseService):
         if hacker not in event.participants:
             event.participants.append(hacker)
         voucher.hacker_id = hacker.id
-        voucher.assigned_at = datetime.now()
+        # Keep the existing timezone-naive database/local-calendar contract.
+        voucher.assigned_at = datetime.now()  # noqa: DTZ005
         try:
             db.session.commit()
         except IntegrityError:

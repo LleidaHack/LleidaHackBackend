@@ -1,10 +1,10 @@
-from pydantic import field_validator
-from src.utils.security import validate_password
 from datetime import date
-from typing import Optional
+
+from pydantic import field_validator
 
 from src.impl.UserConfig.schema import UserConfigGetAll
 from src.utils.Base.BaseSchema import BaseSchema
+from src.utils.security import validate_password
 
 
 class ContactMail(BaseSchema):
@@ -16,19 +16,19 @@ class ContactMail(BaseSchema):
 
 class ProfileGet(BaseSchema):
     id: int
-    name: Optional[str]
-    nickname: Optional[str]
-    email: Optional[str]
+    name: str | None
+    nickname: str | None
+    email: str | None
     type: str
     is_verified: bool
-    birthdate: Optional[date] = None
-    telephone: Optional[str] = None
-    address: Optional[str] = None
-    food_restrictions: Optional[str] = None
-    shirt_size: Optional[str] = None
-    image: Optional[str] = None
+    birthdate: date | None = None
+    telephone: str | None = None
+    address: str | None = None
+    food_restrictions: str | None = None
+    shirt_size: str | None = None
+    image: str | None = None
     code: str
-    config: Optional[UserConfigGetAll] = None
+    config: UserConfigGetAll | None = None
 
 
 class VerificationResult(BaseSchema):
@@ -36,10 +36,10 @@ class VerificationResult(BaseSchema):
 
 
 class VerificationSession(VerificationResult):
-    user_id: Optional[int] = None
-    access_token: Optional[str] = None
-    refresh_token: Optional[str] = None
-    token_type: Optional[str] = None
+    user_id: int | None = None
+    access_token: str | None = None
+    refresh_token: str | None = None
+    token_type: str | None = None
 
 
 class PasswordResetConfirm(BaseSchema):

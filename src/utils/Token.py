@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections import OrderedDict
 from datetime import UTC, datetime, timedelta
 from hmac import compare_digest
-from typing import List
 
 import jwt
 from dateutil import parser
@@ -65,13 +64,15 @@ class BaseToken:
     def to_token(self):
         if hasattr(self, "_encoded"):
             return self._encoded
-        return self.encode({k: v for k, v in vars(self).items() if not k.startswith("_")})
+        return self.encode(
+            {k: v for k, v in vars(self).items() if not k.startswith("_")}
+        )
 
     def user_set(self):
         self.user_service.update_token(self)
         return self.to_token()
 
-    def check(self, available_users: List[UserType], user_id: int = None):
+    def check(self, available_users: list[UserType], user_id: int | None = None):
         if self.user_type == UserType.SERVICE.value:
             return self.is_admin and self.available
         if self.type != TokenType.ACCESS.value or not self.available:
@@ -86,7 +87,9 @@ class BaseToken:
 
     @staticmethod
     def is_service(token):
-        return isinstance(token, str) and compare_digest(token.encode(), SERVICE_TOKEN.encode())
+        return isinstance(token, str) and compare_digest(
+            token.encode(), SERVICE_TOKEN.encode()
+        )
 
     @staticmethod
     def decode(token):
@@ -100,12 +103,21 @@ class BaseToken:
             if expiry.tzinfo is None or expiry <= datetime.now(UTC):
                 raise ValueError("Invalid expiration")
             return payload
-        except (jwt.InvalidTokenError, AttributeError, TypeError, ValueError, KeyError, OverflowError):
+        except (
+            jwt.InvalidTokenError,
+            AttributeError,
+            TypeError,
+            ValueError,
+            KeyError,
+            OverflowError,
+        ):
             raise AuthenticationException("Invalid or expired token") from None
 
     @staticmethod
     def encode(payload):
-        return jwt.encode(OrderedDict(sorted(payload.items())), SECRET_KEY, algorithm=ALGORITHM)
+        return jwt.encode(
+            OrderedDict(sorted(payload.items())), SECRET_KEY, algorithm=ALGORITHM
+        )
 
     @staticmethod
     def verify(token, expected_type=TokenType.ACCESS):
@@ -113,7 +125,12 @@ class BaseToken:
         return True
 
     @staticmethod
-    def get_data(token: str, expected_type=TokenType.ACCESS, require_available=True, allow_service=True):
+    def get_data(
+        token: str,
+        expected_type=TokenType.ACCESS,
+        require_available=True,
+        allow_service=True,
+    ):
         if BaseToken.is_service(token):
             if not allow_service or expected_type != TokenType.ACCESS:
                 raise AuthenticationException("Invalid token purpose")
@@ -145,15 +162,21 @@ class BaseToken:
                 raise AuthenticationException("Invalid token")
         else:
             from fastapi_sqlalchemy import db
+
             from src.impl.Event.model import HackerRegistration
 
             if type(payload.get("event_id")) is not int:
                 raise AuthenticationException("Invalid event")
-            registration = db.session.query(HackerRegistration).filter_by(
-                user_id=user.id, event_id=payload["event_id"]
-            ).first()
-            if (registration is None or registration.confirmed_assistance
-                    or registration.confirm_assistance_token != token):
+            registration = (
+                db.session.query(HackerRegistration)
+                .filter_by(user_id=user.id, event_id=payload["event_id"])
+                .first()
+            )
+            if (
+                registration is None
+                or registration.confirmed_assistance
+                or registration.confirm_assistance_token != token
+            ):
                 raise AuthenticationException("Invalid token")
 
         token_classes = {
@@ -173,7 +196,7 @@ class BaseToken:
 
 
 class AssistenceToken(BaseToken):
-    def __init__(self, user: User, event_id: int = None):
+    def __init__(self, user: User, event_id: int | None = None):
         super().__init__(user)
         self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
         self.type = TokenType.ASSISTENCE.value

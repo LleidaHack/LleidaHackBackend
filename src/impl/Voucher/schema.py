@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import Field
 
@@ -13,18 +12,18 @@ class VoucherGenerate(BaseSchema):
 class VoucherHacker(BaseSchema):
     id: int
     name: str
-    nickname: Optional[str] = None
-    email: Optional[str] = None
+    nickname: str | None = None
+    email: str | None = None
 
 
 class VoucherGet(BaseSchema):
     id: int
     event_id: int
     code: str
-    hacker_id: Optional[int] = None
-    hacker: Optional[VoucherHacker] = None
-    created_at: Optional[datetime] = None
-    assigned_at: Optional[datetime] = None
+    hacker_id: int | None = None
+    hacker: VoucherHacker | None = None
+    created_at: datetime | None = None
+    assigned_at: datetime | None = None
 
 
 class VoucherSummary(BaseSchema):
@@ -39,12 +38,12 @@ class VoucherAssignResult(BaseSchema):
     voucher_code: str
     hacker_id: int
     hacker_name: str
-    hacker_shirt_size: Optional[str] = None
-    food_restrictions: Optional[str] = None
+    hacker_shirt_size: str | None = None
+    food_restrictions: str | None = None
     message: str = ""
 
 
 class VoucherGenerateResult(BaseSchema):
     success: bool = True
     created: int
-    vouchers: List[VoucherGet]
+    vouchers: list[VoucherGet]

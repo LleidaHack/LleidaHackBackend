@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse, Response

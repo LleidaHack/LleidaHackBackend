@@ -1,16 +1,14 @@
-from typing import Optional
-from src.utils.uploads import Curriculum
-
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
+from src.utils.uploads import Curriculum
 
 
 class HackerCreate(UserCreate):
-    github: Optional[str] = None
-    linkedin: Optional[str] = None
-    study_center: Optional[str] = None
-    location: Optional[str] = None
-    how_did_you_meet_us: Optional[str] = None
-    cv: Optional[Curriculum] = None
+    github: str | None = None
+    linkedin: str | None = None
+    study_center: str | None = None
+    location: str | None = None
+    how_did_you_meet_us: str | None = None
+    cv: Curriculum | None = None
 
 
 class HackerGet(UserGet):
@@ -21,19 +19,19 @@ class HackerGet(UserGet):
 
 
 class HackerGetAll(UserGetAll, HackerGet):
-    how_did_you_meet_us: Optional[str]
-    location: Optional[str]
-    cv: Optional[str]
-    study_center: Optional[str]
-    studies: Optional[str]
+    how_did_you_meet_us: str | None
+    location: str | None
+    cv: str | None
+    study_center: str | None
+    studies: str | None
     banned: int
 
 
 class HackerUpdate(UserUpdate):
-    github: Optional[str] = None
-    linkedin: Optional[str] = None
-    studies: Optional[str] = None
-    study_center: Optional[str] = None
-    location: Optional[str] = None
-    how_did_you_meet_us: Optional[str] = None
-    cv: Optional[Curriculum] = None
+    github: str | None = None
+    linkedin: str | None = None
+    studies: str | None = None
+    study_center: str | None = None
+    location: str | None = None
+    how_did_you_meet_us: str | None = None
+    cv: Curriculum | None = None

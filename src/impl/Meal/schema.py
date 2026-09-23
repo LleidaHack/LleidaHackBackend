@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.utils.Base.BaseSchema import BaseSchema
 
 
@@ -21,5 +19,5 @@ class MealGetAll(MealGet):
 
 
 class MealUpdate(BaseSchema):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: str | None = None
+    description: str | None = None

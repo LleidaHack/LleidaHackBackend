@@ -1,12 +1,7 @@
-from typing import List, Union
-
 from fastapi import APIRouter, Depends
 
-from src.impl.Meal.schema import MealCreate
 from src.impl.Event.schema import EventGet
-from src.impl.Meal.schema import MealGet
-from src.impl.Meal.schema import MealGetAll
-from src.impl.Meal.schema import MealUpdate
+from src.impl.Meal.schema import MealCreate, MealGet, MealGetAll, MealUpdate
 from src.impl.Meal.service import MealService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -19,12 +14,12 @@ router = APIRouter(
 meal_service = MealService()
 
 
-@router.get("/{id}/all", response_model=List[MealGet])
+@router.get("/{id}/all", response_model=list[MealGet])
 def get_all(id: int, token: BaseToken = Depends(JWTBearer())):
     return meal_service.get_all(id)
 
 
-@router.get("/{id}", response_model=Union[MealGetAll, MealGet])
+@router.get("/{id}", response_model=MealGetAll | MealGet)
 def get(id: int, token: BaseToken = Depends(JWTBearer())):
     return meal_service.get_meal(id, token)
 

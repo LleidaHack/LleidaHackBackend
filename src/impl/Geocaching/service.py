@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
-from src.impl.Geocaching.model import Geocaching
-from src.impl.Geocaching.model import UserGeocaching
+from src.impl.Geocaching.model import Geocaching, UserGeocaching
 from src.impl.User.model import User
 
 
@@ -31,7 +30,7 @@ def claim_lleidacoins(db: Session, user_code: str):
         raise ValueError("Hacker not found")
     all_geocachings = get_all_geocachings(db)
     hacker_geocachings = get_all_hacker_geocaching(db, user_code)
-    if not len(all_geocachings) == len(hacker_geocachings):
+    if len(all_geocachings) != len(hacker_geocachings):
         return "User dont have all geocachings"
     hacker.lleidacoins_claimed = True
     db.commit()

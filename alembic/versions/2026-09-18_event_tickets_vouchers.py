@@ -1,6 +1,8 @@
 """Check-in tickets (sent QR mail) and physical vouchers per event."""
-from alembic import op
+
 import sqlalchemy as sa
+
+from alembic import op
 
 revision = "20260918_vouchers"
 down_revision = "20260916_sponsors"
@@ -18,7 +20,9 @@ def upgrade():
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("event_id", sa.Integer(), sa.ForeignKey("event.id"), nullable=False),
         sa.Column("code", sa.String(), nullable=False),
-        sa.Column("hacker_id", sa.Integer(), sa.ForeignKey("hacker.user_id"), nullable=True),
+        sa.Column(
+            "hacker_id", sa.Integer(), sa.ForeignKey("hacker.user_id"), nullable=True
+        ),
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.Column("assigned_at", sa.DateTime(), nullable=True),
         sa.UniqueConstraint("event_id", "hacker_id", name="uq_event_voucher_hacker"),

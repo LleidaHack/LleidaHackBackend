@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -33,8 +33,8 @@ class Article(BaseModel):
     edition_date: Mapped[date] = mapped_column(DateTime, default=func.now())
     owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("my_user.id"))
 
-    owner: Mapped["User"] = relationship("User")
-    types: Mapped[List["ArticleType"]] = relationship(
+    owner: Mapped[User] = relationship("User")
+    types: Mapped[list[ArticleType]] = relationship(
         "ArticleType",
         "article_article_type",
         primaryjoin="Article.id == article_article_type.c.article_id",

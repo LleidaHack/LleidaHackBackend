@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends, Response
 
 from src.impl.Voucher.schema import (
@@ -31,10 +29,10 @@ def generate(
     return {"success": True, "created": len(vouchers), "vouchers": vouchers}
 
 
-@router.get("/", response_model=List[VoucherGet])
+@router.get("/", response_model=list[VoucherGet])
 def get_all(
     event_id: int,
-    assigned: Optional[bool] = None,
+    assigned: bool | None = None,
     token: BaseToken = Depends(JWTBearer()),
 ):
     return voucher_service.get_all(event_id, token, assigned)
@@ -59,7 +57,9 @@ def export_csv(event_id: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{voucher_code}", response_model=VoucherGet)
-def get_voucher(event_id: int, voucher_code: str, token: BaseToken = Depends(JWTBearer())):
+def get_voucher(
+    event_id: int, voucher_code: str, token: BaseToken = Depends(JWTBearer())
+):
     return voucher_service.get_voucher(event_id, voucher_code, token)
 
 

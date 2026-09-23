@@ -39,8 +39,28 @@ build-backend = "hatchling.build"
 dev = [
     "httpx>=0.28.1",
     "pytest>=9.1.1",
+    "ruff==0.16.8",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["backend", "."]
+
+[tool.ruff]
+target-version = "py312"
+# Generated from the mail service OpenAPI schema; regenerate instead of editing.
+extend-exclude = ["backend/generated_src"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI dependency descriptors are intentionally constructed at route registration.
+extend-immutable-calls = ["fastapi.Depends", "src.utils.JWTBearer.JWTBearer"]
+
+[tool.ruff.lint.per-file-ignores]
+# Existing module names are imported throughout the application; preserve that API.
+"**/__init__.py" = ["N999"]
+"App.py" = ["N999"]
+"src/utils/JWTBearer.py" = ["N999"]
+"src/utils/Singleton.py" = ["N999"]
+"src/utils/Token.py" = ["N999"]
+"src/utils/TokenType.py" = ["N999"]
+"src/utils/UserType.py" = ["N999"]

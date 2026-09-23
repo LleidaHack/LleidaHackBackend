@@ -1,4 +1,3 @@
-from typing import Optional
 from pydantic import field_validator
 
 from src.utils.Base.BaseSchema import BaseSchema
@@ -23,10 +22,9 @@ class UserConfigGetAll(UserConfigGet):
 
 
 class UserConfigUpdate(BaseSchema):
-    recive_notifications: Optional[bool] = None
-    default_lang: Optional[str] = None
-    comercial_notifications: Optional[bool] = None
-
+    recive_notifications: bool | None = None
+    default_lang: str | None = None
+    comercial_notifications: bool | None = None
 
     @field_validator("recive_notifications", "default_lang", "comercial_notifications")
     @classmethod

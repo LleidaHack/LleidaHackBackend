@@ -1,16 +1,19 @@
-from src.impl.User.service import UserService
 from datetime import datetime as date
 
 from fastapi_sqlalchemy import db
 
 from src.error.AuthorizationException import AuthorizationException
-from src.impl.Company.model import Company
 from src.error.NotFoundException import NotFoundException
+from src.impl.Company.model import Company
 from src.impl.CompanyUser.model import CompanyUser
-from src.impl.CompanyUser.schema import CompanyUserCreate
-from src.impl.CompanyUser.schema import CompanyUserGet
-from src.impl.CompanyUser.schema import CompanyUserGetAll
-from src.impl.CompanyUser.schema import CompanyUserUpdate
+from src.impl.CompanyUser.schema import (
+    CompanyUserCreate,
+    CompanyUserGet,
+    CompanyUserGetAll,
+    CompanyUserUpdate,
+)
+from src.impl.User.service import UserService
+from src.impl.UserConfig.model import UserConfig
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (
@@ -21,7 +24,6 @@ from src.utils.service_utils import (
 )
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.UserConfig.model import UserConfig
 
 
 class CompanyUserService(BaseService):
@@ -82,7 +84,8 @@ class CompanyUserService(BaseService):
         if payload.image is not None:
             payload = check_image(payload)
         updated = set_existing_data(company_user, payload)
-        company_user.updated_at = date.now()
+        # Keep the existing timezone-naive database/local-calendar contract.
+        company_user.updated_at = date.now()  # noqa: DTZ005
         updated.append("updated_at")
         if payload.password is not None:
             company_user.password = get_password_hash(payload.password)

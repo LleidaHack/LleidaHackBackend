@@ -3,11 +3,10 @@ from fastapi_sqlalchemy import db
 import src.impl.User.service as U_S
 from src.error.AuthorizationException import AuthorizationException
 from src.error.InvalidDataException import InvalidDataException
-from src.impl.CompanyUser.model import CompanyUser
 from src.error.NotFoundException import NotFoundException
 from src.impl.Company.model import Company
-from src.impl.Company.schema import CompanyCreate
-from src.impl.Company.schema import CompanyUpdate
+from src.impl.Company.schema import CompanyCreate, CompanyUpdate
+from src.impl.CompanyUser.model import CompanyUser
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import check_image, set_existing_data
 from src.utils.Token import BaseToken
@@ -92,7 +91,9 @@ class CompanyService(BaseService):
             return company
         previous = self.get_by_id(user.company_id)
         if previous.leader_id == user.id:
-            raise InvalidDataException("Assign another company leader before transferring this user")
+            raise InvalidDataException(
+                "Assign another company leader before transferring this user"
+            )
         user.company_id = companyId
         U_S.UserService.revoke_tokens(user)
         db.session.commit()

@@ -1,20 +1,19 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
+
 from src.configuration.Settings import settings
+from src.error.AuthenticationException import AuthenticationException
+from src.error.InvalidDataException import InvalidDataException
 from src.impl.Authentication.schema import ContactMail
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
-
-from src.impl.User.service import UserService
-from src.error.AuthenticationException import AuthenticationException
-from src.error.InvalidDataException import InvalidDataException
 from src.impl.User.model import User
+from src.impl.User.service import UserService
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash, verify_password
-from src.utils.UserType import UserType
 from src.utils.Token import (
     AccesToken,
     BaseToken,
@@ -22,6 +21,7 @@ from src.utils.Token import (
     ResetPassToken,
     VerificationToken,
 )
+from src.utils.UserType import UserType
 
 
 class AuthenticationService(BaseService):
@@ -47,7 +47,9 @@ class AuthenticationService(BaseService):
         if not verify_password(password, user.password):
             raise AuthenticationException("Incorrect password")
         if not user.is_verified and not user.is_deleted:
-            raise AuthenticationException("Email verification required", code="EMAIL_NOT_VERIFIED")
+            raise AuthenticationException(
+                "Email verification required", code="EMAIL_NOT_VERIFIED"
+            )
         if not BaseToken.is_available(user):
             raise AuthenticationException("Account is not available")
         access_token, refresh_token = self.create_access_and_refresh_token(user)
@@ -124,9 +126,13 @@ class AuthenticationService(BaseService):
         if not BaseToken.is_available(user):
             return {"success": True}
         access_token, refresh_token = self.create_access_and_refresh_token(user)
-        return {"success": True, "user_id": user.id,
-                "access_token": access_token.to_token(),
-                "refresh_token": refresh_token.to_token(), "token_type": "Bearer"}
+        return {
+            "success": True,
+            "user_id": user.id,
+            "access_token": access_token.to_token(),
+            "refresh_token": refresh_token.to_token(),
+            "token_type": "Bearer",
+        }
 
     @BaseService.needs_service(UserService)
     def force_verification(self, user_id: int, data: BaseToken):
@@ -164,12 +170,13 @@ class AuthenticationService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(
                 template_id=self.mail_client.get_internall_template_id(
-                    InternalTemplate.CONTACT),
+                    InternalTemplate.CONTACT
+                ),
                 receiver_mail=settings.contact_mail,
-                subject=f'Contact {payload.title}',
-                fields=
-                f'{payload.name},{payload.email},{payload.title},{payload.message}'
-            ))
+                subject=f"Contact {payload.title}",
+                fields=f"{payload.name},{payload.email},{payload.title},{payload.message}",
+            )
+        )
         self.mail_client.send_mail_by_id(mail.id)
         return {
             "success": mail is not None,

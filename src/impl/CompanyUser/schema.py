@@ -16,7 +16,6 @@ class CompanyUserGet(UserGet):
 
 class CompanyUserGetAll(UserGetAll):
     active: bool
-    pass
 
 
 class CompanyUserUpdate(UserUpdate):

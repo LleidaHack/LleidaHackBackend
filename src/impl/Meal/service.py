@@ -6,10 +6,7 @@ from src.error.NotFoundException import NotFoundException
 from src.impl.Event.service import EventService
 from src.impl.Hacker.service import HackerService
 from src.impl.Meal.model import Meal
-from src.impl.Meal.schema import MealCreate
-from src.impl.Meal.schema import MealGet
-from src.impl.Meal.schema import MealGetAll
-from src.impl.Meal.schema import MealUpdate
+from src.impl.Meal.schema import MealCreate, MealGet, MealGetAll, MealUpdate
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import set_existing_data
 from src.utils.Token import BaseToken

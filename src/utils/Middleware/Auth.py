@@ -1,12 +1,12 @@
 from time import time
 
+import jwt
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_pem_x509_certificate
 from fastapi import Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
-import jwt
 from jwt.exceptions import InvalidTokenError as JWTError
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.status import HTTP_401_UNAUTHORIZED

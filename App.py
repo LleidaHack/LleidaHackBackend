@@ -34,10 +34,11 @@ class App:
                 # print(route.operation_id)
 
     def setup_middleware(self):
-        self.app.add_middleware(DBSessionMiddleware,
-                                db_url=settings.database.url)
+        self.app.add_middleware(DBSessionMiddleware, db_url=settings.database.url)
         self.app.add_middleware(
-            RateLimitingMiddleware, config=settings.rate_limit, secret=settings.security.secret_key,
+            RateLimitingMiddleware,
+            config=settings.rate_limit,
+            secret=settings.security.secret_key,
         )
         self.app.add_middleware(
             CORSMiddleware,
@@ -54,9 +55,9 @@ class App:
         from src.error.AuthorizationException import AuthorizationException
         from src.error.InputException import InputException
         from src.error.InvalidDataException import InvalidDataException
+        from src.error.MailClientException import MailClientException
         from src.error.NotFoundException import NotFoundException
         from src.error.ValidationException import ValidationException
-        from src.error.MailClientException import MailClientException
 
         self.app.add_exception_handler(
             AuthenticationException, eh.authentication_exception_handler

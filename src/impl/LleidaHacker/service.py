@@ -1,4 +1,3 @@
-from src.impl.User.service import UserService
 from datetime import datetime as date
 
 from fastapi_sqlalchemy import db
@@ -6,11 +5,15 @@ from fastapi_sqlalchemy import db
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.impl.LleidaHacker.model import LleidaHacker
-from src.impl.LleidaHacker.schema import LleidaHackerCreate
-from src.impl.LleidaHacker.schema import LleidaHackerGet
-from src.impl.LleidaHacker.schema import LleidaHackerGetAll
-from src.impl.LleidaHacker.schema import LleidaHackerUpdate
+from src.impl.LleidaHacker.schema import (
+    LleidaHackerCreate,
+    LleidaHackerGet,
+    LleidaHackerGetAll,
+    LleidaHackerUpdate,
+)
 from src.impl.LleidaHackerGroup.model import LleidaHackerGroup, LleidaHackerGroupUser
+from src.impl.User.service import UserService
+from src.impl.UserConfig.model import UserConfig
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (
@@ -21,7 +24,6 @@ from src.utils.service_utils import (
 )
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.UserConfig.model import UserConfig
 
 
 class LleidaHackerService(BaseService):
@@ -50,7 +52,7 @@ class LleidaHackerService(BaseService):
             **payload.model_dump(exclude={"config"}), code=generate_user_code()
         )
         new_lleidahacker.password = get_password_hash(payload.password)
-        new_lleidahacker.active = False # IMPORTANT DO NOT ACTIVATE USER AUTOMATICALLY !!!!!!!!!!!!! @Big_Lolo
+        new_lleidahacker.active = False  # IMPORTANT DO NOT ACTIVATE USER AUTOMATICALLY !!!!!!!!!!!!! @Big_Lolo
 
         new_config = UserConfig(**payload.config.model_dump())
 
@@ -73,7 +75,8 @@ class LleidaHackerService(BaseService):
         updated = set_existing_data(lleidahacker, payload)
         if payload.active is False:
             UserService.revoke_tokens(lleidahacker)
-        lleidahacker.updated_at = date.now()
+        # Keep the existing timezone-naive database/local-calendar contract.
+        lleidahacker.updated_at = date.now()  # noqa: DTZ005
         updated.append("updated_at")
         if payload.password is not None:
             lleidahacker.password = get_password_hash(payload.password)

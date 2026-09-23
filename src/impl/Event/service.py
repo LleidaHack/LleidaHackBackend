@@ -1,13 +1,16 @@
-from fastapi_sqlalchemy import db
-from sqlalchemy import desc, create_engine
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-import time
 import logging
 import threading
-from src.configuration.Settings import settings
-from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
+import time
 from collections import Counter
+from datetime import datetime
+from typing import ClassVar
+
+from fastapi_sqlalchemy import db
+from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
+from sqlalchemy import create_engine, desc
+from sqlalchemy.orm import sessionmaker
+
+from src.configuration.Settings import settings
 
 # from src.impl.HackerGroup.service import HackerGroupService
 # from services.mail import send_event_accepted_email
@@ -15,32 +18,32 @@ from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
 from src.impl.Company.service import CompanyService
-from src.impl.Event.model import Event, CompanyParticipation
-from src.impl.Event.model import HackerRegistration
-from src.impl.Event.schema import EventCreate
-from src.impl.Event.schema import HackerEventRegistration, HackerEventRegistrationUpdate
-from src.impl.Event.schema import EventGet
-from src.impl.Event.schema import EventGetAll
-from src.impl.Event.schema import EventUpdate
+from src.impl.Event.model import CompanyParticipation, Event, HackerRegistration
+from src.impl.Event.schema import (
+    EventCreate,
+    EventGet,
+    EventGetAll,
+    EventUpdate,
+    HackerEventRegistration,
+    HackerEventRegistrationUpdate,
+)
 from src.impl.Hacker.model import Hacker
 from src.impl.Hacker.service import HackerService
-from src.impl.HackerGroup.model import HackerGroup
-from src.impl.HackerGroup.model import HackerGroupUser
-from src.impl.Voucher.model import Voucher
+from src.impl.HackerGroup.model import HackerGroup, HackerGroupUser
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
+from src.impl.Voucher.model import Voucher
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.qr import qr_png, ticket_qr_url
 from src.utils.service_utils import (
     check_image,
+    get_hacker_info,
     set_existing_data,
     subtract_lists,
-    get_hacker_info,
 )
 from src.utils.Token import AssistenceToken, BaseToken
 from src.utils.UserType import UserType
-
 
 logger = logging.getLogger(__name__)
 
@@ -52,14 +55,15 @@ class EventService(BaseService):
     company_service: CompanyService = None
     mail_client: MailClient = None
     # background sending job tracking: event_id -> job info
-    _sending_jobs = {}
+    _sending_jobs: ClassVar[dict] = {}
     _sending_jobs_lock = threading.Lock()
 
     def _start_job(self, event_id: int, job_type: str, total: int):
         with self._sending_jobs_lock:
             self._sending_jobs[event_id] = {
                 "type": job_type,
-                "start": datetime.now(),
+                # Keep the existing timezone-naive database/local-calendar contract.
+                "start": datetime.now(),  # noqa: DTZ005
                 "finish": None,
                 "total": int(total) if total is not None else 0,
                 "sent": 0,
@@ -84,7 +88,8 @@ class EventService(BaseService):
             job = self._sending_jobs.get(event_id)
             if job:
                 job["status"] = "finished"
-                job["finish"] = datetime.now()
+                # Keep the existing timezone-naive database/local-calendar contract.
+                job["finish"] = datetime.now()  # noqa: DTZ005
 
     def is_sending(self, event_id: int) -> bool:
         with self._sending_jobs_lock:
@@ -103,7 +108,8 @@ class EventService(BaseService):
             total = job.get("total", 0)
             status = job.get("status")
             finish = job.get("finish")
-        elapsed = (datetime.now() - start).total_seconds() if start else 0
+        # Keep the existing timezone-naive database/local-calendar contract.
+        elapsed = (datetime.now() - start).total_seconds() if start else 0  # noqa: DTZ005
         estimated_remaining = None
         if sent > 0 and total > sent:
             avg = elapsed / sent
@@ -138,8 +144,10 @@ class EventService(BaseService):
             db.session.query(Event)
             .filter(
                 Event.name.ilike("HackEPS%"),
-                Event.start_date >= datetime(year, 1, 1),
-                Event.start_date < datetime(year + 1, 1, 1)
+                # Keep the existing timezone-naive database/local-calendar contract.
+                Event.start_date >= datetime(year, 1, 1),  # noqa: DTZ001
+                # Keep the existing timezone-naive database/local-calendar contract.
+                Event.start_date < datetime(year + 1, 1, 1),  # noqa: DTZ001
             )
             .order_by(desc(Event.end_date))
             .first()
@@ -308,15 +316,22 @@ class EventService(BaseService):
     def get_event_sponsors(self, id: int):
         event = self.get_by_id(id)
         from src.impl.Company.schema import CompanyGet
-        memberships = db.session.query(CompanyParticipation).filter_by(event_id=id).all()
+
+        memberships = (
+            db.session.query(CompanyParticipation).filter_by(event_id=id).all()
+        )
         by_company = {row.company_id: row for row in memberships}
         sponsors = []
         for company in event.sponsors:
             entry = CompanyGet.model_validate(company).model_dump()
             membership = by_company[company.id]
-            entry["tier"] = membership.tier if membership.tier is not None else company.tier
+            entry["tier"] = (
+                membership.tier if membership.tier is not None else company.tier
+            )
             sponsors.append((membership.display_order, company.id, entry))
-        return [entry for _, _, entry in sorted(sponsors, key=lambda row: (row[0], row[1]))]
+        return [
+            entry for _, _, entry in sorted(sponsors, key=lambda row: (row[0], row[1]))
+        ]
 
     def update_sponsor(self, event_id, company_id, payload, token):
         if not token.check([UserType.LLEIDAHACKER]):
@@ -324,8 +339,11 @@ class EventService(BaseService):
         event = self.get_by_id(event_id)
         if event.archived:
             raise InvalidDataException("Cannot change sponsors of an archived event")
-        membership = db.session.query(CompanyParticipation).filter_by(
-            event_id=event_id, company_id=company_id).first()
+        membership = (
+            db.session.query(CompanyParticipation)
+            .filter_by(event_id=event_id, company_id=company_id)
+            .first()
+        )
         if membership is None:
             raise NotFoundException("Sponsor is not linked to this event")
         membership.tier = payload.tier
@@ -350,8 +368,11 @@ class EventService(BaseService):
         if company not in event.sponsors:
             event.sponsors.append(company)
             db.session.flush()
-            membership = db.session.query(CompanyParticipation).filter_by(
-                event_id=id, company_id=company_id).one()
+            membership = (
+                db.session.query(CompanyParticipation)
+                .filter_by(event_id=id, company_id=company_id)
+                .one()
+            )
             membership.tier = company.tier
         db.session.commit()
         db.session.refresh(event)
@@ -380,9 +401,8 @@ class EventService(BaseService):
             raise InvalidDataException(
                 "Unable to operate with a closed event, reopen it first"
             )
-        if not data.is_admin:
-            if event.max_participants <= len(event.accepted_hackers):
-                raise InvalidDataException("Event is full")
+        if not data.is_admin and event.max_participants <= len(event.accepted_hackers):
+            raise InvalidDataException("Event is full")
         hacker = self.hacker_service.get_by_id(hacker_id)
         if hacker in event.registered_hackers:
             raise InvalidDataException("Hacker already registered")
@@ -445,8 +465,15 @@ class EventService(BaseService):
             setattr(reg, field, value)
         if payload.update_user:
             profile_fields = {
-                "shirt_size", "food_restrictions", "cv", "github", "linkedin",
-                "studies", "study_center", "location", "how_did_you_meet_us",
+                "shirt_size",
+                "food_restrictions",
+                "cv",
+                "github",
+                "linkedin",
+                "studies",
+                "study_center",
+                "location",
+                "how_did_you_meet_us",
             }
             for field in profile_fields.intersection(changes):
                 setattr(hacker, field, changes[field])
@@ -1147,12 +1174,14 @@ class EventService(BaseService):
                 )
             )
             # send the created mail
-            resp = self.mail_client.send_mail_by_id(mail.id)
+            self.mail_client.send_mail_by_id(mail.id)
 
         db.session.commit()
 
     @BaseService.needs_service(MailClient)
-    def send_slack_mail_background(self, event_id: int, slackUrl: str, delay: float = 0.2):
+    def send_slack_mail_background(
+        self, event_id: int, slackUrl: str, delay: float = 0.2
+    ):
         """
         Background-safe sender: creates its own DB session and sends slack invite mails
         to accepted hackers with an optional `delay` between sends to avoid throttling.
@@ -1170,9 +1199,10 @@ class EventService(BaseService):
             # start tracking job
             try:
                 self._start_job(event_id, "slack", total)
-            except Exception:
-                # best-effort tracking, don't fail send if tracking setup fails
-                pass
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
+                # Best-effort tracking must not abort the delivery job.
+                logger.warning("Background mail progress update failed")
 
             for hacker in hackers:
                 try:
@@ -1187,23 +1217,26 @@ class EventService(BaseService):
                             fields=slackUrl,
                         )
                     )
-                    resp = self.mail_client.send_mail_by_id(mail.id)
+                    self.mail_client.send_mail_by_id(mail.id)
                     # increment progress
                     try:
                         self._increment_sent(event_id)
-                    except Exception:
-                        pass
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
+                        logger.warning("Background mail progress update failed")
                     session.commit()
                     if delay and delay > 0:
                         time.sleep(delay)
-                except Exception:
+                # Preserve the documented service-boundary fallback.
+                except Exception:  # noqa: BLE001
                     session.rollback()
                     continue
             # finish tracking
             try:
                 self._finish_job(event_id)
-            except Exception:
-                pass
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
+                logger.warning("Background mail progress update failed")
         finally:
             session.close()
 
@@ -1239,13 +1272,17 @@ class EventService(BaseService):
 
                 # ensure there is a confirmation token for this registration
                 if not reg.confirm_assistance_token:
-                    reg.confirm_assistance_token = AssistenceToken(hacker, event.id).to_token()
+                    reg.confirm_assistance_token = AssistenceToken(
+                        hacker, event.id
+                    ).to_token()
 
                 # compute days left until event (rounded down)
                 try:
-                    delta = event.start_date - datetime.now()
+                    # Keep the existing timezone-naive database/local-calendar contract.
+                    delta = event.start_date - datetime.now()  # noqa: DTZ005
                     days_left = max(0, int(delta.total_seconds() // 86400))
-                except Exception:
+                # Preserve the documented service-boundary fallback.
+                except Exception:  # noqa: BLE001
                     days_left = 0
 
                 # fields order: name, days_left, token, event_name
@@ -1263,9 +1300,10 @@ class EventService(BaseService):
                     )
                 )
                 # send the created mail
-                resp = self.mail_client.send_mail_by_id(mail.id)
+                self.mail_client.send_mail_by_id(mail.id)
                 db.session.commit()
-            except Exception as e:
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
                 db.session.rollback()
                 # Optionally log the error here, e.g.:
                 # print(f"Failed to send reminder to hacker {hacker.id}: {e}")
@@ -1304,19 +1342,24 @@ class EventService(BaseService):
             total = len(eligible)
             try:
                 self._start_job(event_id, "reminder", total)
-            except Exception:
-                pass
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
+                logger.warning("Background mail progress update failed")
 
             for hacker, reg in eligible:
                 try:
                     # ensure there is a confirmation token for this registration
                     if not reg.confirm_assistance_token:
-                        reg.confirm_assistance_token = AssistenceToken(hacker, event.id).to_token()
+                        reg.confirm_assistance_token = AssistenceToken(
+                            hacker, event.id
+                        ).to_token()
 
                     try:
-                        delta = event.start_date - datetime.now()
+                        # Keep the existing timezone-naive database/local-calendar contract.
+                        delta = event.start_date - datetime.now()  # noqa: DTZ005
                         days_left = max(0, int(delta.total_seconds() // 86400))
-                    except Exception:
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
                         days_left = 0
 
                     fields = f"{hacker.name},{days_left},{reg.confirm_assistance_token},{event.name}"
@@ -1333,21 +1376,24 @@ class EventService(BaseService):
                         )
                     )
 
-                    resp = self.mail_client.send_mail_by_id(mail.id)
+                    self.mail_client.send_mail_by_id(mail.id)
                     try:
                         self._increment_sent(event_id)
-                    except Exception:
-                        pass
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
+                        logger.warning("Background mail progress update failed")
                     session.commit()
                     if delay and delay > 0:
                         time.sleep(delay)
-                except Exception:
+                # Preserve the documented service-boundary fallback.
+                except Exception:  # noqa: BLE001
                     session.rollback()
                     continue
             try:
                 self._finish_job(event_id)
-            except Exception:
-                pass
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
+                logger.warning("Background mail progress update failed")
         finally:
             session.close()
 
@@ -1401,7 +1447,8 @@ class EventService(BaseService):
             "eligible": eligible,
             "sent": sent,
             "pending": eligible - sent,
-            "running": bool(progress.get("running")) and self._job_type(event_id) == "ticket",
+            "running": bool(progress.get("running"))
+            and self._job_type(event_id) == "ticket",
             "progress": progress,
         }
 
@@ -1411,7 +1458,9 @@ class EventService(BaseService):
             return job.get("type") if job else None
 
     @BaseService.needs_service(MailClient)
-    def send_ticket_mails_background(self, event_id: int, force: bool = False, delay: float = 0.0):
+    def send_ticket_mails_background(
+        self, event_id: int, force: bool = False, delay: float = 0.0
+    ):
         """
         Background-safe sender: mails the check-in QR to every accepted+confirmed
         hacker that has not received it yet (`force` resends to all of them).
@@ -1426,8 +1475,9 @@ class EventService(BaseService):
             recipients = self._ticket_recipients(session, event, force)
             try:
                 self._start_job(event_id, "ticket", len(recipients))
-            except Exception:
-                pass
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
+                logger.warning("Background mail progress update failed")
             for hacker, registration in recipients:
                 try:
                     mail = self.mail_client.create_mail(
@@ -1443,12 +1493,14 @@ class EventService(BaseService):
                         )
                     )
                     self.mail_client.send_mail_by_id(mail.id)
-                    registration.ticket_sent_at = datetime.now()
+                    # Keep the existing timezone-naive database/local-calendar contract.
+                    registration.ticket_sent_at = datetime.now()  # noqa: DTZ005
                     session.commit()
                     try:
                         self._increment_sent(event_id)
-                    except Exception:
-                        pass
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
+                        logger.warning("Background mail progress update failed")
                     if delay and delay > 0:
                         time.sleep(delay)
                 except Exception:
@@ -1456,13 +1508,15 @@ class EventService(BaseService):
                     logger.exception("Ticket mail failed for hacker %s", hacker.id)
                     try:
                         self._increment_failed(event_id)
-                    except Exception:
-                        pass
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
+                        logger.warning("Background mail progress update failed")
                     continue
             try:
                 self._finish_job(event_id)
-            except Exception:
-                pass
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
+                logger.warning("Background mail progress update failed")
         finally:
             session.close()
 

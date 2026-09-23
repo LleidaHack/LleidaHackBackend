@@ -1,19 +1,18 @@
-from typing import List
-
 from fastapi_sqlalchemy import db
 
 from src.error.AuthorizationException import AuthorizationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
 from src.impl.Event.service import EventService
-from src.impl.Hacker.service import HackerService
 from src.impl.Hacker.model import Hacker
-from src.impl.HackerGroup.model import HackerGroup
-from src.impl.HackerGroup.model import HackerGroupUser
-from src.impl.HackerGroup.schema import HackerGroupCreate
-from src.impl.HackerGroup.schema import HackerGroupGet
-from src.impl.HackerGroup.schema import HackerGroupGetAll
-from src.impl.HackerGroup.schema import HackerGroupUpdate
+from src.impl.Hacker.service import HackerService
+from src.impl.HackerGroup.model import HackerGroup, HackerGroupUser
+from src.impl.HackerGroup.schema import (
+    HackerGroupCreate,
+    HackerGroupGet,
+    HackerGroupGetAll,
+    HackerGroupUpdate,
+)
 from src.utils.Base.BaseService import BaseService
 from src.utils.service_utils import generate_random_code, set_existing_data
 from src.utils.Token import BaseToken
@@ -35,15 +34,22 @@ class HackerGroupService(BaseService):
         return group
 
     def get_for_update(self, group_id: int):
-        group = (db.session.query(HackerGroup).filter_by(id=group_id)
-                 .populate_existing().with_for_update().first())
+        group = (
+            db.session.query(HackerGroup)
+            .filter_by(id=group_id)
+            .populate_existing()
+            .with_for_update()
+            .first()
+        )
         if group is None:
             raise NotFoundException("Hacker group not found")
         return group
 
     @staticmethod
     def can_manage(group, data):
-        return data.check([UserType.LLEIDAHACKER]) or data.check([UserType.HACKER], group.leader_id)
+        return data.check([UserType.LLEIDAHACKER]) or data.check(
+            [UserType.HACKER], group.leader_id
+        )
 
     @staticmethod
     def validate_leader(group, leader_id):
@@ -51,20 +57,23 @@ class HackerGroupService(BaseService):
             raise InvalidDataException("The leader must be a member of the group")
 
     def lock_hacker(self, hacker_id):
-        hacker = (db.session.query(Hacker).filter(Hacker.id == hacker_id)
-                  .with_for_update().first())
+        hacker = (
+            db.session.query(Hacker)
+            .filter(Hacker.id == hacker_id)
+            .with_for_update()
+            .first()
+        )
         if hacker is None:
             raise NotFoundException("Hacker not found")
         return hacker
 
-    def get_when_id_in(self, ids: List[int]):
+    def get_when_id_in(self, ids: list[int]):
         return db.session.query(HackerGroup).filter(HackerGroup.id.in_(ids)).all()
 
     def get_by_code(self, code: str, exc=True):
         group = db.session.query(HackerGroup).filter(HackerGroup.code == code).first()
-        if exc:
-            if group is None:
-                raise NotFoundException("Hacker group not found")
+        if exc and group is None:
+            raise NotFoundException("Hacker group not found")
         return group
 
     def generate_group_code(self):
@@ -92,7 +101,10 @@ class HackerGroupService(BaseService):
     def add_hacker_group(self, payload: HackerGroupCreate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
             raise AuthorizationException("Not authorized")
-        if not data.check([UserType.LLEIDAHACKER]) and data.user_id != payload.leader_id:
+        if (
+            not data.check([UserType.LLEIDAHACKER])
+            and data.user_id != payload.leader_id
+        ):
             raise AuthorizationException("Not authorized")
         leader = self.lock_hacker(payload.leader_id)
         event = self.event_service.get_by_id(payload.event_id)
@@ -182,7 +194,9 @@ class HackerGroupService(BaseService):
         if not data.check([UserType.LLEIDAHACKER, UserType.HACKER]):
             raise AuthorizationException("Not authorized")
         hacker_group = self.get_for_update(groupId)
-        if not self.can_manage(hacker_group, data) and not data.check([UserType.HACKER], hackerId):
+        if not self.can_manage(hacker_group, data) and not data.check(
+            [UserType.HACKER], hackerId
+        ):
             raise AuthorizationException("Not authorized")
         hacker = [member for member in hacker_group.members if member.id == hackerId]
         if not hacker:

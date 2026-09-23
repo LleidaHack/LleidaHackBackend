@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,4 +27,4 @@ class Meal(BaseModel):
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), index=True)
     name: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
-    users: Mapped[List["Hacker"]] = relationship("Hacker", secondary="hacker_meal")
+    users: Mapped[list[Hacker]] = relationship("Hacker", secondary="hacker_meal")

@@ -1,11 +1,11 @@
-from typing import List, Union
-
 from fastapi import APIRouter, Depends
 
-from src.impl.HackerGroup.schema import HackerGroupCreate
-from src.impl.HackerGroup.schema import HackerGroupGet
-from src.impl.HackerGroup.schema import HackerGroupGetAll
-from src.impl.HackerGroup.schema import HackerGroupUpdate
+from src.impl.HackerGroup.schema import (
+    HackerGroupCreate,
+    HackerGroupGet,
+    HackerGroupGetAll,
+    HackerGroupUpdate,
+)
 from src.impl.HackerGroup.service import HackerGroupService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -18,12 +18,12 @@ router = APIRouter(
 hackergroup_service = HackerGroupService()
 
 
-@router.get("/all", response_model=List[HackerGroupGet])
+@router.get("/all", response_model=list[HackerGroupGet])
 def get_all(data: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_all()
 
 
-@router.get("/{groupId}", response_model=Union[HackerGroupGetAll, HackerGroupGet])
+@router.get("/{groupId}", response_model=HackerGroupGetAll | HackerGroupGet)
 def get(groupId: int, data: BaseToken = Depends(JWTBearer())):
     return hackergroup_service.get_hacker_group(groupId, data)
 

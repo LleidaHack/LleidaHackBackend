@@ -1,4 +1,5 @@
 """Loopback-only mail capture service for local development; never sends mail."""
+
 from datetime import date
 
 from fastapi import FastAPI, HTTPException
@@ -16,14 +17,28 @@ def health():
 @app.get("/v1/template/name/{name}")
 def template(name: str):
     template_id = templates.setdefault(name, len(templates) + 1)
-    return {"id": template_id, "name": name, "description": "Local capture template",
-            "created_date": date.today().isoformat(), "internal": True, "fields": [], "common_fields": []}
+    return {
+        "id": template_id,
+        "name": name,
+        "description": "Local capture template",
+        # Keep the existing timezone-naive database/local-calendar contract.
+        "created_date": date.today().isoformat(),  # noqa: DTZ011
+        "internal": True,
+        "fields": [],
+        "common_fields": [],
+    }
 
 
 @app.post("/v1/mail/")
 def create_mail(payload: dict):
-    message = {"sender_id": 0, "receiver_id": "", "receiver_mail": "", **payload,
-               "id": len(messages) + 1, "sent": False}
+    message = {
+        "sender_id": 0,
+        "receiver_id": "",
+        "receiver_mail": "",
+        **payload,
+        "id": len(messages) + 1,
+        "sent": False,
+    }
     messages.append(message)
     return message
 

@@ -1,4 +1,5 @@
 """Development-only routes, registered exclusively by install/local.py."""
+
 from ipaddress import ip_address
 from urllib.parse import urlsplit
 
@@ -18,8 +19,11 @@ def require_local(request: Request):
     except ValueError:
         peer_is_local = False
     origin = request.headers.get("origin")
-    if (not peer_is_local or request.url.hostname not in LOOPBACK_HOSTS
-            or (origin and urlsplit(origin).hostname not in LOOPBACK_HOSTS)):
+    if (
+        not peer_is_local
+        or request.url.hostname not in LOOPBACK_HOSTS
+        or (origin and urlsplit(origin).hostname not in LOOPBACK_HOSTS)
+    ):
         raise HTTPException(status_code=403, detail="Local development only")
 
 

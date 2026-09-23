@@ -1,4 +1,5 @@
 """Validate untrusted participant uploads and store a canonical, inert format."""
+
 import base64
 import binascii
 import io
@@ -19,7 +20,11 @@ def decode_upload(value, allowed):
     if len(value) > 4 * ((MAX_FILE_BYTES + 2) // 3) + 64:
         raise ValueError("File exceeds 1 MiB")
     header, separator, encoded = value.partition(",")
-    if not separator or not header.startswith("data:") or not header.endswith(";base64"):
+    if (
+        not separator
+        or not header.startswith("data:")
+        or not header.endswith(";base64")
+    ):
         raise ValueError("Upload a file, not a URL")
     mime = header[5:-7]
     if mime not in allowed:
@@ -49,7 +54,10 @@ def validate_image(value):
             with Image.open(io.BytesIO(raw)) as image:
                 if image.format != MIME_FORMATS[mime]:
                     raise ValueError("Image content does not match its type")
-                if image.width * image.height > MAX_IMAGE_PIXELS or getattr(image, "n_frames", 1) != 1:
+                if (
+                    image.width * image.height > MAX_IMAGE_PIXELS
+                    or getattr(image, "n_frames", 1) != 1
+                ):
                     raise ValueError("Image dimensions or animation are not supported")
                 image.verify()
             with Image.open(io.BytesIO(raw)) as image:
@@ -61,17 +69,38 @@ def validate_image(value):
                 output = io.BytesIO()
                 clean.save(output, format=MIME_FORMATS[mime])
         return encode_upload(mime, output.getvalue())
-    except (UnidentifiedImageError, OSError, Image.DecompressionBombError,
-            Image.DecompressionBombWarning) as exc:
+    except (
+        UnidentifiedImageError,
+        OSError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ) as exc:
         raise ValueError("Invalid or unsafe image") from exc
 
 
 # Reject active content anywhere in the reachable object graph, including
 # encoded PDF names and indirect references (a byte-string search is not enough).
-FORBIDDEN_PDF_KEYS = {"/AA", "/OpenAction", "/JS", "/JavaScript", "/EmbeddedFiles",
-                      "/EF", "/XFA", "/RichMediaContent", "/RichMediaSettings"}
-FORBIDDEN_PDF_ACTIONS = {"/JavaScript", "/Launch", "/SubmitForm", "/ImportData",
-                         "/GoToR", "/GoToE", "/Rendition", "/RichMediaExecute"}
+FORBIDDEN_PDF_KEYS = {
+    "/AA",
+    "/OpenAction",
+    "/JS",
+    "/JavaScript",
+    "/EmbeddedFiles",
+    "/EF",
+    "/XFA",
+    "/RichMediaContent",
+    "/RichMediaSettings",
+}
+FORBIDDEN_PDF_ACTIONS = {
+    "/JavaScript",
+    "/Launch",
+    "/SubmitForm",
+    "/ImportData",
+    "/GoToR",
+    "/GoToE",
+    "/Rendition",
+    "/RichMediaExecute",
+}
 
 
 def validate_cv(value):
@@ -99,9 +128,15 @@ def validate_cv(value):
                 visited.add(key)
                 obj = obj.get_object()
             if isinstance(obj, DictionaryObject):
-                if FORBIDDEN_PDF_KEYS.intersection(obj.keys()) or obj.get("/S") in FORBIDDEN_PDF_ACTIONS:
+                if (
+                    FORBIDDEN_PDF_KEYS.intersection(obj.keys())
+                    or obj.get("/S") in FORBIDDEN_PDF_ACTIONS
+                ):
                     raise ValueError("PDF contains active content or attachments")
-                if obj.get("/Type") == "/EmbeddedFile" or obj.get("/Subtype") in {"/RichMedia", "/FileAttachment"}:
+                if obj.get("/Type") == "/EmbeddedFile" or obj.get("/Subtype") in {
+                    "/RichMedia",
+                    "/FileAttachment",
+                }:
                     raise ValueError("PDF contains embedded content")
                 pending.extend(obj.values())
             elif isinstance(obj, ArrayObject):

@@ -6,8 +6,14 @@ from src.utils.TokenType import TokenType
 
 
 class JWTBearer(HTTPBearer):
-    def __init__(self, required=True, auto_error=True, expected_type=TokenType.ACCESS,
-                 require_available=True, allow_service=True):
+    def __init__(
+        self,
+        required=True,
+        auto_error=True,
+        expected_type=TokenType.ACCESS,
+        require_available=True,
+        allow_service=True,
+    ):
         super().__init__(auto_error=False)
         self.required = required
         self.expected_type = expected_type

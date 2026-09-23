@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
+
 from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -8,8 +9,8 @@ from src.impl.User.model import User
 from src.utils.UserType import UserType
 
 if TYPE_CHECKING:
-    from src.impl.HackerGroup.model import HackerGroup
     from src.impl.Event.model import Event
+    from src.impl.HackerGroup.model import HackerGroup
 
 
 class Hacker(User):
@@ -26,15 +27,15 @@ class Hacker(User):
     study_center: Mapped[str] = mapped_column(String, default="")
     location: Mapped[str] = mapped_column(String, default="")
     how_did_you_meet_us: Mapped[str] = mapped_column(String, default="")
-    groups: Mapped[List["HackerGroup"]] = relationship(
+    groups: Mapped[list[HackerGroup]] = relationship(
         "HackerGroup", secondary="hacker_group_user"
     )
     # is_leader: bool = mapped_column(Integer, default=0)
-    events: Mapped[List["Event"]] = relationship(
+    events: Mapped[list[Event]] = relationship(
         "Event", secondary="hacker_event_participation"
     )
 
-    __mapper_args__ = {
+    __mapper_args__: ClassVar[dict] = {
         "polymorphic_identity": UserType.HACKER.value,
         "with_polymorphic": "*",
     }

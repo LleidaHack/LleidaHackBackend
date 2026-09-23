@@ -1,11 +1,12 @@
-from typing import List, Union
-
 from fastapi import APIRouter, Depends
 
 from src.impl.LleidaHacker.schema import LleidaHackerGet
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupCreate, LleidaHackerGroupsSorted
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGet
-from src.impl.LleidaHackerGroup.schema import LleidaHackerGroupGetAll
+from src.impl.LleidaHackerGroup.schema import (
+    LleidaHackerGroupCreate,
+    LleidaHackerGroupGet,
+    LleidaHackerGroupGetAll,
+    LleidaHackerGroupsSorted,
+)
 from src.impl.LleidaHackerGroup.service import LleidaHackerGroupService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -18,14 +19,12 @@ router = APIRouter(
 lleidahackergroup_service = LleidaHackerGroupService()
 
 
-@router.get("/all", response_model=List[LleidaHackerGroupGet])
+@router.get("/all", response_model=list[LleidaHackerGroupGet])
 def get_all(str=Depends(JWTBearer())):
     return lleidahackergroup_service.get_all()
 
 
-@router.get(
-    "/{groupId}", response_model=Union[LleidaHackerGroupGetAll, LleidaHackerGroupGet]
-)
+@router.get("/{groupId}", response_model=LleidaHackerGroupGetAll | LleidaHackerGroupGet)
 def get(groupId: int, token: BaseToken = Depends(JWTBearer())):
     return lleidahackergroup_service.get_lleidahackergroup(groupId, token)
 
@@ -46,7 +45,7 @@ def delete(groupId: int, token: BaseToken = Depends(JWTBearer())):
     return {"success": True, "deleted_id": lleidahacker_group.id}
 
 
-@router.get("/{groupId}/members", response_model=List[LleidaHackerGet])
+@router.get("/{groupId}/members", response_model=list[LleidaHackerGet])
 def get_members(groupId: int, token: BaseToken = Depends(JWTBearer())):
     lleidahacker_group = lleidahackergroup_service.get_lleidahackergroup(groupId, token)
     return lleidahacker_group.members
