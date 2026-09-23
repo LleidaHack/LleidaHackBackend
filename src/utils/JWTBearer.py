@@ -1,44 +1,34 @@
 from fastapi import HTTPException, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 
-from src.configuration.Settings import settings
 from src.utils.Token import BaseToken
-
-SERVICE_TOKEN = settings.security.service_token
+from src.utils.TokenType import TokenType
 
 
 class JWTBearer(HTTPBearer):
-    def __init__(self, required=True, auto_error: bool = True):
-        super(JWTBearer, self).__init__(auto_error=auto_error)
+    def __init__(
+        self,
+        required=True,
+        auto_error=True,
+        expected_type=TokenType.ACCESS,
+        require_available=True,
+        allow_service=True,
+    ):
+        super().__init__(auto_error=False)
         self.required = required
+        self.expected_type = expected_type
+        self.require_available = require_available
+        self.allow_service = allow_service
 
     async def __call__(self, request: Request):
         if not self.required:
             return True
-        credentials: HTTPAuthorizationCredentials = await super(
-            JWTBearer, self
-        ).__call__(request)
-        #     return credentials.credentials
-        if credentials:
-            if not credentials.credentials == SERVICE_TOKEN:
-                if not credentials.scheme.lower() == "bearer":
-                    raise HTTPException(
-                        status_code=403, detail="Invalid authentication scheme."
-                    )
-                if not self.verify_jwt(credentials.credentials):
-                    raise HTTPException(
-                        status_code=403, detail="Invalid token or expired token."
-                    )
-            return BaseToken.get_data(credentials.credentials)
-        else:
-            raise HTTPException(status_code=403, detail="Invalid authorization code.")
-
-    def verify_jwt(self, jwtoken: str) -> bool:
-        isTokenValid: bool = False
-        try:
-            payload = BaseToken.verify(jwtoken)
-        except:
-            raise
-        if payload:
-            isTokenValid = True
-        return isTokenValid
+        credentials = await super().__call__(request)
+        if credentials is None:
+            raise HTTPException(status_code=401, detail="Bearer credentials required")
+        return BaseToken.get_data(
+            credentials.credentials,
+            expected_type=self.expected_type,
+            require_available=self.require_available,
+            allow_service=self.allow_service,
+        )

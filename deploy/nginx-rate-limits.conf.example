@@ -1,0 +1,29 @@
+# Include inside the nginx http {} block. TLS must be terminated upstream
+# or added to this server before exposing it publicly.
+limit_req_zone $binary_remote_addr zone=api_requests:10m rate=30r/s;
+limit_conn_zone $binary_remote_addr zone=api_connections:10m;
+
+server {
+    listen 8080;
+    server_name _;
+    client_max_body_size 1m;
+    client_body_timeout 10s;
+    client_header_timeout 10s;
+    keepalive_timeout 15s;
+    limit_req_status 429;
+    limit_conn_status 429;
+
+    location / {
+        limit_req zone=api_requests burst=30 nodelay;
+        limit_conn api_connections 20;
+        proxy_request_buffering on;
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        # Overwrite client-supplied forwarding headers.
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 30s;
+        proxy_send_timeout 10s;
+    }
+}

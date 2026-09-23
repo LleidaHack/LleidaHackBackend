@@ -9,18 +9,23 @@ on:
         type: boolean
 
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
+    # Legacy remote scripts are disabled pending a reviewed replacement.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
         shell: bash
         run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
         id: extract_branch
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Push to server
         if: ${{ steps.teamAffiliation.outputs.isTeamMember == true }}
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@d91a1af6f57cd4478ceee14d7705601dafabaa19
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USERNAME }}

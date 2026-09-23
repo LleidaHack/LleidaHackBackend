@@ -1,15 +1,15 @@
 from __future__ import annotations
-from collections import OrderedDict
 
-from datetime import datetime, timedelta, UTC
-import token
-from typing import List
+from collections import OrderedDict
+from datetime import UTC, datetime, timedelta
+from hmac import compare_digest
 
 import jwt
 from dateutil import parser
 
 from src.configuration.Settings import settings
 from src.error.AuthenticationException import AuthenticationException
+from src.error.NotFoundException import NotFoundException
 from src.impl.User.model import User
 from src.impl.User.service import UserService
 from src.utils.TokenType import TokenType
@@ -21,215 +21,208 @@ SERVICE_TOKEN = settings.security.service_token
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.security.expire_time
 
 
-# TODO: fer que sigui abstracta
 class BaseToken:
     user_id: int = 0
-    expt: int = 0
+    expt: str = ""
     type: str = ""
     email: str = ""
     user_type: str = ""
     is_admin: bool = False
-    available: bool = True
-
+    available: bool = False
     user_service = UserService()
-    
-    def __set_all_data(self, data_in: dict):
-        key_to_attribute_map = {
-            'type': 'user_type'
-        }
-
-        for key, value in data_in.items():
-            attribute_name = key_to_attribute_map.get(key, key)
-            if hasattr(self, attribute_name):
-                setattr(self, attribute_name, value)
 
     def __init__(self, user: User):
         self.expt = (
-            datetime.now(UTC) + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+            datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         ).isoformat()
-        if user is None:
-            return
-        user_dict = {c.name: getattr(user, c.name) for c in user.__table__.columns}
-        self.__set_all_data(user_dict)
-        self.user_type = user.type
-        self.email = user.email
+        if user is not None:
+            self.user_id = user.id
+            self.user_type = user.type
+            self.email = user.email
+            self.available = self.is_available(user)
+
+    @staticmethod
+    def is_available(user: User):
+        if user.is_deleted or not user.is_verified:
+            return False
+        if user.type == UserType.HACKER.value:
+            return not user.banned
+        if user.type == UserType.LLEIDAHACKER.value:
+            return bool(user.active and user.accepted)
+        if user.type == UserType.COMPANYUSER.value:
+            return bool(user.active)
+        return False
 
     def from_token(self, token: str):
-        if BaseToken.is_service(token):
-            return self.__get_service()
-        data = BaseToken.decode(token)
-        for _ in [
-            _
-            for _ in dir(self)
-            if _.startswith("__") is False and _.endswith("__") is False
-        ]:
-            if _ in data:
-                setattr(self, _, data[_])
-        return self
-
-    def __get_service(self):
-        self.is_admin = True
-        self.user_id = 0
-        self.available = True
-        self.user_type = UserType.SERVICE.value
-        self.email = "service"
+        payload = self.decode(token)
+        for field in ("user_id", "user_type", "email", "type", "expt", "event_id"):
+            if field in payload:
+                setattr(self, field, payload[field])
+        self._encoded = token
         return self
 
     def to_token(self):
-        return BaseToken.encode(self.__dict__)
+        if hasattr(self, "_encoded"):
+            return self._encoded
+        return self.encode(
+            {k: v for k, v in vars(self).items() if not k.startswith("_")}
+        )
 
     def user_set(self):
         self.user_service.update_token(self)
         return self.to_token()
 
-    def check(self, available_users: List[UserType], user_id: int = None):
-        types = [t.value for t in available_users]
-        if (self.user_type not in types) and (not self.is_admin):
+    def check(self, available_users: list[UserType], user_id: int | None = None):
+        if self.user_type == UserType.SERVICE.value:
+            return self.is_admin and self.available
+        if self.type != TokenType.ACCESS.value or not self.available:
             return False
-        if self.user_type in [
-            UserType.HACKER.value,
-            UserType.COMPANYUSER.value,
-            UserType.LLEIDAHACKER.value,
-        ]:
-            if (
-                user_id is not None
-                and self.user_type is not UserType.LLEIDAHACKER.value
-            ):
-                return self.available and self.user_id == user_id
-            return self.available
-        elif self.user_type == UserType.SERVICE.value:
-            return self.is_admin
-        else:
+        if self.user_type not in [role.value for role in available_users]:
             return False
-
-    # @classmethod
-    def is_service(token):
-        return token == SERVICE_TOKEN
-
-    # @classmethod
-    def decode(token):
-        try:
-            return jwt.decode(token.encode("utf-8"), SECRET_KEY, algorithms=[ALGORITHM])
-        except Exception:
-            raise Exception(f"Error decoding token with the token({token})")
-
-    # @classmethod
-    def encode(dict):
-        return jwt.encode(
-            OrderedDict(sorted(dict.items())), SECRET_KEY, algorithm=ALGORITHM
+        return (
+            user_id is None
+            or self.user_type == UserType.LLEIDAHACKER.value
+            or self.user_id == user_id
         )
 
-    def verify(token):
-        if BaseToken.is_service(token):
-            return True
-        dict = BaseToken.decode(token)
-        user = BaseToken.user_service.get_by_id(dict["user_id"])
-        if user.type != dict["user_type"]:
-            raise AuthenticationException("Invalid token")
-        BaseToken(None).from_token(token)
-        # TODO: comprovar tipus de token
+    @staticmethod
+    def is_service(token):
+        return isinstance(token, str) and compare_digest(
+            token.encode(), SERVICE_TOKEN.encode()
+        )
 
-        if dict["type"] == TokenType.ACCESS and user.token != token:
-            raise AuthenticationException("Invalid token")
-        # Here your code for verifying the token or whatever you use
-        if parser.parse(dict["expt"]) < datetime.now(UTC):
-            raise AuthenticationException("Token expired")
+    @staticmethod
+    def decode(token):
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            if type(payload.get("user_id")) is not int or payload["user_id"] <= 0:
+                raise ValueError("Invalid user")
+            if payload.get("type") not in {item.value for item in TokenType}:
+                raise ValueError("Invalid purpose")
+            expiry = parser.isoparse(payload["expt"])
+            if expiry.tzinfo is None or expiry <= datetime.now(UTC):
+                raise ValueError("Invalid expiration")
+            return payload
+        except (
+            jwt.InvalidTokenError,
+            AttributeError,
+            TypeError,
+            ValueError,
+            KeyError,
+            OverflowError,
+        ):
+            raise AuthenticationException("Invalid or expired token") from None
+
+    @staticmethod
+    def encode(payload):
+        return jwt.encode(
+            OrderedDict(sorted(payload.items())), SECRET_KEY, algorithm=ALGORITHM
+        )
+
+    @staticmethod
+    def verify(token, expected_type=TokenType.ACCESS):
+        BaseToken.get_data(token, expected_type=expected_type)
         return True
 
-    # @classmethod
-    def get_data(token: str):
-        type = TokenType.ACCESS.value
+    @staticmethod
+    def get_data(
+        token: str,
+        expected_type=TokenType.ACCESS,
+        require_available=True,
+        allow_service=True,
+    ):
         if BaseToken.is_service(token):
-            return BaseToken(None).__get_service()
+            if not allow_service or expected_type != TokenType.ACCESS:
+                raise AuthenticationException("Invalid token purpose")
+            data = BaseToken(None)
+            data.user_type = UserType.SERVICE.value
+            data.is_admin = True
+            data.available = True
+            data.email = "service"
+            return data
+
+        payload = BaseToken.decode(token)
+        if payload["type"] != expected_type.value:
+            raise AuthenticationException("Invalid token purpose")
+        try:
+            user = BaseToken.user_service.get_by_id(payload["user_id"])
+        except NotFoundException:
+            raise AuthenticationException("Invalid token") from None
+        if user.is_deleted or user.type != payload.get("user_type"):
+            raise AuthenticationException("Invalid token")
+        stored_fields = {
+            TokenType.ACCESS: "token",
+            TokenType.REFRESH: "refresh_token",
+            TokenType.RESET_PASS: "rest_password_token",
+            TokenType.VERIFICATION: "verification_token",
+        }
+        if expected_type in stored_fields:
+            stored = getattr(user, stored_fields[expected_type]) or ""
+            if not compare_digest(stored.encode(), token.encode()):
+                raise AuthenticationException("Invalid token")
         else:
-            type = BaseToken.decode(token).get("type")
-            if type == TokenType.ACCESS.value:
-                return AccesToken(None).from_token(token)
-            elif type == TokenType.ASSISTENCE.value:
-                return AssistenceToken(None, None).from_token(token)
-            elif type == TokenType.REFRESH.value:
-                return RefreshToken(None).from_token(token)
-            elif type == TokenType.RESET_PASS.value:
-                return ResetPassToken(None).from_token(token)
-            elif type == TokenType.VERIFICATION.value:
-                return VerificationToken(None).from_token(token)
+            from fastapi_sqlalchemy import db
+
+            from src.impl.Event.model import HackerRegistration
+
+            if type(payload.get("event_id")) is not int:
+                raise AuthenticationException("Invalid event")
+            registration = (
+                db.session.query(HackerRegistration)
+                .filter_by(user_id=user.id, event_id=payload["event_id"])
+                .first()
+            )
+            if (
+                registration is None
+                or registration.confirmed_assistance
+                or registration.confirm_assistance_token != token
+            ):
+                raise AuthenticationException("Invalid token")
+
+        token_classes = {
+            TokenType.ACCESS: AccesToken,
+            TokenType.REFRESH: RefreshToken,
+            TokenType.RESET_PASS: ResetPassToken,
+            TokenType.VERIFICATION: VerificationToken,
+            TokenType.ASSISTENCE: AssistenceToken,
+        }
+        data = token_classes[expected_type](None).from_token(token)
+        data.available = BaseToken.is_available(user)
+        data.email = user.email
+        data.is_admin = False
+        if require_available and not data.available:
+            raise AuthenticationException("Account is not available")
+        return data
 
 
 class AssistenceToken(BaseToken):
-    event_id: int = 0
-
-    def __init__(self, user: User, event_id: int):
-        if user is None or event_id is None:
-            return
+    def __init__(self, user: User, event_id: int | None = None):
         super().__init__(user)
         self.expt = (datetime.now(UTC) + timedelta(days=30)).isoformat()
         self.type = TokenType.ASSISTENCE.value
         self.event_id = event_id
 
-    def verify(self, user: User):
-        return True
-
 
 class AccesToken(BaseToken):
-    is_verified: bool = False
-    available: bool = True
-
     def __init__(self, user: User):
         super().__init__(user)
         self.type = TokenType.ACCESS.value
-        if user is None:
-            return
-        self.is_verified = user.is_verified
-        if self.user_type == UserType.HACKER.value:
-            self.available = not bool(user.banned) and self.is_verified
-        elif user.type == UserType.LLEIDAHACKER.value:
-            self.available = user.active and user.accepted
-        else:
-            self.available = user.active
-    
-    def from_token(self, token):
-        payload = BaseToken.decode(token)  # dict real
-        super().from_token(token)          # llena los atributos
-        if not self.is_admin:
-            self.is_verified = payload.get("is_verified")
-            self.available  = payload.get("available")
-        return self
-
-    def verify(self, user):
-        return self.to_token() == user.token
+        self.is_verified = bool(user and user.is_verified)
 
 
 class RefreshToken(BaseToken):
     def __init__(self, user: User):
-        if user is None:
-            return
         super().__init__(user)
         self.type = TokenType.REFRESH.value
-
-    def from_token(self, token):
-        super().from_token(token)
-        return self
 
 
 class VerificationToken(BaseToken):
     def __init__(self, user: User):
-        if user is None:
-            return
         super().__init__(user)
         self.type = TokenType.VERIFICATION.value
-
-    def from_token(self, token):
-        super().from_token(token)
-        return self
 
 
 class ResetPassToken(BaseToken):
     def __init__(self, user: User):
-        if user is None:
-            return
         super().__init__(user)
         self.type = TokenType.RESET_PASS.value
-
-    def from_token(self, token):
-        super().from_token(token)
-        return self

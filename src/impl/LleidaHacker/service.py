@@ -5,11 +5,15 @@ from fastapi_sqlalchemy import db
 from src.error.AuthenticationException import AuthenticationException
 from src.error.NotFoundException import NotFoundException
 from src.impl.LleidaHacker.model import LleidaHacker
-from src.impl.LleidaHacker.schema import LleidaHackerCreate
-from src.impl.LleidaHacker.schema import LleidaHackerGet
-from src.impl.LleidaHacker.schema import LleidaHackerGetAll
-from src.impl.LleidaHacker.schema import LleidaHackerUpdate
+from src.impl.LleidaHacker.schema import (
+    LleidaHackerCreate,
+    LleidaHackerGet,
+    LleidaHackerGetAll,
+    LleidaHackerUpdate,
+)
 from src.impl.LleidaHackerGroup.model import LleidaHackerGroup, LleidaHackerGroupUser
+from src.impl.User.service import UserService
+from src.impl.UserConfig.model import UserConfig
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (
@@ -20,7 +24,6 @@ from src.utils.service_utils import (
 )
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.UserConfig.model import UserConfig
 
 
 class LleidaHackerService(BaseService):
@@ -49,7 +52,7 @@ class LleidaHackerService(BaseService):
             **payload.model_dump(exclude={"config"}), code=generate_user_code()
         )
         new_lleidahacker.password = get_password_hash(payload.password)
-        new_lleidahacker.active = False # IMPORTANT DO NOT ACTIVATE USER AUTOMATICALLY !!!!!!!!!!!!! @Big_Lolo
+        new_lleidahacker.active = False  # IMPORTANT DO NOT ACTIVATE USER AUTOMATICALLY !!!!!!!!!!!!! @Big_Lolo
 
         new_config = UserConfig(**payload.config.model_dump())
 
@@ -70,10 +73,14 @@ class LleidaHackerService(BaseService):
         if payload.image is not None:
             payload = check_image(payload)
         updated = set_existing_data(lleidahacker, payload)
-        lleidahacker.updated_at = date.now()
+        if payload.active is False:
+            UserService.revoke_tokens(lleidahacker)
+        # Keep the existing timezone-naive database/local-calendar contract.
+        lleidahacker.updated_at = date.now()  # noqa: DTZ005
         updated.append("updated_at")
         if payload.password is not None:
             lleidahacker.password = get_password_hash(payload.password)
+            UserService.revoke_tokens(lleidahacker)
         db.session.commit()
         db.session.refresh(lleidahacker)
         return lleidahacker, updated
@@ -122,6 +129,7 @@ class LleidaHackerService(BaseService):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 0
+        UserService.revoke_tokens(lleidahacker)
         lleidahacker.accepted = 0
         lleidahacker.rejected = 1
         db.session.commit()
@@ -142,6 +150,7 @@ class LleidaHackerService(BaseService):
             raise AuthenticationException("Not authorized")
         lleidahacker = self.get_by_id(userId)
         lleidahacker.active = 0
+        UserService.revoke_tokens(lleidahacker)
         db.session.commit()
         db.session.refresh(lleidahacker)
         return lleidahacker

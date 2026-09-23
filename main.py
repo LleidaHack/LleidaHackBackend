@@ -1,9 +1,13 @@
 import logging
+
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
-from src.configuration.Settings import settings
 from App import App
+from src import (
+    # Register SQLAlchemy models through import side effects.
+    imports,  # noqa: F401
+)
 
 tags_metadata = [
     {"name": "User", "description": "User related endpoints"},
@@ -19,6 +23,7 @@ tags_metadata = [
     {"name": "CompanyUser", "description": "Company user related endpoints"},
     {"name": "Event", "description": "Event related endpoints"},
     {"name": "Meal", "description": "Meal related endpoints"},
+    {"name": "Voucher", "description": "Physical check-in vouchers (badges) per event"},
     {"name": "Authentication", "description": "Authentication related endpoints"},
 ]
 
@@ -31,7 +36,7 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     openapi_tags=tags_metadata,
-    debug=True,
+    debug=False,
     swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"},
 )
 

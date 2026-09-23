@@ -1,9 +1,5 @@
-from typing import Optional, List
-
-
-from src.utils.Base.BaseSchema import BaseSchema
-
 from src.impl.Hacker.schema import HackerGet
+from src.utils.Base.BaseSchema import BaseSchema
 
 
 class HackerGroupCreate(BaseSchema):
@@ -19,15 +15,14 @@ class HackerGroupGet(BaseSchema):
     description: str
     leader_id: int
     event_id: int
-    members: List[HackerGet]
+    members: list[HackerGet]
 
 
 class HackerGroupGetAll(HackerGroupGet):
     code: str
-    pass
 
 
 class HackerGroupUpdate(BaseSchema):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    leader_id: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    leader_id: int | None = None

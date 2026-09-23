@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_sqlalchemy import DBSessionMiddleware
 
 from src.configuration.Settings import settings
+from src.utils.Middleware.RateLimiter import RateLimitingMiddleware
 from src.versions.v1 import router as v1_router
 
 
@@ -33,28 +34,36 @@ class App:
                 # print(route.operation_id)
 
     def setup_middleware(self):
-        self.app.add_middleware(DBSessionMiddleware,
-                                db_url=settings.database.url)
+        self.app.add_middleware(DBSessionMiddleware, db_url=settings.database.url)
+        self.app.add_middleware(
+            RateLimitingMiddleware,
+            config=settings.rate_limit,
+            secret=settings.security.secret_key,
+        )
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-            expose_headers=["*"],
+            allow_origins=settings.cors_origins,
+            allow_credentials=False,
+            allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type"],
+            expose_headers=["Retry-After"],
         )
 
     def setup_exceptions(self):
         from src.error import error_handler as eh
         from src.error.AuthenticationException import AuthenticationException
+        from src.error.AuthorizationException import AuthorizationException
         from src.error.InputException import InputException
         from src.error.InvalidDataException import InvalidDataException
+        from src.error.MailClientException import MailClientException
         from src.error.NotFoundException import NotFoundException
         from src.error.ValidationException import ValidationException
-        from src.error.MailClientException import MailClientException
 
         self.app.add_exception_handler(
             AuthenticationException, eh.authentication_exception_handler
+        )
+        self.app.add_exception_handler(
+            AuthorizationException, eh.authorization_exception_handler
         )
         self.app.add_exception_handler(
             NotFoundException, eh.not_found_exception_handler
@@ -74,7 +83,7 @@ class App:
         self.app.mount("/static", StaticFiles(directory="static"), name="static")
 
     def setup_logger(self, logger):
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
         stream_handler = logging.StreamHandler(sys.stdout)
         log_formatter = logging.Formatter(
             "%(asctime)s [%(processName)s: %(process)d] [%(threadName)s: %(thread)d] [%(levelname)s] %(name)s: %(message)s"

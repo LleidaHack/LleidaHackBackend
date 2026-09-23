@@ -1,13 +1,14 @@
 from logging.config import fileConfig
+from os import getcwd
+from sys import path
 
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from src import imports
-from src.configuration.Settings import settings
-from sys import path
-from os import getcwd
+
+# Register SQLAlchemy models through import side effects.
 from src import imports  # noqa: F401
+from src.configuration.Settings import settings
 from src.utils.Base.BaseModel import BaseModel
 
 path.insert(0, getcwd())
@@ -15,7 +16,7 @@ path.insert(0, getcwd())
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option('sqlalchemy.url', settings.database.url)
+config.set_main_option("sqlalchemy.url", settings.database.url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

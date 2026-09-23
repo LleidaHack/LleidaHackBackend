@@ -1,11 +1,11 @@
-from typing import List, Union
-
 from fastapi import APIRouter, Depends
 
-from src.impl.CompanyUser.schema import CompanyUserCreate
-from src.impl.CompanyUser.schema import CompanyUserGet
-from src.impl.CompanyUser.schema import CompanyUserGetAll
-from src.impl.CompanyUser.schema import CompanyUserUpdate
+from src.impl.CompanyUser.schema import (
+    CompanyUserCreate,
+    CompanyUserGet,
+    CompanyUserGetAll,
+    CompanyUserUpdate,
+)
 from src.impl.CompanyUser.service import CompanyUserService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import AccesToken, BaseToken, RefreshToken, VerificationToken
@@ -19,8 +19,8 @@ companyuser_service = CompanyUserService()
 
 
 @router.post("/signup")
-def signup(payload: CompanyUserCreate):
-    new_companyuser = companyuser_service.add_company_user(payload)
+def signup(payload: CompanyUserCreate, token: BaseToken = Depends(JWTBearer())):
+    new_companyuser = companyuser_service.add_company_user(payload, token)
 
     access_token = AccesToken(new_companyuser).user_set()
     refresh_token = RefreshToken(new_companyuser).user_set()
@@ -33,12 +33,12 @@ def signup(payload: CompanyUserCreate):
     }
 
 
-@router.get("/all", response_model=List[CompanyUserGet])
+@router.get("/all", response_model=list[CompanyUserGet])
 def get_all(token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_all()
 
 
-@router.get("/{companyUserId}", response_model=Union[CompanyUserGetAll, CompanyUserGet])
+@router.get("/{companyUserId}", response_model=CompanyUserGetAll | CompanyUserGet)
 def get(companyUserId: int, token: BaseToken = Depends(JWTBearer())):
     return companyuser_service.get_company_user(companyUserId, token)
 

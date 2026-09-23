@@ -1,11 +1,11 @@
-from typing import List, Union
-
 from fastapi import APIRouter, Depends
 
-from src.impl.Company.schema import CompanyCreate
-from src.impl.Company.schema import CompanyGet
-from src.impl.Company.schema import CompanyGetAll
-from src.impl.Company.schema import CompanyUpdate
+from src.impl.Company.schema import (
+    CompanyCreate,
+    CompanyGet,
+    CompanyGetAll,
+    CompanyUpdate,
+)
 from src.impl.Company.service import CompanyService
 from src.impl.CompanyUser.schema import CompanyUserGet
 from src.impl.Event.schema import EventGet
@@ -20,7 +20,7 @@ router = APIRouter(
 company_service = CompanyService()
 
 
-@router.get("/all", response_model=List[CompanyGet])
+@router.get("/all", response_model=list[CompanyGet])
 def get_all():
     return company_service.get_all()
 
@@ -31,7 +31,7 @@ def add(payload: CompanyCreate, token: BaseToken = Depends(JWTBearer())):
     return {"success": True, "id": new_company.id}
 
 
-@router.get("/{companyId}", response_model=Union[CompanyGetAll, CompanyGet])
+@router.get("/{companyId}", response_model=CompanyGetAll | CompanyGet)
 def get(companyId: int):
     return company_service.get_company(companyId)
 
@@ -52,7 +52,7 @@ def delete(companyId: int, token: BaseToken = Depends(JWTBearer())):
 
 # TODO: check
 # #################################################################
-@router.get("/{companyId}/users", response_model=List[CompanyUserGet])
+@router.get("/{companyId}/users", response_model=list[CompanyUserGet])
 def get_users(companyId: int, token: BaseToken = Depends(JWTBearer())):
     return company_service.get_company_users(companyId, token)
 
@@ -70,7 +70,7 @@ def delete_user(companyId: int, userId: int, token: BaseToken = Depends(JWTBeare
 
 
 #####################################################################################
-@router.get("/{companyId}/events", response_model=EventGet)
+@router.get("/{companyId}/events", response_model=list[EventGet])
 def get_events(companyId: int, token: BaseToken = Depends(JWTBearer())):
     return company_service.get_company_events(companyId)
 

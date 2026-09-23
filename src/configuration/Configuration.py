@@ -24,7 +24,7 @@ class Configuration:
             Configuration.__CONFIG_FILES = Configuration.__get_yaml_files()
             if file is None:
                 if len(Configuration.__CONFIG_FILES) > 1:
-                    raise Exception("Please select a configuration file to load")
+                    raise ValueError("Please select a configuration file to load")
                 file = Configuration.__CONFIG_FILES[0]
             Configuration._FILE = os.path.join(Configuration.__CONFIG_PATH, file)
             Configuration.__instanciate__()

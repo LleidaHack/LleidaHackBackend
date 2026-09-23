@@ -1,6 +1,3 @@
-from typing import Optional
-
-
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 
 
@@ -16,7 +13,6 @@ class LleidaHackerCreate(UserCreate):
 class LleidaHackerGet(UserGet):
     user_id: int
     role: str
-    nif: str
     student: bool
     active: bool
     github: str
@@ -24,13 +20,13 @@ class LleidaHackerGet(UserGet):
 
 
 class LleidaHackerGetAll(UserGetAll, LleidaHackerGet):
-    pass
+    nif: str
 
 
 class LleidaHackerUpdate(UserUpdate):
-    role: Optional[str] = None
-    nif: Optional[str] = None
-    student: Optional[bool] = None
-    active: Optional[bool] = None
-    github: Optional[str] = None
-    linkedin: Optional[str] = None
+    role: str | None = None
+    nif: str | None = None
+    student: bool | None = None
+    active: bool | None = None
+    github: str | None = None
+    linkedin: str | None = None

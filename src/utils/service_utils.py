@@ -61,8 +61,9 @@ def subtract_lists(list1, list2):
     return [item for item in list1 if item not in list2]
 
 
-def get_hacker_status(hacker_id, pending_hackers_ids, accepted_hackers_ids,
-                      rejected_hackers_ids):
+def get_hacker_status(
+    hacker_id, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids
+):
     """
     Determine the status of a hacker based on their ID and lists of pending, accepted, and rejected hacker IDs.
 
@@ -94,7 +95,10 @@ attribute_hacker_list = [
     "shirt_size",
 ]
 
-def get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids):
+
+def get_hacker_info(
+    hacker, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids
+):
     """
     Generate a dictionary containing hacker attributes and their status.
 
@@ -107,10 +111,7 @@ def get_hacker_info(hacker, pending_hackers_ids, accepted_hackers_ids, rejected_
     Returns:
         A dictionary with hacker attributes and their status.
     """
-    hacker_info = {
-        attr: getattr(hacker, attr)
-        for attr in attribute_hacker_list
-    }
+    hacker_info = {attr: getattr(hacker, attr) for attr in attribute_hacker_list}
     hacker_info["status"] = get_hacker_status(
         hacker.id, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids
     )

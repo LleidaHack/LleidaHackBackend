@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -16,7 +14,7 @@ class UserRegistration(BaseModel):
     )
     shirt_size: Mapped[str] = mapped_column(String)
     food_restrictions: Mapped[str] = mapped_column(String)
-    cv: Mapped[Optional[str]] = mapped_column(String)
+    cv: Mapped[str | None] = mapped_column(String)
     description: Mapped[str] = mapped_column(String, default="")
     github: Mapped[str] = mapped_column(String, default="")
     linkedin: Mapped[str] = mapped_column(String, default="")

@@ -1,5 +1,8 @@
+from typing import ClassVar
+
 from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
+
 from src.utils.Base.BaseModel import BaseModel
 
 
@@ -16,7 +19,7 @@ class Notification(BaseModel):
     deleted: Mapped[bool] = mapped_column(Boolean, default=False)
     type: Mapped[str] = mapped_column(String)
 
-    __mapper_args__ = {
+    __mapper_args__: ClassVar[dict] = {
         "polymorphic_identity": "my_user",
         "polymorphic_on": type,
     }
@@ -28,7 +31,7 @@ class HackerAcceptedNotification(Notification):
         ForeignKey("notification.id"), primary_key=True, index=True
     )
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"))
-    __mapper_args__ = {
+    __mapper_args__: ClassVar[dict] = {
         "polymorphic_identity": "hacker_accepted_notification",
     }
 
@@ -39,7 +42,7 @@ class HackerRejectedNotification(Notification):
         ForeignKey("notification.id"), primary_key=True, index=True
     )
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"))
-    __mapper_args__ = {
+    __mapper_args__: ClassVar[dict] = {
         "polymorphic_identity": "hacker_rejected_notification",
     }
 
@@ -49,7 +52,7 @@ class LleidaHackerAcceptedNotification(Notification):
     id: Mapped[int] = mapped_column(
         ForeignKey("notification.id"), primary_key=True, index=True
     )
-    __mapper_args__ = {
+    __mapper_args__: ClassVar[dict] = {
         "polymorphic_identity": "lleida_hacker_accepted_notification",
     }
 
@@ -59,6 +62,6 @@ class LleidaHackerRejectedNotification(Notification):
     id: Mapped[int] = mapped_column(
         ForeignKey("notification.id"), primary_key=True, index=True
     )
-    __mapper_args__ = {
+    __mapper_args__: ClassVar[dict] = {
         "polymorphic_identity": "lleida_hacker_rejected_notification",
     }

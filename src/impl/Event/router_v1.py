@@ -1,25 +1,31 @@
 from datetime import datetime
-from typing import List, Union
 
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 
-from src.configuration.Settings import settings
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet
 from src.impl.Event.schema import (
     EventCreate,
+    EventGet,
+    EventGetAll,
+    EventGroupsGet,
+    EventHackersGet,
+    EventSponsorUpdate,
+    EventTicketGet,
+    EventTicketsStatus,
+    EventUpdate,
     HackerEventRegistration,
+    HackerEventRegistrationGet,
     HackerEventRegistrationUpdate,
+    RegistrationConfirmationGet,
 )
-from src.impl.Event.schema import EventGet
-from src.impl.Event.schema import EventGetAll
-from src.impl.Event.schema import EventUpdate
 from src.impl.Event.service import EventService
 from src.impl.Hacker.schema import HackerGet, HackerGetAll
 from src.impl.Meal.schema import MealGet
 from src.utils.JWTBearer import JWTBearer
 from src.utils.service_utils import subtract_lists
 from src.utils.Token import AssistenceToken, BaseToken
+from src.utils.TokenType import TokenType
 from src.utils.UserType import UserType
 
 # from src.error.NotFoundException import NotFoundException
@@ -35,7 +41,8 @@ event_service = EventService()
 @router.get("/get_hackeps", response_model=EventGet)
 def get_hackeps():
     # get the current year
-    year = datetime.now().year
+    # Keep the existing timezone-naive database/local-calendar contract.
+    year = datetime.now().year  # noqa: DTZ005
     return event_service.get_hackeps(int(year))
 
 
@@ -44,12 +51,12 @@ def get_hackeps_by_year(year: str):
     return event_service.get_hackeps(int(year))
 
 
-@router.get("/all", response_model=List[EventGet])
+@router.get("/all", response_model=list[EventGet])
 def get_all(token: BaseToken = Depends(JWTBearer())):
     return event_service.get_all()
 
 
-@router.get("/{id}", response_model=Union[EventGetAll, EventGet])
+@router.get("/{id}", response_model=EventGetAll | EventGet)
 def get(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event(id, token)
 
@@ -92,22 +99,27 @@ def is_participant(id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer
     return event_service.is_participant(id, hacker_id, token)
 
 
-@router.get("/{id}/meals", response_model=List[MealGet])
+@router.get("/{id}/meals", response_model=list[MealGet])
 def get_meals(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event_meals(id, token)
 
 
-@router.get("/{id}/participants", response_model=List[HackerGet])
+@router.get("/{id}/checkin-summary")
+def get_checkin_summary(id: int, token: BaseToken = Depends(JWTBearer())):
+    return event_service.get_checkin_summary(id, token)
+
+
+@router.get("/{id}/participants", response_model=list[HackerGet])
 def get_participants(id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_event_participants(id, token)
 
 
-@router.get("/{id}/sponsors", response_model=List[CompanyGet])
+@router.get("/{id}/sponsors", response_model=list[CompanyGet])
 def get_sponsors(id: int):
     return event_service.get_event_sponsors(id)
 
 
-@router.get("/{id}/groups")
+@router.get("/{id}/groups", response_model=EventGroupsGet)
 def get_groups(id: int, token: BaseToken = Depends(JWTBearer())):
     event = event_service.get_event_groups(id, token)
     return {"success": True, "groups": event}
@@ -147,6 +159,14 @@ def update_hacker_registration(
     return {"success": True, "event_id": event.id, "user_id": hacker_id}
 
 
+@router.get("/{id}/registration/{hacker_id}", response_model=HackerEventRegistrationGet)
+def get_hacker_registration(
+    id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
+):
+    """Registration data (CV, experience, links) of a hacker for this event."""
+    return event_service.get_registration(id, hacker_id, token)
+
+
 # @router.delete("/{id}/participants/{hacker_id}")
 # def remove_event_participant(id: int,
 #                                    hacker_id: int,
@@ -169,12 +189,12 @@ def remove_sponsor(id: int, company_id: int, token: BaseToken = Depends(JWTBeare
     return {"success": True, "event_id": event.id}
 
 
-@router.get("/{eventId}/get_approved_hackers", response_model=List[HackerGetAll])
+@router.get("/{eventId}/get_approved_hackers", response_model=list[HackerGetAll])
 def get_accepted_hackers(eventId: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)
 
 
-@router.get("/{eventId}/get_approved_hackers_mails", response_model=List[str])
+@router.get("/{eventId}/get_approved_hackers_mails", response_model=list[str])
 def get_accepted_hackers_mails(eventId: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers_mails(eventId, token)
 
@@ -187,7 +207,7 @@ def get_sizes(event_id: int):
     return event_service.get_sizes(event_id)
 
 
-@router.get("/{event_id}/get_unregistered_hackers", response_model=List[HackerGet])
+@router.get("/{event_id}/get_unregistered_hackers", response_model=list[HackerGet])
 def get_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
     """
     Get the hackers who are not registered for the event
@@ -208,16 +228,23 @@ def count_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBear
 
 
 @router.get("/confirm_assistance/")
-def confirm_assistance(token: AssistenceToken = Depends(JWTBearer())):
+def confirm_assistance(
+    token: AssistenceToken = Depends(
+        JWTBearer(expected_type=TokenType.ASSISTENCE, allow_service=False)
+    ),
+):
     """
     Confirm assistance of a hacker to an event
     """
     event_service.confirm_assistance(token)
-    #redirect to settings.others.front_url
+    # redirect to settings.others.front_url
     return {"success": True}
 
 
-@router.get("/force/confirm_assistance/{event_id}/{user_id}")
+@router.get(
+    "/force/confirm_assistance/{event_id}/{user_id}",
+    response_model=RegistrationConfirmationGet,
+)
 def force_confirm_assistance(
     event_id: int, user_id: int, token: BaseToken = Depends(JWTBearer())
 ):
@@ -248,7 +275,7 @@ def unparticipate_hacker(
     return {"success": True}
 
 
-@router.put("/{event_id}/accept/{hacker_id}")
+@router.put("/{event_id}/accept/{hacker_id}", response_model=EventGet)
 def accept_hacker(
     event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
 ):
@@ -258,7 +285,7 @@ def accept_hacker(
     return event_service.accept_hacker(event_id, hacker_id, token)
 
 
-@router.put("/{event_id}/unaccept/{hacker_id}")
+@router.put("/{event_id}/unaccept/{hacker_id}", response_model=EventGet)
 def unaccept_hacker(
     event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
 ):
@@ -268,7 +295,7 @@ def unaccept_hacker(
     return event_service.unaccept_hacker(event_id, hacker_id, token)
 
 
-@router.put("/{event_id}/reject/{hacker_id}")
+@router.put("/{event_id}/reject/{hacker_id}", response_model=EventGet)
 def reject_hacker(
     event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
 ):
@@ -278,12 +305,12 @@ def reject_hacker(
     return event_service.reject_hacker(event_id, hacker_id, token)
 
 
-@router.put("/{event_id}/acceptgroup/{group_id}")
+@router.put("/{event_id}/acceptgroup/{group_id}", response_model=EventGet)
 def accept_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.accept_group(event_id, group_id, token)
 
 
-@router.put("/{event_id}/rejectgroup/{group_id}")
+@router.put("/{event_id}/rejectgroup/{group_id}", response_model=EventGet)
 def reject_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
     """
     Reject a group from an event
@@ -291,7 +318,7 @@ def reject_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBea
     return event_service.reject_group(event_id, group_id, token)
 
 
-@router.get("/{event_id}/pending")
+@router.get("/{event_id}/pending", response_model=EventHackersGet)
 def get_pending_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
     """
     Get the pending hackers of an event
@@ -305,7 +332,7 @@ def get_pending_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
     }
 
 
-@router.get("/{event_id}/rejected")
+@router.get("/{event_id}/rejected", response_model=EventHackersGet)
 def get_rejected_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
     """
     Get the rejected hackers of an event
@@ -348,9 +375,9 @@ def get_pending_hackers_gruped(event_id: int, token: BaseToken = Depends(JWTBear
 
 
 @router.get("/{event_id}/hackers_participants_grouped_list")
-def get_hackers_participants_grouped_list(event_id: int,
-                                         token: BaseToken = Depends(
-                                             JWTBearer())):
+def get_hackers_participants_grouped_list(
+    event_id: int, token: BaseToken = Depends(JWTBearer())
+):
     """
     Get a grouped list of hacker participants for an event
     """
@@ -358,8 +385,9 @@ def get_hackers_participants_grouped_list(event_id: int,
 
 
 @router.get("/{event_id}/hackers_participants_list")
-def get_hackers_participants_list(event_id: int,
-                                  token: BaseToken = Depends(JWTBearer())):
+def get_hackers_participants_list(
+    event_id: int, token: BaseToken = Depends(JWTBearer())
+):
     """
     Get a list of hacker participants for an event
     """
@@ -396,10 +424,14 @@ def send_slack_mail(
         raise AuthenticationException("Not authorized")
     # guard: don't schedule if there's already a sending job for this event
     if event_service.is_sending(event_id):
-        raise HTTPException(status_code=409, detail="Sending already in progress for this event")
+        raise HTTPException(
+            status_code=409, detail="Sending already in progress for this event"
+        )
 
     # schedule background task to avoid request timeout
-    background_tasks.add_task(event_service.send_slack_mail_background, event_id, slackUrl, delay)
+    background_tasks.add_task(
+        event_service.send_slack_mail_background, event_id, slackUrl, delay
+    )
     return {"success": True, "scheduled": True}
 
 
@@ -409,6 +441,58 @@ def get_send_progress(event_id: int, token: BaseToken = Depends(JWTBearer())):
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
     return event_service.get_send_progress(event_id)
+
+
+@router.post("/{event_id}/tickets/send")
+def send_ticket_mails(
+    event_id: int,
+    background_tasks: BackgroundTasks,
+    force: bool = False,
+    delay: float = 0.0,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    """
+    Mail the check-in ticket (QR) to every accepted and confirmed hacker that
+    has not received it yet. `force=true` resends it to all of them. Runs in
+    background; poll `/tickets/status` for progress.
+    """
+    if not token.check([UserType.LLEIDAHACKER]):
+        raise AuthenticationException("Not authorized")
+    if event_service.is_sending(event_id):
+        raise HTTPException(
+            status_code=409, detail="Sending already in progress for this event"
+        )
+    event = event_service.get_by_id(event_id)
+    if event.archived:
+        raise HTTPException(status_code=400, detail="Event is archived")
+    event_service.check_mail_available()
+    background_tasks.add_task(
+        event_service.send_ticket_mails_background, event_id, force, delay
+    )
+    return {"success": True, "scheduled": True}
+
+
+@router.get("/{event_id}/tickets/status", response_model=EventTicketsStatus)
+def get_tickets_status(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """How many accepted+confirmed hackers have received their ticket mail."""
+    return event_service.get_tickets_status(event_id, token)
+
+
+@router.get("/{event_id}/ticket/{hacker_id}", response_model=EventTicketGet)
+def get_ticket(event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())):
+    """Ticket state of a hacker for this event (the hacker themself or an organizer)."""
+    return event_service.get_ticket(event_id, hacker_id, token)
+
+
+@router.get("/{event_id}/ticket/{code}/qr.png")
+def get_ticket_qr(event_id: int, code: str):
+    """Public PNG of a ticket QR, embedded in the ticket mail."""
+    return Response(
+        content=event_service.get_ticket_qr(event_id, code),
+        media_type="image/png",
+        headers={"Cache-Control": "private, max-age=86400"},
+    )
+
 
 @router.post("/{event_id}/send_reminder_mails/")
 def send_reminder_mails(
@@ -426,7 +510,9 @@ def send_reminder_mails(
         raise AuthenticationException("Not authorized")
 
     # schedule background task to avoid request timeout
-    background_tasks.add_task(event_service.send_reminder_mails_background, event_id, delay)
+    background_tasks.add_task(
+        event_service.send_reminder_mails_background, event_id, delay
+    )
     return {"success": True, "scheduled": True}
 
 
@@ -448,3 +534,13 @@ def send_reminder_mails(
 #         raise NotFoundException("Event not found")
 #     users = subtract_lists(all, event.registered_hackers)
 #     return mail_service.send_all_reminder_mails(users)
+
+
+@router.patch("/{id}/sponsors/{company_id}")
+def update_sponsor(
+    id: int,
+    company_id: int,
+    payload: EventSponsorUpdate,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    return event_service.update_sponsor(id, company_id, payload, token)

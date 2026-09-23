@@ -1,0 +1,45 @@
+name: Backend tests
+
+on:
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: audit_test
+          POSTGRES_PASSWORD: local-test-password
+          POSTGRES_DB: lleidahack_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_REDIS_URL: redis://127.0.0.1:6379/15
+      TEST_DATABASE_URL: postgresql://audit_test:local-test-password@127.0.0.1:5432/lleidahack_test
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - run: uv run pytest -q

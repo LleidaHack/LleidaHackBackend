@@ -1,16 +1,16 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
+
 from src.configuration.Settings import settings
+from src.error.AuthenticationException import AuthenticationException
+from src.error.InvalidDataException import InvalidDataException
 from src.impl.Authentication.schema import ContactMail
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
-
-from src.impl.User.service import UserService
-from src.error.AuthenticationException import AuthenticationException
-from src.error.InvalidDataException import InvalidDataException
 from src.impl.User.model import User
+from src.impl.User.service import UserService
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash, verify_password
@@ -21,6 +21,7 @@ from src.utils.Token import (
     ResetPassToken,
     VerificationToken,
 )
+from src.utils.UserType import UserType
 
 
 class AuthenticationService(BaseService):
@@ -35,8 +36,9 @@ class AuthenticationService(BaseService):
     def create_access_and_refresh_token(self, user: User):
         access_token = AccesToken(user)
         refresh_token = RefreshToken(user)
-        access_token.user_set()
-        refresh_token.user_set()
+        user.token = access_token.to_token()
+        user.refresh_token = refresh_token.to_token()
+        db.session.commit()
         return access_token, refresh_token
 
     @BaseService.needs_service(UserService)
@@ -44,8 +46,12 @@ class AuthenticationService(BaseService):
         user = self.user_service.get_by_email(mail)
         if not verify_password(password, user.password):
             raise AuthenticationException("Incorrect password")
-        if not user.is_verified:
-            raise InvalidDataException("User not verified")
+        if not user.is_verified and not user.is_deleted:
+            raise AuthenticationException(
+                "Email verification required", code="EMAIL_NOT_VERIFIED"
+            )
+        if not BaseToken.is_available(user):
+            raise AuthenticationException("Account is not available")
         access_token, refresh_token = self.create_access_and_refresh_token(user)
         return {
             "user_id": user.id,
@@ -56,7 +62,9 @@ class AuthenticationService(BaseService):
 
     @BaseService.needs_service(UserService)
     def refresh_token(self, refresh_token: RefreshToken):
-        user = self.user_service.get_by_id(refresh_token.user_id)
+        user = self.user_service.get_for_update(refresh_token.user_id)
+        if not BaseToken.is_available(user):
+            raise AuthenticationException("Account is not available")
         if not (refresh_token.to_token() == user.refresh_token):
             raise InvalidDataException("Invalid token")
         acces_token, refresh_token = self.create_access_and_refresh_token(user)
@@ -70,10 +78,9 @@ class AuthenticationService(BaseService):
     @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(UserService)
     def reset_password(self, email: str):
-        user = self.user_service.get_by_email(email)
-        if not user.is_verified:
-            raise InvalidDataException("User not verified")
-        self.create_access_and_refresh_token(user)
+        user = self.user_service.get_by_email(email, False)
+        if user is None or not user.is_verified or user.is_deleted:
+            return {"success": True}
         reset_pass_token = ResetPassToken(user).user_set()
         mail = self.mail_client.create_mail(
             MailCreate(
@@ -93,11 +100,12 @@ class AuthenticationService(BaseService):
     def confirm_reset_password(self, token: ResetPassToken, password: str):
         if token.expt < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
-        user = self.user_service.get_by_id(token.user_id)
+        user = self.user_service.get_for_update(token.user_id)
         if not (token.to_token() == user.rest_password_token):
             raise InvalidDataException("Invalid token")
         user.password = get_password_hash(password)
         user.rest_password_token = None
+        self.user_service.revoke_tokens(user)
         db.session.commit()
         db.session.refresh(user)
         return {"success": True}
@@ -110,29 +118,38 @@ class AuthenticationService(BaseService):
     def verify_user(self, token: VerificationToken):
         if token.expt < datetime.now(UTC).isoformat():
             raise InvalidDataException("Token expired")
-        user = self.user_service.get_by_id(token.user_id)
+        user = self.user_service.get_for_update(token.user_id)
         if user.verification_token != token.to_token():
             raise InvalidDataException("Invalid token")
-        return self.user_service._verify_user(token.user_id)
-        return {"success": True}
+        self.user_service._verify_user(token.user_id)
+        db.session.refresh(user)
+        if not BaseToken.is_available(user):
+            return {"success": True}
+        access_token, refresh_token = self.create_access_and_refresh_token(user)
+        return {
+            "success": True,
+            "user_id": user.id,
+            "access_token": access_token.to_token(),
+            "refresh_token": refresh_token.to_token(),
+            "token_type": "Bearer",
+        }
 
     @BaseService.needs_service(UserService)
     def force_verification(self, user_id: int, data: BaseToken):
-        if not data.is_admin:
-            raise AuthenticationException("User don'have permissions to do this")
-        self.user_service._verify_user(user_id)
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         user = self.user_service.get_by_id(user_id)
-        a = AccesToken(user).user_set()
-        r = RefreshToken(user).user_set()
-        return {"success": True, "access_token": a, "refresh_token": r}
+        if user.is_deleted:
+            raise InvalidDataException("Account is not available")
+        if not user.is_verified:
+            self.user_service._verify_user(user_id)
+        return {"success": True}
 
     @BaseService.needs_service(UserService)
     def resend_verification(self, email: str):
         user = self.user_service.get_by_email(email)
         if user.is_verified:
             raise InvalidDataException("User already verified")
-        AccesToken(user).user_set()
-        RefreshToken(user).user_set()
         verification_token = VerificationToken(user).user_set()
         mail = self.mail_client.create_mail(
             MailCreate(
@@ -153,12 +170,13 @@ class AuthenticationService(BaseService):
         mail = self.mail_client.create_mail(
             MailCreate(
                 template_id=self.mail_client.get_internall_template_id(
-                    InternalTemplate.CONTACT),
+                    InternalTemplate.CONTACT
+                ),
                 receiver_mail=settings.contact_mail,
-                subject=f'Contact {payload.title}',
-                fields=
-                f'{payload.name},{payload.email},{payload.title},{payload.message}'
-            ))
+                subject=f"Contact {payload.title}",
+                fields=f"{payload.name},{payload.email},{payload.title},{payload.message}",
+            )
+        )
         self.mail_client.send_mail_by_id(mail.id)
         return {
             "success": mail is not None,

@@ -17,3 +17,16 @@ generated_src/**
 !.env.example
 .claude/
 .ruff_cache/
+.pytest_cache/
+
+.local-backend.json
+
+# Runtime credentials and private key material
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.log

@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,8 +14,9 @@ class ArticleType(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     description: Mapped[str] = mapped_column(String)
+    # Afegir el article amb markdown per explicar el tipus d'article
 
-    articles: Mapped[List["Article"]] = relationship(
+    articles: Mapped[list["Article"]] = relationship(
         "Article",
         secondary="article_article_type",
         primaryjoin="ArticleType.id == article_article_type.c.article_type_id",

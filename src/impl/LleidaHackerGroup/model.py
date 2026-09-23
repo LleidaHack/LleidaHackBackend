@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
-from sqlalchemy import ForeignKey, Integer, String, Boolean
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from src.utils.Base.BaseModel import BaseModel
 
 if TYPE_CHECKING:
@@ -38,9 +40,9 @@ class LleidaHackerGroup(BaseModel):
     image: Mapped[str] = mapped_column(String, default="")
     # members: Mapped[List["LleidaHacker"]] = relationship('LleidaHacker', secondary='group_lleida_hacker_user', backref='lleida_hacker_group')
     # members: Mapped[List["LleidaHacker"]] = relationship('LleidaHacker', back_populates='lleida_hacker_group')
-    members: Mapped[List["LleidaHacker"]] = relationship(
+    members: Mapped[list[LleidaHacker]] = relationship(
         "LleidaHacker", secondary="lleida_hacker_group_user"
     )
-    leaders: Mapped[List["LleidaHacker"]] = relationship(
+    leaders: Mapped[list[LleidaHacker]] = relationship(
         "LleidaHacker", secondary="lleida_hacker_group_leader"
     )

@@ -2,13 +2,18 @@ from datetime import datetime as date
 
 from fastapi_sqlalchemy import db
 
-from src.error.AuthenticationException import AuthenticationException
+from src.error.AuthorizationException import AuthorizationException
 from src.error.NotFoundException import NotFoundException
+from src.impl.Company.model import Company
 from src.impl.CompanyUser.model import CompanyUser
-from src.impl.CompanyUser.schema import CompanyUserCreate
-from src.impl.CompanyUser.schema import CompanyUserGet
-from src.impl.CompanyUser.schema import CompanyUserGetAll
-from src.impl.CompanyUser.schema import CompanyUserUpdate
+from src.impl.CompanyUser.schema import (
+    CompanyUserCreate,
+    CompanyUserGet,
+    CompanyUserGetAll,
+    CompanyUserUpdate,
+)
+from src.impl.User.service import UserService
+from src.impl.UserConfig.model import UserConfig
 from src.utils.Base.BaseService import BaseService
 from src.utils.security import get_password_hash
 from src.utils.service_utils import (
@@ -19,7 +24,6 @@ from src.utils.service_utils import (
 )
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
-from src.impl.UserConfig.model import UserConfig
 
 
 class CompanyUserService(BaseService):
@@ -44,7 +48,11 @@ class CompanyUserService(BaseService):
             return CompanyUserGetAll.model_validate(user)
         return CompanyUserGet.model_validate(user)
 
-    def add_company_user(self, payload: CompanyUserCreate):
+    def add_company_user(self, payload: CompanyUserCreate, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthorizationException("Not authorized")
+        if db.session.get(Company, payload.company_id) is None:
+            raise NotFoundException("Company not found")
         check_user(payload.email, payload.nickname, payload.telephone)
         new_company_user = CompanyUser(
             **payload.model_dump(exclude={"config"}), code=generate_user_code()
@@ -71,15 +79,17 @@ class CompanyUserService(BaseService):
             not data.check([UserType.LLEIDAHACKER, UserType.COMPANYUSER])
             or data.user_id != companyUserId
         ):
-            raise AuthenticationException("Not authorized")
+            raise AuthorizationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
         if payload.image is not None:
             payload = check_image(payload)
         updated = set_existing_data(company_user, payload)
-        company_user.updated_at = date.now()
+        # Keep the existing timezone-naive database/local-calendar contract.
+        company_user.updated_at = date.now()  # noqa: DTZ005
         updated.append("updated_at")
         if payload.password is not None:
             company_user.password = get_password_hash(payload.password)
+            UserService.revoke_tokens(company_user)
             updated.append("password")
         db.session.commit()
         db.session.refresh(company_user)
@@ -89,7 +99,7 @@ class CompanyUserService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
             [UserType.COMPANYUSER], companyUserId
         ):
-            raise AuthenticationException("Not authorized")
+            raise AuthorizationException("Not authorized")
         company_user = self.get_by_id(companyUserId)
         db.session.delete(company_user)
         db.session.commit()

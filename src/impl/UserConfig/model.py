@@ -1,11 +1,7 @@
-from typing import Optional, TYPE_CHECKING
-
 from sqlalchemy import Boolean, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.utils.Base.BaseModel import BaseModel
+from sqlalchemy.orm import Mapped, mapped_column
 
-if TYPE_CHECKING:
-    from src.impl.User.model import User
+from src.utils.Base.BaseModel import BaseModel
 
 
 class UserConfig(BaseModel):
@@ -14,7 +10,7 @@ class UserConfig(BaseModel):
     id: Mapped[int] = mapped_column(
         primary_key=True, index=True, unique=True, autoincrement=True
     )
-    #user_id = Column(Integer, ForeignKey('my_user.id'), nullable=False)
+    # user_id = Column(Integer, ForeignKey('my_user.id'), nullable=False)
     recive_notifications: Mapped[bool] = mapped_column(Boolean, default=True)
     default_lang: Mapped[str] = mapped_column(String, default="ca-CA")
     comercial_notifications: Mapped[bool] = mapped_column(Boolean, default=True)
