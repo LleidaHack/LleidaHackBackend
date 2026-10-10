@@ -163,3 +163,44 @@ class Event(BaseModel):
     groups: Mapped[list[HackerGroup]] = relationship("HackerGroup", backref="event")
     # status: Mapped[int] = mapped_column(Integer, default=0)
     meals: Mapped[list[Meal]] = relationship("Meal", backref="event")
+
+
+class EventParticipantNote(BaseModel):
+    """Internal organizer note about a hacker's registration, never shown to hackers."""
+
+    __tablename__ = "event_participant_note"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id"), nullable=False, index=True
+    )
+    hacker_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("hacker.user_id"), nullable=False, index=True
+    )
+    author_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("my_user.id"), nullable=True
+    )
+    body: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+
+
+class EventAuditLog(BaseModel):
+    """Who changed a registration's status, and when."""
+
+    __tablename__ = "event_audit_log"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("event.id"), nullable=False, index=True
+    )
+    # None when the change came from the service token
+    actor_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("my_user.id"), nullable=True
+    )
+    action: Mapped[str] = mapped_column(String, nullable=False)
+    target_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("my_user.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )

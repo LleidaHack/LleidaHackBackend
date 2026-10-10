@@ -5,6 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet
 from src.impl.Event.schema import (
+    EventAuditLogGet,
     EventCreate,
     EventGet,
     EventGetAll,
@@ -17,6 +18,8 @@ from src.impl.Event.schema import (
     HackerEventRegistration,
     HackerEventRegistrationGet,
     HackerEventRegistrationUpdate,
+    ParticipantNoteCreate,
+    ParticipantNoteGet,
     RegistrationConfirmationGet,
 )
 from src.impl.Event.service import EventService
@@ -544,3 +547,39 @@ def update_sponsor(
     token: BaseToken = Depends(JWTBearer()),
 ):
     return event_service.update_sponsor(id, company_id, payload, token)
+
+
+@router.get("/{event_id}/audit", response_model=list[EventAuditLogGet])
+def get_audit_log(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """
+    Latest registration status changes of an event (organizers only)
+    """
+    return event_service.get_audit_log(event_id, token)
+
+
+@router.get("/{event_id}/notes/{hacker_id}", response_model=list[ParticipantNoteGet])
+def get_participant_notes(
+    event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
+):
+    """
+    Internal organizer notes about a hacker's registration
+    """
+    return event_service.get_notes(event_id, hacker_id, token)
+
+
+@router.post("/{event_id}/notes/{hacker_id}", response_model=ParticipantNoteGet)
+def add_participant_note(
+    event_id: int,
+    hacker_id: int,
+    payload: ParticipantNoteCreate,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    return event_service.add_note(event_id, hacker_id, payload.body, token)
+
+
+@router.delete("/{event_id}/notes/item/{note_id}")
+def delete_participant_note(
+    event_id: int, note_id: int, token: BaseToken = Depends(JWTBearer())
+):
+    event_service.delete_note(event_id, note_id, token)
+    return {"success": True}

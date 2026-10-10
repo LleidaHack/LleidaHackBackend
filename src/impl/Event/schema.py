@@ -220,3 +220,23 @@ class EventTicketsStatus(BaseSchema):
     pending: int
     running: bool
     progress: dict
+
+
+class ParticipantNoteCreate(BaseSchema):
+    body: str = Field(min_length=1, max_length=2000)
+
+
+class ParticipantNoteGet(BaseSchema):
+    id: int
+    hacker_id: int
+    author_id: int | None
+    body: str
+    created_at: datetime
+
+
+class EventAuditLogGet(BaseSchema):
+    id: int
+    actor_id: int | None
+    action: str
+    target_id: int | None
+    created_at: datetime
