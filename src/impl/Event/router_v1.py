@@ -212,7 +212,7 @@ def get_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBearer
     """
     Get the hackers who are not registered for the event
     """
-    if not token.is_admin:
+    if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
     return event_service.get_hackers_unregistered(event_id)
 
@@ -222,7 +222,7 @@ def count_unregistered_hackers(event_id: int, token: BaseToken = Depends(JWTBear
     """
     Get the count of hackers who are not registered for the event
     """
-    if not token.is_admin:
+    if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
     return event_service.count_hackers_unregistered(event_id)
 
@@ -323,7 +323,7 @@ def get_pending_hackers(event_id: int, token: BaseToken = Depends(JWTBearer())):
     """
     Get the pending hackers of an event
     """
-    if not token.is_admin:
+    if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("You don't have permissions")
     event = event_service.get_by_id(event_id)
     return {
@@ -337,7 +337,7 @@ def get_rejected_hackers(event_id: int, token: BaseToken = Depends(JWTBearer()))
     """
     Get the rejected hackers of an event
     """
-    if not token.is_admin:
+    if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("You don't have permissions")
     event = event_service.get_by_id(event_id)
     return {"size": len(event.rejected_hackers), "hackers": event.rejected_hackers}
