@@ -764,6 +764,13 @@ class EventService(BaseService):
             )
             for hacker in registered_hackers
         ]
+        registered_at = dict(
+            db.session.query(HackerRegistration.user_id, HackerRegistration.registered_at)
+            .filter(HackerRegistration.event_id == event_id)
+            .all()
+        )
+        for participant in participants_list:
+            participant["registered_at"] = registered_at.get(participant["id"])
         # Combine group and nogroup data into a dictionary
         return {"participants": participants_list}
 

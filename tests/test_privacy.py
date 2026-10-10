@@ -253,3 +253,15 @@ def test_organizer_event_admin_views_require_organizer(
     assert allowed.status_code == 200, allowed.text
     denied = client.get(f"/v1/event/{event_id}/{path}", headers=hacker.headers)
     assert denied.status_code == 401
+
+
+def test_participants_list_includes_registration_time(
+    client, create_user, create_event
+):
+    organizer, hacker = create_user(role="organizer"), create_user()
+    event_id = create_event([hacker])
+    response = client.get(
+        f"/v1/event/{event_id}/hackers_participants_list", headers=organizer.headers
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["participants"][0]["registered_at"]

@@ -51,6 +51,10 @@ class HackerRegistration(BaseModel):
     wants_credit: Mapped[bool] = mapped_column(Boolean, default=False)
     # when the check-in ticket mail (QR) was sent; None until generated
     ticket_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # None for registrations created before this column existed
+    registered_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True, server_default=func.now()
+    )
     # accepted: bool = mapped_column(Boolean, default=False)
 
 
