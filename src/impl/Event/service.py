@@ -18,7 +18,13 @@ from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
 from src.impl.Company.service import CompanyService
-from src.impl.Event.model import CompanyParticipation, Event, HackerRegistration
+from src.impl.Event.model import (
+    CompanyParticipation,
+    Event,
+    EventAuditLog,
+    EventParticipantNote,
+    HackerRegistration,
+)
 from src.impl.Event.schema import (
     EventCreate,
     EventGet,
@@ -764,6 +770,24 @@ class EventService(BaseService):
             )
             for hacker in registered_hackers
         ]
+        registrations = {
+            r.user_id: r
+            for r in db.session.query(HackerRegistration).filter(
+                HackerRegistration.event_id == event_id
+            )
+        }
+        notes = Counter(
+            hacker_id
+            for (hacker_id,) in db.session.query(EventParticipantNote.hacker_id).filter(
+                EventParticipantNote.event_id == event_id
+            )
+        )
+        for participant in participants_list:
+            reg = registrations.get(participant["id"])
+            participant["registered_at"] = reg.registered_at if reg else None
+            participant["study_center"] = reg.study_center if reg else None
+            participant["cv"] = reg.cv if reg else None
+            participant["notes_count"] = notes[participant["id"]]
         # Combine group and nogroup data into a dictionary
         return {"participants": participants_list}
 
@@ -994,6 +1018,7 @@ class EventService(BaseService):
             )
         )
         self.mail_client.send_mail_by_id(mail.id)
+        self._audit(event.id, data, "accept", hacker.id)
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)
@@ -1012,6 +1037,7 @@ class EventService(BaseService):
         if hacker not in event.accepted_hackers:
             raise InvalidDataException("Hacker not accepted")
         event.accepted_hackers.remove(hacker)
+        self._audit(event.id, data, "unaccept", hacker.id)
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)
@@ -1034,6 +1060,7 @@ class EventService(BaseService):
                 if hacker in event.accepted_hackers:
                     raise InvalidDataException("Hacker already accepted")
                 event.rejected_hackers.append(hacker)
+        self._audit(event.id, data, f"reject_group:{group_id}", None)
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(group)
@@ -1054,6 +1081,7 @@ class EventService(BaseService):
         if hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker already accepted")
         event.rejected_hackers.append(hacker)
+        self._audit(event.id, data, "reject", hacker.id)
         db.session.commit()
         db.session.refresh(event)
         db.session.refresh(hacker)
@@ -1583,3 +1611,69 @@ class EventService(BaseService):
             "checked_in": hacker in event.participants,
             "voucher_code": voucher.code if voucher else None,
         }
+
+    @staticmethod
+    def _audit(event_id: int, data: BaseToken, action: str, target_id: int | None):
+        db.session.add(
+            EventAuditLog(
+                event_id=event_id,
+                actor_id=data.user_id or None,
+                action=action,
+                target_id=target_id,
+            )
+        )
+
+    def _require_organizer(self, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+
+    def get_audit_log(self, event_id: int, data: BaseToken):
+        self._require_organizer(data)
+        self.get_by_id(event_id)
+        return (
+            db.session.query(EventAuditLog)
+            .filter(EventAuditLog.event_id == event_id)
+            .order_by(desc(EventAuditLog.created_at), desc(EventAuditLog.id))
+            .limit(500)
+            .all()
+        )
+
+    def get_notes(self, event_id: int, hacker_id: int, data: BaseToken):
+        self._require_organizer(data)
+        return (
+            db.session.query(EventParticipantNote)
+            .filter(
+                EventParticipantNote.event_id == event_id,
+                EventParticipantNote.hacker_id == hacker_id,
+            )
+            .order_by(EventParticipantNote.created_at, EventParticipantNote.id)
+            .all()
+        )
+
+    def add_note(self, event_id: int, hacker_id: int, body: str, data: BaseToken):
+        self._require_organizer(data)
+        registered = (
+            db.session.query(HackerRegistration)
+            .filter_by(event_id=event_id, user_id=hacker_id)
+            .first()
+        )
+        if registered is None:
+            raise InvalidDataException("Hacker not registered")
+        note = EventParticipantNote(
+            event_id=event_id,
+            hacker_id=hacker_id,
+            author_id=data.user_id or None,
+            body=body,
+        )
+        db.session.add(note)
+        db.session.commit()
+        db.session.refresh(note)
+        return note
+
+    def delete_note(self, event_id: int, note_id: int, data: BaseToken):
+        self._require_organizer(data)
+        note = db.session.get(EventParticipantNote, note_id)
+        if note is None or note.event_id != event_id:
+            raise NotFoundException("Note not found")
+        db.session.delete(note)
+        db.session.commit()
