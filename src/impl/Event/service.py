@@ -598,7 +598,7 @@ class EventService(BaseService):
                 accepted_and_confirmed.append(user)
         return accepted_and_confirmed
 
-    @BaseService.needs_service("HackerGroupService")
+    @BaseService.needs_service(HackerService)
     def get_hackers_unregistered(self, eventId: int):
         hackers = self.hacker_service.get_all()
         event = self.get_by_id(eventId)

@@ -182,3 +182,41 @@ def test_valid_file_under_one_mib_survives_base64_request_overhead(client, creat
         f"/v1/hacker/{user.id}", headers=user.headers, json={"image": image}
     )
     assert response.status_code == 200, response.text
+
+
+def _with_open_action(action):
+    from pypdf.generic import NameObject
+
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=200, height=200)
+    writer._root_object[NameObject("/OpenAction")] = action(page)
+    output = io.BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
+def test_pdf_initial_view_open_action_is_accepted():
+    # Word/Canva/Acrobat CVs commonly open on page 1 with /OpenAction [page /Fit].
+    from pypdf.generic import ArrayObject, NameObject
+
+    raw = _with_open_action(
+        lambda page: ArrayObject([page.indirect_reference, NameObject("/Fit")])
+    )
+    assert validate_cv(data_uri("application/pdf", raw)).startswith(
+        "data:application/pdf;base64,"
+    )
+
+
+def test_pdf_open_action_that_launches_is_rejected():
+    from pypdf.generic import DictionaryObject, NameObject, TextStringObject
+
+    raw = _with_open_action(
+        lambda page: DictionaryObject(
+            {
+                NameObject("/S"): NameObject("/Launch"),
+                NameObject("/F"): TextStringObject("calc.exe"),
+            }
+        )
+    )
+    with pytest.raises(ValueError):
+        validate_cv(data_uri("application/pdf", raw))

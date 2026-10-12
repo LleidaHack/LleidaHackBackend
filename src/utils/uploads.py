@@ -82,7 +82,6 @@ def validate_image(value):
 # encoded PDF names and indirect references (a byte-string search is not enough).
 FORBIDDEN_PDF_KEYS = {
     "/AA",
-    "/OpenAction",
     "/JS",
     "/JavaScript",
     "/EmbeddedFiles",
@@ -110,7 +109,8 @@ def validate_cv(value):
     if not raw.startswith(b"%PDF-"):
         raise ValueError("CV must contain a PDF document")
     try:
-        reader = PdfReader(io.BytesIO(raw), strict=True)
+        # strict=False: many real CVs have minor xref/offset errors pypdf can repair.
+        reader = PdfReader(io.BytesIO(raw), strict=False)
         if reader.is_encrypted:
             raise ValueError("Encrypted PDFs are not supported")
         visited = set()
@@ -128,6 +128,15 @@ def validate_cv(value):
                 visited.add(key)
                 obj = obj.get_object()
             if isinstance(obj, DictionaryObject):
+                # Word, Canva and Acrobat set /OpenAction to the initial view
+                # (a destination array or a /GoTo). Only real actions are a risk.
+                open_action = obj.get("/OpenAction")
+                if open_action is not None:
+                    open_action = open_action.get_object()
+                    if isinstance(open_action, DictionaryObject) and open_action.get(
+                        "/S"
+                    ) not in (None, "/GoTo"):
+                        raise ValueError("PDF contains active content or attachments")
                 if (
                     FORBIDDEN_PDF_KEYS.intersection(obj.keys())
                     or obj.get("/S") in FORBIDDEN_PDF_ACTIONS
