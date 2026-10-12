@@ -598,7 +598,7 @@ class EventService(BaseService):
                 accepted_and_confirmed.append(user)
         return accepted_and_confirmed
 
-    @BaseService.needs_service("HackerGroupService")
+    @BaseService.needs_service(HackerService)
     def get_hackers_unregistered(self, eventId: int):
         hackers = self.hacker_service.get_all()
         event = self.get_by_id(eventId)
@@ -788,6 +788,9 @@ class EventService(BaseService):
             participant["study_center"] = reg.study_center if reg else None
             participant["cv"] = reg.cv if reg else None
             participant["notes_count"] = notes[participant["id"]]
+            participant["confirmed_assistance"] = (
+                bool(reg.confirmed_assistance) if reg else False
+            )
         # Combine group and nogroup data into a dictionary
         return {"participants": participants_list}
 
@@ -1105,7 +1108,9 @@ class EventService(BaseService):
         return event
 
     @BaseService.needs_service(MailClient)
-    def resend_mails(self, event_id: int, data: BaseToken):
+    def resend_mails(
+        self, event_id: int, data: BaseToken, only_unconfirmed: bool = False
+    ):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
@@ -1113,6 +1118,7 @@ class EventService(BaseService):
             raise InvalidDataException(
                 "Unable to operate with an archived event, unarchive it first"
             )
+        sent = 0
         for hacker in event.accepted_hackers:
             hacker_registration = (
                 db.session.query(HackerRegistration)
@@ -1122,22 +1128,31 @@ class EventService(BaseService):
                 )
                 .first()
             )
-            token = AssistenceToken(hacker, event.id).to_token()
-            hacker_registration.confirm_assistance_token = token
+            if hacker_registration is None:
+                continue
+            if only_unconfirmed and hacker_registration.confirmed_assistance:
+                continue
+            self._send_accepted_mail(event, hacker, hacker_registration)
+            sent += 1
+        return sent
 
-            self.mail_client.create_mail(
-                MailCreate(
-                    template_id=self.mail_client.get_internall_template_id(
-                        InternalTemplate.EVENT_HACKER_ACCEPTED
-                    ),
-                    subject="You have been accepted",
-                    receiver_id=str(hacker.id),
-                    receiver_mail=str(hacker.email),
-                    fields=f"{hacker.name},{event.name},5,{token}",
-                )
-            )
-
+    def _send_accepted_mail(self, event, hacker, hacker_registration):
+        token = AssistenceToken(hacker, event.id).to_token()
+        hacker_registration.confirm_assistance_token = token
+        # Commit first so the link in the mail is already valid when it arrives.
         db.session.commit()
+        mail = self.mail_client.create_mail(
+            MailCreate(
+                template_id=self.mail_client.get_internall_template_id(
+                    InternalTemplate.EVENT_HACKER_ACCEPTED
+                ),
+                subject="You have been accepted",
+                receiver_id=str(hacker.id),
+                receiver_mail=str(hacker.email),
+                fields=f"{hacker.name},{event.name},5,{token}",
+            )
+        )
+        self.mail_client.send_mail_by_id(mail.id)
 
     @BaseService.needs_service(MailClient)
     @BaseService.needs_service(HackerService)
@@ -1160,22 +1175,9 @@ class EventService(BaseService):
             )
             .first()
         )
-        token = AssistenceToken(hacker, event.id).to_token()
-        hacker_registration.confirm_assistance_token = token
-
-        self.mail_client.create_mail(
-            MailCreate(
-                template_id=self.mail_client.get_internall_template_id(
-                    InternalTemplate.EVENT_HACKER_ACCEPTED
-                ),
-                subject="You have been accepted",
-                receiver_id=str(hacker.id),
-                receiver_mail=str(hacker.email),
-                fields=f"{hacker.name},{event.name},5,{token}",
-            )
-        )
-
-        db.session.commit()
+        if hacker_registration is None or hacker not in event.accepted_hackers:
+            raise InvalidDataException("Hacker not accepted")
+        self._send_accepted_mail(event, hacker, hacker_registration)
 
     @BaseService.needs_service(MailClient)
     def send_slack_mail(self, event_id: int, slackUrl: str, data: BaseToken):

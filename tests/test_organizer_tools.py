@@ -72,3 +72,57 @@ def test_participants_list_includes_registration_fields(
         f"/v1/event/{event_id}/hackers_participants_list", headers=organizer.headers
     ).json()["participants"][0]
     assert {"study_center", "cv", "registered_at", "notes_count"} <= participant.keys()
+
+
+def test_resend_only_reaches_unconfirmed_and_actually_sends(
+    client, create_user, create_event, engine, monkeypatch
+):
+    from types import SimpleNamespace
+
+    from sqlalchemy.orm import Session
+
+    from src.impl.Event.model import HackerRegistration
+    from src.impl.Mail.client import MailClient
+
+    created, sent = [], []
+    monkeypatch.setattr(
+        MailClient,
+        "create_mail",
+        lambda self, mail: (
+            created.append(mail.receiver_mail) or SimpleNamespace(id=len(created))
+        ),
+    )
+    monkeypatch.setattr(MailClient, "send_mail_by_id", lambda self, i: sent.append(i))
+
+    organizer = create_user(role="organizer")
+    confirmed, pending = create_user(), create_user()
+    event_id = create_event([confirmed, pending])
+    for hacker in (confirmed, pending):
+        accepted = client.put(
+            f"/v1/event/{event_id}/accept/{hacker.id}", headers=organizer.headers
+        )
+        assert accepted.status_code == 200, accepted.text
+    with Session(engine) as session:
+        session.get(
+            HackerRegistration, (confirmed.id, event_id)
+        ).confirmed_assistance = True
+        session.commit()
+    created.clear()
+    sent.clear()
+
+    participants = client.get(
+        f"/v1/event/{event_id}/hackers_participants_list", headers=organizer.headers
+    ).json()["participants"]
+    assert {p["id"]: p["confirmed_assistance"] for p in participants} == {
+        confirmed.id: True,
+        pending.id: False,
+    }
+
+    response = client.get(
+        f"/v1/event/{event_id}/resend-accepted-mails?only_unconfirmed=true",
+        headers=organizer.headers,
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["sent"] == 1
+    assert created == [pending.email]
+    assert sent == [1]
