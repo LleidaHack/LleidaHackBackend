@@ -398,9 +398,17 @@ def get_hackers_participants_list(
 
 
 @router.get("/{event_id}/resend-accepted-mails")
-def resend_accept_mails(event_id: int, token: BaseToken = Depends(JWTBearer())):
-    event_service.resend_mails(event_id, token)
-    return {"success": True}
+def resend_accept_mails(
+    event_id: int,
+    only_unconfirmed: bool = False,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    """
+    Resend the acceptance mail to accepted hackers, optionally only to those
+    who have not confirmed their assistance yet
+    """
+    sent = event_service.resend_mails(event_id, token, only_unconfirmed)
+    return {"success": True, "sent": sent}
 
 
 @router.get("/{event_id}/resend-accepted-mail/{hacker_id}/")
