@@ -123,9 +123,20 @@ def get_sponsors(id: int):
 
 
 @router.get("/{id}/groups", response_model=EventGroupsGet)
-def get_groups(id: int, token: BaseToken = Depends(JWTBearer())):
-    event = event_service.get_event_groups(id, token)
-    return {"success": True, "groups": event}
+def get_groups(
+    id: int, include_images: bool = True, token: BaseToken = Depends(JWTBearer())
+):
+    """
+    Groups of an event. include_images=false drops member profile pictures,
+    which are inline base64 and make up almost all of the response.
+    """
+    groups = event_service.get_event_groups(id, token)
+    response = EventGroupsGet.model_validate({"success": True, "groups": groups})
+    if not include_images:
+        for group in response.groups:
+            for member in group.members:
+                member.image = None
+    return response
 
 
 @router.put("/{id}/groups/{group_id}")

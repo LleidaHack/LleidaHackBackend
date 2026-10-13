@@ -786,7 +786,8 @@ class EventService(BaseService):
             reg = registrations.get(participant["id"])
             participant["registered_at"] = reg.registered_at if reg else None
             participant["study_center"] = reg.study_center if reg else None
-            participant["cv"] = reg.cv if reg else None
+            # A flag, not the base64 PDF: the CV is fetched on demand.
+            participant["has_cv"] = bool(reg and reg.cv)
             participant["notes_count"] = notes[participant["id"]]
             participant["confirmed_assistance"] = (
                 bool(reg.confirmed_assistance) if reg else False
