@@ -71,7 +71,12 @@ def test_participants_list_includes_registration_fields(
     participant = client.get(
         f"/v1/event/{event_id}/hackers_participants_list", headers=organizer.headers
     ).json()["participants"][0]
-    assert {"study_center", "cv", "registered_at", "notes_count"} <= participant.keys()
+    assert {
+        "study_center",
+        "has_cv",
+        "registered_at",
+        "notes_count",
+    } <= participant.keys()
 
 
 def test_resend_only_reaches_unconfirmed_and_actually_sends(
@@ -126,3 +131,42 @@ def test_resend_only_reaches_unconfirmed_and_actually_sends(
     assert response.json()["sent"] == 1
     assert created == [pending.email]
     assert sent == [1]
+
+
+def test_participants_list_flags_cv_without_sending_it(
+    client, create_user, create_event, engine
+):
+    from sqlalchemy.orm import Session
+
+    from src.impl.Event.model import HackerRegistration
+
+    organizer, hacker = create_user(role="organizer"), create_user()
+    event_id = create_event([hacker])
+    with Session(engine) as session:
+        session.get(HackerRegistration, (hacker.id, event_id)).cv = "data:big-pdf"
+        session.commit()
+    participant = client.get(
+        f"/v1/event/{event_id}/hackers_participants_list", headers=organizer.headers
+    ).json()["participants"][0]
+    assert participant["has_cv"] is True
+    assert "cv" not in participant
+
+
+def test_event_groups_can_omit_member_images(
+    client, create_user, create_event, create_group, engine
+):
+    from sqlalchemy.orm import Session
+
+    from src.impl.User.model import User
+
+    member = create_user()
+    event_id = create_event([member])
+    create_group(event_id, [member])
+    with Session(engine) as session:
+        session.get(User, member.id).image = "data:image/png;base64,AAAA"
+        session.commit()
+    path = f"/v1/event/{event_id}/groups"
+    full = client.get(path, headers=member.headers).json()
+    light = client.get(f"{path}?include_images=false", headers=member.headers).json()
+    assert full["groups"][0]["members"][0]["image"]
+    assert light["groups"][0]["members"][0]["image"] is None
