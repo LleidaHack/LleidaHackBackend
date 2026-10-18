@@ -42,7 +42,9 @@ class UserCreate(BaseSchema):
     def telephone_validation(cls, v):
         v = re.sub(r"\s+", "", v)
         if re.fullmatch(r"(?:[0-9]{9}|\+[1-9][0-9]{6,14})", v) is None:
-            raise ValueError("must be 9 national digits or + followed by 7 to 15 international digits")
+            raise ValueError(
+                "must be 9 national digits or + followed by 7 to 15 international digits"
+            )
         return v
 
     @field_validator("password")
