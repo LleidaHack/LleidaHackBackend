@@ -30,3 +30,6 @@ generated_src/**
 *.p12
 *.pfx
 *.log
+
+# macOS metadata
+.DS_Store
