@@ -18,6 +18,7 @@ def test_phone_rejects_invalid_formats(telephone, signup_payload):
 
 def test_signup_accepts_and_stores_international_phone(client, engine, signup_payload):
     from sqlalchemy.orm import Session
+
     from src.impl.User.model import User
 
     response = client.post("/v1/hacker/signup", json={
