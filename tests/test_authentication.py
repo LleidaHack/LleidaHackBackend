@@ -141,7 +141,7 @@ def test_service_token_is_rejected_for_personal_flows(client):
     assert client.post("/v1/auth/refresh-token", headers=headers).status_code == 401
 
 
-def test_assistance_token_is_scoped_to_one_confirmation(
+def test_assistance_token_retries_are_scoped_and_idempotent(
     client, create_user, create_event, engine
 ):
     from src.impl.Event.model import HackerAccepted, HackerRegistration
@@ -162,12 +162,19 @@ def test_assistance_token_is_scoped_to_one_confirmation(
     response = client.get("/v1/event/confirm_assistance/", headers=headers)
     assert response.status_code == 200, response.text
     assert (
-        client.get("/v1/event/confirm_assistance/", headers=headers).status_code == 401
+        client.get("/v1/event/confirm_assistance/", headers=headers).status_code == 200
     )
     with Session(engine) as session:
         registration = session.get(HackerRegistration, (user.id, event_id))
         assert registration.confirmed_assistance is True
-        assert registration.confirm_assistance_token == ""
+        assert registration.confirm_assistance_token == token
+        # Previously deployed versions cleared consumed tokens.
+        registration.confirm_assistance_token = ""
+        session.commit()
+    assert (
+        client.get("/v1/event/confirm_assistance/", headers=headers).status_code == 200
+    )
+    assert client.get("/v1/user/all", headers=headers).status_code == 401
 
 
 def test_deactivation_revokes_organizer_session(client, create_user):
@@ -274,3 +281,32 @@ def test_verification_does_not_sign_in_a_banned_account(client, create_user):
     response = client.post("/v1/auth/verify", params={"token": user.verification})
     assert response.status_code == 200, response.text
     assert response.json() == {"success": True}
+
+
+@pytest.mark.parametrize(
+    "confirmed,stored", [(False, ""), (False, "replacement"), (True, "replacement")]
+)
+def test_assistance_rejects_missing_or_replaced_tokens(
+    client, create_user, create_event, engine, confirmed, stored
+):
+    from src.impl.Event.model import HackerAccepted, HackerRegistration
+    from src.impl.User.model import User
+    from src.utils.Token import AssistenceToken
+
+    user = create_user()
+    event_id = create_event([user])
+    with Session(engine) as session:
+        token = AssistenceToken(session.get(User, user.id), event_id).to_token()
+        registration = session.get(HackerRegistration, (user.id, event_id))
+        registration.confirmed_assistance = confirmed
+        registration.confirm_assistance_token = stored
+        session.add(HackerAccepted(user_id=user.id, event_id=event_id))
+        session.commit()
+    response = client.get(
+        "/v1/event/confirm_assistance/", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 401
+    with Session(engine) as session:
+        registration = session.get(HackerRegistration, (user.id, event_id))
+        assert registration.confirmed_assistance == confirmed
+        assert registration.confirm_assistance_token == stored
