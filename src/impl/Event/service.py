@@ -882,14 +882,14 @@ class EventService(BaseService):
         )
         if user_registration is None:
             raise InvalidDataException("User not registered")
-        if user_registration.confirm_assistance_token != data.to_token():
-            raise InvalidDataException("Invalid token")
         if user not in event.accepted_hackers:
             raise InvalidDataException("User not accepted")
         if user_registration.confirmed_assistance:
-            raise InvalidDataException("User already confirmed assistance")
+            # Authentication already checked the signed, event-scoped token.
+            return user_registration
+        if user_registration.confirm_assistance_token != data.to_token():
+            raise InvalidDataException("Invalid token")
         user_registration.confirmed_assistance = True
-        user_registration.confirm_assistance_token = ""
         db.session.commit()
         db.session.refresh(user_registration)
         return user_registration

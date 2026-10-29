@@ -172,10 +172,12 @@ class BaseToken:
                 .filter_by(user_id=user.id, event_id=payload["event_id"])
                 .first()
             )
-            if (
-                registration is None
-                or registration.confirmed_assistance
-                or registration.confirm_assistance_token != token
+            if registration is None or (
+                registration.confirm_assistance_token != token
+                and not (
+                    registration.confirmed_assistance
+                    and not registration.confirm_assistance_token
+                )
             ):
                 raise AuthenticationException("Invalid token")
 
