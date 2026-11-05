@@ -394,6 +394,39 @@ def perform(event_id, body, token):
         return result
 
 
+def leaderboard(event_id):
+    """Rank public aliases by current event balance, including ledger corrections."""
+    total = func.sum(CoinMovement.amount).label("balance")
+    rows = (
+        db.session.query(Hacker.nickname, total)
+        .join(CoinMovement, CoinMovement.user_id == Hacker.id)
+        .filter(
+            CoinMovement.event_id == event_id,
+            Hacker.is_deleted.is_(False),
+            Hacker.banned.is_(False),
+        )
+        .group_by(Hacker.id, Hacker.nickname)
+        .order_by(total.desc(), Hacker.nickname.asc(), Hacker.id.asc())
+        .limit(50)
+        .all()
+    )
+    result = []
+    previous = None
+    rank = 0
+    for position, row in enumerate(rows, start=1):
+        if row.balance != previous:
+            rank = position
+        result.append(
+            {
+                "rank": rank,
+                "nickname": row.nickname or "Hacker",
+                "balance": int(row.balance),
+            }
+        )
+        previous = row.balance
+    return result
+
+
 def snapshot(event_id, private=False):
     _event, row = state(event_id)
     data = deepcopy(row.config)
@@ -416,6 +449,7 @@ def snapshot(event_id, private=False):
     data["event_id"] = event_id
     data["version"] = row.version
     data["server_time"] = now.isoformat()
+    data["leaderboard"] = leaderboard(event_id)
     data["presentations"] = []
     if private or data.get("phase") == "judging":
         for p in (

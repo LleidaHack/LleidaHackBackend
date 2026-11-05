@@ -103,6 +103,7 @@ def test_coins_cannot_double_spend_and_corrections_are_linked(
     assert scan(kind="redeem", target="mug").status_code == 409
     wallet = client.get(url + "/wallet", headers=h.headers).json()
     assert wallet["balance"] == 20
+    assert client.get(url + "/public").json()["leaderboard"][0]["balance"] == 20
     debit = wallet["movements"][0]["id"]
     assert (
         scan(kind="reverse", target=str(debit), reason="Prize return").json()["balance"]
@@ -113,6 +114,7 @@ def test_coins_cannot_double_spend_and_corrections_are_linked(
         == 409
     )
     assert scan(kind="award", amount=0, reason="No amount").status_code == 422
+    assert client.get(url + "/public").json()["leaderboard"][0]["balance"] == 50
 
 
 def test_private_content_hidden_and_config_conflicts(
@@ -610,3 +612,51 @@ def test_global_role_assignment_preserves_participant_and_rechecks_session(
         ).status_code
         == 409
     )
+
+
+def test_public_leaderboard_ranks_aliases_and_isolates_events(
+    client, create_user, create_event, accept, engine
+):
+    from sqlalchemy import text
+
+    owner = create_user(role="organizer")
+    users = [create_user(nickname=nickname) for nickname in ("zeta", "alpha", "third")]
+    event = create_event(users)
+    base = f"/v1/operations/{event}"
+    assert client.get(base + "/public").json()["leaderboard"] == []
+    for user, amount in zip(users, (20, 20, 5), strict=True):
+        accept(owner, event, user)
+        code = user_code(engine, user)
+        client.put(f"/v1/event/{event}/participate/{code}", headers=owner.headers)
+        response = client.post(
+            base + "/scan",
+            headers=owner.headers,
+            json={
+                "operation_id": str(uuid4()),
+                "kind": "award",
+                "code": code,
+                "amount": amount,
+                "reason": "Leaderboard verification",
+            },
+        )
+        assert response.status_code == 200, response.text
+    ranking = client.get(base + "/public").json()["leaderboard"]
+    assert ranking == [
+        {"rank": 1, "nickname": "alpha", "balance": 20},
+        {"rank": 1, "nickname": "zeta", "balance": 20},
+        {"rank": 3, "nickname": "third", "balance": 5},
+    ]
+    other_event = create_event([])
+    assert (
+        client.get(f"/v1/operations/{other_event}/public").json()["leaderboard"] == []
+    )
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE my_user SET is_deleted=true WHERE id=:id"), {"id": users[0].id}
+        )
+        connection.execute(
+            text("UPDATE hacker SET banned=true WHERE user_id=:id"), {"id": users[2].id}
+        )
+    assert client.get(base + "/public").json()["leaderboard"] == [
+        {"rank": 1, "nickname": "alpha", "balance": 20}
+    ]

@@ -51,3 +51,7 @@ Withdrawing an alert removes it from Live and cancels pending deliveries. It can
 Backend regression coverage includes role changes/revocation, authorization, forged awards, concurrent scans/redemptions, meal rounds/corrections, scheduling, WebSocket alerts and Discord delivery leases/acknowledgements. Run `uv run pytest -q` with isolated Postgres and Redis available. Existing SQLAlchemy relationship and Pydantic deprecation warnings remain.
 
 Before an authorized production rollout: back up and rehearse the Alembic migration chain; explicitly bootstrap a trusted superadmin; configure real event content and origins; enable WebSocket proxying; run the push worker; connect the separately implemented Discord bot. Verify phone camera scanning, installed-PWA notifications and Raspberry Pi display/fullscreen behavior on actual hardware. These physical checks are not replaced by browser/API tests.
+
+## Public LleidaCoins leaderboard
+
+The public event snapshot includes `leaderboard`, the top 50 participants with ledger activity ordered by current event balance. Redemptions reduce that balance and reversals restore it. Ties share competition ranks (1, 1, 3), with a stable alias/ID ordering. Only rank, public nickname and balance are exposed; deleted or banned participants are omitted. Events are isolated. Live shows the top 10 on its home page and the top 50 at `/leaderboard`, refreshing every three seconds.
