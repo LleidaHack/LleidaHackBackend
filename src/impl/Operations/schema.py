@@ -67,6 +67,10 @@ class EventConfig(BaseModel):
     judging_end: datetime | None = None
     phase: Literal["preparation", "hacking", "judging", "finished"] = "preparation"
     slack_url: HttpUrl | None = None
+    stream_url: HttpUrl | None = None
+    wifi_name: str = Field(default="", max_length=200)
+    wifi_instructions: str = Field(default="", max_length=2000)
+    wifi_guide_url: HttpUrl | None = None
     map_url: HttpUrl | None = None
     map_notes: str = Field(default="", max_length=10000)
     challenges: list[Challenge] = Field(default_factory=list, max_length=30)

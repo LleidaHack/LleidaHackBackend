@@ -229,6 +229,7 @@ def publish_alert(event_id: int, body: Alert, token: BaseToken = Depends(JWTBear
     alert = {
         **body.model_dump(mode="json"),
         "id": str(uuid4()),
+        "event_id": event_id,
         "created_at": datetime.now(UTC).isoformat(),
     }
     config = deepcopy(row.config)

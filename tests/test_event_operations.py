@@ -124,6 +124,10 @@ def test_private_content_hidden_and_config_conflicts(
     url = f"/v1/operations/{event}"
     config = client.get(url + "/manage", headers=o.headers).json()
     config["challenges"] = [{"id": "secret", "title": "Secret", "published": False}]
+    config["stream_url"] = "https://twitch.tv/lleidahack"
+    config["wifi_name"] = "Demo network"
+    config["wifi_instructions"] = "Ask organization for access"
+    config["wifi_guide_url"] = "https://example.test/wifi"
     body = {
         "version": config["version"],
         "config": config,
@@ -133,6 +137,10 @@ def test_private_content_hidden_and_config_conflicts(
     assert client.put(url + "/config", headers=o.headers, json=body).status_code == 409
     public = client.get(url + "/public").json()
     assert public["challenges"] == [] and public["presentations"] == []
+    assert public["wifi_name"] == "Demo network"
+    assert public["wifi_instructions"] == "Ask organization for access"
+    assert public["stream_url"] == "https://twitch.tv/lleidahack"
+    assert public["wifi_guide_url"] == "https://example.test/wifi"
     assert "teams" not in public and "meal_rounds" not in public
     assert client.get(url + "/manage", headers=h.headers).status_code == 403
 
