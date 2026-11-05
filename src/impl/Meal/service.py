@@ -62,16 +62,28 @@ class MealService(BaseService):
     @BaseService.needs_service(HackerService)
     @BaseService.needs_service(EventService)
     def eat(self, meal_id: int, hacker_code: str, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("Not authorized")
-        hacker = self.hacker_service.get_by_code(hacker_code)
-        meal = self.get_by_id(meal_id)
-        event = self.event_service.get_by_id(meal.event_id)
-        if hacker not in event.participants:
-            raise InvalidDataException("Hacker not participating")
-        if hacker in meal.users:
-            raise InvalidDataException("Hacker already eating")
-        meal.users.append(hacker)
-        db.session.commit()
-        db.session.refresh(event)
-        return event
+        # Preserve the legacy route while applying the same audit and round rules.
+        from uuid import uuid4
+
+        from src.impl.Operations.schema import Operation
+        from src.impl.Operations.service import perform
+
+        result = perform(
+            self.get_by_id(meal_id).event_id,
+            Operation(
+                operation_id=uuid4(),
+                kind="meal",
+                code=hacker_code,
+                target=str(meal_id),
+                round=1,
+                device="legacy-meal-api",
+            ),
+            data,
+        )
+        if not result["ok"]:
+            if result["status"] == 404:
+                raise NotFoundException(result["error"])
+            if result["status"] == 403:
+                raise AuthenticationException(result["error"])
+            raise InvalidDataException(result["error"])
+        return self.event_service.get_by_id(self.get_by_id(meal_id).event_id)

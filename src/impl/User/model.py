@@ -10,6 +10,9 @@ from src.utils.Base.BaseModel import BaseModel
 
 class User(BaseModel):
     __tablename__ = "my_user"
+    access_role: Mapped[str] = mapped_column(
+        String(30), default="hacker", server_default="hacker"
+    )
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)

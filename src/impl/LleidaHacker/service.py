@@ -49,7 +49,9 @@ class LleidaHackerService(BaseService):
         if payload.image is not None:
             payload = check_image(payload)
         new_lleidahacker = LleidaHacker(
-            **payload.model_dump(exclude={"config"}), code=generate_user_code()
+            **payload.model_dump(exclude={"config"}),
+            code=generate_user_code(),
+            access_role="lleidahacker",
         )
         new_lleidahacker.password = get_password_hash(payload.password)
         new_lleidahacker.active = False  # IMPORTANT DO NOT ACTIVATE USER AUTOMATICALLY !!!!!!!!!!!!! @Big_Lolo

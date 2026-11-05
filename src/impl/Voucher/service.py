@@ -194,6 +194,15 @@ class VoucherService(BaseService):
         voucher.hacker_id = hacker.id
         # Keep the existing timezone-naive database/local-calendar contract.
         voucher.assigned_at = datetime.now()  # noqa: DTZ005
+        from src.impl.Operations.service import audit
+
+        audit(
+            event_id,
+            data,
+            "badge.assign",
+            {"voucher_id": voucher.id, "forced_confirmation": bool(message)},
+            hacker.id,
+        )
         try:
             db.session.commit()
         except IntegrityError:
@@ -220,6 +229,15 @@ class VoucherService(BaseService):
         voucher = self.get_by_code(voucher_code, event_id)
         if voucher.hacker_id is None:
             raise InvalidDataException("Voucher is not assigned")
+        from src.impl.Operations.service import audit
+
+        audit(
+            event_id,
+            data,
+            "badge.release",
+            {"voucher_id": voucher.id},
+            voucher.hacker_id,
+        )
         voucher.hacker_id = None
         voucher.assigned_at = None
         db.session.commit()

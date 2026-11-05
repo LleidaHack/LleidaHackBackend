@@ -69,6 +69,7 @@ class UserCreate(BaseSchema):
 
 
 class UserGet(BaseSchema):
+    access_role: str = "hacker"
     name: str
     nickname: str
     created_at: datetime

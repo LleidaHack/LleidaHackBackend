@@ -225,6 +225,14 @@ class EventService(BaseService):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         db_event = self.get_by_id(id)
+        from src.utils.access import require_superadmin
+
+        if any(
+            getattr(event, key) is not None
+            and getattr(event, key) != getattr(db_event, key)
+            for key in ("price", "archived")
+        ):
+            require_superadmin(data)
         if event.archived:
             raise InvalidDataException(
                 "Unable to update an archived event, unarchive it first"
@@ -949,6 +957,15 @@ class EventService(BaseService):
             message = "user haven't confirmed so we forced confirmation"
             # raise InvalidDataException("User not confirmed assitence")
         event.participants.append(hacker)
+        from src.impl.Operations.service import audit
+
+        audit(
+            event_id,
+            data,
+            "checkin.legacy",
+            {"forced_confirmation": bool(message)},
+            hacker.id,
+        )
         db.session.commit()
         db.session.refresh(user_registration)
         db.session.refresh(event)
