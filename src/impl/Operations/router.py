@@ -39,6 +39,14 @@ def public_snapshot(event_id: int):
     return ops.snapshot(event_id)
 
 
+@router.get("/{event_id}/broadcast")
+def public_broadcast(event_id: int):
+    ops.state(event_id)
+    from src.impl.Operations.youtube import current_broadcast
+
+    return current_broadcast()
+
+
 @router.get("/{event_id}/manage")
 def management_snapshot(event_id: int, token: BaseToken = Depends(JWTBearer())):
     ops.require_organizer(token)
