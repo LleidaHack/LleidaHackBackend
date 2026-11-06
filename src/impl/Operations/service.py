@@ -113,13 +113,17 @@ def movement(event_id, user_id, amount, reason, log, reversal_of=None):
     return row
 
 
-def resolve_user(code, event_id):
+def resolve_user(code, event_id, badge_only=False):
     voucher = db.session.query(Voucher).filter_by(code=code).first()
     if voucher:
-        if voucher.event_id != event_id or not voucher.hacker_id:
+        if voucher.revoked or voucher.event_id != event_id or not voucher.hacker_id:
             raise HTTPException(404, "Badge is unassigned or belongs to another event")
         user = db.session.get(Hacker, voucher.hacker_id)
     else:
+        if badge_only:
+            raise HTTPException(
+                422, "Scan the physical badge; tickets cannot be used here"
+            )
         user = db.session.query(Hacker).filter_by(code=code).first()
     if not user:
         raise HTTPException(404, "Participant code not found")
@@ -174,7 +178,11 @@ def perform(event_id, body, token):
                 from src.utils.access import require_superadmin
 
                 require_superadmin(token)
-            user = resolve_user(body.code, event_id)
+            user = resolve_user(
+                body.code,
+                event_id,
+                badge_only=body.kind in {"meal", "activity", "redeem"},
+            )
             if user not in event.accepted_hackers:
                 raise HTTPException(403, "Participant is not accepted for this event")
             config = deepcopy(row.config)
@@ -471,6 +479,20 @@ def visible_challenges(config):
     ]
 
 
+def effective_phase(config, now=None):
+    """Derive the public phase without changing the organiser's configuration."""
+    phase = config.get("phase", "preparation")
+    if phase != "hacking" or not config.get("deadline"):
+        return phase
+    try:
+        deadline = datetime.fromisoformat(config["deadline"])
+        if deadline.tzinfo is None:
+            deadline = deadline.replace(tzinfo=UTC)
+    except (TypeError, ValueError):
+        return phase
+    return "judging" if deadline <= (now or datetime.now(UTC)) else phase
+
+
 def snapshot(event_id, private=False):
     _event, row = state(event_id)
     data = (
@@ -493,6 +515,7 @@ def snapshot(event_id, private=False):
         and (private or a.get("live", True))
     ]
     if not private:
+        data["phase"] = effective_phase(row.config, now)
         data["challenges"] = visible_challenges(row.config)
         if not data["challenges_released"]:
             data["rooms"] = []

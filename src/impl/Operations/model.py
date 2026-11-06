@@ -178,3 +178,25 @@ class ChallengeVote(BaseModel):
     challenge: Mapped[str] = mapped_column(String(80))
     version: Mapped[int] = mapped_column(Integer, default=1)
     __table_args__ = (UniqueConstraint("event_id", "group_id"),)
+
+
+class NicknameRequest(BaseModel):
+    __tablename__ = "nickname_request"
+    __table_args__ = (
+        Index(
+            "uq_nickname_pending",
+            "user_id",
+            unique=True,
+            postgresql_where=text("status = 'pending'"),
+        ),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"), index=True)
+    previous: Mapped[str] = mapped_column(String)
+    proposed: Mapped[str] = mapped_column(String(40))
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    actor_id: Mapped[int | None] = mapped_column(ForeignKey("my_user.id"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

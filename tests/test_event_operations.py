@@ -10,9 +10,15 @@ def prepare(client, create_user, create_event, accept, engine):
     event = create_event([hacker])
     accept(organizer, event, hacker)
     code = user_code(engine, hacker)
+    badge = client.post(
+        f"/v1/event/{event}/vouchers/generate",
+        headers=organizer.headers,
+        json={"count": 1},
+    ).json()["vouchers"][0]["code"]
     response = client.put(
-        f"/v1/event/{event}/participate/{code}", headers=organizer.headers
+        f"/v1/event/{event}/vouchers/{badge}/assign/{code}", headers=organizer.headers
     )
+    code = badge
     assert response.status_code == 200, response.text
     meal = client.post(
         "/v1/meal/",

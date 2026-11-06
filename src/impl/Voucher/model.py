@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -31,6 +31,9 @@ class Voucher(BaseModel):
         Integer, ForeignKey("event.id"), nullable=False, index=True
     )
     code: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
+    revoked: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
     hacker_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("hacker.user_id"), nullable=True, index=True
     )

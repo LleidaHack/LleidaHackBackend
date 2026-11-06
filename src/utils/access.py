@@ -37,7 +37,11 @@ def authorize_route(token, method, path):
         "/v1/auth/refresh-token",
     }
     if role == "lleidahacker":
-        allowed = session_route or (own_profile and method in {"GET", "PUT", "PATCH"})
+        allowed = (
+            (path == "/v1/nicknames/me" and method in {"GET", "POST"})
+            or session_route
+            or (own_profile and method in {"GET", "PUT", "PATCH"})
+        )
         allowed = allowed or (
             method == "GET" and re.fullmatch(r"/v1/operations/\d+/scanner", path)
         )
