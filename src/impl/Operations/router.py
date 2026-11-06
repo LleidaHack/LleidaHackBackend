@@ -508,3 +508,8 @@ async def live_alerts(websocket: WebSocket, event_id: int):
     from src.impl.Operations.realtime import alert_socket
 
     await alert_socket(websocket, event_id)
+
+
+from src.impl.Operations.devpost import router as devpost_router
+
+router.include_router(devpost_router)

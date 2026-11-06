@@ -464,7 +464,7 @@ def snapshot(event_id, private=False):
             m.to_dict() for m in db.session.query(Meal).filter_by(event_id=event_id)
         ]
         data["teams"] = [
-            {"id": g.id, "name": g.name}
+            {"id": g.id, "name": g.name, "code": g.code}
             for g in db.session.query(HackerGroup).filter_by(event_id=event_id)
         ]
         data["meal_counts"] = [

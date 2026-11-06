@@ -151,3 +151,18 @@ class DiscordDelivery(BaseModel):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class DevpostProject(BaseModel):
+    __tablename__ = "event_devpost_project"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), index=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey("hacker_group.id"))
+    url: Mapped[str] = mapped_column(String(500))
+    title: Mapped[str] = mapped_column(String(150))
+    challenge: Mapped[str] = mapped_column(String(80))
+    mlh: Mapped[bool] = mapped_column(Boolean, default=False)
+    __table_args__ = (
+        UniqueConstraint("event_id", "url"),
+        UniqueConstraint("event_id", "group_id"),
+    )
