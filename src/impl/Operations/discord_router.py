@@ -10,6 +10,7 @@ from fastapi_sqlalchemy import db
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import or_
 
+from src.impl.Operations.discord_messages import discord_message, webhook_url
 from src.impl.Operations.model import DiscordDelivery
 from src.utils.access import require_management
 from src.utils.JWTBearer import JWTBearer
@@ -28,8 +29,10 @@ def bot_configured(event_id):
 
 def authorize_bot(event_id: int, x_discord_bot_key: str = Header(default="")):
     secret = os.getenv("DISCORD_BOT_SHARED_SECRET", "")
-    if not bot_configured(event_id) or not compare_digest(
-        x_discord_bot_key.encode(), secret.encode()
+    if (
+        webhook_url(event_id)
+        or not bot_configured(event_id)
+        or not compare_digest(x_discord_bot_key.encode(), secret.encode())
     ):
         raise HTTPException(403, "Discord bot credentials required")
 
@@ -44,7 +47,12 @@ def deliveries(event_id: int, token: BaseToken = Depends(JWTBearer())):
         .limit(100)
     )
     return {
-        "configured": bot_configured(event_id),
+        "configured": bool(webhook_url(event_id)) or bot_configured(event_id),
+        "mode": "webhook"
+        if webhook_url(event_id)
+        else "bot"
+        if bot_configured(event_id)
+        else None,
         "deliveries": [
             {
                 key: getattr(row, key)
@@ -101,12 +109,7 @@ def claim(event_id: int):
                 "lease_token": row.lease_token,
                 "lease_until": row.lease_until,
                 "channel_id": os.environ["DISCORD_CHANNEL_ID"],
-                "message": {
-                    "content": f"**{row.payload['title']}**\n{row.payload['message']}"[
-                        :2000
-                    ],
-                    "allowed_mentions": {"parse": []},
-                },
+                "message": discord_message(row.payload),
             }
         )
     db.session.commit()

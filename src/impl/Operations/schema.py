@@ -127,6 +127,31 @@ class RoundUpdate(BaseModel):
     reason: str = Field(min_length=3, max_length=500)
 
 
+class DiscordField(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str = Field(min_length=1, max_length=100)
+    value: str = Field(min_length=1, max_length=400)
+    inline: bool = True
+
+
+class DiscordCard(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    enabled: bool = True
+    color: str | None = Field(default=None, pattern=r"^#[0-9a-fA-F]{6}$")
+    url: HttpUrl | None = None
+    image_url: HttpUrl | None = None
+    thumbnail_url: HttpUrl | None = None
+    footer: str = Field(default="", max_length=200)
+    fields: list[DiscordField] = Field(default_factory=list, max_length=5)
+
+    @field_validator("url", "image_url", "thumbnail_url")
+    @classmethod
+    def require_https(cls, value):
+        if value and (value.scheme != "https" or value.username or value.password):
+            raise ValueError("Discord card URLs must use HTTPS without credentials")
+        return value
+
+
 class Alert(BaseModel):
     title: str = Field(min_length=1, max_length=150)
     message: str = Field(min_length=1, max_length=2000)
@@ -136,6 +161,19 @@ class Alert(BaseModel):
     live: bool = True
     discord: bool = False
     category: Literal["general", "activity", "meal"] = "general"
+    discord_card: DiscordCard = Field(default_factory=DiscordCard)
+
+    @model_validator(mode="after")
+    def plain_discord_length(self):
+        if (
+            self.discord
+            and not self.discord_card.enabled
+            and len(self.title) + len(self.message) + 5 > 2000
+        ):
+            raise ValueError(
+                "Plain Discord messages including title must not exceed 2000 characters"
+            )
+        return self
 
 
 class Enroll(BaseModel):
