@@ -81,6 +81,8 @@ class EventConfig(BaseModel):
     slot_minutes: int = Field(default=10, ge=1, le=120)
     travel_minutes: int = Field(default=5, ge=0, le=60)
     game_enabled: bool = True
+    challenges_released: bool = False
+    challenge_votes_open: bool = False
 
     @field_validator("deadline", "judging_start", "judging_end")
     @classmethod

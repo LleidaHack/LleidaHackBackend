@@ -431,6 +431,8 @@ def snapshot(event_id, private=False):
     _event, row = state(event_id)
     data = deepcopy(row.config)
     data.setdefault("alerts", [])
+    data.setdefault("challenges_released", True)
+    data.setdefault("challenge_votes_open", False)
     now = datetime.now(UTC)
     data["alerts"] = [
         a
@@ -440,7 +442,9 @@ def snapshot(event_id, private=False):
     ]
     if not private:
         data["challenges"] = [
-            c for c in data.get("challenges", []) if c.get("published")
+            c
+            for c in data.get("challenges", [])
+            if c.get("published") and data["challenges_released"]
         ]
         data["activities"] = [
             a for a in data.get("activities", []) if a.get("published")

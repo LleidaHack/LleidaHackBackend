@@ -57,3 +57,14 @@ Before an authorized production rollout: back up and rehearse the Alembic migrat
 The public event snapshot includes `leaderboard`, the top 50 participants with ledger activity ordered by current event balance. Redemptions reduce that balance and reversals restore it. Ties share competition ranks (1, 1, 3), with a stable alias/ID ordering. Only rank, public nickname and balance are exposed; deleted or banned participants are omitted. Events are isolated. Live shows the top 10 on its home page and the top 50 at `/leaderboard`, refreshing every three seconds.
 
 Live home-page metadata includes `stream_url`, `wifi_name`, `wifi_instructions` and `wifi_guide_url` in event configuration/public snapshots. These fields are public and must not contain organizer-only credentials. Alerts carry their `event_id` so the service worker can forward foreground pushes to the matching Live page and deduplicate them with WebSocket messages.
+
+
+## Preliminary team challenge choices
+
+Migration `20261106_challenge_votes` adds a single choice per event/team, independent from Devpost projects and presentation enrollment. New event configurations start with challenges hidden and choices closed. Existing configurations without the new publication field preserve their previous per-challenge visibility; voting always starts closed.
+
+Management uses `PUT /v1/operations/{event_id}/challenge-controls` with the event configuration version, `challenges_released`, `challenge_votes_open`, and a reason. Opening requires at least one published non-MLH challenge. The public operations snapshot and participant choice list omit unreleased challenges. The normal config update applies the same open/publication invariant.
+
+Current group members use GET/PUT `/v1/operations/{event_id}/teams/{group_id}/challenge-vote`. PUT carries a challenge ID and the current team choice version (0 initially). The event lock serializes votes and management changes; the group relation is checked server-side. Outsiders, former members, hidden challenges, closed votes and stale versions are rejected. A database constraint allows one row per team. Changes increment the vote version and create a `challenge.vote` audit with actor and previous/new challenge. No points, submissions or judging turns are created.
+
+GET `/v1/operations/{event_id}/challenge-votes` is restricted to management and returns per-challenge counts and per-team choices. Publication controls create `challenge.controls` audit entries. Hiding or closing retains existing choices. An imported Devpost submission does not silently replace the team's preliminary choice.

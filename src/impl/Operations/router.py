@@ -79,6 +79,19 @@ def update_config(
     } != {p["id"]: (p["cost"], p["stock"]) for p in before.get("prizes", [])}
     if critical_changed:
         require_superadmin(token)
+    for key, default in (
+        ("challenges_released", True),
+        ("challenge_votes_open", False),
+    ):
+        if key not in body.config.model_fields_set:
+            config[key] = before.get(key, default)
+    if config.get("challenge_votes_open") and (
+        not config.get("challenges_released")
+        or not any(c["published"] and c["id"] != "mlh" for c in config["challenges"])
+    ):
+        raise HTTPException(
+            422, "Publish at least one challenge before opening choices"
+        )
     for key in ("meal_rounds", "alerts"):
         config[key] = before.get(key, {} if key == "meal_rounds" else [])
     row.config = config
@@ -513,3 +526,7 @@ async def live_alerts(websocket: WebSocket, event_id: int):
 from src.impl.Operations.devpost import router as devpost_router
 
 router.include_router(devpost_router)
+
+from src.impl.Operations.challenge_votes import router as challenge_vote_router
+
+router.include_router(challenge_vote_router)

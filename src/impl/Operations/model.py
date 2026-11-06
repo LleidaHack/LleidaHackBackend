@@ -166,3 +166,15 @@ class DevpostProject(BaseModel):
         UniqueConstraint("event_id", "url"),
         UniqueConstraint("event_id", "group_id"),
     )
+
+
+class ChallengeVote(BaseModel):
+    __tablename__ = "event_challenge_vote"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), index=True)
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("hacker_group.id", ondelete="CASCADE")
+    )
+    challenge: Mapped[str] = mapped_column(String(80))
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    __table_args__ = (UniqueConstraint("event_id", "group_id"),)

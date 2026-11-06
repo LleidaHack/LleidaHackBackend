@@ -1,6 +1,6 @@
 # Devpost project import
 
-Organizers export **Manage → Metrics → Projects data** in Devpost and upload the UTF-8 CSV in **Gestió → Event → Operacions en directe → Devpost**. This is a reviewed CSV integration, not an undocumented Devpost API or a scraper.
+Organizers export **Manage → Metrics → Projects data** in Devpost and upload the UTF-8 CSV in **Gestió → Event → Projectes i jurat → Devpost**. This is a reviewed CSV integration, not an undocumented Devpost API or a scraper.
 
 ## Submission form
 
