@@ -427,11 +427,63 @@ def leaderboard(event_id):
     return result
 
 
+# Explicit projection: newly added management fields are private by default.
+PUBLIC_CONFIG_FIELDS = {
+    "title",
+    "deadline",
+    "judging_start",
+    "judging_end",
+    "phase",
+    "slack_url",
+    "stream_url",
+    "wifi_name",
+    "wifi_instructions",
+    "wifi_guide_url",
+    "map_url",
+    "map_notes",
+    "activities",
+    "faqs",
+    "prizes",
+    "rooms",
+    "slot_minutes",
+    "travel_minutes",
+    "game_enabled",
+    "challenges_released",
+    "challenge_votes_open",
+    "alerts",
+}
+
+
+def challenges_released(config):
+    return config.get("challenges_released") is True
+
+
+def visible_challenges(config):
+    source = "challenges" if challenges_released(config) else "decoy_challenges"
+    return [
+        {
+            key: deepcopy(challenge[key])
+            for key in ("id", "title", "description", "resources", "published")
+            if key in challenge
+        }
+        for challenge in config.get(source, [])
+        if challenge.get("published") is True
+    ]
+
+
 def snapshot(event_id, private=False):
     _event, row = state(event_id)
-    data = deepcopy(row.config)
+    data = (
+        deepcopy(row.config)
+        if private
+        else {
+            key: deepcopy(value)
+            for key, value in row.config.items()
+            if key in PUBLIC_CONFIG_FIELDS
+        }
+    )
     data.setdefault("alerts", [])
-    data.setdefault("challenges_released", True)
+    data["challenges_released"] = challenges_released(row.config)
     data.setdefault("challenge_votes_open", False)
     now = datetime.now(UTC)
     data["alerts"] = [
@@ -441,11 +493,10 @@ def snapshot(event_id, private=False):
         and (private or a.get("live", True))
     ]
     if not private:
-        data["challenges"] = [
-            c
-            for c in data.get("challenges", [])
-            if c.get("published") and data["challenges_released"]
-        ]
+        data["challenges"] = visible_challenges(row.config)
+        if not data["challenges_released"]:
+            data["rooms"] = []
+            data["challenge_votes_open"] = False
         data["activities"] = [
             a for a in data.get("activities", []) if a.get("published")
         ]
@@ -455,7 +506,7 @@ def snapshot(event_id, private=False):
     data["server_time"] = now.isoformat()
     data["leaderboard"] = leaderboard(event_id)
     data["presentations"] = []
-    if private or data.get("phase") == "judging":
+    if private or (data.get("phase") == "judging" and data["challenges_released"]):
         for p in (
             db.session.query(Presentation)
             .filter_by(event_id=event_id)

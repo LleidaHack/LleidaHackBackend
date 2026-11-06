@@ -43,7 +43,7 @@ def require_member(event_id, group_id, token, lock=False):
 
 
 def choices(config):
-    if not config.get("challenges_released", True):
+    if not ops.challenges_released(config):
         return []
     return [
         {"id": c["id"], "title": c["title"], "description": c.get("description", "")}
@@ -61,11 +61,13 @@ def team_snapshot(event_id, group_id, state):
     return {
         "open": bool(
             state.config.get("challenge_votes_open", False)
-            and state.config.get("challenges_released", True)
+            and ops.challenges_released(state.config)
         ),
-        "published": state.config.get("challenges_released", True),
+        "published": ops.challenges_released(state.config),
         "challenges": choices(state.config),
-        "choice": vote.challenge if vote else None,
+        "choice": vote.challenge
+        if vote and ops.challenges_released(state.config)
+        else None,
         "version": vote.version if vote else 0,
     }
 
@@ -78,10 +80,13 @@ def controls(
     _, state = ops.state(event_id, True)
     if state.version != body.version:
         raise HTTPException(409, "Configuration changed; refresh before saving")
+    if body.challenges_released != ops.challenges_released(state.config):
+        from src.utils.access import require_superadmin
+
+        require_superadmin(token)
     config = deepcopy(state.config)
     before = {
-        k: config.get(k, k == "challenges_released")
-        for k in ("challenges_released", "challenge_votes_open")
+        k: config.get(k, False) for k in ("challenges_released", "challenge_votes_open")
     }
     config.update(
         challenges_released=body.challenges_released,

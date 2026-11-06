@@ -39,6 +39,14 @@ def public_snapshot(event_id: int):
     return ops.snapshot(event_id)
 
 
+@router.get("/{event_id}/challenges")
+def public_challenges(event_id: int):
+    _, row = ops.state(event_id)
+    result = {"challenges": ops.visible_challenges(row.config)}
+    db.session.commit()
+    return result
+
+
 @router.get("/{event_id}/broadcast")
 def public_broadcast(event_id: int):
     ops.state(event_id)
@@ -64,7 +72,7 @@ def update_config(
     if row.version != body.version:
         raise HTTPException(409, "Configuration changed; refresh before saving")
     config = body.config.model_dump(mode="json")
-    for key in ("challenges", "activities", "prizes", "rooms"):
+    for key in ("challenges", "decoy_challenges", "activities", "prizes", "rooms"):
         ids = [item["id"] for item in config[key]]
         if len(ids) != len(set(ids)):
             raise HTTPException(422, f"Duplicate {key} identifiers")
@@ -85,14 +93,20 @@ def update_config(
     critical_changed = critical_changed or {
         p["id"]: (p["cost"], p["stock"]) for p in config["prizes"]
     } != {p["id"]: (p["cost"], p["stock"]) for p in before.get("prizes", [])}
+    critical_changed = critical_changed or (
+        "challenges_released" in body.config.model_fields_set
+        and config["challenges_released"] != ops.challenges_released(before)
+    )
     if critical_changed:
         require_superadmin(token)
     for key, default in (
-        ("challenges_released", True),
+        ("challenges_released", False),
         ("challenge_votes_open", False),
     ):
         if key not in body.config.model_fields_set:
             config[key] = before.get(key, default)
+    if "decoy_challenges" not in body.config.model_fields_set:
+        config["decoy_challenges"] = before.get("decoy_challenges", [])
     if config.get("challenge_votes_open") and (
         not config.get("challenges_released")
         or not any(c["published"] and c["id"] != "mlh" for c in config["challenges"])
@@ -321,6 +335,8 @@ def enroll_team(
         raise HTTPException(
             403, "Only the team leader during hacking or an organizer can enroll"
         )
+    if not ops.challenges_released(row.config):
+        ops.require_organizer(token)
     challenges = {
         c["id"] for c in row.config.get("challenges", []) if c.get("published")
     }

@@ -77,7 +77,7 @@ def test_publication_and_open_close_are_enforced(client, voting):
         ).status_code
         == 409
     )
-    assert client.get(endpoint, headers=member.headers).json()["choice"] == "one"
+    assert client.get(endpoint, headers=member.headers).json()["choice"] is None
 
 
 def test_one_choice_per_team_concurrent_stale_edits_and_no_queue(

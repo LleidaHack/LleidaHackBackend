@@ -74,6 +74,7 @@ class EventConfig(BaseModel):
     map_url: HttpUrl | None = None
     map_notes: str = Field(default="", max_length=10000)
     challenges: list[Challenge] = Field(default_factory=list, max_length=30)
+    decoy_challenges: list[Challenge] = Field(default_factory=list, max_length=30)
     activities: list[Activity] = Field(default_factory=list, max_length=200)
     faqs: list[FAQ] = Field(default_factory=list, max_length=100)
     prizes: list[Prize] = Field(default_factory=list, max_length=100)

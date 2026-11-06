@@ -159,6 +159,7 @@ def test_judging_scheduler_prevents_mlh_overlap_and_detects_stale_edits(
     start = datetime.now(UTC) + timedelta(hours=1)
     config.update(
         challenges=[{"id": "c1", "title": "Challenge", "published": True}],
+        challenges_released=True,
         rooms=[{"id": "c1", "title": "Room 1"}, {"id": "mlh", "title": "MLH"}],
         judging_start=start.isoformat(),
         judging_end=(start + timedelta(hours=2)).isoformat(),
