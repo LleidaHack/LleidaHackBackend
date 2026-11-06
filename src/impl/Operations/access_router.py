@@ -16,7 +16,7 @@ router = APIRouter(prefix="/access", tags=["Access Roles"])
 
 class RoleUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    role: Literal["superadmin", "admin", "lleidahacker", "hacker"]
+    role: Literal["superadmin", "admin", "lleidahacker", "hacker", "mentor"]
     reason: str = Field(min_length=3, max_length=500)
 
 

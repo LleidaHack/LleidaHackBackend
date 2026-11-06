@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 from src.utils.Base.BaseModel import BaseModel
 
 if TYPE_CHECKING:
-    from src.impl.Hacker.model import Hacker
+    from src.impl.User.model import User
 
 
 class Voucher(BaseModel):
@@ -35,9 +35,9 @@ class Voucher(BaseModel):
         Boolean, default=False, server_default="false"
     )
     hacker_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("hacker.user_id"), nullable=True, index=True
+        Integer, ForeignKey("my_user.id"), nullable=True, index=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     assigned_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    hacker: Mapped[Hacker | None] = relationship("Hacker", foreign_keys=[hacker_id])
+    hacker: Mapped[User | None] = relationship("User", foreign_keys=[hacker_id])

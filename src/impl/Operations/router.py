@@ -413,7 +413,10 @@ def change_presentation(
             if (
                 body.state in {"called", "presenting"}
                 and other.state in {"called", "presenting"}
-                and (other.room == body.room or other.group_id == p.group_id)
+                and (
+                    (other.room == body.room and other.state == body.state)
+                    or other.group_id == p.group_id
+                )
             ):
                 raise HTTPException(
                     409, "Room or team already has an active presentation"
@@ -436,9 +439,14 @@ def change_presentation(
                         409, "Schedule conflict; adjust time or explicitly override"
                     )
     before = p.to_dict()
-    before["scheduled_at"] = p.scheduled_at.isoformat() if p.scheduled_at else None
+    for key in ("scheduled_at", "started_at", "completed_at"):
+        before[key] = before[key].isoformat() if before[key] else None
     for key in ("state", "room", "position", "scheduled_at"):
         setattr(p, key, getattr(body, key))
+    if body.state == "presenting" and before["state"] != "presenting":
+        p.started_at = datetime.now(UTC)
+    if body.state == "done" and before["state"] != "done":
+        p.completed_at = datetime.now(UTC)
     p.pinned = int(body.pinned)
     p.version += 1
     row.version += 1
@@ -506,6 +514,8 @@ def scanner_configuration(event_id: int, token: BaseToken = Depends(JWTBearer())
     from src.utils.access import access_role
 
     data = ops.snapshot(event_id, True)
+    from src.impl.Operations.mentors import roster
+
     return {
         "event_id": event_id,
         "title": data["title"],
@@ -514,6 +524,10 @@ def scanner_configuration(event_id: int, token: BaseToken = Depends(JWTBearer())
         "activities": [a for a in data["activities"] if a["published"]],
         "prizes": data["prizes"],
         "access_role": access_role(token),
+        "mentors": [m for m in roster(event_id) if m["active"]],
+        "rooms": data.get("rooms", [])
+        if ops.challenges_released(data) and ops.effective_phase(data) == "judging"
+        else [],
     }
 
 

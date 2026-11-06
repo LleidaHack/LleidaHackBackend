@@ -87,6 +87,8 @@ class CoinMovement(BaseModel):
 
 
 class Presentation(BaseModel):
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     __tablename__ = "event_presentation"
     id: Mapped[int] = mapped_column(primary_key=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), index=True)
@@ -200,3 +202,10 @@ class NicknameRequest(BaseModel):
         DateTime(timezone=True), server_default=func.now()
     )
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class EventMentor(BaseModel):
+    __tablename__ = "event_mentor"
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"), primary_key=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")

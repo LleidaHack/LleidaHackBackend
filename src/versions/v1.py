@@ -47,3 +47,7 @@ router.include_router(discord_router)
 from src.impl.Operations.nicknames import router as nickname_router
 
 router.include_router(nickname_router)
+
+from src.impl.Operations.mentors import router as mentor_router
+
+router.include_router(mentor_router)

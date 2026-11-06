@@ -82,6 +82,8 @@ class BaseToken:
         if access_role == "superadmin":
             return True
         effective_type = self.user_type
+        if access_role == "mentor":
+            effective_type = UserType.MENTOR.value
         if access_role in {"admin", "lleidahacker"}:
             effective_type = UserType.LLEIDAHACKER.value
         elif effective_type == UserType.LLEIDAHACKER.value:

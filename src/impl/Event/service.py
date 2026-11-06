@@ -1455,6 +1455,8 @@ class EventService(BaseService):
         """(hacker, registration) pairs that should receive the ticket mail."""
         recipients = []
         for hacker in event.accepted_hackers:
+            if hacker.access_role == "mentor":
+                continue
             registration = (
                 session.query(HackerRegistration)
                 .filter(
@@ -1477,6 +1479,8 @@ class EventService(BaseService):
         event = self.get_by_id(event_id)
         eligible = sent = 0
         for hacker in event.accepted_hackers:
+            if hacker.access_role == "mentor":
+                continue
             registration = (
                 db.session.query(HackerRegistration)
                 .filter(
@@ -1580,7 +1584,11 @@ class EventService(BaseService):
         """
         event = self.get_by_id(event_id)
         hacker = db.session.query(Hacker).filter(Hacker.code == code).first()
-        if hacker is None or hacker not in event.accepted_hackers:
+        if (
+            hacker is None
+            or hacker.access_role == "mentor"
+            or hacker not in event.accepted_hackers
+        ):
             raise NotFoundException("Ticket not found")
         registration = (
             db.session.query(HackerRegistration)
@@ -1616,7 +1624,7 @@ class EventService(BaseService):
             .filter(Voucher.event_id == event.id, Voucher.hacker_id == hacker.id)
             .first()
         )
-        has_ticket = accepted and confirmed
+        has_ticket = accepted and confirmed and hacker.access_role != "mentor"
         return {
             "event_id": event.id,
             "event_name": event.name,

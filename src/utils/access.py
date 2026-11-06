@@ -36,7 +36,14 @@ def authorize_route(token, method, path):
         "/v1/auth/check_token",
         "/v1/auth/refresh-token",
     }
-    if role == "lleidahacker":
+    if role == "mentor":
+        if not (
+            session_route
+            or (own_profile and method == "GET")
+            or (path == "/v1/nicknames/me" and method in {"GET", "POST"})
+        ):
+            raise HTTPException(403, "Mentor accounts have meal-only access")
+    elif role == "lleidahacker":
         allowed = (
             (path == "/v1/nicknames/me" and method in {"GET", "POST"})
             or session_route
@@ -44,6 +51,10 @@ def authorize_route(token, method, path):
         )
         allowed = allowed or (
             method == "GET" and re.fullmatch(r"/v1/operations/\d+/scanner", path)
+        )
+        allowed = allowed or (
+            method == "PUT"
+            and re.fullmatch(r"/v1/operations/\d+/mentors/\d+/badge", path)
         )
         allowed = allowed or (
             method == "POST" and re.fullmatch(r"/v1/operations/\d+/scan", path)

@@ -1,13 +1,10 @@
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from src.impl.User.model import User
-from src.utils import UserType
-
-if TYPE_CHECKING:
-    from src.impl.Event.model import Event
+from src.utils.UserType import UserType
 
 
 class Mentor(User):
@@ -18,9 +15,6 @@ class Mentor(User):
     cv: Mapped[str] = mapped_column(String, default="")
     location: Mapped[str] = mapped_column(String, default="")
     how_did_you_meet_us: Mapped[str] = mapped_column(String, default="")
-    events: Mapped[list["Event"]] = relationship(
-        "Event", secondary="mentor_event_participation"
-    )
 
     __mapper_args__: ClassVar[dict] = {
         "polymorphic_identity": UserType.MENTOR.value,

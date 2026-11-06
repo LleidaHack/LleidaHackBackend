@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from fastapi import HTTPException
 from fastapi_sqlalchemy import db
-from sqlalchemy import func
+from sqlalchemy import case, func
 
 from src.impl.Event.model import Event
 from src.impl.Hacker.model import Hacker
@@ -15,12 +15,14 @@ from src.impl.HackerGroup.model import HackerGroup
 from src.impl.Meal.model import HackerMeal, Meal
 from src.impl.Operations.model import (
     CoinMovement,
+    EventMentor,
     EventOperations,
     OperationAudit,
     Presentation,
     ScanRecord,
 )
 from src.impl.Operations.schema import EventConfig
+from src.impl.User.model import User
 from src.impl.Voucher.model import Voucher
 from src.utils.UserType import UserType
 
@@ -118,7 +120,7 @@ def resolve_user(code, event_id, badge_only=False):
     if voucher:
         if voucher.revoked or voucher.event_id != event_id or not voucher.hacker_id:
             raise HTTPException(404, "Badge is unassigned or belongs to another event")
-        user = db.session.get(Hacker, voucher.hacker_id)
+        user = db.session.get(User, voucher.hacker_id)
     else:
         if badge_only:
             raise HTTPException(
@@ -181,12 +183,23 @@ def perform(event_id, body, token):
             user = resolve_user(
                 body.code,
                 event_id,
-                badge_only=body.kind in {"meal", "activity", "redeem"},
+                badge_only=body.kind in {"meal", "activity", "redeem", "judging_start"},
             )
-            if user not in event.accepted_hackers:
+            is_mentor = user.access_role == "mentor" or user.type == "mentor"
+            if is_mentor:
+                mentor = db.session.get(EventMentor, (event_id, user.id))
+                if not mentor or not mentor.active or user.is_deleted:
+                    raise HTTPException(403, "Mentor is not active for this event")
+                if body.kind not in {"meal", "void_scan"}:
+                    raise HTTPException(403, "Mentor badges can only be used for meals")
+            if not is_mentor and user not in event.accepted_hackers:
                 raise HTTPException(403, "Participant is not accepted for this event")
             config = deepcopy(row.config)
-            if body.kind != "checkin" and user not in event.participants:
+            if (
+                not is_mentor
+                and body.kind != "checkin"
+                and user not in event.participants
+            ):
                 raise HTTPException(409, "Participant must check in first")
             log = audit(
                 event_id,
@@ -203,7 +216,13 @@ def perform(event_id, body, token):
                 "user_id": user.id,
                 "operation_id": operation_id,
             }
-            if body.kind in {"meal", "activity", "checkin"}:
+            if body.kind == "judging_start":
+                from src.impl.Operations.judging import start_presentation
+
+                result.update(
+                    start_presentation(event_id, user.id, body.target, config, log)
+                )
+            elif body.kind in {"meal", "activity", "checkin"}:
                 if body.kind == "meal":
                     meal = (
                         db.session.query(Meal)
@@ -265,7 +284,7 @@ def perform(event_id, body, token):
                         audit_id=log.id,
                     )
                 )
-                if body.kind == "meal" and not legacy:
+                if body.kind == "meal" and not legacy and not is_mentor:
                     db.session.add(HackerMeal(user_id=user.id, meal_id=meal.id))
                 if body.kind == "checkin":
                     event.participants.append(user)
@@ -412,6 +431,7 @@ def leaderboard(event_id):
             CoinMovement.event_id == event_id,
             Hacker.is_deleted.is_(False),
             Hacker.banned.is_(False),
+            Hacker.access_role != "mentor",
         )
         .group_by(Hacker.id, Hacker.nickname)
         .order_by(total.desc(), Hacker.nickname.asc(), Hacker.id.asc())
@@ -533,7 +553,16 @@ def snapshot(event_id, private=False):
         for p in (
             db.session.query(Presentation)
             .filter_by(event_id=event_id)
-            .order_by(Presentation.room, Presentation.position, Presentation.id)
+            .order_by(
+                Presentation.room,
+                case(
+                    (Presentation.state == "presenting", 0),
+                    (Presentation.state == "called", 1),
+                    else_=2,
+                ),
+                Presentation.position,
+                Presentation.id,
+            )
         ):
             group = db.session.get(HackerGroup, p.group_id)
             data["presentations"].append({**p.to_dict(), "team": group.name})
@@ -587,6 +616,8 @@ def schedule(event_id, token):
         raise HTTPException(422, "Judging start and end required")
     start = datetime.fromisoformat(config["judging_start"])
     end = datetime.fromisoformat(config["judging_end"])
+    if effective_phase(config) == "judging":
+        start = max(start, datetime.now(UTC))
     duration = timedelta(minutes=config.get("slot_minutes", 10))
     travel = timedelta(minutes=config.get("travel_minutes", 5))
     presentations = (
@@ -595,46 +626,22 @@ def schedule(event_id, token):
         .order_by(Presentation.id)
         .all()
     )
-    reserved = [
-        p
-        for p in presentations
-        if p.scheduled_at and (p.pinned or p.state not in {"waiting", "postponed"})
-    ]
-    pending = [p for p in presentations if p not in reserved]
-    for p in sorted(pending, key=lambda x: (x.track == "mlh", x.position, x.id)):
-        candidate = start
-        while candidate + duration <= end:
-            conflict = next(
-                (
-                    q
-                    for q in reserved
-                    if (q.room == p.room or q.group_id == p.group_id)
-                    and candidate
-                    < q.scheduled_at
-                    + duration
-                    + (travel if q.group_id == p.group_id else timedelta())
-                    and candidate
-                    + duration
-                    + (travel if q.group_id == p.group_id else timedelta())
-                    > q.scheduled_at
-                ),
-                None,
-            )
-            if not conflict:
-                break
-            candidate = (
-                conflict.scheduled_at
-                + duration
-                + (travel if conflict.group_id == p.group_id else timedelta())
-            )
-        if candidate + duration > end:
-            db.session.rollback()
-            raise HTTPException(
-                409, "Not enough time; extend judging hours or reduce slot length"
-            )
-        p.scheduled_at = candidate
-        p.version += 1
-        reserved.append(p)
+    from src.impl.Operations.scheduler import plan_schedule
+
+    if start >= end:
+        raise HTTPException(422, "Judging end must be after its start")
+    try:
+        plan = plan_schedule(presentations, start, end, duration, travel)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    if plan is None:
+        raise HTTPException(
+            409, "Not enough time; extend judging hours or reduce slot length"
+        )
+    for p in presentations:
+        if not p.pinned and p.state in {"waiting", "postponed"}:
+            p.scheduled_at = plan[p.id]
+            p.version += 1
     for room in {p.room for p in presentations}:
         for index, p in enumerate(
             sorted(
@@ -642,7 +649,9 @@ def schedule(event_id, token):
                 key=lambda x: x.scheduled_at or start,
             )
         ):
-            p.position = index
+            if p.position != index:
+                p.position = index
+                p.version += 1
     row.version += 1
     audit(event_id, token, "judging.schedule", {"count": len(presentations)})
     db.session.commit()

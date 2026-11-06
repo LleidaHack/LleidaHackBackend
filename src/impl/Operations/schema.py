@@ -104,7 +104,14 @@ class Operation(BaseModel):
     operation_id: UUID
     device: str = Field(default="", max_length=100)
     kind: Literal[
-        "meal", "activity", "checkin", "award", "redeem", "reverse", "void_scan"
+        "meal",
+        "activity",
+        "checkin",
+        "award",
+        "redeem",
+        "reverse",
+        "void_scan",
+        "judging_start",
     ]
     code: str = Field(min_length=1, max_length=500)
     target: str = Field(default="", max_length=100)
