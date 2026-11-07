@@ -173,3 +173,39 @@ def test_discord_delivery_retry_and_expiry(
     assert client.post(base + "/discord/claim", headers=headers).json() == []
     status = client.get(base + "/discord-deliveries", headers=admin.headers).json()
     assert status["deliveries"][0]["state"] == "failed"
+
+
+def test_push_payload_is_compact(
+    client, create_user, create_event, monkeypatch, engine
+):
+    from sqlalchemy.orm import Session
+
+    from src.impl.Operations.model import PushDelivery
+
+    admin = create_user(role="admin")
+    event = create_event([])
+    base = f"/v1/operations/{event}"
+    monkeypatch.setenv("VAPID_PRIVATE_KEY", "test-only")
+    subscribed = client.post(
+        base + "/subscribe",
+        json={
+            "endpoint": "https://fcm.googleapis.com/fcm/send/test-endpoint",
+            "keys": {"p256dh": "key", "auth": "auth"},
+        },
+    )
+    assert subscribed.status_code == 200, subscribed.text
+    response = client.post(
+        base + "/alerts",
+        headers=admin.headers,
+        json=alert_body(
+            message="x" * 2000,
+            push=True,
+            discord_card={"enabled": True, "footer": "y" * 200},
+        ),
+    )
+    assert response.status_code == 200, response.text
+    with Session(engine) as session:
+        payload = session.query(PushDelivery).one().payload
+    assert "discord_card" not in payload
+    assert len(payload["message"]) == 1000 and payload["message"].endswith("…")
+    assert payload["event_id"] == event and payload["id"] == response.json()["id"]

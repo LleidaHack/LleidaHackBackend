@@ -34,6 +34,7 @@ from src.utils.Token import BaseToken
 
 router = APIRouter(prefix="/operations", tags=["Event Operations"])
 MAX_PUSH_SUBSCRIPTIONS_PER_EVENT = 5000
+PUSH_MESSAGE_LIMIT = 1000
 
 
 @router.get("/{event_id}/public")
@@ -282,6 +283,27 @@ def publish_alert(event_id: int, body: Alert, token: BaseToken = Depends(JWTBear
     row.config = config
     row.version += 1
     if body.push:
+        # Web Push payloads are limited to ~4 KB once encrypted: send only what
+        # the service worker and Live page use (no Discord card), and cap the
+        # message so long announcements still deliver.
+        push_payload = {
+            key: alert[key]
+            for key in (
+                "id",
+                "title",
+                "message",
+                "level",
+                "category",
+                "expires_at",
+                "created_at",
+                "event_id",
+                "live",
+            )
+        }
+        if len(push_payload["message"]) > PUSH_MESSAGE_LIMIT:
+            push_payload["message"] = (
+                push_payload["message"][: PUSH_MESSAGE_LIMIT - 1] + "…"
+            )
         for subscription in db.session.query(PushSubscription).filter_by(
             event_id=event_id
         ):
@@ -290,7 +312,7 @@ def publish_alert(event_id: int, body: Alert, token: BaseToken = Depends(JWTBear
                     event_id=event_id,
                     subscription_id=subscription.id,
                     alert_id=alert["id"],
-                    payload=alert,
+                    payload=push_payload,
                 )
             )
     if body.discord:
