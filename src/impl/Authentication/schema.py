@@ -15,6 +15,7 @@ class ContactMail(BaseSchema):
 
 
 class ProfileGet(BaseSchema):
+    access_role: str = "hacker"
     id: int
     name: str | None
     nickname: str | None

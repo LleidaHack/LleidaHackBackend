@@ -1,7 +1,7 @@
 def test_organizer_group_lifecycle(client, create_user):
     leader = create_user(role="organizer")
     member = create_user(role="organizer")
-    outsider = create_user(role="organizer")
+    outsider = create_user(role="admin")
     base = "/v1/lleidahacker/group"
     response = client.post(
         base + "/", json={"name": "Team", "description": ""}, headers=leader.headers

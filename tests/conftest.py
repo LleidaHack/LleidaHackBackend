@@ -99,7 +99,28 @@ def client(app, monkeypatch):
     )
     monkeypatch.setattr(MailClient, "ensure_initialized", lambda self: None)
     with TestClient(app, raise_server_exceptions=False) as client:
-        yield client
+        # Every TestClient owns an event loop. A contended async Redis pool
+        # cannot be reused by the next test's loop.
+        from redis.asyncio import Redis as AsyncRedis
+
+        from src.utils.Middleware.RateLimiter import RateLimitingMiddleware
+
+        middleware = app.middleware_stack
+        while middleware is not None and not isinstance(
+            middleware, RateLimitingMiddleware
+        ):
+            middleware = getattr(middleware, "app", None)
+        if middleware is not None:
+            middleware.redis = AsyncRedis.from_url(
+                os.environ["RATE_LIMIT__REDIS_URL"],
+                socket_connect_timeout=0.5,
+                socket_timeout=0.5,
+            )
+        try:
+            yield client
+        finally:
+            if middleware is not None:
+                client.portal.call(middleware.redis.aclose)
 
 
 @pytest.fixture
@@ -168,10 +189,11 @@ def create_user(app, engine):
                 "linkedin": "",
             }
             model = Hacker
-            if role == "organizer":
+            if role in {"organizer", "superadmin", "admin", "lleidahacker"}:
                 model = LleidaHacker
                 values.update(
                     role="organizer",
+                    access_role="superadmin" if role == "organizer" else role,
                     nif=f"test-nif-{config.id}",
                     active=True,
                     accepted=True,

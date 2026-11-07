@@ -102,3 +102,7 @@ docker inspect backend-main --format '{{.State.Health.Status}}'
 
 Do not use `down -v`, remove database volumes, or restore an old dump over live
 production as an application rollback.
+
+## Protected branch readiness check
+
+The required `deploy` check validates successful backend tests and repository security on pull requests and pushes. It does not activate a release. Worker health checks resolve container IDs through Compose, supporting both generated and explicit container names. Push payloads are capped at 3,000 serialized bytes, including JSON escaping, before enqueueing and delivery of older queued records.

@@ -84,5 +84,18 @@ def assign(
 
 @router.delete("/{voucher_code}/assign", response_model=VoucherGet)
 def unassign(event_id: int, voucher_code: str, token: BaseToken = Depends(JWTBearer())):
-    """Release a voucher (lost or damaged badge) so another one can be assigned."""
+    """Revoke a lost or damaged badge so a new one can be assigned."""
     return voucher_service.unassign(event_id, voucher_code, token)
+
+
+@router.put("/{voucher_code}/replace/{hacker_code}", response_model=VoucherAssignResult)
+def replace_badge(
+    event_id: int,
+    voucher_code: str,
+    hacker_code: str,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    """Replace a lost badge atomically; the previous QR is permanently revoked."""
+    return voucher_service.assign(
+        event_id, voucher_code, hacker_code, token, replace=True
+    )

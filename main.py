@@ -51,3 +51,13 @@ def root():
 # app.add_middleware(MaintenanceModeMiddleware, is_maintenance_mode=True)
 # Configuration()
 App(app).setup_all(logger)
+
+
+@app.middleware("http")
+async def prevent_operations_caching(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/v1/operations/"):
+        response.headers["Cache-Control"] = "no-store, private, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response

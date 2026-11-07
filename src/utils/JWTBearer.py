@@ -26,9 +26,15 @@ class JWTBearer(HTTPBearer):
         credentials = await super().__call__(request)
         if credentials is None:
             raise HTTPException(status_code=401, detail="Bearer credentials required")
-        return BaseToken.get_data(
+        token = BaseToken.get_data(
             credentials.credentials,
             expected_type=self.expected_type,
             require_available=self.require_available,
             allow_service=self.allow_service,
         )
+
+        if self.expected_type == TokenType.ACCESS:
+            from src.utils.access import authorize_route
+
+            authorize_route(token, request.method, request.url.path)
+        return token

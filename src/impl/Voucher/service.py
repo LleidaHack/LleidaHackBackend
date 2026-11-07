@@ -94,7 +94,9 @@ class VoucherService(BaseService):
         if assigned is True:
             query = query.filter(Voucher.hacker_id.isnot(None))
         elif assigned is False:
-            query = query.filter(Voucher.hacker_id.is_(None))
+            query = query.filter(
+                Voucher.hacker_id.is_(None), Voucher.revoked.is_(False)
+            )
         return query.order_by(Voucher.id).all()
 
     @BaseService.needs_service(EventService)
@@ -108,7 +110,16 @@ class VoucherService(BaseService):
             .filter(Voucher.event_id == event_id, Voucher.hacker_id.isnot(None))
             .count()
         )
-        return {"total": total, "assigned": assigned, "unassigned": total - assigned}
+        available = (
+            db.session.query(Voucher)
+            .filter(
+                Voucher.event_id == event_id,
+                Voucher.hacker_id.is_(None),
+                Voucher.revoked.is_(False),
+            )
+            .count()
+        )
+        return {"total": total, "assigned": assigned, "unassigned": available}
 
     def export_csv(self, event_id: int, data: BaseToken) -> str:
         vouchers = self.get_all(event_id, data)
@@ -136,7 +147,12 @@ class VoucherService(BaseService):
     @BaseService.needs_service(EventService)
     @BaseService.needs_service(HackerService)
     def assign(
-        self, event_id: int, voucher_code: str, hacker_code: str, data: BaseToken
+        self,
+        event_id: int,
+        voucher_code: str,
+        hacker_code: str,
+        data: BaseToken,
+        replace: bool = False,
     ):
         """Check the hacker in and bind the physical voucher to them, atomically.
 
@@ -146,6 +162,12 @@ class VoucherService(BaseService):
         """
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
+        from src.impl.Operations.service import state
+        from src.utils.access import require_management
+
+        if replace:
+            require_management(data)
+        state(event_id, lock=True)
         event = self._event(event_id)
         if self.is_voucher_code(hacker_code):
             raise InvalidDataException(
@@ -162,6 +184,8 @@ class VoucherService(BaseService):
         )
         if voucher is None:
             raise NotFoundException("Voucher not found for this event")
+        if voucher.revoked:
+            raise InvalidDataException("Badge has been revoked")
         if voucher.hacker_id is not None:
             if voucher.hacker_id == hacker.id:
                 raise InvalidDataException("Voucher already assigned to this hacker")
@@ -183,8 +207,17 @@ class VoucherService(BaseService):
             .filter(Voucher.event_id == event.id, Voucher.hacker_id == hacker.id)
             .first()
         )
+        if current is not None and not replace:
+            raise InvalidDataException(
+                "Participant already has a badge; ask an admin to replace it"
+            )
+        if replace and current is None:
+            raise InvalidDataException("Participant has no badge to replace")
+        previous_badge_id = current.id if current else None
         if current is not None:
-            raise InvalidDataException(f"Hacker already has voucher {current.code}")
+            current.revoked = True
+            current.hacker_id = None
+            db.session.flush()
         message = ""
         if not registration.confirmed_assistance:
             registration.confirmed_assistance = True
@@ -194,6 +227,19 @@ class VoucherService(BaseService):
         voucher.hacker_id = hacker.id
         # Keep the existing timezone-naive database/local-calendar contract.
         voucher.assigned_at = datetime.now()  # noqa: DTZ005
+        from src.impl.Operations.service import audit
+
+        audit(
+            event_id,
+            data,
+            "badge.replace" if replace else "badge.assign",
+            {
+                "voucher_id": voucher.id,
+                "previous_voucher_id": previous_badge_id,
+                "forced_confirmation": bool(message),
+            },
+            hacker.id,
+        )
         try:
             db.session.commit()
         except IntegrityError:
@@ -213,13 +259,28 @@ class VoucherService(BaseService):
 
     @BaseService.needs_service(EventService)
     def unassign(self, event_id: int, voucher_code: str, data: BaseToken):
-        """Free a voucher (lost/damaged badge). Participation is kept."""
+        """Revoke a lost/damaged badge permanently. Participation is kept."""
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
+        from src.impl.Operations.service import state
+        from src.utils.access import require_management
+
+        require_management(data)
+        state(event_id, lock=True)
         self._event(event_id)
         voucher = self.get_by_code(voucher_code, event_id)
         if voucher.hacker_id is None:
             raise InvalidDataException("Voucher is not assigned")
+        from src.impl.Operations.service import audit
+
+        audit(
+            event_id,
+            data,
+            "badge.release",
+            {"voucher_id": voucher.id},
+            voucher.hacker_id,
+        )
+        voucher.revoked = True
         voucher.hacker_id = None
         voucher.assigned_at = None
         db.session.commit()

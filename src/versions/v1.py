@@ -31,3 +31,23 @@ router.include_router(Hacker.router)
 router.include_router(UserConfig.router)
 router.include_router(Article.router)
 router.include_router(ArticleType.router)
+
+from src.impl.Operations.router import router as operations_router
+
+router.include_router(operations_router)
+
+from src.impl.Operations.access_router import router as access_router
+
+router.include_router(access_router)
+
+from src.impl.Operations.discord_router import router as discord_router
+
+router.include_router(discord_router)
+
+from src.impl.Operations.nicknames import router as nickname_router
+
+router.include_router(nickname_router)
+
+from src.impl.Operations.mentors import router as mentor_router
+
+router.include_router(mentor_router)

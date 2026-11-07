@@ -33,3 +33,7 @@ generated_src/**
 
 # macOS metadata
 .DS_Store
+
+.env.operations.local
+
+.vapid.operations.local.pem

@@ -18,6 +18,12 @@ def check_user(email, nickname, telephone):
 
 def set_existing_data(db_obj, req_obj):
     data = req_obj.dict(exclude_unset=True)
+    if "nickname" in data and data["nickname"] != getattr(db_obj, "nickname", None):
+        from fastapi import HTTPException
+
+        raise HTTPException(
+            403, "Nickname changes require approval; use the nickname request endpoint"
+        )
     for key, value in data.items():
         setattr(db_obj, key, value)
     return list(data.keys())

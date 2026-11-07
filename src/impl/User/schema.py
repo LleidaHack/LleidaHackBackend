@@ -69,6 +69,7 @@ class UserCreate(BaseSchema):
 
 
 class UserGet(BaseSchema):
+    access_role: str = "hacker"
     name: str
     nickname: str
     created_at: datetime
@@ -83,9 +84,9 @@ class UserGet(BaseSchema):
 class UserGetAll(UserGet):
     id: int
     food_restrictions: str | None = None
-    birthdate: date
-    email: str
-    telephone: str
+    birthdate: date | None
+    email: str | None
+    telephone: str | None
     address: str | None = None
     shirt_size: str | None
     is_verified: bool

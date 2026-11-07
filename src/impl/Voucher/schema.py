@@ -17,6 +17,7 @@ class VoucherHacker(BaseSchema):
 
 
 class VoucherGet(BaseSchema):
+    revoked: bool = False
     id: int
     event_id: int
     code: str

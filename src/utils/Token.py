@@ -35,6 +35,7 @@ class BaseToken:
         self.expt = (
             datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         ).isoformat()
+        self.access_role = getattr(user, "access_role", None) or "hacker"
         if user is not None:
             self.user_id = user.id
             self.user_type = user.type
@@ -77,11 +78,21 @@ class BaseToken:
             return self.is_admin and self.available
         if self.type != TokenType.ACCESS.value or not self.available:
             return False
-        if self.user_type not in [role.value for role in available_users]:
+        access_role = getattr(self, "access_role", "hacker")
+        if access_role == "superadmin":
+            return True
+        effective_type = self.user_type
+        if access_role == "mentor":
+            effective_type = UserType.MENTOR.value
+        if access_role in {"admin", "lleidahacker"}:
+            effective_type = UserType.LLEIDAHACKER.value
+        elif effective_type == UserType.LLEIDAHACKER.value:
+            effective_type = UserType.HACKER.value
+        if effective_type not in [role.value for role in available_users]:
             return False
         return (
             user_id is None
-            or self.user_type == UserType.LLEIDAHACKER.value
+            or effective_type == UserType.LLEIDAHACKER.value
             or self.user_id == user_id
         )
 
@@ -192,6 +203,8 @@ class BaseToken:
         data.available = BaseToken.is_available(user)
         data.email = user.email
         data.is_admin = False
+        data.access_role = getattr(user, "access_role", "hacker")
+        data.is_admin = data.access_role == "superadmin"
         if require_available and not data.available:
             raise AuthenticationException("Account is not available")
         return data

@@ -30,6 +30,7 @@ from src.impl.Meal import model as meal_model  # noqa: F401
 
 # Register SQLAlchemy models through import side effects.
 from src.impl.Notification import model as notification_model  # noqa: F401
+from src.impl.Operations import model as operations_model  # noqa: F401
 
 # Register SQLAlchemy models through import side effects.
 from src.impl.User import model as user_model  # noqa: F401
