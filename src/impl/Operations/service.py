@@ -464,6 +464,7 @@ PUBLIC_CONFIG_FIELDS = {
     "phase",
     "slack_url",
     "stream_url",
+    "stream_enabled",
     "wifi_name",
     "wifi_instructions",
     "wifi_guide_url",

@@ -68,3 +68,7 @@ Management uses `PUT /v1/operations/{event_id}/challenge-controls` with the even
 Current group members use GET/PUT `/v1/operations/{event_id}/teams/{group_id}/challenge-vote`. PUT carries a challenge ID and the current team choice version (0 initially). The event lock serializes votes and management changes; the group relation is checked server-side. Outsiders, former members, hidden challenges, closed votes and stale versions are rejected. A database constraint allows one row per team. Changes increment the vote version and create a `challenge.vote` audit with actor and previous/new challenge. No points, submissions or judging turns are created.
 
 GET `/v1/operations/{event_id}/challenge-votes` is restricted to management and returns per-challenge counts and per-team choices. Publication controls create `challenge.controls` audit entries. Hiding or closing retains existing choices. An imported Devpost submission does not silently replace the team's preliminary choice.
+
+## Manual YouTube broadcast
+
+Comunicació → Live accepts a YouTube video URL and a **Mostrar retransmissió** switch. Save to publish or hide the embedded player. The switch defaults to false and requires a valid YouTube video link when enabled. Organizers must disable it after the stream ends; no automatic live-status detection or Google API key is involved. Live starts playback muted, subject to browser policy. Deploy the backend configuration update before the clients; the JSON configuration requires no database migration.

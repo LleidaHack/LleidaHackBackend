@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
+from urllib.parse import urlparse, parse_qs
+import re
 
 from pydantic import (
     BaseModel,
@@ -68,6 +70,7 @@ class EventConfig(BaseModel):
     phase: Literal["preparation", "hacking", "judging", "finished"] = "preparation"
     slack_url: HttpUrl | None = None
     stream_url: HttpUrl | None = None
+    stream_enabled: bool = False
     wifi_name: str = Field(default="", max_length=200)
     wifi_instructions: str = Field(default="", max_length=2000)
     wifi_guide_url: HttpUrl | None = None
@@ -84,6 +87,25 @@ class EventConfig(BaseModel):
     game_enabled: bool = True
     challenges_released: bool = False
     challenge_votes_open: bool = False
+
+    @model_validator(mode="after")
+    def require_stream_url(self):
+        if self.stream_enabled and not self.stream_url:
+            raise ValueError("A broadcast URL is required when the stream is enabled")
+        if self.stream_enabled:
+            url = urlparse(str(self.stream_url))
+            parts = url.path.strip("/").split("/")
+            video_id = None
+            if url.hostname == "youtu.be":
+                video_id = parts[0]
+            elif url.hostname in {"youtube.com", "www.youtube.com", "m.youtube.com"}:
+                if url.path == "/watch":
+                    video_id = parse_qs(url.query).get("v", [None])[0]
+                elif len(parts) == 2 and parts[0] in {"live", "embed", "shorts"}:
+                    video_id = parts[1]
+            if not video_id or not re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id):
+                raise ValueError("Use a YouTube video URL to enable the broadcast")
+        return self
 
     @field_validator("deadline", "judging_start", "judging_end")
     @classmethod
