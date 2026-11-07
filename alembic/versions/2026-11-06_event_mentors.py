@@ -16,16 +16,34 @@ def upgrade():
         "my_user",
         "access_role IN ('superadmin','admin','lleidahacker','hacker','mentor')",
     )
-    op.create_table(
-        "mentor",
-        sa.Column(
-            "user_id", sa.Integer(), sa.ForeignKey("my_user.id"), primary_key=True
-        ),
-        *[
-            sa.Column(name, sa.String(), nullable=False, server_default="")
-            for name in ("github", "linkedin", "cv", "location", "how_did_you_meet_us")
-        ],
-    )
+    profile_columns = ("github", "linkedin", "cv", "location", "how_did_you_meet_us")
+    inspector = sa.inspect(op.get_bind())
+    if inspector.has_table("mentor"):
+        # Older deployments may already have this table (the Mentor model
+        # existed before any migration created it): reuse it and only add the
+        # columns that are missing, instead of failing on CREATE TABLE.
+        existing = {c["name"] for c in inspector.get_columns("mentor")}
+        if "user_id" not in existing:
+            raise RuntimeError(
+                "Existing 'mentor' table has no user_id column; migrate it manually"
+            )
+        for name in profile_columns:
+            if name not in existing:
+                op.add_column(
+                    "mentor",
+                    sa.Column(name, sa.String(), nullable=False, server_default=""),
+                )
+    else:
+        op.create_table(
+            "mentor",
+            sa.Column(
+                "user_id", sa.Integer(), sa.ForeignKey("my_user.id"), primary_key=True
+            ),
+            *[
+                sa.Column(name, sa.String(), nullable=False, server_default="")
+                for name in profile_columns
+            ],
+        )
     op.create_table(
         "event_mentor",
         sa.Column(

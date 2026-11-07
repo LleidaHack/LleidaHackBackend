@@ -1,0 +1,34 @@
+# Add these services to /root/LleidaHackWeb/docker-compose.yml (next to
+# backend-main) so Web Push and Discord alerts are actually delivered.
+#
+# - Use exactly the same image, env_file and networks as backend-main.
+# - deploy/production_deploy.py recognises these service names, moves them to
+#   each new release image together with backend-main and rolls them back with
+#   it. The command must match exactly.
+# - First start (after the release containing the workers is deployed):
+#     docker compose -p lleidahackweb --profile main up -d --no-deps \
+#       backend-push-worker-main backend-discord-worker-main
+# - Push needs VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY and VAPID_SUBJECT; the
+#   Discord webhook worker needs DISCORD_WEBHOOK_URL and DISCORD_WEBHOOK_EVENT_ID
+#   in the env file. A worker without its settings exits immediately; leave the
+#   service out until it is configured.
+services:
+  backend-push-worker-main:
+    image: lleidahack/backend-release:<same as backend-main>
+    command: ["python", "-m", "src.impl.Operations.push_worker"]
+    env_file:
+      - <same absolute path(s) as backend-main>
+    restart: unless-stopped
+    profiles: ["main"]
+    depends_on: [db-main]
+    # networks: <same as backend-main>
+
+  backend-discord-worker-main:
+    image: lleidahack/backend-release:<same as backend-main>
+    command: ["python", "-m", "src.impl.Operations.discord_worker"]
+    env_file:
+      - <same absolute path(s) as backend-main>
+    restart: unless-stopped
+    profiles: ["main"]
+    depends_on: [db-main]
+    # networks: <same as backend-main>

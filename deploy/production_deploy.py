@@ -24,6 +24,21 @@ RELEASES = HOST / "releases/backend"
 BACKUPS = Path("/root/backups")
 REPOSITORY = "LleidaHack/LleidaHackBackend"
 PUBLIC = "https://backend.main.lleidahack.dev"
+# Optional long-lived workers running the same image (see
+# deploy/compose-workers.example.yml). When present in the Compose file they
+# are moved to the new image together with backend-main and rolled back with it.
+WORKERS = {
+    "backend-push-worker-main": [
+        "python",
+        "-m",
+        "src.impl.Operations.push_worker",
+    ],
+    "backend-discord-worker-main": [
+        "python",
+        "-m",
+        "src.impl.Operations.discord_worker",
+    ],
+}
 
 
 class DeploymentError(RuntimeError):
@@ -107,7 +122,18 @@ def replacement(original, image):
         "Expected an immutable image and Docker healthcheck",
     )
     service["image"] = image
+    for name in workers(updated):
+        worker = updated["services"][name]
+        require(
+            worker.get("command") == WORKERS[name] and "build" not in worker,
+            f"Unexpected definition for {name}; review it before deployment",
+        )
+        worker["image"] = image
     return updated
+
+
+def workers(config):
+    return [name for name in WORKERS if name in config.get("services", {})]
 
 
 def atomic_write(path, content):
@@ -117,7 +143,7 @@ def atomic_write(path, content):
     os.replace(temporary, path)
 
 
-def compose_up():
+def compose_up(services=("backend-main",)):
     run(
         "docker",
         "compose",
@@ -133,8 +159,22 @@ def compose_up():
         "-d",
         "--no-deps",
         "--no-build",
-        "backend-main",
+        *services,
     )
+
+
+def wait_workers_running(names, image_id, timeout=30):
+    """Workers have no HTTP healthcheck; require them to stay up briefly."""
+    if not names:
+        return
+    time.sleep(min(timeout, 10))
+    for name in names:
+        container = inspect(name)
+        require(container["Image"] == image_id, f"{name} runs an unexpected image")
+        require(
+            container["State"]["Running"] and container["RestartCount"] == 0,
+            f"{name} exited or restarted during validation",
+        )
 
 
 def wait_healthy(image_id, timeout=120):
@@ -178,8 +218,11 @@ def smoke():
     )
 
 
-def guarded_cutover(original, updated, new_id, old_id, verify, check_unchanged):
+def guarded_cutover(
+    original, updated, new_id, old_id, verify, check_unchanged, worker_names=()
+):
     """Recover application only; never restore or downgrade database contents."""
+    services = ("backend-main", *worker_names)
     require(
         COMPOSE.read_bytes() == original,
         "Compose changed during preparation; refusing to overwrite it",
@@ -200,8 +243,9 @@ def guarded_cutover(original, updated, new_id, old_id, verify, check_unchanged):
             "config",
             "--quiet",
         )
-        compose_up()
+        compose_up(services)
         wait_healthy(new_id)
+        wait_workers_running(worker_names, new_id)
         verify()
         check_unchanged()
     except BaseException as error:
@@ -212,7 +256,7 @@ def guarded_cutover(original, updated, new_id, old_id, verify, check_unchanged):
             ) from error
         atomic_write(COMPOSE, original)
         try:
-            compose_up()
+            compose_up(services)
             wait_healthy(old_id)
         except BaseException as rollback_error:
             raise DeploymentError(
@@ -401,7 +445,14 @@ def deploy(check=False):
         "Activating backend only; rollback is automatic if verification fails...",
         flush=True,
     )
-    guarded_cutover(original, updated, new_id, old_id, smoke, unchanged)
+    worker_names = workers(config)
+    if not worker_names:
+        print(
+            "Note: no push/Discord worker services in Compose; alerts will queue "
+            "without delivery (see deploy/compose-workers.example.yml).",
+            flush=True,
+        )
+    guarded_cutover(original, updated, new_id, old_id, smoke, unchanged, worker_names)
     record = {
         "revision": sha,
         "previous_revision": old_sha,

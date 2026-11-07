@@ -106,6 +106,58 @@ def test_latest_ci_run_and_required_jobs_are_checked(monkeypatch):
         deployment.verify_ci("target")
 
 
+def test_replacement_moves_known_workers_to_the_new_image():
+    backend = {
+        "image": "old",
+        "command": ["gunicorn", "main:app", "-c", "gunicorn_conf.py"],
+        "healthcheck": {"test": ["CMD", "true"]},
+    }
+    original = {
+        "services": {
+            "backend-main": backend,
+            "backend-push-worker-main": {
+                "image": "old",
+                "command": deployment.WORKERS["backend-push-worker-main"],
+            },
+        }
+    }
+    result = deployment.replacement(original, "new")
+    assert result["services"]["backend-push-worker-main"]["image"] == "new"
+    assert deployment.workers(original) == ["backend-push-worker-main"]
+    original["services"]["backend-push-worker-main"]["command"] = ["sh"]
+    with pytest.raises(deployment.DeploymentError, match="backend-push-worker"):
+        deployment.replacement(original, "new")
+
+
+def test_cutover_starts_and_rolls_back_workers(tmp_path, monkeypatch):
+    compose = tmp_path / "compose.yml"
+    compose.write_bytes(b"original")
+    monkeypatch.setattr(deployment, "COMPOSE", compose)
+    monkeypatch.setattr(deployment, "run", lambda *args: "")
+    started = []
+    monkeypatch.setattr(
+        deployment, "compose_up", lambda services: started.append(tuple(services))
+    )
+    monkeypatch.setattr(deployment, "wait_healthy", lambda image: None)
+
+    def failing_workers(names, image):
+        raise deployment.DeploymentError("worker restarted")
+
+    monkeypatch.setattr(deployment, "wait_workers_running", failing_workers)
+    with pytest.raises(deployment.DeploymentError, match="previous application"):
+        deployment.guarded_cutover(
+            b"original",
+            b"new",
+            "new-id",
+            "old-id",
+            lambda: None,
+            lambda: None,
+            ["backend-push-worker-main"],
+        )
+    assert compose.read_bytes() == b"original"
+    assert started == [("backend-main", "backend-push-worker-main")] * 2
+
+
 @pytest.fixture
 def cutover(tmp_path, monkeypatch):
     compose = tmp_path / "compose.yml"
@@ -115,7 +167,9 @@ def cutover(tmp_path, monkeypatch):
     starts = []
     health = []
     monkeypatch.setattr(
-        deployment, "compose_up", lambda: starts.append(compose.read_bytes())
+        deployment,
+        "compose_up",
+        lambda services=("backend-main",): starts.append(compose.read_bytes()),
     )
     monkeypatch.setattr(deployment, "wait_healthy", lambda image: health.append(image))
     return compose, starts, health

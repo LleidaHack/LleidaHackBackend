@@ -62,10 +62,7 @@ Before an authorized production rollout: back up and rehearse the Alembic migrat
    `uv run python scripts/bootstrap_superadmin.py organizer@example.org --reason "Initial production superadmin"`
    Then assign further roles from Gestió.
 4. Configure optional integrations: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (push), `DISCORD_WEBHOOK_URL`, `DISCORD_WEBHOOK_EVENT_ID` (webhook announcements).
-5. Run the workers as separate long-lived processes from the same image, e.g. extra compose services overriding the command:
-   - `python -m src.impl.Operations.push_worker`
-   - `python -m src.impl.Operations.discord_worker`
-   Without them alerts are queued but never delivered.
+5. Run the workers as separate long-lived services from the same image: copy `deploy/compose-workers.example.yml` into the production Compose file (`backend-push-worker-main`, `backend-discord-worker-main`). `deploy/production_deploy.py` then updates and rolls them back together with `backend-main`. Without them alerts are queued but never delivered.
 6. Proxy WebSocket upgrades for `/v1/operations/{event_id}/ws` (`proxy_http_version 1.1`, `Upgrade`/`Connection` headers).
 7. Deploy the clients afterwards: Gestió (llh-admin), HackEPS and Live.
 
