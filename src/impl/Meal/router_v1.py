@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends
 
-from src.impl.Event.schema import EventGet
-from src.impl.Meal.schema import MealCreate, MealGet, MealGetAll, MealUpdate
+from src.impl.Meal.schema import (
+    MealCheckInResult,
+    MealCreate,
+    MealGet,
+    MealGetAll,
+    MealUpdate,
+)
 from src.impl.Meal.service import MealService
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -41,7 +46,7 @@ def delete(id: int, token: BaseToken = Depends(JWTBearer())):
     return meal_service.delete_meal(id, token)
 
 
-@router.put("/{meal_id}/eat/{hacker_code}", response_model=EventGet)
+@router.put("/{meal_id}/eat/{hacker_code}", response_model=MealCheckInResult)
 def eat(meal_id: int, hacker_code: str, token: BaseToken = Depends(JWTBearer())):
     """
     Register a hacker to an event
