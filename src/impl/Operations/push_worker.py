@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from src import imports  # noqa: F401
 from src.configuration.Settings import settings
 from src.impl.Operations.model import PushDelivery, PushSubscription
+from src.impl.Operations.push_payload import compact_push_payload
 
 logger = logging.getLogger("push_worker")
 
@@ -46,7 +47,7 @@ def deliver_one(engine):
         try:
             webpush(
                 subscription_info=subscription.subscription,
-                data=json.dumps(delivery.payload),
+                data=json.dumps(compact_push_payload(delivery.payload)),
                 vapid_private_key=os.environ["VAPID_PRIVATE_KEY"],
                 vapid_claims={"sub": os.environ["VAPID_SUBJECT"]},
                 timeout=10,

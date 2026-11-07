@@ -169,7 +169,24 @@ def wait_workers_running(names, image_id, timeout=30):
         return
     time.sleep(min(timeout, 10))
     for name in names:
-        container = inspect(name)
+        ids = run(
+            "docker",
+            "compose",
+            "--project-directory",
+            str(HOST),
+            "-p",
+            "lleidahackweb",
+            "-f",
+            str(COMPOSE),
+            "--profile",
+            "main",
+            "ps",
+            "--all",
+            "--quiet",
+            name,
+        ).split()
+        require(len(ids) == 1, f"Expected exactly one container for {name}")
+        container = inspect(ids[0])
         require(container["Image"] == image_id, f"{name} runs an unexpected image")
         require(
             container["State"]["Running"] and container["RestartCount"] == 0,

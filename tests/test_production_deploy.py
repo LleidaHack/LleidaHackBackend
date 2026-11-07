@@ -240,3 +240,24 @@ def test_rollback_failure_is_reported(cutover, monkeypatch):
             b"original", b"new", "new-id", "old-id", lambda: None, lambda: None
         )
     assert compose.read_bytes() == b"original"
+
+
+def test_worker_health_resolves_compose_container_id(monkeypatch):
+    calls = []
+    monkeypatch.setattr(deployment.time, "sleep", lambda _: None)
+
+    def run(*args):
+        calls.append(args)
+        return "generated-container-id\n"
+
+    monkeypatch.setattr(deployment, "run", run)
+    inspected = []
+
+    def inspect(container):
+        inspected.append(container)
+        return {"Image": "new-image", "State": {"Running": True}, "RestartCount": 0}
+
+    monkeypatch.setattr(deployment, "inspect", inspect)
+    deployment.wait_workers_running(["backend-push-worker-main"], "new-image")
+    assert inspected == ["generated-container-id"]
+    assert calls[0][-4:] == ("ps", "--all", "--quiet", "backend-push-worker-main")

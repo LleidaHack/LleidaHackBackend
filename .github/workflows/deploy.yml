@@ -1,6 +1,8 @@
 name: Validate and prepare Docker release
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main, integration]
   workflow_dispatch:
@@ -17,6 +19,20 @@ jobs:
     uses: ./.github/workflows/security.yml
   tests:
     uses: ./.github/workflows/tests.yml
+  deploy:
+    # Preserve the protected branch's required context as a real readiness gate.
+    # Activation remains manual and requires backups and migration rehearsal.
+    needs: [tests, security]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful release validation
+        env:
+          TEST_RESULT: ${{ needs.tests.result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
+        run: |
+          test "$TEST_RESULT" = success
+          test "$SECURITY_RESULT" = success
   prepare:
     # A merge validates code; a manual run builds a candidate only.
     # Cutover is coordinated with backup, mail and frontends (see release docs).
