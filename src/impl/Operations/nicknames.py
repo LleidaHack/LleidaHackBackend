@@ -65,8 +65,11 @@ def commit():
 
 @router.get("/me")
 def mine(token=Depends(JWTBearer())):
+    user = db.session.get(User, token.user_id) if token.user_id else None
+    if user is None:
+        raise HTTPException(404, "No user profile for this token")
     return {
-        "nickname": db.session.get(User, token.user_id).nickname,
+        "nickname": user.nickname,
         "requests": [
             r.to_dict()
             for r in db.session.query(NicknameRequest)
@@ -79,6 +82,8 @@ def mine(token=Depends(JWTBearer())):
 
 @router.post("/me")
 def propose(body: Proposal, token=Depends(JWTBearer())):
+    if not token.user_id:
+        raise HTTPException(404, "No user profile for this token")
     lock()
     user = db.session.get(User, token.user_id, populate_existing=True)
     if (

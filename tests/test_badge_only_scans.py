@@ -89,7 +89,7 @@ def test_ticket_rejected_and_admin_recovery_preserves_meal_history(
 def test_management_can_register_meal_by_ticket_on_legacy_route(
     client, create_user, create_event, accept, engine
 ):
-    admin, user, event, badge, meal = prepare(
+    admin, user, _event, _badge, meal = prepare(
         client, create_user, create_event, accept, engine
     )
     ticket = user_code(engine, user)
@@ -105,7 +105,7 @@ def test_management_can_register_meal_by_ticket_on_legacy_route(
 def test_meal_id_spelling_cannot_bypass_duplicate_check(
     client, create_user, create_event, accept, engine
 ):
-    admin, user, event, badge, meal = prepare(
+    _admin, _user, event, badge, meal = prepare(
         client, create_user, create_event, accept, engine
     )
     staff = create_user(role="lleidahacker")

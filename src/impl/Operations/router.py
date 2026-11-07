@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from fastapi.responses import JSONResponse
 from fastapi_sqlalchemy import db
 from pydantic import BaseModel, HttpUrl, ValidationError
+from sqlalchemy.exc import IntegrityError
 
 from src.impl.HackerGroup.model import HackerGroup
 from src.impl.Meal.model import Meal
@@ -32,6 +33,7 @@ from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
 
 router = APIRouter(prefix="/operations", tags=["Event Operations"])
+MAX_PUSH_SUBSCRIPTIONS_PER_EVENT = 5000
 
 
 @router.get("/{event_id}/public")
@@ -139,7 +141,9 @@ def scan(event_id: int, body: dict, token: BaseToken = Depends(JWTBearer())):
     try:
         operation = Operation.model_validate(body)
     except ValidationError as exc:
-        ops.state(event_id, True)
+        # Validate the event without taking the event lock: rejected payloads must
+        # not queue behind (or delay) real scans.
+        ops.state(event_id)
         # Keep evidence of tampering without persisting arbitrary attacker payloads.
         ops.audit(
             event_id,
@@ -336,7 +340,7 @@ def enroll_team(
     if not group:
         raise HTTPException(404, "Team not found")
     if not ops.organizer(token) and (
-        group.leader_id != token.user_id or row.config.get("phase") != "hacking"
+        group.leader_id != token.user_id or ops.effective_phase(row.config) != "hacking"
     ):
         raise HTTPException(
             403, "Only the team leader during hacking or an organizer can enroll"
@@ -495,13 +499,19 @@ def subscribe(event_id: int, body: SubscriptionInput):
         or not all(body.keys.get(k) for k in ("p256dh", "auth"))
     ):
         raise HTTPException(422, "Unsupported push endpoint or missing keys")
-    ops.state(event_id, True)
+    # Public endpoint: never take the event lock used by scans and alerts.
+    ops.state(event_id)
     subscription = (
         db.session.query(PushSubscription).filter_by(endpoint=endpoint).first()
     )
     if subscription and subscription.event_id != event_id:
         raise HTTPException(409, "Subscription already belongs to another event")
     if not subscription:
+        if (
+            db.session.query(PushSubscription).filter_by(event_id=event_id).count()
+            >= MAX_PUSH_SUBSCRIPTIONS_PER_EVENT
+        ):
+            raise HTTPException(429, "Too many push subscriptions for this event")
         db.session.add(
             PushSubscription(
                 event_id=event_id,
@@ -509,7 +519,11 @@ def subscribe(event_id: int, body: SubscriptionInput):
                 subscription=body.model_dump(mode="json"),
             )
         )
-    db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # Concurrent registration of the same endpoint; treat as idempotent.
+            db.session.rollback()
     return {"ok": True}
 
 

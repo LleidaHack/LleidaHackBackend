@@ -75,7 +75,10 @@ def authorize_route(token, method, path):
             )
     elif role == "admin":
         critical = method == "DELETE" and not re.fullmatch(
-            r"/v1/operations/\d+/alerts/[^/]+", path
+            # Withdrawing alerts and revoking lost badges are routine operations
+            # (VoucherService.unassign enforces require_management itself).
+            r"/v1/operations/\d+/alerts/[^/]+|/v1/event/\d+/vouchers/[^/]+/assign",
+            path,
         )
         critical = critical or (
             method != "GET"

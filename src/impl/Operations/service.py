@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from fastapi import HTTPException
 from fastapi_sqlalchemy import db
-from sqlalchemy import case, func
+from sqlalchemy import case, func, text
 
 from src.impl.Event.model import Event
 from src.impl.Hacker.model import Hacker
@@ -26,6 +26,20 @@ from src.impl.Operations.schema import EventConfig
 from src.impl.User.model import User
 from src.impl.Voucher.model import Voucher
 from src.utils.UserType import UserType
+
+_EVENT_TABLES = {"hacker_event_accepted", "hacker_event_participation"}
+
+
+def in_event_table(table, event_id, user_id):
+    """Membership check without loading the whole collection under the event lock."""
+    assert table in _EVENT_TABLES
+    return (
+        db.session.execute(
+            text(f"SELECT 1 FROM {table} WHERE event_id = :e AND user_id = :u LIMIT 1"),
+            {"e": event_id, "u": user_id},
+        ).first()
+        is not None
+    )
 
 
 def organizer(token):
@@ -134,7 +148,9 @@ def resolve_user(code, event_id, badge_only=False):
 
 
 def perform(event_id, body, token, allow_ticket_meal=False):
-    event, row = state(event_id, lock=True)
+    # Non-organizers are always rejected (and audited) without mutating state, so
+    # they must not take the event lock that serializes real scans.
+    event, row = state(event_id, lock=organizer(token))
     operation_id = str(body.operation_id)
     fingerprint = hashlib.sha256(body.model_dump_json().encode()).hexdigest()
     previous = (
@@ -195,13 +211,15 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                     raise HTTPException(403, "Mentor is not active for this event")
                 if body.kind not in {"meal", "void_scan"}:
                     raise HTTPException(403, "Mentor badges can only be used for meals")
-            if not is_mentor and user not in event.accepted_hackers:
+            if not is_mentor and not in_event_table(
+                "hacker_event_accepted", event_id, user.id
+            ):
                 raise HTTPException(403, "Participant is not accepted for this event")
             config = deepcopy(row.config)
             if (
                 not is_mentor
                 and body.kind != "checkin"
-                and user not in event.participants
+                and not in_event_table("hacker_event_participation", event_id, user.id)
             ):
                 raise HTTPException(409, "Participant must check in first")
             log = audit(
@@ -264,7 +282,7 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                     if not activity:
                         raise HTTPException(404, "Activity not found")
                 else:
-                    if user in event.participants:
+                    if in_event_table("hacker_event_participation", event_id, user.id):
                         raise HTTPException(409, "Participant already checked in")
                 round_number = body.round if body.kind == "meal" else 1
                 target = body.target if body.kind != "checkin" else "entry"
@@ -526,6 +544,17 @@ def effective_phase(config, now=None):
     return "judging" if deadline <= (now or datetime.now(UTC)) else phase
 
 
+def live_alerts(event_id):
+    """Public, unexpired Live alerts only (cheap; used by WebSocket fan-out)."""
+    _event, row = state(event_id)
+    now = datetime.now(UTC)
+    return [
+        deepcopy(a)
+        for a in (row.config or {}).get("alerts", [])
+        if datetime.fromisoformat(a["expires_at"]) > now and a.get("live", True)
+    ]
+
+
 def snapshot(event_id, private=False):
     _event, row = state(event_id)
     data = (
@@ -563,6 +592,12 @@ def snapshot(event_id, private=False):
     data["leaderboard"] = leaderboard(event_id)
     data["presentations"] = []
     if private or (data.get("phase") == "judging" and data["challenges_released"]):
+        # One query for team names instead of one per presentation (polled publicly).
+        team_names = dict(
+            db.session.query(HackerGroup.id, HackerGroup.name).filter_by(
+                event_id=event_id
+            )
+        )
         for p in (
             db.session.query(Presentation)
             .filter_by(event_id=event_id)
@@ -577,8 +612,10 @@ def snapshot(event_id, private=False):
                 Presentation.id,
             )
         ):
-            group = db.session.get(HackerGroup, p.group_id)
-            data["presentations"].append({**p.to_dict(), "team": group.name})
+            team = team_names.get(p.group_id)
+            if team is None:
+                team = db.session.get(HackerGroup, p.group_id).name
+            data["presentations"].append({**p.to_dict(), "team": team})
     if private:
         data["meals"] = [
             m.to_dict() for m in db.session.query(Meal).filter_by(event_id=event_id)

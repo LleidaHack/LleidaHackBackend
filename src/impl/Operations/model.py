@@ -92,7 +92,9 @@ class Presentation(BaseModel):
     __tablename__ = "event_presentation"
     id: Mapped[int] = mapped_column(primary_key=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), index=True)
-    group_id: Mapped[int] = mapped_column(ForeignKey("hacker_group.id"))
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("hacker_group.id", ondelete="CASCADE")
+    )
     room: Mapped[str] = mapped_column(String(80))
     track: Mapped[str] = mapped_column(String(80))
     position: Mapped[int] = mapped_column(Integer, default=0)
@@ -159,7 +161,9 @@ class DevpostProject(BaseModel):
     __tablename__ = "event_devpost_project"
     id: Mapped[int] = mapped_column(primary_key=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), index=True)
-    group_id: Mapped[int] = mapped_column(ForeignKey("hacker_group.id"))
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("hacker_group.id", ondelete="CASCADE")
+    )
     url: Mapped[str] = mapped_column(String(500))
     title: Mapped[str] = mapped_column(String(150))
     challenge: Mapped[str] = mapped_column(String(80))

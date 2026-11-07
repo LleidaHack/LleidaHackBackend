@@ -8,6 +8,8 @@ from collections import Counter, defaultdict
 
 
 def plan_schedule(presentations, start, end, duration, travel):
+    # Absent teams neither occupy a room nor need a start time.
+    presentations = [p for p in presentations if p.state != "absent"]
     fixed = [
         p for p in presentations if p.pinned or p.state not in {"waiting", "postponed"}
     ]
