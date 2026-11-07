@@ -120,7 +120,9 @@ def test_one_member_starts_team_calls_next_and_mlh_does_not_overlap(
     public = client.get(base + "/public").json()
     room_turns = [p for p in public["presentations"] if p["room"] == "one"]
     assert room_turns[0]["state"] == "presenting"
-    active = [p for p in public["presentations"] if p["state"] in {"called", "presenting"}]
+    active = [
+        p for p in public["presentations"] if p["state"] in {"called", "presenting"}
+    ]
     assert len({p["group_id"] for p in active}) == len(active)
     with Session(engine) as session:
         row = session.get(EventOperations, event)

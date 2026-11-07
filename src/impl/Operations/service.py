@@ -1,6 +1,7 @@
 """Event-scoped operations with atomic audit, replay protection and row locking."""
 
 import hashlib
+import re
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
@@ -132,7 +133,7 @@ def resolve_user(code, event_id, badge_only=False):
     return user
 
 
-def perform(event_id, body, token):
+def perform(event_id, body, token, allow_ticket_meal=False):
     event, row = state(event_id, lock=True)
     operation_id = str(body.operation_id)
     fingerprint = hashlib.sha256(body.model_dump_json().encode()).hexdigest()
@@ -183,7 +184,9 @@ def perform(event_id, body, token):
             user = resolve_user(
                 body.code,
                 event_id,
-                badge_only=body.kind in {"meal", "activity", "redeem", "judging_start"},
+                badge_only=body.kind in {"meal", "activity", "redeem", "judging_start"}
+                # The legacy /meal/{id}/eat/{code} route keeps accepting ticket codes.
+                and not (allow_ticket_meal and body.kind == "meal"),
             )
             is_mentor = user.access_role == "mentor" or user.type == "mentor"
             if is_mentor:
@@ -228,12 +231,17 @@ def perform(event_id, body, token):
                         db.session.query(Meal)
                         .filter_by(
                             event_id=event_id,
-                            id=int(body.target) if body.target.isdigit() else -1,
+                            id=int(body.target)
+                            if re.fullmatch(r"[0-9]{1,9}", body.target)
+                            else -1,
                         )
                         .first()
                     )
                     if not meal:
                         raise HTTPException(404, "Meal not found for this event")
+                    # Canonicalise ("07" -> "7") so round state and duplicate checks
+                    # cannot be bypassed with an equivalent spelling of the meal id.
+                    body = body.model_copy(update={"target": str(meal.id)})
                     current = config.get("meal_rounds", {}).get(
                         body.target, {"round": 1, "open": True}
                     )
@@ -301,7 +309,9 @@ def perform(event_id, body, token):
                 original = (
                     db.session.query(ScanRecord)
                     .filter_by(
-                        id=int(body.target) if body.target.isdigit() else -1,
+                        id=int(body.target)
+                        if re.fullmatch(r"[0-9]{1,9}", body.target)
+                        else -1,
                         event_id=event_id,
                         user_id=user.id,
                         kind="meal",
@@ -359,7 +369,9 @@ def perform(event_id, body, token):
                 original = (
                     db.session.query(CoinMovement)
                     .filter_by(
-                        id=int(body.target) if body.target.isdigit() else -1,
+                        id=int(body.target)
+                        if re.fullmatch(r"[0-9]{1,9}", body.target)
+                        else -1,
                         event_id=event_id,
                         user_id=user.id,
                     )

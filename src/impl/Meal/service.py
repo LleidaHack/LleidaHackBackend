@@ -66,19 +66,31 @@ class MealService(BaseService):
         from uuid import uuid4
 
         from src.impl.Operations.schema import Operation
-        from src.impl.Operations.service import perform
+        from src.impl.Operations.service import perform, state
+        from src.utils.access import access_role
 
+        event_id = self.get_by_id(meal_id).event_id
+        _, row = state(event_id)
+        current_round = (
+            (row.config or {})
+            .get("meal_rounds", {})
+            .get(str(meal_id), {})
+            .get("round", 1)
+        )
         result = perform(
-            self.get_by_id(meal_id).event_id,
+            event_id,
             Operation(
                 operation_id=uuid4(),
                 kind="meal",
                 code=hacker_code,
                 target=str(meal_id),
-                round=1,
+                round=current_round,
                 device="legacy-meal-api",
             ),
             data,
+            # Gestió's manual "register meal by code" uses ticket codes; scanner
+            # volunteers (lleidahacker) must still scan the physical badge.
+            allow_ticket_meal=access_role(data) in {"superadmin", "admin"},
         )
         if not result["ok"]:
             if result["status"] == 404:

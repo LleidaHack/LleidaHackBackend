@@ -87,9 +87,15 @@ def update_config(
     from src.utils.access import require_superadmin
 
     critical_changed = any(config.get(key) != before.get(key) for key in ("deadline",))
+    # Only LleidaCoin-bearing activities are critical: admins may add, edit or
+    # remove zero-point activities, but any change touching points needs superadmin.
     critical_changed = critical_changed or {
-        a["id"]: a.get("points", 0) for a in config["activities"]
-    } != {a["id"]: a.get("points", 0) for a in before.get("activities", [])}
+        a["id"]: a.get("points", 0) for a in config["activities"] if a.get("points", 0)
+    } != {
+        a["id"]: a.get("points", 0)
+        for a in before.get("activities", [])
+        if a.get("points", 0)
+    }
     critical_changed = critical_changed or {
         p["id"]: (p["cost"], p["stock"]) for p in config["prizes"]
     } != {p["id"]: (p["cost"], p["stock"]) for p in before.get("prizes", [])}

@@ -1,8 +1,8 @@
+import re
 from datetime import datetime
 from typing import Literal
+from urllib.parse import parse_qs, urlparse
 from uuid import UUID
-from urllib.parse import urlparse, parse_qs
-import re
 
 from pydantic import (
     BaseModel,

@@ -84,3 +84,44 @@ def test_ticket_rejected_and_admin_recovery_preserves_meal_history(
     replacement = next(e for e in entries if e["action"] == "badge.replace")
     assert replacement["actor_id"] == admin.id and replacement["user_id"] == user.id
     assert replacement["details"]["previous_voucher_id"]
+
+
+def test_management_can_register_meal_by_ticket_on_legacy_route(
+    client, create_user, create_event, accept, engine
+):
+    admin, user, event, badge, meal = prepare(
+        client, create_user, create_event, accept, engine
+    )
+    ticket = user_code(engine, user)
+    response = client.put(f"/v1/meal/{meal}/eat/{ticket}", headers=admin.headers)
+    assert response.status_code == 200, response.text
+    # Same meal again (by badge or ticket) is a duplicate in the same round.
+    assert (
+        client.put(f"/v1/meal/{meal}/eat/{ticket}", headers=admin.headers).status_code
+        != 200
+    )
+
+
+def test_meal_id_spelling_cannot_bypass_duplicate_check(
+    client, create_user, create_event, accept, engine
+):
+    admin, user, event, badge, meal = prepare(
+        client, create_user, create_event, accept, engine
+    )
+    staff = create_user(role="lleidahacker")
+
+    def scan(target):
+        return client.post(
+            f"/v1/operations/{event}/scan",
+            headers=staff.headers,
+            json={
+                "operation_id": str(uuid4()),
+                "kind": "meal",
+                "code": badge,
+                "target": target,
+            },
+        )
+
+    assert scan(str(meal)).status_code == 200
+    assert scan(f"0{meal}").status_code == 409
+    assert scan("²").status_code == 404

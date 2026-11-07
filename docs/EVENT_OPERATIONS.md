@@ -52,6 +52,23 @@ Backend regression coverage includes role changes/revocation, authorization, for
 
 Before an authorized production rollout: back up and rehearse the Alembic migration chain; explicitly bootstrap a trusted superadmin; configure real event content and origins; enable WebSocket proxying; run the push worker; connect the separately implemented Discord bot. Verify phone camera scanning, installed-PWA notifications and Raspberry Pi display/fullscreen behavior on actual hardware. These physical checks are not replaced by browser/API tests.
 
+### Production rollout checklist
+
+`deploy/production_deploy.py` refuses releases that touch `alembic/`, so this release follows the manual migration runbook:
+
+1. Back up the database. Check `SELECT to_regclass('public.mentor'), to_regclass('public.mentor_event_participation');` returns NULLs (migration `20261106_event_mentors` creates them).
+2. Run `alembic upgrade head` **before** starting the new image. New code on the old schema fails every authenticated request (`my_user.access_role` is missing). The previous image keeps working on the new schema, so rolling the image back does not require a downgrade; downgrades drop audit, ledger and revocation data — restore the backup instead.
+3. Bootstrap the first superadmin immediately (every existing organizer becomes `admin`, which cannot assign roles, release challenges, ban users or delete records):
+   `uv run python scripts/bootstrap_superadmin.py organizer@example.org --reason "Initial production superadmin"`
+   Then assign further roles from Gestió.
+4. Configure optional integrations: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (push), `DISCORD_WEBHOOK_URL`, `DISCORD_WEBHOOK_EVENT_ID` (webhook announcements).
+5. Run the workers as separate long-lived processes from the same image, e.g. extra compose services overriding the command:
+   - `python -m src.impl.Operations.push_worker`
+   - `python -m src.impl.Operations.discord_worker`
+   Without them alerts are queued but never delivered.
+6. Proxy WebSocket upgrades for `/v1/operations/{event_id}/ws` (`proxy_http_version 1.1`, `Upgrade`/`Connection` headers).
+7. Deploy the clients afterwards: Gestió (llh-admin), HackEPS and Live.
+
 ## Public LleidaCoins leaderboard
 
 The public event snapshot includes `leaderboard`, the top 50 participants with ledger activity ordered by current event balance. Redemptions reduce that balance and reversals restore it. Ties share competition ranks (1, 1, 3), with a stable alias/ID ordering. Only rank, public nickname and balance are exposed; deleted or banned participants are omitted. Events are isolated. Live shows the top 10 on its home page and the top 50 at `/leaderboard`, refreshing every three seconds.

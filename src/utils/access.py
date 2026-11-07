@@ -6,6 +6,8 @@ from fastapi import HTTPException
 
 from src.utils.UserType import UserType
 
+IDENTITY_ROUTES = re.compile(r"/v1/(?:user|hacker|lleidahacker|company-user)(?:/|$)")
+
 
 def access_role(token):
     if token.user_type == UserType.SERVICE.value and token.is_admin and token.available:
@@ -77,15 +79,8 @@ def authorize_route(token, method, path):
         )
         critical = critical or (
             method != "GET"
-            and path.startswith(
-                (
-                    "/v1/user",
-                    "/v1/hacker",
-                    "/v1/lleidahacker",
-                    "/v1/company-user",
-                    "/v1/lleidahacker-group",
-                )
-            )
+            # Match whole path segments so e.g. /v1/userConfig is not treated as /v1/user.
+            and IDENTITY_ROUTES.match(path)
             and not own_profile
         )
         critical = (
