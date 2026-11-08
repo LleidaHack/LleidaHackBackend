@@ -573,8 +573,23 @@ class EventService(BaseService):
     def get_accepted_hackers(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
+        from src.impl.Hacker.schema import HackerGetAll
+
         event = self.get_by_id(event_id)
-        return event.accepted_hackers
+        registrations = {
+            registration.user_id: registration
+            for registration in db.session.query(HackerRegistration).filter_by(
+                event_id=event_id
+            )
+        }
+        result = []
+        for hacker in event.accepted_hackers:
+            profile = HackerGetAll.model_validate(hacker).model_dump()
+            registration = registrations.get(hacker.id)
+            if registration is not None:
+                profile["food_restrictions"] = registration.food_restrictions
+            result.append(profile)
+        return result
 
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):

@@ -1,3 +1,4 @@
+from src.impl.Event.schema import EventGet
 from src.utils.Base.BaseSchema import BaseSchema
 
 
@@ -21,3 +22,8 @@ class MealGetAll(MealGet):
 class MealUpdate(BaseSchema):
     name: str | None = None
     description: str | None = None
+
+
+class MealCheckInResult(EventGet):
+    participant: str
+    food_restrictions: str | None = None
