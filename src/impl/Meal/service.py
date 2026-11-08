@@ -3,6 +3,7 @@ from fastapi_sqlalchemy import db
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
+from src.impl.Event.schema import EventGet
 from src.impl.Event.service import EventService
 from src.impl.Hacker.service import HackerService
 from src.impl.Meal.model import Meal
@@ -98,4 +99,11 @@ class MealService(BaseService):
             if result["status"] == 403:
                 raise AuthenticationException(result["error"])
             raise InvalidDataException(result["error"])
-        return self.event_service.get_by_id(self.get_by_id(meal_id).event_id)
+        event = EventGet.model_validate(
+            self.event_service.get_by_id(event_id)
+        ).model_dump()
+        return {
+            **event,
+            "participant": result["participant"],
+            "food_restrictions": result.get("food_restrictions"),
+        }

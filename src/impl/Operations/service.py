@@ -10,7 +10,7 @@ from fastapi import HTTPException
 from fastapi_sqlalchemy import db
 from sqlalchemy import case, func, text
 
-from src.impl.Event.model import Event
+from src.impl.Event.model import Event, HackerRegistration
 from src.impl.Hacker.model import Hacker
 from src.impl.HackerGroup.model import HackerGroup
 from src.impl.Meal.model import HackerMeal, Meal
@@ -421,6 +421,17 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                     if prize:
                         prize["stock"] += 1
                         row.config = config
+            if body.kind in {"meal", "checkin"}:
+                registration = (
+                    db.session.query(HackerRegistration)
+                    .filter_by(event_id=event_id, user_id=user.id)
+                    .first()
+                )
+                result["food_restrictions"] = (
+                    registration.food_restrictions
+                    if registration is not None
+                    else user.food_restrictions
+                )
             result["balance"] = balance(event_id, user.id)
             log.result = result
             row.version += 1
