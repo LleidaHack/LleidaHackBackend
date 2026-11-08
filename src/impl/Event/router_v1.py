@@ -208,6 +208,12 @@ def get_accepted_hackers(eventId: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)
 
 
+@router.get("/{event_id}/statistics_participants")
+def get_statistics_participants(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """Return accepted participant identities and categorical answers without assets."""
+    return event_service.get_statistics_participants(event_id, token)
+
+
 @router.get("/{eventId}/get_approved_hackers_mails", response_model=list[str])
 def get_accepted_hackers_mails(eventId: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers_mails(eventId, token)

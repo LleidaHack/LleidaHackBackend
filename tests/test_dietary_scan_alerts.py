@@ -25,6 +25,25 @@ def test_dietary_information_is_event_scoped_and_replayed(
     )
     assert approved.status_code == 200, approved.text
     assert approved.json()[0]["food_restrictions"] == "Lactosa i fruits secs"
+    light = client.get(
+        f"/v1/event/{event}/statistics_participants", headers=admin.headers
+    )
+    assert light.status_code == 200, light.text
+    assert light.json()[0]["food_restrictions"] == "Lactosa i fruits secs"
+    assert set(light.json()[0]) == {
+        "id",
+        "name",
+        "nickname",
+        "email",
+        "location",
+        "studies",
+        "study_center",
+        "how_did_you_meet_us",
+        "food_restrictions",
+    }
+    assert client.get(
+        f"/v1/event/{event}/statistics_participants", headers=user.headers
+    ).status_code in (401, 403)
     body = {
         "operation_id": str(uuid4()),
         "kind": "meal",

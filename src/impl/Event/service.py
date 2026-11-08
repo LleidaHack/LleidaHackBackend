@@ -7,7 +7,7 @@ from typing import ClassVar
 
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
-from sqlalchemy import and_, create_engine, desc, func
+from sqlalchemy import and_, case, create_engine, desc, func
 from sqlalchemy.orm import sessionmaker
 
 from src.configuration.Settings import settings
@@ -590,6 +590,45 @@ class EventService(BaseService):
                 profile["food_restrictions"] = registration.food_restrictions
             result.append(profile)
         return result
+
+    def get_statistics_participants(self, event_id: int, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        self.get_by_id(event_id)
+        rows = (
+            db.session.query(
+                Hacker.id,
+                Hacker.name,
+                Hacker.nickname,
+                Hacker.email,
+                Hacker.location,
+                Hacker.studies,
+                Hacker.study_center,
+                Hacker.how_did_you_meet_us,
+                case(
+                    (
+                        HackerRegistration.user_id.is_not(None),
+                        HackerRegistration.food_restrictions,
+                    ),
+                    else_=Hacker.food_restrictions,
+                ).label("food_restrictions"),
+            )
+            .join(
+                HackerAccepted,
+                and_(
+                    HackerAccepted.user_id == Hacker.id,
+                    HackerAccepted.event_id == event_id,
+                ),
+            )
+            .outerjoin(
+                HackerRegistration,
+                and_(
+                    HackerRegistration.user_id == Hacker.id,
+                    HackerRegistration.event_id == event_id,
+                ),
+            )
+        )
+        return [dict(row._mapping) for row in rows]
 
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
