@@ -208,6 +208,12 @@ def get_accepted_hackers(eventId: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers(eventId, token)
 
 
+@router.get("/{event_id}/statistics_participants")
+def get_statistics_participants(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """Return accepted participant identities and categorical answers without assets."""
+    return event_service.get_statistics_participants(event_id, token)
+
+
 @router.get("/{eventId}/get_approved_hackers_mails", response_model=list[str])
 def get_accepted_hackers_mails(eventId: int, token: BaseToken = Depends(JWTBearer())):
     return event_service.get_accepted_hackers_mails(eventId, token)
@@ -291,12 +297,17 @@ def unparticipate_hacker(
 
 @router.put("/{event_id}/accept/{hacker_id}", response_model=EventGet)
 def accept_hacker(
-    event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
+    event_id: int,
+    hacker_id: int,
+    background_tasks: BackgroundTasks,
+    token: BaseToken = Depends(JWTBearer()),
 ):
     """
     Accept a hacker to an event
     """
-    return event_service.accept_hacker(event_id, hacker_id, token)
+    return event_service.accept_hacker(
+        event_id, hacker_id, token, background_tasks.add_task
+    )
 
 
 @router.put("/{event_id}/unaccept/{hacker_id}", response_model=EventGet)
@@ -320,8 +331,15 @@ def reject_hacker(
 
 
 @router.put("/{event_id}/acceptgroup/{group_id}", response_model=EventGet)
-def accept_group(event_id: int, group_id: int, token: BaseToken = Depends(JWTBearer())):
-    return event_service.accept_group(event_id, group_id, token)
+def accept_group(
+    event_id: int,
+    group_id: int,
+    background_tasks: BackgroundTasks,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    return event_service.accept_group(
+        event_id, group_id, token, background_tasks.add_task
+    )
 
 
 @router.put("/{event_id}/rejectgroup/{group_id}", response_model=EventGet)

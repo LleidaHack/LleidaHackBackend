@@ -46,6 +46,10 @@ class MailClient(BaseClient):
             )
 
     def ensure_initialized(self):
+        # Health is checked until the client initializes, not before every
+        # mail: that added a blocking round-trip to each create/send call.
+        if self._initialized:
+            return
         with self._initialization_lock:
             try:
                 self.check_health()

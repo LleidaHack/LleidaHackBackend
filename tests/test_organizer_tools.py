@@ -170,3 +170,35 @@ def test_event_groups_can_omit_member_images(
     light = client.get(f"{path}?include_images=false", headers=member.headers).json()
     assert full["groups"][0]["members"][0]["image"]
     assert light["groups"][0]["members"][0]["image"] is None
+
+
+def test_participant_statuses_and_deferred_acceptance_mail(
+    client, create_user, create_event, monkeypatch
+):
+    from src.impl.Mail.client import MailClient
+
+    sent = []
+    monkeypatch.setattr(MailClient, "send_mail_by_id", lambda self, i: sent.append(i))
+    organizer = create_user(role="organizer")
+    accepted, rejected, pending = create_user(), create_user(), create_user()
+    event_id = create_event([accepted, rejected, pending])
+    url = f"/v1/event/{event_id}"
+    assert (
+        client.put(f"{url}/accept/{accepted.id}", headers=organizer.headers).status_code
+        == 200
+    )
+    assert len(sent) == 1
+    assert (
+        client.put(f"{url}/reject/{rejected.id}", headers=organizer.headers).status_code
+        == 200
+    )
+    participants = client.get(
+        f"{url}/hackers_participants_list", headers=organizer.headers
+    ).json()["participants"]
+    statuses = {p["id"]: p["status"] for p in participants}
+    assert statuses == {
+        accepted.id: "accepted",
+        rejected.id: "rejected",
+        pending.id: "pending",
+    }
+    assert all("image" not in p and "cv" not in p for p in participants)

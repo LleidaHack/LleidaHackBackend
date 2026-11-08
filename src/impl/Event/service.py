@@ -7,7 +7,7 @@ from typing import ClassVar
 
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
-from sqlalchemy import create_engine, desc
+from sqlalchemy import and_, case, create_engine, desc, func
 from sqlalchemy.orm import sessionmaker
 
 from src.configuration.Settings import settings
@@ -23,7 +23,9 @@ from src.impl.Event.model import (
     Event,
     EventAuditLog,
     EventParticipantNote,
+    HackerAccepted,
     HackerRegistration,
+    HackerRejected,
 )
 from src.impl.Event.schema import (
     EventCreate,
@@ -38,11 +40,13 @@ from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup, HackerGroupUser
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
+from src.impl.User.model import User
 from src.impl.Voucher.model import Voucher
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.qr import qr_png, ticket_qr_url
 from src.utils.service_utils import (
+    attribute_hacker_list,
     check_image,
     get_hacker_info,
     set_existing_data,
@@ -587,6 +591,45 @@ class EventService(BaseService):
             result.append(profile)
         return result
 
+    def get_statistics_participants(self, event_id: int, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        self.get_by_id(event_id)
+        rows = (
+            db.session.query(
+                Hacker.id,
+                Hacker.name,
+                Hacker.nickname,
+                Hacker.email,
+                Hacker.location,
+                Hacker.studies,
+                Hacker.study_center,
+                Hacker.how_did_you_meet_us,
+                case(
+                    (
+                        HackerRegistration.user_id.is_not(None),
+                        HackerRegistration.food_restrictions,
+                    ),
+                    else_=Hacker.food_restrictions,
+                ).label("food_restrictions"),
+            )
+            .join(
+                HackerAccepted,
+                and_(
+                    HackerAccepted.user_id == Hacker.id,
+                    HackerAccepted.event_id == event_id,
+                ),
+            )
+            .outerjoin(
+                HackerRegistration,
+                and_(
+                    HackerRegistration.user_id == Hacker.id,
+                    HackerRegistration.event_id == event_id,
+                ),
+            )
+        )
+        return [dict(row._mapping) for row in rows]
+
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
@@ -770,33 +813,19 @@ class EventService(BaseService):
     ):  ##Servei per obtindre la llista de participants amb status acceptat, rechazat o pending.
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
-        # Extract hacker IDs from registered_hackers
-        event = self.get_by_id(event_id)
-        # Extract pending hackers
-        pending_hackers_ids = [
-            h.id
-            for h in subtract_lists(
-                subtract_lists(event.registered_hackers, event.accepted_hackers),
-                event.rejected_hackers,
+        self.get_by_id(event_id)
+        # Column queries only: loading the User/registration rows would pull
+        # every profile picture and CV (base64) just to build this list.
+        accepted = {
+            user_id
+            for (user_id,) in db.session.query(HackerAccepted.user_id).filter(
+                HackerAccepted.event_id == event_id
             )
-        ]
-        registered_hackers = event.registered_hackers
-        # Accepted hackers
-        accepted_hackers_ids = [h.id for h in event.accepted_hackers]
-        # Rejected hackers
-        rejected_hackers_ids = [h.id for h in event.rejected_hackers]
-
-        # List hackers and add status as pending, accepted or rejected.
-        participants_list = [
-            get_hacker_info(
-                hacker, pending_hackers_ids, accepted_hackers_ids, rejected_hackers_ids
-            )
-            for hacker in registered_hackers
-        ]
-        registrations = {
-            r.user_id: r
-            for r in db.session.query(HackerRegistration).filter(
-                HackerRegistration.event_id == event_id
+        }
+        rejected = {
+            user_id
+            for (user_id,) in db.session.query(HackerRejected.user_id).filter(
+                HackerRejected.event_id == event_id
             )
         }
         notes = Counter(
@@ -805,16 +834,37 @@ class EventService(BaseService):
                 EventParticipantNote.event_id == event_id
             )
         )
-        for participant in participants_list:
-            reg = registrations.get(participant["id"])
-            participant["registered_at"] = reg.registered_at if reg else None
-            participant["study_center"] = reg.study_center if reg else None
-            # A flag, not the base64 PDF: the CV is fetched on demand.
-            participant["has_cv"] = bool(reg and reg.cv)
-            participant["notes_count"] = notes[participant["id"]]
-            participant["confirmed_assistance"] = (
-                bool(reg.confirmed_assistance) if reg else False
+        rows = (
+            db.session.query(
+                *(getattr(User, attr) for attr in attribute_hacker_list),
+                HackerRegistration.registered_at,
+                HackerRegistration.study_center,
+                and_(
+                    HackerRegistration.cv.is_not(None),
+                    func.length(HackerRegistration.cv) > 0,
+                ).label("has_cv"),
+                HackerRegistration.confirmed_assistance,
             )
+            .join(HackerRegistration, HackerRegistration.user_id == User.id)
+            .filter(HackerRegistration.event_id == event_id)
+        )
+        participants_list = []
+        for row in rows:
+            participant = {attr: getattr(row, attr) for attr in attribute_hacker_list}
+            participant["status"] = (
+                "accepted"
+                if row.id in accepted
+                else "rejected"
+                if row.id in rejected
+                else "pending"
+            )
+            participant["registered_at"] = row.registered_at
+            participant["study_center"] = row.study_center
+            # A flag, not the base64 PDF: the CV is fetched on demand.
+            participant["has_cv"] = bool(row.has_cv)
+            participant["notes_count"] = notes[row.id]
+            participant["confirmed_assistance"] = bool(row.confirmed_assistance)
+            participants_list.append(participant)
         # Combine group and nogroup data into a dictionary
         return {"participants": participants_list}
 
@@ -1015,7 +1065,7 @@ class EventService(BaseService):
 
     @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(HackerService)
-    def accept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
+    def accept_hacker(self, event_id: int, hacker_id: int, data: BaseToken, defer=None):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
@@ -1053,9 +1103,12 @@ class EventService(BaseService):
                 fields=f"{hacker.name},{event.name},5,{token}",
             )
         )
-        self.mail_client.send_mail_by_id(mail.id)
         self._audit(event.id, data, "accept", hacker.id)
         db.session.commit()
+        # Delivery talks to the mail service (and SMTP); run it after the
+        # response when the router provides background tasks, and only once
+        # the acceptance is committed.
+        (defer or (lambda f, *a: f(*a)))(self.mail_client.send_mail_by_id, mail.id)
         db.session.refresh(event)
         db.session.refresh(hacker)
         return event
@@ -1124,7 +1177,7 @@ class EventService(BaseService):
         return event
 
     @BaseService.needs_service("HackerGroupService")
-    def accept_group(self, event_id: int, group_id: int, data: BaseToken):
+    def accept_group(self, event_id: int, group_id: int, data: BaseToken, defer=None):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
@@ -1136,7 +1189,7 @@ class EventService(BaseService):
         for hacker in subtract_lists(group.members, event.accepted_hackers):
             if hacker not in event.registered_hackers:
                 raise InvalidDataException("Hacker not registered")
-            self.accept_hacker(event.id, hacker.id, data)
+            self.accept_hacker(event.id, hacker.id, data, defer)
         db.session.refresh(event)
         return event
 
