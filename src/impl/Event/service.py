@@ -601,6 +601,7 @@ class EventService(BaseService):
                 Hacker.name,
                 Hacker.nickname,
                 Hacker.email,
+                HackerRegistration.confirmed_assistance,
                 Hacker.location,
                 Hacker.studies,
                 Hacker.study_center,
@@ -707,17 +708,31 @@ class EventService(BaseService):
 
     def get_food_restrictions(self, eventId: int):
         event = self.get_by_id(eventId)
-        users = event.participants + event.accepted_hackers + event.registered_hackers
-        restrictions = []
-        for user in users:
-            if (
-                user.food_restrictions is not None
-                and user.food_restrictions.strip() != ""
-                and user.food_restrictions.strip() != "no"
-            ):
-                restrictions.append(user.food_restrictions)
-        # remove duplicates
-        return list(set(restrictions))
+        rows = (
+            db.session.query(HackerRegistration.food_restrictions)
+            .join(
+                HackerAccepted,
+                and_(
+                    HackerAccepted.user_id == HackerRegistration.user_id,
+                    HackerAccepted.event_id == HackerRegistration.event_id,
+                ),
+            )
+            .filter(
+                HackerRegistration.event_id == event.id,
+                HackerRegistration.confirmed_assistance.is_(True),
+            )
+        )
+        # Preserve the list response contract, scoped to confirmed accepted attendees.
+        return sorted(
+            {
+                row[0].strip()
+                for row in rows
+                if row[0]
+                and row[0].strip()
+                and row[0].strip().casefold()
+                not in {"no", "none", "cap", "ninguna", "ninguno", "sense restriccions"}
+            }
+        )
 
     @BaseService.needs_service(HackerService)
     def get_credits(self, eventId: int, data: BaseToken):

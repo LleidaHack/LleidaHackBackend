@@ -40,6 +40,7 @@ def test_dietary_information_is_event_scoped_and_replayed(
         "study_center",
         "how_did_you_meet_us",
         "food_restrictions",
+        "confirmed_assistance",
     }
     assert client.get(
         f"/v1/event/{event}/statistics_participants", headers=user.headers
@@ -83,3 +84,43 @@ def test_manual_meal_preserves_event_response_and_includes_dietary_details(
     assert response.json()["id"] == event
     assert response.json()["food_restrictions"] == "Gluten"
     assert response.json()["participant"]
+
+
+def test_catering_restrictions_require_acceptance_and_confirmation(
+    client, create_user, create_event, accept, engine
+):
+    admin, user, event, _, _ = prepare(
+        client, create_user, create_event, accept, engine
+    )
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "UPDATE hacker_event_registration SET food_restrictions = 'Gluten', confirmed_assistance = false WHERE event_id = :event AND user_id = :user"
+            ),
+            {"event": event, "user": user.id},
+        )
+    endpoint = f"/v1/event/{event}/food_restrictions"
+    assert client.get(endpoint, headers=admin.headers).json() == []
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "UPDATE hacker_event_registration SET confirmed_assistance = true WHERE event_id = :event AND user_id = :user"
+            ),
+            {"event": event, "user": user.id},
+        )
+    response = client.get(endpoint, headers=admin.headers)
+    assert response.status_code == 200
+    assert response.json() == ["Gluten"]
+    stats = client.get(
+        f"/v1/event/{event}/statistics_participants", headers=admin.headers
+    ).json()
+    assert stats[0]["confirmed_assistance"] is True
+
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "DELETE FROM hacker_event_accepted WHERE event_id = :event AND user_id = :user"
+            ),
+            {"event": event, "user": user.id},
+        )
+    assert client.get(endpoint, headers=admin.headers).json() == []
