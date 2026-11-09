@@ -286,3 +286,103 @@ class VoucherService(BaseService):
         db.session.commit()
         db.session.refresh(voucher)
         return voucher
+
+    def reset(self, event_id, voucher_code, body, token):
+        """Clear event participation and reverse benefits, retaining an audit trail."""
+        from copy import deepcopy
+
+        from fastapi import HTTPException
+
+        from src.impl.Event.model import HackerParticipation
+        from src.impl.Meal.model import HackerMeal, Meal
+        from src.impl.Operations.model import CoinMovement, OperationAudit, ScanRecord
+        from src.impl.Operations.service import audit, movement, state
+        from src.utils.access import require_management
+
+        require_management(token)
+        _, state_row = state(event_id, lock=True)
+        voucher = self.get_by_code(voucher_code, event_id)
+        previous = (
+            db.session.query(OperationAudit)
+            .filter_by(event_id=event_id, operation_id=str(body.operation_id))
+            .first()
+        )
+        details = {
+            "voucher_id": voucher.id,
+            "expected_hacker_id": body.expected_hacker_id,
+            "reason": body.reason,
+        }
+        if previous:
+            if previous.action != "badge.reset" or previous.details != details:
+                raise HTTPException(
+                    409, "Operation identifier already used for a different request"
+                )
+            return previous.result
+        if voucher.hacker_id != body.expected_hacker_id:
+            raise HTTPException(
+                409, "Voucher assignment changed; refresh before resetting"
+            )
+        user_id = voucher.hacker_id
+        log = audit(
+            event_id,
+            token,
+            "badge.reset",
+            details,
+            user_id,
+            operation_id=str(body.operation_id),
+        )
+        scans = (
+            db.session.query(ScanRecord)
+            .filter_by(event_id=event_id, user_id=user_id, voided=False)
+            .all()
+        )
+        for scan in scans:
+            scan.voided = True
+        meal_ids = db.session.query(Meal.id).filter_by(event_id=event_id)
+        db.session.query(HackerMeal).filter(
+            HackerMeal.user_id == user_id, HackerMeal.meal_id.in_(meal_ids)
+        ).delete(synchronize_session=False)
+        db.session.query(HackerParticipation).filter_by(
+            event_id=event_id, user_id=user_id
+        ).delete(synchronize_session=False)
+        movements = (
+            db.session.query(CoinMovement)
+            .filter_by(event_id=event_id, user_id=user_id)
+            .all()
+        )
+        reversed_ids = {m.reversal_of for m in movements if m.reversal_of is not None}
+        originals = sorted(
+            (
+                m
+                for m in movements
+                if m.reversal_of is None and m.id not in reversed_ids
+            ),
+            key=lambda m: m.amount,
+        )
+        config = deepcopy(state_row.config)
+        for original in originals:
+            movement(
+                event_id,
+                user_id,
+                -original.amount,
+                "Voucher reset: " + body.reason[:480],
+                log,
+                original.id,
+            )
+            original_log = db.session.get(OperationAudit, original.audit_id)
+            if original_log.action == "redeem":
+                for prize in config.get("prizes", []):
+                    if prize["id"] == original_log.details.get("target"):
+                        prize["stock"] += 1
+        state_row.config = config
+        state_row.version += 1
+        voucher.hacker_id = None
+        voucher.assigned_at = None
+        voucher.revoked = False
+        log.result = {
+            "success": True,
+            "voided_scans": len(scans),
+            "reversed_movements": len(originals),
+        }
+        db.session.commit()
+        return log.result

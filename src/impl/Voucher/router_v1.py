@@ -1,4 +1,7 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, Response
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.impl.Voucher.schema import (
     VoucherAssignResult,
@@ -99,3 +102,20 @@ def replace_badge(
     return voucher_service.assign(
         event_id, voucher_code, hacker_code, token, replace=True
     )
+
+
+class VoucherReset(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    operation_id: UUID
+    expected_hacker_id: int = Field(gt=0)
+    reason: str = Field(min_length=3, max_length=500)
+
+
+@router.post("/{voucher_code}/reset")
+def reset_voucher(
+    event_id: int,
+    voucher_code: str,
+    body: VoucherReset,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    return voucher_service.reset(event_id, voucher_code, body, token)
