@@ -1,39 +1,46 @@
 """Print-ready accreditation badges: the marketing design with a unique QR each.
 
 1. Gestió → event → Check-in: generate the vouchers and export the CSV.
-2. Run (positions in millimetres from the top-left corner of the trim box,
-   i.e. the final cut size; the bleed is outside it):
+2. Check the position with a single proof page, the square outlined in red:
 
-     uv run python scripts/badge_print.py disseny.pdf vouchers_event_7.csv \\
-         --x 27.5 --y 70 --size 30 -o acreditacions.pdf
+     uv run python scripts/badge_print.py front.png vouchers_event_7.csv \\
+         --width-mm 90 --x 126 --y 949 --size 269 --limit 1 --outline -o prova.pdf
 
-   Check the position first with a single proof page and the square outlined:
+3. Generate the print file (one front, and its back if given, per voucher):
 
-     uv run python scripts/badge_print.py disseny.pdf vouchers_event_7.csv \\
-         --x 27.5 --y 70 --size 30 --limit 1 --outline -o prova.pdf
+     uv run python scripts/badge_print.py front.png vouchers_event_7.csv \\
+         --back back.png --width-mm 90 --x 126 --y 949 --size 269 -o hackers.pdf
 
-The output has one page per voucher, in CSV order, keeping the design's size
-and bleed. The QR is drawn as vector shapes (sharp at any size) and encodes
-exactly the voucher code the HackEPS scanner expects; the code is also printed
-under it in case a camera cannot read it. The design is embedded once (as a
-reusable form) and drawn under each QR, so the file stays small.
+Designs can be PDFs (positions in millimetres from the top-left corner of the
+trim box, i.e. the final cut size) or PNG/JPEG artwork (positions in pixels of
+the image; --width-mm sets the printed width and --bleed-mm extends the edges
+outwards for the cut). The QR is drawn as vector shapes, encodes exactly the
+voucher code the HackEPS scanner expects and has the code printed under it in
+case a camera cannot read it. Each design is embedded once and reused by every
+page, so the file stays small. Use --skip/--limit to take consecutive slices of
+the same CSV for differently coloured badges.
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
+import io
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import segno
+from PIL import Image
 from pypdf import PageObject, PdfReader, PdfWriter
 from pypdf.generic import (
     ArrayObject,
     DecodedStreamObject,
     DictionaryObject,
     NameObject,
+    NumberObject,
+    RectangleObject,
 )
 
 MM = 72 / 25.4
@@ -43,6 +50,7 @@ QUIET_ZONE_MODULES = 2
 # Courier glyphs are 0.6 em wide, so the code can be centred exactly.
 COURIER_WIDTH = 0.6
 MIN_SIZE_MM = 20
+RASTER_SUFFIXES = {".png", ".jpg", ".jpeg"}
 
 
 def read_codes(path: Path, only_unassigned: bool = False) -> list[str]:
@@ -131,6 +139,109 @@ def overlay_stream(
     return "\n".join(ops).encode()
 
 
+@dataclass
+class Design:
+    page: PageObject
+    # PDF points per design unit: millimetres for PDFs, pixels for artwork.
+    unit: float
+    raster: bool
+
+
+def _bleed_canvas(image: Image.Image, bleed: int) -> Image.Image:
+    """Extend the outermost pixels outwards so the cut never shows a white edge."""
+    if bleed <= 0:
+        return image
+    width, height = image.size
+    canvas = Image.new("RGB", (width + 2 * bleed, height + 2 * bleed))
+    canvas.paste(image, (bleed, bleed))
+    canvas.paste(image.crop((0, 0, width, 1)).resize((width, bleed)), (bleed, 0))
+    canvas.paste(
+        image.crop((0, height - 1, width, height)).resize((width, bleed)),
+        (bleed, bleed + height),
+    )
+    canvas.paste(
+        canvas.crop((bleed, 0, bleed + 1, height + 2 * bleed)).resize(
+            (bleed, height + 2 * bleed)
+        ),
+        (0, 0),
+    )
+    canvas.paste(
+        canvas.crop((bleed + width - 1, 0, bleed + width, height + 2 * bleed)).resize(
+            (bleed, height + 2 * bleed)
+        ),
+        (bleed + width, 0),
+    )
+    return canvas
+
+
+def _raster_pdf(path: Path, width_mm: float, bleed_mm: float) -> tuple[bytes, float]:
+    image = Image.open(path)
+    image = image.convert("RGB")
+    width, height = image.size
+    scale = width_mm * MM / width
+    bleed = round(bleed_mm * MM / scale)
+    canvas = _bleed_canvas(image, bleed)
+    total_w, total_h = canvas.size[0] * scale, canvas.size[1] * scale
+
+    art = DecodedStreamObject()
+    art.set_data(canvas.tobytes())
+    art.update(
+        {
+            NameObject("/Type"): NameObject("/XObject"),
+            NameObject("/Subtype"): NameObject("/Image"),
+            NameObject("/Width"): NumberObject(canvas.size[0]),
+            NameObject("/Height"): NumberObject(canvas.size[1]),
+            NameObject("/ColorSpace"): NameObject("/DeviceRGB"),
+            NameObject("/BitsPerComponent"): NumberObject(8),
+        }
+    )
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=total_w, height=total_h)
+    page[NameObject("/TrimBox")] = RectangleObject(
+        [
+            bleed * scale,
+            bleed * scale,
+            (bleed + width) * scale,
+            (bleed + height) * scale,
+        ]
+    )
+    page[NameObject("/BleedBox")] = RectangleObject([0, 0, total_w, total_h])
+    page[NameObject("/Resources")] = DictionaryObject(
+        {
+            NameObject("/XObject"): DictionaryObject(
+                {NameObject("/Art"): writer._add_object(art.flate_encode())}
+            )
+        }
+    )
+    content = DecodedStreamObject()
+    content.set_data(f"q {_fmt(total_w)} 0 0 {_fmt(total_h)} 0 0 cm /Art Do Q".encode())
+    page[NameObject("/Contents")] = writer._add_object(content)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    return buffer.getvalue(), scale
+
+
+def load_design(
+    path: Path,
+    *,
+    page_number: int = 1,
+    width_mm: float | None = None,
+    bleed_mm: float = 3,
+) -> Design:
+    if path.suffix.lower() in RASTER_SUFFIXES:
+        if not width_mm:
+            raise SystemExit("Artwork images need --width-mm (printed badge width)")
+        data, scale = _raster_pdf(path, width_mm, bleed_mm)
+        return Design(PdfReader(io.BytesIO(data)).pages[0], scale, raster=True)
+    reader = PdfReader(path)
+    if not 1 <= page_number <= len(reader.pages):
+        raise SystemExit(f"{path} has {len(reader.pages)} page(s)")
+    page = reader.pages[page_number - 1]
+    if page.rotation:
+        raise SystemExit("Rotated design pages are not supported; export it upright")
+    return Design(page, MM, raster=False)
+
+
 def _design_form(writer: PdfWriter, template: PageObject):
     """The design page as a Form XObject, embedded once and drawn on every badge."""
     contents = template.get_contents()
@@ -164,30 +275,38 @@ def _font(writer: PdfWriter):
     )
 
 
+def _copy_boxes(page: PageObject, template: PageObject) -> None:
+    for box in ("/MediaBox", "/CropBox", "/BleedBox", "/TrimBox", "/ArtBox"):
+        if box in template:
+            page[NameObject(box)] = ArrayObject(template[box])
+
+
 def build(
-    design: Path,
+    front: Design,
     codes: list[str],
     output: Path,
     *,
-    x_mm: float,
-    y_mm: float,
-    size_mm: float,
-    page_number: int = 1,
+    x: float,
+    y: float,
+    size: float,
+    back: Design | None = None,
     print_code: bool = True,
     outline: bool = False,
 ) -> int:
-    if size_mm < MIN_SIZE_MM:
-        raise SystemExit(f"The QR square must be at least {MIN_SIZE_MM} mm wide")
-    reader = PdfReader(design)
-    if not 1 <= page_number <= len(reader.pages):
-        raise SystemExit(f"{design} has {len(reader.pages)} page(s)")
-    template = reader.pages[page_number - 1]
-    if template.rotation:
-        raise SystemExit("Rotated design pages are not supported; export it upright")
+    """Write one page per code (followed by the back, if any).
+
+    `x`, `y` and `size` are in the front design's units (see `Design.unit`).
+    """
+    template = front.page
     trim = template.trimbox
-    left = float(trim.left) + x_mm * MM
-    top = float(trim.top) - y_mm * MM
-    size = size_mm * MM
+    left = float(trim.left) + x * front.unit
+    top = float(trim.top) - y * front.unit
+    size = size * front.unit
+    if size < MIN_SIZE_MM * MM - 1e-6:
+        raise SystemExit(
+            f"The QR square would print {size / MM:.1f} mm wide; "
+            f"at least {MIN_SIZE_MM} mm is needed to scan reliably"
+        )
     if (
         left < float(trim.left)
         or top > float(trim.top)
@@ -197,25 +316,40 @@ def build(
         raise SystemExit("The QR square falls outside the badge (check --x/--y/--size)")
 
     writer = PdfWriter()
-    design_ref = _design_form(writer, template)
-    resources = DictionaryObject(
-        {
-            NameObject("/XObject"): DictionaryObject(
-                {NameObject("/Design"): design_ref}
-            ),
-            NameObject("/Font"): DictionaryObject({NameObject("/FQR"): _font(writer)}),
-        }
+    font = DictionaryObject({NameObject("/FQR"): _font(writer)})
+    front_resources = writer._add_object(
+        DictionaryObject(
+            {
+                NameObject("/XObject"): DictionaryObject(
+                    {NameObject("/Design"): _design_form(writer, template)}
+                ),
+                NameObject("/Font"): font,
+            }
+        )
     )
-    resources_ref = writer._add_object(resources)
+    back_page = None
+    if back is not None:
+        back_content = DecodedStreamObject()
+        back_content.set_data(b"q /Design Do Q")
+        back_page = (
+            writer._add_object(
+                DictionaryObject(
+                    {
+                        NameObject("/XObject"): DictionaryObject(
+                            {NameObject("/Design"): _design_form(writer, back.page)}
+                        )
+                    }
+                )
+            ),
+            writer._add_object(back_content),
+        )
     for code in codes:
         page = writer.add_blank_page(
             width=float(template.mediabox.width),
             height=float(template.mediabox.height),
         )
-        for box in ("/MediaBox", "/CropBox", "/BleedBox", "/TrimBox", "/ArtBox"):
-            if box in template:
-                page[NameObject(box)] = ArrayObject(template[box])
-        page[NameObject("/Resources")] = resources_ref
+        _copy_boxes(page, template)
+        page[NameObject("/Resources")] = front_resources
         content = DecodedStreamObject()
         content.set_data(
             b"q /Design Do Q\n"
@@ -224,6 +358,14 @@ def build(
             )
         )
         page[NameObject("/Contents")] = writer._add_object(content.flate_encode())
+        if back_page is not None:
+            reverse = writer.add_blank_page(
+                width=float(back.page.mediabox.width),
+                height=float(back.page.mediabox.height),
+            )
+            _copy_boxes(reverse, back.page)
+            reverse[NameObject("/Resources")] = back_page[0]
+            reverse[NameObject("/Contents")] = back_page[1]
     with output.open("wb") as handle:
         writer.write(handle)
     return len(codes)
@@ -231,14 +373,26 @@ def build(
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("design", type=Path, help="badge design (PDF)")
+    parser.add_argument("design", type=Path, help="badge front (PDF, PNG or JPEG)")
     parser.add_argument("csv", type=Path, help="voucher CSV exported from Gestió")
     parser.add_argument("-o", "--output", type=Path, default=Path("acreditacions.pdf"))
-    parser.add_argument("--x", type=float, required=True, help="mm from trim left")
-    parser.add_argument("--y", type=float, required=True, help="mm from trim top")
-    parser.add_argument("--size", type=float, required=True, help="square side, mm")
-    parser.add_argument("--page", type=int, default=1, help="design page to use")
-    parser.add_argument("--limit", type=int, help="only the first N vouchers")
+    parser.add_argument("--back", type=Path, help="badge back, printed after each")
+    parser.add_argument(
+        "--x", type=float, required=True, help="square left (mm, or px for images)"
+    )
+    parser.add_argument(
+        "--y", type=float, required=True, help="square top (mm, or px for images)"
+    )
+    parser.add_argument(
+        "--size", type=float, required=True, help="square side (mm, or px for images)"
+    )
+    parser.add_argument("--width-mm", type=float, help="printed width of images")
+    parser.add_argument(
+        "--bleed-mm", type=float, default=3, help="bleed added to images (default 3)"
+    )
+    parser.add_argument("--page", type=int, default=1, help="PDF design page to use")
+    parser.add_argument("--skip", type=int, default=0, help="skip the first N codes")
+    parser.add_argument("--limit", type=int, help="only N vouchers (after --skip)")
     parser.add_argument(
         "--only-unassigned",
         action="store_true",
@@ -252,23 +406,31 @@ def main(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    codes = read_codes(args.csv, args.only_unassigned)
+    codes = read_codes(args.csv, args.only_unassigned)[args.skip :]
     if args.limit is not None:
+        if len(codes) < args.limit:
+            raise SystemExit(f"Only {len(codes)} vouchers left; generate more first")
         codes = codes[: args.limit]
     if not codes:
         raise SystemExit("No vouchers to print")
+    options = {"width_mm": args.width_mm, "bleed_mm": args.bleed_mm}
+    front = load_design(args.design, page_number=args.page, **options)
+    back = load_design(args.back, **options) if args.back else None
     count = build(
-        args.design,
+        front,
         codes,
         args.output,
-        x_mm=args.x,
-        y_mm=args.y,
-        size_mm=args.size,
-        page_number=args.page,
+        x=args.x,
+        y=args.y,
+        size=args.size,
+        back=back,
         print_code=not args.no_code,
         outline=args.outline,
     )
-    print(f"{count} badges written to {args.output}", file=sys.stderr)
+    print(
+        f"{count} badges ({codes[0]} … {codes[-1]}) written to {args.output}",
+        file=sys.stderr,
+    )
 
 
 if __name__ == "__main__":

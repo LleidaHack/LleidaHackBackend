@@ -2,10 +2,11 @@ import csv
 
 import pytest
 import segno
+from PIL import Image
 from pypdf import PageObject, PdfReader, PdfWriter
 from pypdf.generic import DecodedStreamObject, NameObject, RectangleObject
 
-from scripts.badge_print import MM, build, overlay_stream, read_codes
+from scripts.badge_print import MM, build, load_design, main, overlay_stream, read_codes
 
 CODES = ["VABCDEFGH", "V23456789", "VKMNPQRST"]
 
@@ -37,7 +38,12 @@ def voucher_csv(path, codes, assigned=()):
 def test_every_badge_keeps_the_design_and_gets_its_own_code(tmp_path):
     output = tmp_path / "badges.pdf"
     build(
-        design(tmp_path / "design.pdf"), CODES, output, x_mm=27.5, y_mm=70, size_mm=30
+        load_design(design(tmp_path / "design.pdf")),
+        CODES,
+        output,
+        x=27.5,
+        y=70,
+        size=30,
     )
     reader = PdfReader(output)
     assert len(reader.pages) == len(CODES)
@@ -70,21 +76,21 @@ def test_qr_modules_match_the_voucher_code():
 def test_square_outside_the_badge_is_rejected(tmp_path):
     with pytest.raises(SystemExit, match="outside"):
         build(
-            design(tmp_path / "design.pdf"),
+            load_design(design(tmp_path / "design.pdf")),
             CODES,
             tmp_path / "out.pdf",
-            x_mm=70,
-            y_mm=70,
-            size_mm=30,
+            x=70,
+            y=70,
+            size=30,
         )
     with pytest.raises(SystemExit, match="at least"):
         build(
-            design(tmp_path / "design.pdf"),
+            load_design(design(tmp_path / "design.pdf")),
             CODES,
             tmp_path / "out.pdf",
-            x_mm=10,
-            y_mm=10,
-            size_mm=10,
+            x=10,
+            y=10,
+            size=10,
         )
 
 
@@ -96,3 +102,60 @@ def test_csv_validation(tmp_path):
         read_codes(voucher_csv(tmp_path / "d.csv", [*CODES, CODES[0]]))
     with pytest.raises(SystemExit, match="Invalid"):
         read_codes(voucher_csv(tmp_path / "i.csv", ["VO0I1XXXX"]))
+
+
+def test_artwork_images_get_bleed_back_pages_and_slices(tmp_path):
+    front, back = tmp_path / "front.png", tmp_path / "back.png"
+    Image.new("RGB", (1000, 1573), (41, 41, 41)).save(front)
+    Image.new("RGB", (1000, 1573), (200, 60, 60)).save(back)
+    codes = voucher_csv(tmp_path / "v.csv", CODES)
+    output = tmp_path / "badges.pdf"
+    main(
+        [
+            str(front),
+            str(codes),
+            "--back",
+            str(back),
+            "--width-mm",
+            "90",
+            "--x",
+            "126",
+            "--y",
+            "949",
+            "--size",
+            "269",
+            "--skip",
+            "1",
+            "--limit",
+            "2",
+            "-o",
+            str(output),
+        ]
+    )
+    reader = PdfReader(output)
+    assert len(reader.pages) == 4
+    fronts, backs = reader.pages[0::2], reader.pages[1::2]
+    for page, code in zip(fronts, CODES[1:], strict=True):
+        assert f"({code}) Tj".encode() in page.get_contents().get_data()
+    for page in backs:
+        assert page.get_contents().get_data() == b"q /Design Do Q"
+    trim, media = fronts[0].trimbox, fronts[0].mediabox
+    assert float(trim.width) == pytest.approx(90 * MM)
+    assert float(trim.left) == pytest.approx(3 * MM, abs=0.3)
+    assert float(media.width) == pytest.approx(96 * MM, abs=0.6)
+    # Front and back artwork are each embedded once.
+    designs = {
+        p["/Resources"]["/XObject"].raw_get("/Design").idnum for p in reader.pages
+    }
+    assert len(designs) == 2
+
+
+def test_slices_cannot_run_past_the_generated_vouchers(tmp_path):
+    front = tmp_path / "front.png"
+    Image.new("RGB", (1000, 1573), (41, 41, 41)).save(front)
+    codes = voucher_csv(tmp_path / "v.csv", CODES)
+    args = [str(front), str(codes), "--width-mm", "90", "--x", "126", "--y", "949"]
+    with pytest.raises(SystemExit, match="Only 1 vouchers left"):
+        main([*args, "--size", "269", "--skip", "2", "--limit", "5"])
+    with pytest.raises(SystemExit, match="at least 20 mm"):
+        main([*args, "--size", "150", "-o", str(tmp_path / "o.pdf")])

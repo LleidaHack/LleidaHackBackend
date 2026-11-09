@@ -68,16 +68,19 @@ Before an authorized production rollout: back up and rehearse the Alembic migrat
 
 ## Printed accreditations (vouchers)
 
-Each printed badge carries a voucher QR that is bound to a participant at check-in. In Gestió → Check-in, generate the vouchers (print about 10% spare) and export the CSV. Then merge the marketing design with one unique QR per badge:
+Each printed badge carries a voucher QR. Hackers' badges are bound when their ticket is scanned at check-in; mentors' badges are bound from the mentor roster. In Gestió → Check-in, generate all the vouchers at once and export the CSV (ordered by creation). Then merge the artwork with one unique QR per badge. Consecutive slices of the same CSV feed the differently coloured badges, so no code is printed twice:
 
 ```sh
+Q=(--width-mm 90 --x 126 --y 949 --size 269)   # 2026 artwork: QR square in pixels
 # Proof: one page, the QR square outlined in red
-uv run python scripts/badge_print.py design.pdf vouchers_event_7.csv --x 27.5 --y 70 --size 30 --limit 1 --outline -o proof.pdf
-# Print file: one page per voucher, keeping the design's bleed and trim
-uv run python scripts/badge_print.py design.pdf vouchers_event_7.csv --x 27.5 --y 70 --size 30 -o badges.pdf
+uv run python scripts/badge_print.py hackers-green/front.png vouchers.csv $Q --limit 1 --outline -o proof.pdf
+# Print files: front + back per voucher
+uv run python scripts/badge_print.py hackers-green/front.png vouchers.csv --back hackers-green/back.png $Q --limit 330 -o hackers.pdf
+uv run python scripts/badge_print.py staff-yellow/front.png vouchers.csv --back staff-yellow/back.png $Q --skip 330 --limit 30 -o staff.pdf
+uv run python scripts/badge_print.py mentors-companies-red/front.png vouchers.csv --back mentors-companies-red/back.png $Q --skip 360 --limit 50 -o mentors-companies.pdf
 ```
 
-`--x`/`--y` are millimetres from the top-left corner of the trim box (the final cut size) to the white square; `--size` is its side (minimum 20 mm; 25-30 mm scans comfortably). The QR is vector, uses error correction level H, and encodes exactly the voucher code; the code is printed under it for manual entry (`--no-code` omits it). Use `--only-unassigned` to reprint spares without already bound vouchers. Supply the design as an upright PDF with its trim box set (any PDF export with bleed does this).
+PNG/JPEG artwork takes positions in image pixels; `--width-mm` sets the printed (trim) width and `--bleed-mm` (default 3) extends the edge pixels outwards for the cut. PDF designs take positions in millimetres from the top-left of the trim box. The QR must print at least 20 mm wide. It is vector, uses error correction level H and encodes exactly the voucher code; the code is printed under it for manual entry (`--no-code` omits it). `--only-unassigned` reprints spares without already bound vouchers.
 
 ## Public LleidaCoins leaderboard
 
