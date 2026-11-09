@@ -27,7 +27,14 @@ with Session(create_engine(url)) as session:
         session.query(PortalAccount).filter_by(email="company@example.test").first()
     )
     if not account:
-        company = Company(name="Local Demo Company")
+        company = Company(
+            name="Local Demo Company",
+            description="Local company portal demonstration",
+            website="",
+            address="",
+            linkdin="",
+            telephone="",
+        )
         session.add(company)
         session.flush()
         account = PortalAccount(
@@ -37,6 +44,10 @@ with Session(create_engine(url)) as session:
         )
         session.add(account)
         session.flush()
+    company = session.get(Company, account.company_id)
+    for field in ("description", "website", "address", "linkdin", "telephone"):
+        if getattr(company, field) is None:
+            setattr(company, field, "")
     grant = (
         session.query(PortalGrant)
         .filter_by(account_id=account.id, event_id=event.id)
