@@ -37,4 +37,5 @@ generated_src/**
 .env.operations.local
 
 .vapid.operations.local.pem
+
 .gstack/
