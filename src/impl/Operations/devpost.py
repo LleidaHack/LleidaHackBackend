@@ -23,6 +23,9 @@ MAX_ROWS = 2000
 ALIASES = {
     "url": ["project url", "submission url", "devpost url", "url"],
     "title": ["project title", "project name", "title"],
+    "description": ["description", "project description", "descripció"],
+    "repository_url": ["repository", "repository url", "github"],
+    "demo_url": ["demo", "demo url", "video"],
     "team": [
         "hackeps team code",
         "codi d’equip",
@@ -38,7 +41,7 @@ ALIASES = {
 
 class ImportInput(BaseModel):
     csv_text: str = Field(min_length=1, max_length=1_000_000)
-    columns: dict[str, str] = Field(default_factory=dict, max_length=6)
+    columns: dict[str, str] = Field(default_factory=dict, max_length=9)
     challenges: dict[str, str] = Field(default_factory=dict, max_length=100)
     completed_statuses: list[str] = Field(
         default_factory=lambda: ["submitted", "complete", "completed"], max_length=30
@@ -180,6 +183,26 @@ def preview(event_id, body, state):
             item["errors"].append(str(exc))
         if not get("title") or len(get("title")) > 150:
             item["errors"].append("Project title must contain 1–150 characters")
+        item["description"] = get("description")
+        if len(item["description"]) > 10000:
+            item["errors"].append("Project description exceeds 10000 characters")
+        for field in ("repository_url", "demo_url"):
+            value = get(field)
+            try:
+                parsed = urlsplit(value)
+                if value and (
+                    len(value) > 500
+                    or parsed.scheme not in {"http", "https"}
+                    or not parsed.hostname
+                    or parsed.username
+                    or parsed.password
+                ):
+                    raise ValueError("Invalid link")
+            except ValueError:
+                item["errors"].append(
+                    "Project links must be HTTP or HTTPS URLs without credentials"
+                )
+            item[field] = value
         group = groups.get(get("team"))
         if not group:
             item["errors"].append("Team code does not belong to this event")
@@ -252,7 +275,17 @@ def preview(event_id, body, state):
             "input": body.model_dump(include=set(ImportInput.model_fields)),
             "preview": result,
             "links": sorted(
-                (p.url, p.group_id, p.title, p.challenge, p.mlh) for p in existing
+                (
+                    p.url,
+                    p.group_id,
+                    p.title,
+                    p.challenge,
+                    p.mlh,
+                    p.description,
+                    p.repository_url,
+                    p.demo_url,
+                )
+                for p in existing
             ),
             "turns": [
                 (p.id, p.version, p.room, p.state, p.scheduled_at, p.pinned, p.position)
@@ -321,6 +354,9 @@ def commit_import(
             db.session.add(project)
         for key in ("title", "challenge", "mlh"):
             setattr(project, key, item[key])
+        for key in ("description", "repository_url", "demo_url"):
+            if plan["columns"].get(key):
+                setattr(project, key, item[key])
         if item["queue_action"] == "create":
             for track in [item["challenge"]] + (["mlh"] if item["mlh"] else []):
                 db.session.add(

@@ -158,6 +158,13 @@ class DiscordDelivery(BaseModel):
 
 
 class DevpostProject(BaseModel):
+    description: Mapped[str] = mapped_column(
+        String(10000), default="", server_default=""
+    )
+    repository_url: Mapped[str] = mapped_column(
+        String(500), default="", server_default=""
+    )
+    demo_url: Mapped[str] = mapped_column(String(500), default="", server_default="")
     __tablename__ = "event_devpost_project"
     id: Mapped[int] = mapped_column(primary_key=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), index=True)

@@ -51,3 +51,7 @@ router.include_router(nickname_router)
 from src.impl.Operations.mentors import router as mentor_router
 
 router.include_router(mentor_router)
+
+from src.impl.CompanyPortal.router import router as company_portal_router
+
+router.include_router(company_portal_router)

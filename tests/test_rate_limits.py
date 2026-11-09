@@ -227,3 +227,27 @@ def test_ipv6_addresses_share_subnet_quota():
             await app.redis.aclose()
 
     asyncio.run(check())
+
+
+def test_company_login_shares_normalized_account_limit_across_ips():
+    async def check():
+        app = middleware(login_per_account=2)
+        try:
+            for index, email in enumerate(
+                ["Company@Example.test", "company@example.test", "COMPANY@example.test"]
+            ):
+                async with httpx.AsyncClient(
+                    transport=httpx.ASGITransport(
+                        app=app, client=(f"192.0.2.{index}", 123)
+                    ),
+                    base_url="http://test",
+                ) as client:
+                    response = await client.post(
+                        "/v1/company-portal/login",
+                        json={"email": email, "password": "invalid"},
+                    )
+                    assert response.status_code == (429 if index == 2 else 200)
+        finally:
+            await app.redis.aclose()
+
+    asyncio.run(check())

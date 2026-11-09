@@ -90,7 +90,10 @@ class RateLimitingMiddleware:
         path = scope["path"].rstrip("/")
         signup = request.method == "POST" and path in SIGNUPS
         mail = request.method == "POST" and path in MAIL_ROUTES
-        login = request.method == "GET" and path == "/v1/auth/login"
+        login = (request.method == "GET" and path == "/v1/auth/login") or (
+            request.method == "POST"
+            and path in {"/v1/company-portal/login", "/v1/company-portal/setup"}
+        )
         rules = [
             ("burst", identity, c.burst_per_second, 1),
             ("general", identity, c.requests_per_minute, 60),
@@ -149,7 +152,18 @@ class RateLimitingMiddleware:
                     )
                 return
             account = ""
-            if login:
+            if login and path.startswith("/v1/company-portal/"):
+                try:
+                    payload = json.loads(body)
+                    account = (
+                        payload["email"]
+                        if isinstance(payload, dict)
+                        and isinstance(payload.get("email"), str)
+                        else ""
+                    )
+                except (ValueError, UnicodeError):
+                    pass
+            elif login:
                 auth = request.headers.get("authorization", "").split(" ", 1)
                 if len(auth) == 2 and auth[0].lower() == "basic":
                     try:

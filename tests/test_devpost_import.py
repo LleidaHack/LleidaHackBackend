@@ -240,3 +240,49 @@ def test_csv_structure_and_limits(client, setup_import):
             base + "/devpost/preview", headers=o.headers, json={"csv_text": csv_text}
         )
         assert response.status_code == 422, response.text
+
+
+def test_optional_project_details_preserved_and_unsafe_links_rejected(
+    client, setup_import, engine
+):
+    organizer, _, event, group, base = setup_import
+    rows = list(
+        csv.reader(io.StringIO(payload(group.code)["csv_text"].lstrip("\ufeff")))
+    )
+    rows[0] += ["Description", "Repository", "Demo"]
+    rows[1] += [
+        "Accessible farm dashboard",
+        "https://github.com/example/demo",
+        "https://example.com/demo",
+    ]
+    rows[2] += ["", "", ""]
+    stream = io.StringIO()
+    csv.writer(stream).writerows(rows)
+    body = {"csv_text": stream.getvalue()}
+    response, _, _ = commit(client, organizer, base, body)
+    assert response.status_code == 200, response.text
+    response, _, _ = commit(client, organizer, base, payload(group.code))
+    assert response.status_code == 200, response.text
+    with engine.connect() as conn:
+        stored = conn.execute(
+            text(
+                "SELECT description, repository_url, demo_url FROM event_devpost_project WHERE event_id=:id"
+            ),
+            {"id": event},
+        ).one()
+        assert tuple(stored) == tuple(rows[1][-3:])
+    for invalid in (
+        "javascript:alert(1)",
+        "https://[broken",
+        "https://user:password@example.com",
+    ):
+        rows[1][-1] = invalid
+        stream = io.StringIO()
+        csv.writer(stream).writerows(rows)
+        preview = client.post(
+            base + "/devpost/preview",
+            headers=organizer.headers,
+            json={"csv_text": stream.getvalue()},
+        )
+        assert preview.status_code == 200
+        assert not preview.json()["ready"]

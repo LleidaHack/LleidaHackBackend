@@ -28,6 +28,11 @@ PUBLIC = "https://backend.main.lleidahack.dev"
 # deploy/compose-workers.example.yml). When present in the Compose file they
 # are moved to the new image together with backend-main and rolled back with it.
 WORKERS = {
+    "backend-company-mail-worker-main": [
+        "python",
+        "-m",
+        "src.impl.CompanyPortal.mail_worker",
+    ],
     "backend-push-worker-main": [
         "python",
         "-m",
