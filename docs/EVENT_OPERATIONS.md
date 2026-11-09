@@ -66,6 +66,23 @@ Before an authorized production rollout: back up and rehearse the Alembic migrat
 6. Proxy WebSocket upgrades for `/v1/operations/{event_id}/ws` (`proxy_http_version 1.1`, `Upgrade`/`Connection` headers).
 7. Deploy the clients afterwards: Gestió (llh-admin), HackEPS and Live.
 
+## Printed accreditations (vouchers)
+
+Each printed badge carries a voucher QR. Hackers' badges are bound when their ticket is scanned at check-in; mentors' badges are bound from the mentor roster. In Gestió → Check-in, generate all the vouchers at once and export the CSV (ordered by creation). Then merge the artwork with one unique QR per badge. Consecutive slices of the same CSV feed the differently coloured badges, so no code is printed twice:
+
+```sh
+# 2026 artwork (social-final): the QR fills the rounded white square, no code text
+Q=(--width-mm 70 --x 119.5 --y 944 --size 282 --no-code --quiet-zone 1 --no-fill --rounded-eyes --masks masks.csv)
+# Proof: one page, the QR square outlined in red
+uv run python scripts/badge_print.py hackers-green/front.png vouchers.csv $Q --limit 1 --outline -o proof.pdf
+# Print files: front + back per voucher
+uv run python scripts/badge_print.py hackers-green/front.png vouchers.csv --back hackers-green/back.png $Q --limit 260 -o hackers.pdf
+uv run python scripts/badge_print.py mentors-companies-red/front.png vouchers.csv --back mentors-companies-red/back.png $Q --skip 260 --limit 40 -o staff.pdf
+uv run python scripts/badge_print.py staff-yellow/front.png vouchers.csv --back staff-yellow/back.png $Q --skip 300 --limit 40 -o mentors-companies.pdf
+```
+
+PNG/JPEG artwork takes positions in image pixels; `--width-mm` sets the printed (trim) width and `--bleed-mm` (default 3) extends the edge pixels outwards for the cut. PDF designs take positions in millimetres from the top-left of the trim box. The QR must print at least 18 mm wide. It is vector, uses error correction level H and encodes exactly the voucher code; the code is printed under it for manual entry (`--no-code` omits it). `--quiet-zone` sets the white margin in modules (default 2) and `--no-fill` keeps artwork with rounded corners intact instead of painting the square white. `--rounded-eyes` rounds the three corner squares. The HackEPS scanner (zxing-js) misreads roughly 3% of small QR codes when a run of data modules looks like a corner square; it depends on the code and the QR mask. `--masks` fixes the mask per code (CSV `code,mask`): choose masks that zxing-js decodes from the rendered badges at several resolutions, and verify the final PDFs the same way before printing. `--only-unassigned` reprints spares without already bound vouchers.
+
 ## Public LleidaCoins leaderboard
 
 The public event snapshot includes `leaderboard`, the top 50 participants with ledger activity ordered by current event balance. Redemptions reduce that balance and reversals restore it. Ties share competition ranks (1, 1, 3), with a stable alias/ID ordering. Only rank, public nickname and balance are exposed; deleted or banned participants are omitted. Events are isolated. Live shows the top 10 on its home page and the top 50 at `/leaderboard`, refreshing every three seconds.
