@@ -66,6 +66,19 @@ Before an authorized production rollout: back up and rehearse the Alembic migrat
 6. Proxy WebSocket upgrades for `/v1/operations/{event_id}/ws` (`proxy_http_version 1.1`, `Upgrade`/`Connection` headers).
 7. Deploy the clients afterwards: Gestió (llh-admin), HackEPS and Live.
 
+## Printed accreditations (vouchers)
+
+Each printed badge carries a voucher QR that is bound to a participant at check-in. In Gestió → Check-in, generate the vouchers (print about 10% spare) and export the CSV. Then merge the marketing design with one unique QR per badge:
+
+```sh
+# Proof: one page, the QR square outlined in red
+uv run python scripts/badge_print.py design.pdf vouchers_event_7.csv --x 27.5 --y 70 --size 30 --limit 1 --outline -o proof.pdf
+# Print file: one page per voucher, keeping the design's bleed and trim
+uv run python scripts/badge_print.py design.pdf vouchers_event_7.csv --x 27.5 --y 70 --size 30 -o badges.pdf
+```
+
+`--x`/`--y` are millimetres from the top-left corner of the trim box (the final cut size) to the white square; `--size` is its side (minimum 20 mm; 25-30 mm scans comfortably). The QR is vector, uses error correction level H, and encodes exactly the voucher code; the code is printed under it for manual entry (`--no-code` omits it). Use `--only-unassigned` to reprint spares without already bound vouchers. Supply the design as an upright PDF with its trim box set (any PDF export with bleed does this).
+
 ## Public LleidaCoins leaderboard
 
 The public event snapshot includes `leaderboard`, the top 50 participants with ledger activity ordered by current event balance. Redemptions reduce that balance and reversals restore it. Ties share competition ranks (1, 1, 3), with a stable alias/ID ordering. Only rank, public nickname and balance are exposed; deleted or banned participants are omitted. Events are isolated. Live shows the top 10 on its home page and the top 50 at `/leaderboard`, refreshing every three seconds.
