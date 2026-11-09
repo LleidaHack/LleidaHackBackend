@@ -160,6 +160,11 @@ def test_voucher_reset_clears_consumption_and_is_replay_safe(
             "prizes": [{"id": "test-prize", "title": "Test", "stock": 0, "cost": 10}],
         }
         session.commit()
+    ticket_endpoint = f"/v1/event/{event}/ticket/{user.id}"
+    ticket = client.get(ticket_endpoint, headers=user.headers)
+    assert ticket.status_code == 200, ticket.text
+    assert ticket.json()["checked_in"] is True
+    assert ticket.json()["voucher_code"] == badge
     endpoint = f"/v1/event/{event}/vouchers/{badge}/reset"
     body = {
         "operation_id": str(uuid4()),
@@ -212,6 +217,11 @@ def test_voucher_reset_clears_consumption_and_is_replay_safe(
             ).scalar()
             == 1
         )
+    ticket = client.get(ticket_endpoint, headers=user.headers)
+    assert ticket.status_code == 200, ticket.text
+    assert ticket.json()["checked_in"] is False
+    assert ticket.json()["voucher_code"] is None
+    assert ticket.json()["has_ticket"] is True
     body["operation_id"] = str(uuid4())
     assert client.post(endpoint, headers=admin.headers, json=body).status_code == 409
 
