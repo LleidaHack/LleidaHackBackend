@@ -533,7 +533,14 @@ def visible_challenges(config):
     return [
         {
             key: deepcopy(challenge[key])
-            for key in ("id", "title", "description", "resources", "published")
+            for key in (
+                "id",
+                "company",
+                "title",
+                "description",
+                "resources",
+                "published",
+            )
             if key in challenge
         }
         for challenge in config.get(source, [])

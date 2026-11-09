@@ -675,3 +675,17 @@ def test_public_leaderboard_ranks_aliases_and_isolates_events(
     assert client.get(base + "/public").json()["leaderboard"] == [
         {"rank": 1, "nickname": "alpha", "balance": 20}
     ]
+
+
+def test_challenge_company_is_preserved_and_public_only_when_visible():
+    from src.impl.Operations.schema import Challenge
+    from src.impl.Operations.service import visible_challenges
+
+    challenge = Challenge(
+        id="rodi", company="Rodi", title="Vehicle maintenance", published=True
+    ).model_dump()
+    config = {"challenges": [challenge], "challenges_released": False}
+    assert visible_challenges(config) == []
+    config["challenges_released"] = True
+    assert visible_challenges(config)[0]["company"] == "Rodi"
+    assert Challenge(id="legacy", title="Legacy challenge").company == ""
