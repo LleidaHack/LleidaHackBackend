@@ -159,3 +159,15 @@ def test_slices_cannot_run_past_the_generated_vouchers(tmp_path):
         main([*args, "--size", "269", "--skip", "2", "--limit", "5"])
     with pytest.raises(SystemExit, match="at least 20 mm"):
         main([*args, "--size", "150", "-o", str(tmp_path / "o.pdf")])
+
+
+def test_qr_can_fill_a_rounded_square_without_painting_over_it():
+    stream = overlay_stream(
+        "VABCDEFGH", 100, 300, 80, print_code=False, quiet_zone=1, fill=False
+    ).decode()
+    assert "1 g" not in stream and "Tj" not in stream
+    matrix = segno.make("VABCDEFGH", error="h", micro=False).matrix
+    module = 80 / (len(matrix) + 2)
+    # The first dark module starts one module inside the square.
+    first = next(line for line in stream.splitlines() if line.endswith(" re"))
+    assert float(first.split()[0]) == pytest.approx(100 + module, abs=0.01)

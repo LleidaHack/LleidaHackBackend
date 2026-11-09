@@ -84,13 +84,15 @@ def overlay_stream(
     *,
     print_code: bool = True,
     outline: bool = False,
+    quiet_zone: int = QUIET_ZONE_MODULES,
+    fill: bool = True,
 ) -> bytes:
     """PDF drawing commands for the QR (and code) inside the white square.
 
     `left`/`top` are the square's top-left corner in PDF points.
     """
     matrix = segno.make(code, error="h", micro=False).matrix
-    modules = len(matrix) + 2 * QUIET_ZONE_MODULES
+    modules = len(matrix) + 2 * quiet_zone
     text_size = size * 0.075 if print_code else 0
     text_gap = text_size * 0.6 if print_code else 0
     qr_side = size - text_size - text_gap
@@ -99,10 +101,12 @@ def overlay_stream(
     qr_top = top
     bottom = top - size
 
-    ops = ["q", "1 g", f"{_fmt(left)} {_fmt(bottom)} {_fmt(size)} {_fmt(size)} re f"]
+    ops = ["q"]
+    if fill:
+        ops += ["1 g", f"{_fmt(left)} {_fmt(bottom)} {_fmt(size)} {_fmt(size)} re f"]
     ops.append("0 g")
     for row_index, row in enumerate(matrix):
-        y = qr_top - (row_index + QUIET_ZONE_MODULES + 1) * module
+        y = qr_top - (row_index + quiet_zone + 1) * module
         col = 0
         while col < len(row):
             if not row[col]:
@@ -111,7 +115,7 @@ def overlay_stream(
             start = col
             while col < len(row) and row[col]:
                 col += 1
-            x = qr_left + (start + QUIET_ZONE_MODULES) * module
+            x = qr_left + (start + quiet_zone) * module
             # A hairline overlap avoids white seams between modules in some RIPs.
             ops.append(
                 f"{_fmt(x)} {_fmt(y)} {_fmt((col - start) * module + 0.02)} "
@@ -292,6 +296,8 @@ def build(
     back: Design | None = None,
     print_code: bool = True,
     outline: bool = False,
+    quiet_zone: int = QUIET_ZONE_MODULES,
+    fill: bool = True,
 ) -> int:
     """Write one page per code (followed by the back, if any).
 
@@ -354,7 +360,14 @@ def build(
         content.set_data(
             b"q /Design Do Q\n"
             + overlay_stream(
-                code, left, top, size, print_code=print_code, outline=outline
+                code,
+                left,
+                top,
+                size,
+                print_code=print_code,
+                outline=outline,
+                quiet_zone=quiet_zone,
+                fill=fill,
             )
         )
         page[NameObject("/Contents")] = writer._add_object(content.flate_encode())
@@ -404,6 +417,19 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--outline", action="store_true", help="outline the square in red (proofs)"
     )
+    parser.add_argument(
+        "--quiet-zone",
+        type=int,
+        default=QUIET_ZONE_MODULES,
+        choices=range(5),
+        metavar="0-4",
+        help=f"white margin around the QR, in modules (default {QUIET_ZONE_MODULES})",
+    )
+    parser.add_argument(
+        "--no-fill",
+        action="store_true",
+        help="do not paint the square white (keeps rounded artwork corners)",
+    )
     args = parser.parse_args(argv)
 
     codes = read_codes(args.csv, args.only_unassigned)[args.skip :]
@@ -426,6 +452,8 @@ def main(argv: list[str] | None = None) -> None:
         back=back,
         print_code=not args.no_code,
         outline=args.outline,
+        quiet_zone=args.quiet_zone,
+        fill=not args.no_fill,
     )
     print(
         f"{count} badges ({codes[0]} … {codes[-1]}) written to {args.output}",
