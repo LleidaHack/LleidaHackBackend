@@ -592,3 +592,8 @@ router.include_router(devpost_router)
 from src.impl.Operations.challenge_votes import router as challenge_vote_router
 
 router.include_router(challenge_vote_router)
+
+from src.impl.Operations.command_center import router as command_center_router
+
+# The module owns its /operations prefix; attach its routes without another prefix.
+router.routes.extend(command_center_router.routes)

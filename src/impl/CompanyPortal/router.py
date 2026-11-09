@@ -253,6 +253,7 @@ def snapshot(event_id: int, user=Depends(account)):
         "duration_seconds": 300,
         "version": grant.version,
         "winner_id": grant.winner_id,
+        "finalized_at": grant.finalized_at,
         "rooms": grant.rooms,
         "room_labels": room_labels,
         "projects": [
@@ -307,6 +308,10 @@ def note_view(note):
 @router.put("/events/{event_id}/notes/{group_id}")
 def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(account)):
     grant = grant_for(event_id, user, lock=True)
+    if grant.finalized_at:
+        raise HTTPException(
+            409, "Company evaluation is finalized; contact the organization"
+        )
     ensure_project(grant, group_id)
     note = (
         db.session.query(PortalNote)
@@ -324,6 +329,7 @@ def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(accoun
     note.text, note.score, note.favorite = body.text, body.score, body.favorite
     note.version = body.version + 1
     note.updated_at = now()
+    grant.version += 1
     db.session.commit()
     return note_view(note)
 
@@ -331,6 +337,10 @@ def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(accoun
 @router.put("/events/{event_id}/winner")
 def winner(event_id: int, body: WinnerInput, user=Depends(account)):
     grant = grant_for(event_id, user, lock=True)
+    if grant.finalized_at:
+        raise HTTPException(
+            409, "Company evaluation is finalized; contact the organization"
+        )
     if grant.version != body.version:
         raise HTTPException(409, "Company selection changed; refresh first")
     if body.group_id is not None:
@@ -367,7 +377,9 @@ def manage(event_id: int, token=Depends(JWTBearer())):
                 "rooms": grant.rooms,
                 "active": grant.active,
                 "setup_complete": bool(user.password_hash),
+                "version": grant.version,
                 "winner_id": grant.winner_id,
+                "finalized_at": grant.finalized_at,
                 "delivery_state": invite.delivery_state if invite else None,
             }
         )
@@ -423,6 +435,8 @@ def invite(event_id: int, body: InviteInput, token=Depends(JWTBearer())):
     if not grant:
         grant = PortalGrant(account_id=user.id, event_id=event_id)
         db.session.add(grant)
+    if grant.rooms != sorted(set(body.rooms)) and grant.finalized_at:
+        raise HTTPException(409, "Reopen the company evaluation before changing rooms")
     if grant.rooms != sorted(set(body.rooms)):
         grant.winner_id = None
         grant.version = (grant.version or 0) + 1
@@ -592,3 +606,97 @@ def presentation_action(
     if body.action == "finish":
         broadcast_alerts(event_id)
     return result
+
+
+class FinalizeInput(Input):
+    version: int = Field(ge=0)
+    group_id: int = Field(gt=0)
+    operation_id: UUID
+
+
+@router.post("/events/{event_id}/finalize")
+def finalize(event_id: int, body: FinalizeInput, user=Depends(account)):
+    state(event_id, lock=True)
+    grant = grant_for(event_id, user, lock=True)
+    details = {**body.model_dump(mode="json"), "company_id": user.company_id}
+    operation_id = "company-finalize:" + str(body.operation_id)
+    previous = (
+        db.session.query(OperationAudit)
+        .filter_by(event_id=event_id, operation_id=operation_id)
+        .first()
+    )
+    if previous:
+        if previous.details != details:
+            raise HTTPException(409, "Company finalization operation was already used")
+        return previous.result
+    if grant.finalized_at or grant.version != body.version:
+        raise HTTPException(409, "Company selection changed; refresh first")
+    ensure_project(grant, body.group_id)
+    if grant.winner_id != body.group_id:
+        raise HTTPException(409, "Select the winner before confirming the decision")
+    if (
+        db.session.query(Presentation)
+        .filter(
+            Presentation.event_id == event_id,
+            Presentation.room.in_(grant.rooms),
+            Presentation.state.notin_(["done", "absent"]),
+        )
+        .first()
+    ):
+        raise HTTPException(409, "Finish all presentations before closing evaluations")
+    grant.finalized_at = now()
+    grant.version += 1
+    result = {
+        "version": grant.version,
+        "winner_id": grant.winner_id,
+        "finalized_at": grant.finalized_at.isoformat(),
+    }
+    db.session.add(
+        OperationAudit(
+            event_id=event_id,
+            actor_id=None,
+            action="company.finalize",
+            outcome="success",
+            operation_id=operation_id,
+            details=details,
+            result=result,
+        )
+    )
+    db.session.commit()
+    return result
+
+
+class ReopenInput(Input):
+    version: int = Field(ge=0)
+    reason: str = Field(min_length=3, max_length=500)
+
+
+@router.post("/manage/{event_id}/{company_id}/reopen")
+def reopen(
+    event_id: int, company_id: int, body: ReopenInput, token=Depends(JWTBearer())
+):
+    require_management(token)
+    state(event_id, lock=True)
+    user = db.session.query(PortalAccount).filter_by(company_id=company_id).first()
+    grant = (
+        db.session.query(PortalGrant)
+        .filter_by(event_id=event_id, account_id=user.id)
+        .with_for_update()
+        .first()
+        if user
+        else None
+    )
+    if not grant:
+        raise HTTPException(404, "Company access not found")
+    if grant.version != body.version or not grant.finalized_at:
+        raise HTTPException(409, "Company selection changed; refresh first")
+    grant.finalized_at = None
+    grant.version += 1
+    audit(
+        event_id,
+        token,
+        "company.reopen",
+        {"company_id": company_id, "reason": body.reason},
+    )
+    db.session.commit()
+    return {"ok": True}

@@ -34,7 +34,16 @@ class App:
                 # print(route.operation_id)
 
     def setup_middleware(self):
-        self.app.add_middleware(DBSessionMiddleware, db_url=settings.database.url)
+        self.app.add_middleware(
+            DBSessionMiddleware,
+            db_url=settings.database.url,
+            engine_args={
+                "pool_pre_ping": True,
+                "pool_recycle": 300,
+                "pool_timeout": 5,
+                "connect_args": {"connect_timeout": 5},
+            },
+        )
         self.app.add_middleware(
             RateLimitingMiddleware,
             config=settings.rate_limit,

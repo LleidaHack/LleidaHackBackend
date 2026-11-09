@@ -122,6 +122,7 @@ def test_company_sessions_notes_isolation_and_revocation(
     assert (
         client.put(url + "/notes/999999", headers=first, json=note).status_code == 404
     )
+    snapshot = client.get(url, headers=first)
     assert (
         client.put(
             url + "/winner",

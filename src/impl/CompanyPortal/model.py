@@ -33,6 +33,7 @@ class PortalGrant(BaseModel):
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"))
     rooms: Mapped[list] = mapped_column(JSON, default=list)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    finalized_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     winner_id: Mapped[int | None] = mapped_column(
         ForeignKey("hacker_group.id", ondelete="SET NULL")
     )
