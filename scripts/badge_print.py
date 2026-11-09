@@ -72,8 +72,57 @@ def read_codes(path: Path, only_unassigned: bool = False) -> list[str]:
     return codes
 
 
+def read_masks(path: Path, codes: list[str]) -> dict[str, int]:
+    """QR mask per code, chosen so the HackEPS scanner (zxing-js) reads it."""
+    with path.open(newline="", encoding="utf-8") as handle:
+        masks = {row["code"]: int(row["mask"]) for row in csv.DictReader(handle)}
+    missing = [code for code in codes if code not in masks]
+    if missing:
+        raise SystemExit(f"No verified mask for: {', '.join(missing[:5])}")
+    if any(not 0 <= mask <= 7 for mask in masks.values()):
+        raise SystemExit("QR masks must be between 0 and 7")
+    return masks
+
+
 def _fmt(value: float) -> str:
     return f"{value:.3f}".rstrip("0").rstrip(".")
+
+
+# Bezier handle length that approximates a quarter circle.
+KAPPA = 0.5523
+
+
+def _rounded_rect(x: float, y: float, w: float, h: float, r: float) -> str:
+    """Closed path for a rectangle with rounded corners (x, y: bottom-left)."""
+    r = min(r, w / 2, h / 2)
+    k = r * KAPPA
+    right, top = x + w, y + h
+
+    def pts(*values: float) -> str:
+        return " ".join(_fmt(v) for v in values)
+
+    return "\n".join(
+        [
+            pts(x + r, y) + " m",
+            pts(right - r, y) + " l",
+            pts(right - r + k, y, right, y + r - k, right, y + r) + " c",
+            pts(right, top - r) + " l",
+            pts(right, top - r + k, right - r + k, top, right - r, top) + " c",
+            pts(x + r, top) + " l",
+            pts(x + r - k, top, x, top - r + k, x, top - r) + " c",
+            pts(x, y + r) + " l",
+            pts(x, y + r - k, x + r - k, y, x + r, y) + " c",
+            "h",
+        ]
+    )
+
+
+def _in_finder(row: int, col: int, n: int) -> bool:
+    return (
+        (row < 7 or row >= n - 7)
+        and (col < 7 or col >= n - 7)
+        and not (row >= n - 7 and col >= n - 7)
+    )
 
 
 def overlay_stream(
@@ -86,12 +135,14 @@ def overlay_stream(
     outline: bool = False,
     quiet_zone: int = QUIET_ZONE_MODULES,
     fill: bool = True,
+    rounded_eyes: bool = False,
+    mask: int | None = None,
 ) -> bytes:
     """PDF drawing commands for the QR (and code) inside the white square.
 
     `left`/`top` are the square's top-left corner in PDF points.
     """
-    matrix = segno.make(code, error="h", micro=False).matrix
+    matrix = segno.make(code, error="h", micro=False, mask=mask).matrix
     modules = len(matrix) + 2 * quiet_zone
     text_size = size * 0.075 if print_code else 0
     text_gap = text_size * 0.6 if print_code else 0
@@ -108,12 +159,16 @@ def overlay_stream(
     for row_index, row in enumerate(matrix):
         y = qr_top - (row_index + quiet_zone + 1) * module
         col = 0
-        while col < len(row):
-            if not row[col]:
+        dark = [
+            cell and not (rounded_eyes and _in_finder(row_index, c, len(matrix)))
+            for c, cell in enumerate(row)
+        ]
+        while col < len(dark):
+            if not dark[col]:
                 col += 1
                 continue
             start = col
-            while col < len(row) and row[col]:
+            while col < len(dark) and dark[col]:
                 col += 1
             x = qr_left + (start + quiet_zone) * module
             # A hairline overlap avoids white seams between modules in some RIPs.
@@ -122,6 +177,23 @@ def overlay_stream(
                 f"{_fmt(module + 0.02)} re"
             )
     ops.append("f")
+    if rounded_eyes:
+        n = len(matrix)
+        for row0, col0 in ((0, 0), (0, n - 7), (n - 7, 0)):
+            x = qr_left + (col0 + quiet_zone) * module
+            y = qr_top - (row0 + quiet_zone + 7) * module
+            # Outer ring (even-odd fill leaves the hole) and the centre square.
+            ops += [
+                _rounded_rect(x, y, 7 * module, 7 * module, 2 * module),
+                _rounded_rect(
+                    x + module, y + module, 5 * module, 5 * module, 1.2 * module
+                ),
+                "f*",
+                _rounded_rect(
+                    x + 2 * module, y + 2 * module, 3 * module, 3 * module, module
+                ),
+                "f",
+            ]
     if print_code:
         width = len(code) * COURIER_WIDTH * text_size
         x = left + (size - width) / 2
@@ -298,6 +370,8 @@ def build(
     outline: bool = False,
     quiet_zone: int = QUIET_ZONE_MODULES,
     fill: bool = True,
+    rounded_eyes: bool = False,
+    masks: dict[str, int] | None = None,
 ) -> int:
     """Write one page per code (followed by the back, if any).
 
@@ -368,6 +442,8 @@ def build(
                 outline=outline,
                 quiet_zone=quiet_zone,
                 fill=fill,
+                rounded_eyes=rounded_eyes,
+                mask=(masks or {}).get(code),
             )
         )
         page[NameObject("/Contents")] = writer._add_object(content.flate_encode())
@@ -430,6 +506,16 @@ def main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="do not paint the square white (keeps rounded artwork corners)",
     )
+    parser.add_argument(
+        "--rounded-eyes",
+        action="store_true",
+        help="round the three corner squares (finder patterns) of the QR",
+    )
+    parser.add_argument(
+        "--masks",
+        type=Path,
+        help="CSV code,mask: QR mask per code verified with the scanner library",
+    )
     args = parser.parse_args(argv)
 
     codes = read_codes(args.csv, args.only_unassigned)[args.skip :]
@@ -454,6 +540,8 @@ def main(argv: list[str] | None = None) -> None:
         outline=args.outline,
         quiet_zone=args.quiet_zone,
         fill=not args.no_fill,
+        rounded_eyes=args.rounded_eyes,
+        masks=read_masks(args.masks, codes) if args.masks else None,
     )
     print(
         f"{count} badges ({codes[0]} … {codes[-1]}) written to {args.output}",

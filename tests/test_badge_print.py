@@ -171,3 +171,22 @@ def test_qr_can_fill_a_rounded_square_without_painting_over_it():
     # The first dark module starts one module inside the square.
     first = next(line for line in stream.splitlines() if line.endswith(" re"))
     assert float(first.split()[0]) == pytest.approx(100 + module, abs=0.01)
+
+
+def test_rounded_eyes_and_fixed_masks(tmp_path):
+    from scripts.badge_print import read_masks
+
+    plain = overlay_stream("VABCDEFGH", 100, 300, 80, print_code=False, mask=3)
+    rounded = overlay_stream(
+        "VABCDEFGH", 100, 300, 80, print_code=False, mask=3, rounded_eyes=True
+    )
+    # Three finder patterns: an even-odd ring plus a centre each, drawn as curves.
+    assert rounded.count(b"f*") == 3 and b" c\n" in rounded and b" c\n" not in plain
+    assert overlay_stream("VABCDEFGH", 100, 300, 80, mask=3) != overlay_stream(
+        "VABCDEFGH", 100, 300, 80, mask=5
+    )
+    masks = tmp_path / "m.csv"
+    masks.write_text("code,mask\nVABCDEFGH,3\n")
+    assert read_masks(masks, ["VABCDEFGH"]) == {"VABCDEFGH": 3}
+    with pytest.raises(SystemExit, match="No verified mask"):
+        read_masks(masks, ["VABCDEFGH", "V23456789"])
