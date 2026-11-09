@@ -6,6 +6,7 @@ from src.impl.ArticleType import model as articletype_model  # noqa: F401
 
 # Register SQLAlchemy models through import side effects.
 from src.impl.Company import model as company_model  # noqa: F401
+from src.impl.CompanyPortal import model as company_portal_model  # noqa: F401
 
 # Register SQLAlchemy models through import side effects.
 from src.impl.CompanyUser import model as companyuser_model  # noqa: F401

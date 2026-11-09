@@ -32,3 +32,12 @@ services:
     profiles: ["main"]
     depends_on: [db-main]
     # networks: <same as backend-main>
+
+  backend-company-mail-worker-main:
+    image: lleidahack/backend-release:<same as backend-main>
+    command: ["python", "-m", "src.impl.CompanyPortal.mail_worker"]
+    env_file:
+      - <same absolute path(s) as backend-main>
+    restart: unless-stopped
+    profiles: ["main"]
+    depends_on: [db-main]
