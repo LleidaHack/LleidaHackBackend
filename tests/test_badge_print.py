@@ -157,7 +157,7 @@ def test_slices_cannot_run_past_the_generated_vouchers(tmp_path):
     args = [str(front), str(codes), "--width-mm", "90", "--x", "126", "--y", "949"]
     with pytest.raises(SystemExit, match="Only 1 vouchers left"):
         main([*args, "--size", "269", "--skip", "2", "--limit", "5"])
-    with pytest.raises(SystemExit, match="at least 20 mm"):
+    with pytest.raises(SystemExit, match="at least 18 mm"):
         main([*args, "--size", "150", "-o", str(tmp_path / "o.pdf")])
 
 

@@ -49,7 +49,7 @@ CODE_PATTERN = re.compile(r"V[A-HJ-NP-Z2-9]{8}")
 QUIET_ZONE_MODULES = 2
 # Courier glyphs are 0.6 em wide, so the code can be centred exactly.
 COURIER_WIDTH = 0.6
-MIN_SIZE_MM = 20
+MIN_SIZE_MM = 18
 RASTER_SUFFIXES = {".png", ".jpg", ".jpeg"}
 
 
