@@ -247,6 +247,22 @@ def test_separate_company_cannot_see_another_room_or_notes(
         json={"email": "second@example.test", "password": "CompanyTest2026!"},
     ).json()
     second = {"Authorization": "Bearer " + login["access_token"]}
+    with Session(engine) as session:
+        hidden_turn_id = (
+            session.query(Presentation)
+            .filter_by(event_id=event, group_id=group)
+            .one()
+            .id
+        )
+    for action in ("start", "extend", "finish"):
+        assert (
+            client.post(
+                f"{base}/presentations/{hidden_turn_id}/action",
+                headers=second,
+                json={"action": action, "version": 0, "operation_id": str(uuid4())},
+            ).status_code
+            == 404
+        )
     snapshot = client.get(base, headers=second).json()
     assert snapshot["projects"] == [] and snapshot["presentations"] == []
     assert (
@@ -312,3 +328,114 @@ def test_portal_migration_round_trip_preserves_existing_events(engine, create_ev
             text("SELECT row_to_json(e)::text FROM event e WHERE id=:id"), {"id": event}
         ).scalar_one()
     assert before == after
+
+
+def test_company_controls_timer_extension_completion_and_replays(
+    client, engine, create_user, create_event, create_group
+):
+    from datetime import timedelta
+
+    from src.impl.Operations.model import OperationAudit
+
+    _, _, event, group, _, _, token = prepare(
+        client, engine, create_user, create_event, create_group
+    )
+    headers = activate(client, token)
+    with Session(engine) as session:
+        turn = (
+            session.query(Presentation).filter_by(event_id=event, group_id=group).one()
+        )
+        turn.started_at = None
+        turn_id = turn.id
+        config = session.get(EventOperations, event)
+        config.config = {
+            **config.config,
+            "phase": "judging",
+            "challenges_released": True,
+        }
+        session.commit()
+    next_group = create_group(event, [create_user()])
+    with Session(engine) as session:
+        session.add(
+            Presentation(
+                event_id=event,
+                group_id=next_group.id,
+                room="room-a",
+                track="room-a",
+                position=1,
+            )
+        )
+        session.commit()
+    url = f"/v1/company-portal/events/{event}/presentations/{turn_id}/action"
+
+    def command(action, version):
+        return {"action": action, "version": version, "operation_id": str(uuid4())}
+
+    assert client.post(url, json=command("start", 0)).status_code == 401
+    assert (
+        client.post(url, headers=headers, json=command("extend", 0)).status_code == 409
+    )
+    start_body = command("start", 0)
+    started = client.post(url, headers=headers, json=start_body)
+    assert started.status_code == 200, started.text
+    assert started.json()["started_at"] and started.json()["duration_seconds"] == 300
+    assert client.post(url, headers=headers, json=start_body).json() == started.json()
+    assert (
+        client.post(url, headers=headers, json=command("start", 0)).status_code == 409
+    )
+    extend_body = command("extend", 1)
+    extended = client.post(url, headers=headers, json=extend_body)
+    assert extended.status_code == 200, extended.text
+    assert extended.json()["duration_seconds"] == 360
+    assert extended.json()["started_at"] == started.json()["started_at"]
+    assert client.post(url, headers=headers, json=extend_body).json() == extended.json()
+    assert (
+        client.post(
+            url, headers=headers, json={**extend_body, "action": "finish"}
+        ).status_code
+        == 409
+    )
+    with Session(engine) as session:
+        session.get(Presentation, turn_id).started_at = datetime.now(UTC) - timedelta(
+            minutes=20
+        )
+        session.commit()
+    snapshot = client.get(f"/v1/company-portal/events/{event}", headers=headers).json()
+    assert snapshot["presentations"][0]["state"] == "presenting"
+    assert snapshot["presentations"][0]["duration_seconds"] == 360
+    finish_body = command("finish", 2)
+    finished = client.post(url, headers=headers, json=finish_body)
+    assert finished.status_code == 200, finished.text
+    assert (
+        finished.json()["state"] == "done"
+        and finished.json()["next_team"] == "Test Group"
+    )
+    assert client.post(url, headers=headers, json=finish_body).json() == finished.json()
+    assert (
+        client.post(url, headers=headers, json=command("start", 3)).status_code == 409
+    )
+    with Session(engine) as session:
+        assert (
+            session.query(OperationAudit)
+            .filter(OperationAudit.action.like("company.presentation.%"))
+            .count()
+            == 3
+        )
+        next_turn = (
+            session.query(Presentation)
+            .filter_by(event_id=event, group_id=next_group.id)
+            .one()
+        )
+        assert next_turn.state == "called" and next_turn.started_at is None
+        assert session.get(Presentation, turn_id).completed_at
+        alerts = session.get(EventOperations, event).config["alerts"]
+        assert len(alerts) == 1 and "Test Group" in alerts[0]["message"]
+        next_id = next_turn.id
+    assert (
+        client.post(
+            url.replace(str(turn_id) + "/action", str(next_id) + "/action"),
+            headers=headers,
+            json=command("start", 1),
+        ).status_code
+        == 409
+    )

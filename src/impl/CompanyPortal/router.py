@@ -5,6 +5,7 @@ import json
 import os
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -22,7 +23,12 @@ from src.impl.CompanyPortal.model import (
 )
 from src.impl.Event.model import Event
 from src.impl.HackerGroup.model import HackerGroup
-from src.impl.Operations.model import DevpostProject, EventOperations, Presentation
+from src.impl.Operations.model import (
+    DevpostProject,
+    EventOperations,
+    OperationAudit,
+    Presentation,
+)
 from src.impl.Operations.service import audit, state
 from src.utils.access import require_management
 from src.utils.JWTBearer import JWTBearer
@@ -278,6 +284,8 @@ def snapshot(event_id: int, user=Depends(account)):
                 "group_id": p.group_id,
                 "room": p.room,
                 "state": p.state,
+                "version": p.version,
+                "duration_seconds": p.duration_seconds,
                 "started_at": p.started_at,
                 "scheduled_at": p.scheduled_at,
             }
@@ -472,3 +480,115 @@ def revoke(event_id: int, company_id: int, token=Depends(JWTBearer())):
     audit(event_id, token, "company.revoke", {"company_id": company_id})
     db.session.commit()
     return {"success": True}
+
+
+class PresentationAction(Input):
+    action: Literal["start", "extend", "finish"]
+    version: int = Field(ge=0)
+    operation_id: UUID
+
+
+@router.post("/events/{event_id}/presentations/{presentation_id}/action")
+def presentation_action(
+    event_id: int, presentation_id: int, body: PresentationAction, user=Depends(account)
+):
+    from src.impl.Operations import judging
+    from src.impl.Operations.realtime import broadcast_alerts
+    from src.impl.Operations.service import challenges_released, effective_phase
+
+    # Share the event lock with QR scans and organizer edits before locking grants.
+    _, row = state(event_id, lock=True)
+    grant = grant_for(event_id, user, lock=True)
+    p = (
+        db.session.query(Presentation)
+        .filter_by(event_id=event_id, id=presentation_id)
+        .first()
+    )
+    if not p or p.room not in grant.rooms:
+        raise HTTPException(404, "Presentation not found in assigned rooms")
+    fingerprint = digest(
+        json.dumps(
+            {
+                **body.model_dump(mode="json"),
+                "presentation_id": presentation_id,
+                "account_id": user.id,
+            },
+            sort_keys=True,
+        )
+    )
+    operation_id = "company-presentation:" + str(body.operation_id)
+    previous = (
+        db.session.query(OperationAudit)
+        .filter_by(event_id=event_id, operation_id=operation_id)
+        .first()
+    )
+    if previous:
+        if previous.details.get("fingerprint") != fingerprint:
+            raise HTTPException(409, "Presentation operation was already used")
+        return previous.result
+    if p.version != body.version:
+        raise HTTPException(409, "Presentation changed; refresh first")
+    if p.state != "presenting":
+        raise HTTPException(
+            409, "Scan the team into the room before controlling its presentation"
+        )
+    room = next((r for r in row.config.get("rooms", []) if r["id"] == p.room), None)
+    if not room:
+        raise HTTPException(409, "Presentation room is no longer configured")
+    if body.action != "finish" and (
+        room.get("paused")
+        or not challenges_released(row.config)
+        or effective_phase(row.config) != "judging"
+    ):
+        raise HTTPException(409, "Judging is not open or room is paused")
+    changes = []
+    next_team = None
+    if body.action == "start":
+        if p.started_at is not None:
+            raise HTTPException(409, "Presentation timer is already running")
+        p.started_at = now()
+        p.duration_seconds = 300
+        p.version += 1
+    elif body.action == "extend":
+        if p.started_at is None:
+            raise HTTPException(409, "Start the presentation timer first")
+        if p.duration_seconds >= 3600:
+            raise HTTPException(422, "Presentation duration cannot exceed one hour")
+        p.duration_seconds += 60
+        p.version += 1
+    else:
+        judging.transition(p, "done", changes)
+        p.completed_at = now()
+        next_team = judging.refresh_queue(
+            event_id, p.room, row.config, judging.room_turns(event_id), changes
+        )
+        judging.announce_called(row, changes)
+    row.version += 1
+    result = {
+        "id": p.id,
+        "state": p.state,
+        "version": p.version,
+        "started_at": p.started_at.isoformat() if p.started_at else None,
+        "duration_seconds": p.duration_seconds,
+        "next_team": next_team,
+    }
+    db.session.add(
+        OperationAudit(
+            event_id=event_id,
+            actor_id=None,
+            action="company.presentation." + body.action,
+            outcome="success",
+            operation_id=operation_id,
+            details={
+                "fingerprint": fingerprint,
+                "company_id": user.company_id,
+                "presentation_id": p.id,
+                "transitions": changes,
+            },
+            result=result,
+        )
+    )
+    db.session.commit()
+    if body.action == "finish":
+        broadcast_alerts(event_id)
+    return result

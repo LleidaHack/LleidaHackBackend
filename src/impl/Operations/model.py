@@ -87,6 +87,9 @@ class CoinMovement(BaseModel):
 
 
 class Presentation(BaseModel):
+    duration_seconds: Mapped[int] = mapped_column(
+        Integer, default=300, server_default="300"
+    )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     __tablename__ = "event_presentation"
