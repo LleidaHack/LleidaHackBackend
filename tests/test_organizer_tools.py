@@ -202,3 +202,31 @@ def test_participant_statuses_and_deferred_acceptance_mail(
         pending.id: "pending",
     }
     assert all("image" not in p and "cv" not in p for p in participants)
+
+
+def test_participant_minority_uses_event_date_and_preserves_unknowns(
+    client, create_user, create_event, engine
+):
+    from sqlalchemy import text
+
+    organizer = create_user(role="organizer")
+    users = [create_user() for _ in range(5)]
+    event = create_event(users)
+    births = ["2008-11-29", "2008-11-28", "2008-11-27", None, "2027-01-01"]
+    with engine.begin() as conn:
+        conn.execute(
+            text("UPDATE event SET start_date = '2026-11-28 08:00:00' WHERE id = :id"),
+            {"id": event},
+        )
+        for user, birth in zip(users, births):
+            conn.execute(
+                text("UPDATE my_user SET birthdate = :birth WHERE id = :id"),
+                {"birth": birth, "id": user.id},
+            )
+    response = client.get(
+        f"/v1/event/{event}/hackers_participants_list", headers=organizer.headers
+    )
+    assert response.status_code == 200
+    rows = {p["id"]: p for p in response.json()["participants"]}
+    assert [rows[u.id]["is_minor"] for u in users] == [True, False, False, None, None]
+    assert [rows[u.id]["age_at_event"] for u in users] == [17, 18, 18, None, None]
