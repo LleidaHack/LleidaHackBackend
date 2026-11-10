@@ -9,11 +9,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
 from pydantic import BaseModel, Field
-from sqlalchemy import func
 
 from src.impl.Event.model import HackerAccepted, HackerParticipation, HackerRegistration
 from src.impl.HackerGroup.model import HackerGroup
-from src.impl.Meal.model import HackerMeal, Meal
+from src.impl.Meal.model import Meal
 from src.impl.Operations import judging
 from src.impl.Operations import service as ops
 from src.impl.Operations.model import EventIncident, OperationAudit, Presentation
@@ -51,13 +50,10 @@ def status(event_id: int, token=Depends(JWTBearer())):
         db.session.query(HackerGroup.id, HackerGroup.name).filter_by(event_id=event_id)
     )
     turns = judging.room_turns(event_id)
-    meals = (
-        db.session.query(Meal.id, Meal.name, func.count(HackerMeal.user_id))
-        .outerjoin(HackerMeal, HackerMeal.meal_id == Meal.id)
-        .filter(Meal.event_id == event_id)
-        .group_by(Meal.id, Meal.name)
-        .all()
-    )
+    meals = [
+        (m.id, m.name, ops.meal_people(event_id, m.id))
+        for m in db.session.query(Meal).filter_by(event_id=event_id)
+    ]
     incidents = (
         db.session.query(EventIncident)
         .filter_by(event_id=event_id)

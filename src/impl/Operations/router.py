@@ -543,7 +543,11 @@ def scanner_configuration(event_id: int, token: BaseToken = Depends(JWTBearer())
     return {
         "event_id": event_id,
         "title": data["title"],
-        "meals": data["meals"],
+        "meals": [
+            meal
+            for meal in data["meals"]
+            if data.get("meal_rounds", {}).get(str(meal["id"]), {}).get("open", True)
+        ],
         "meal_rounds": data.get("meal_rounds", {}),
         "activities": [a for a in data["activities"] if a["published"]],
         "prizes": data["prizes"],
