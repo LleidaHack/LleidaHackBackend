@@ -2,9 +2,6 @@
 .config
 config.ini
 **/__pycache__/
-.env.local
-.env.integration
-.env.production
 utils/scripts
 .vscode/**
 test/ep_test/*
@@ -13,8 +10,6 @@ env/
 src/configuration/*.yaml
 generated_src/**
 
-# Keep example files
-!.env.example
 .claude/
 .ruff_cache/
 .pytest_cache/
@@ -33,9 +28,5 @@ generated_src/**
 
 # macOS metadata
 .DS_Store
-
-.env.operations.local
-
-.vapid.operations.local.pem
 
 .gstack/
