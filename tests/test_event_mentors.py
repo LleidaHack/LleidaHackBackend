@@ -1,3 +1,4 @@
+from time import sleep
 from uuid import uuid4
 
 
@@ -96,6 +97,9 @@ def test_mentor_roster_badges_meals_rounds_and_restrictions(
     )
     assert scan().status_code == 404
     assert scan(badge=replacement).status_code == 409
+    # This end-to-end rehearsal crosses the 30 requests/second IP burst budget
+    # on fast CI runners. Separate meal rounds without disabling the limiter.
+    sleep(1.1)
     assert (
         client.post(
             base + f"/meals/{meal}/round",
