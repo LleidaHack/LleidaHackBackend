@@ -456,7 +456,9 @@ def change_presentation(
     for key in ("state", "room", "position", "scheduled_at"):
         setattr(p, key, getattr(body, key))
     if body.state == "presenting" and before["state"] != "presenting":
-        p.started_at = datetime.now(UTC)
+        p.started_at = None
+        p.completed_at = None
+        p.duration_seconds = 300
     if body.state == "done" and before["state"] != "done":
         p.completed_at = datetime.now(UTC)
     p.pinned = int(body.pinned)
@@ -590,3 +592,8 @@ router.include_router(devpost_router)
 from src.impl.Operations.challenge_votes import router as challenge_vote_router
 
 router.include_router(challenge_vote_router)
+
+from src.impl.Operations.command_center import router as command_center_router
+
+# The module owns its /operations prefix; attach its routes without another prefix.
+router.routes.extend(command_center_router.routes)

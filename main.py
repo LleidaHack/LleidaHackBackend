@@ -1,4 +1,6 @@
 import logging
+import time
+from uuid import UUID, uuid4
 
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
@@ -51,12 +53,44 @@ def root():
 # app.add_middleware(MaintenanceModeMiddleware, is_maintenance_mode=True)
 # Configuration()
 App(app).setup_all(logger)
+from src.utils.health import router as health_router
+
+app.include_router(health_router)
 
 
 @app.middleware("http")
 async def prevent_operations_caching(request, call_next):
-    response = await call_next(request)
-    if request.url.path.startswith("/v1/operations/"):
+    started = time.monotonic()
+    try:
+        request_id = str(UUID(request.headers.get("x-request-id", "")))
+    except ValueError:
+        request_id = str(uuid4())
+    try:
+        response = await call_next(request)
+    except Exception:
+        route = getattr(request.scope.get("route"), "path", "unmatched")
+        logger.error(
+            "Request failed request_id=%s method=%s route=%s",
+            request_id,
+            request.method,
+            route,
+        )
+        raise
+    response.headers["X-Request-ID"] = request_id
+    elapsed_ms = round((time.monotonic() - started) * 1000)
+    if response.status_code >= 500 or elapsed_ms >= 1000:
+        route = getattr(request.scope.get("route"), "path", "unmatched")
+        logger.warning(
+            "Request diagnostic request_id=%s method=%s route=%s status=%s duration_ms=%s",
+            request_id,
+            request.method,
+            route,
+            response.status_code,
+            elapsed_ms,
+        )
+    if request.url.path.startswith(
+        ("/v1/operations/", "/v1/company-portal/", "/health/")
+    ):
         response.headers["Cache-Control"] = "no-store, private, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"

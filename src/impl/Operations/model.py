@@ -87,6 +87,9 @@ class CoinMovement(BaseModel):
 
 
 class Presentation(BaseModel):
+    duration_seconds: Mapped[int] = mapped_column(
+        Integer, default=300, server_default="300"
+    )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     __tablename__ = "event_presentation"
@@ -220,3 +223,17 @@ class EventMentor(BaseModel):
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"), primary_key=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+
+
+class EventIncident(BaseModel):
+    __tablename__ = "event_incident"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), index=True)
+    title: Mapped[str] = mapped_column(String(150))
+    details: Mapped[str] = mapped_column(String(2000), default="")
+    status: Mapped[str] = mapped_column(String(20), default="open")
+    version: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

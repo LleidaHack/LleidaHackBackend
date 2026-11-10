@@ -5,6 +5,7 @@ import json
 import os
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -22,7 +23,12 @@ from src.impl.CompanyPortal.model import (
 )
 from src.impl.Event.model import Event
 from src.impl.HackerGroup.model import HackerGroup
-from src.impl.Operations.model import DevpostProject, EventOperations, Presentation
+from src.impl.Operations.model import (
+    DevpostProject,
+    EventOperations,
+    OperationAudit,
+    Presentation,
+)
 from src.impl.Operations.service import audit, state
 from src.utils.access import require_management
 from src.utils.JWTBearer import JWTBearer
@@ -247,6 +253,7 @@ def snapshot(event_id: int, user=Depends(account)):
         "duration_seconds": 300,
         "version": grant.version,
         "winner_id": grant.winner_id,
+        "finalized_at": grant.finalized_at,
         "rooms": grant.rooms,
         "room_labels": room_labels,
         "projects": [
@@ -278,6 +285,8 @@ def snapshot(event_id: int, user=Depends(account)):
                 "group_id": p.group_id,
                 "room": p.room,
                 "state": p.state,
+                "version": p.version,
+                "duration_seconds": p.duration_seconds,
                 "started_at": p.started_at,
                 "scheduled_at": p.scheduled_at,
             }
@@ -299,6 +308,10 @@ def note_view(note):
 @router.put("/events/{event_id}/notes/{group_id}")
 def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(account)):
     grant = grant_for(event_id, user, lock=True)
+    if grant.finalized_at:
+        raise HTTPException(
+            409, "Company evaluation is finalized; contact the organization"
+        )
     ensure_project(grant, group_id)
     note = (
         db.session.query(PortalNote)
@@ -316,6 +329,7 @@ def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(accoun
     note.text, note.score, note.favorite = body.text, body.score, body.favorite
     note.version = body.version + 1
     note.updated_at = now()
+    grant.version += 1
     db.session.commit()
     return note_view(note)
 
@@ -323,6 +337,10 @@ def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(accoun
 @router.put("/events/{event_id}/winner")
 def winner(event_id: int, body: WinnerInput, user=Depends(account)):
     grant = grant_for(event_id, user, lock=True)
+    if grant.finalized_at:
+        raise HTTPException(
+            409, "Company evaluation is finalized; contact the organization"
+        )
     if grant.version != body.version:
         raise HTTPException(409, "Company selection changed; refresh first")
     if body.group_id is not None:
@@ -359,7 +377,9 @@ def manage(event_id: int, token=Depends(JWTBearer())):
                 "rooms": grant.rooms,
                 "active": grant.active,
                 "setup_complete": bool(user.password_hash),
+                "version": grant.version,
                 "winner_id": grant.winner_id,
+                "finalized_at": grant.finalized_at,
                 "delivery_state": invite.delivery_state if invite else None,
             }
         )
@@ -415,6 +435,8 @@ def invite(event_id: int, body: InviteInput, token=Depends(JWTBearer())):
     if not grant:
         grant = PortalGrant(account_id=user.id, event_id=event_id)
         db.session.add(grant)
+    if grant.rooms != sorted(set(body.rooms)) and grant.finalized_at:
+        raise HTTPException(409, "Reopen the company evaluation before changing rooms")
     if grant.rooms != sorted(set(body.rooms)):
         grant.winner_id = None
         grant.version = (grant.version or 0) + 1
@@ -472,3 +494,209 @@ def revoke(event_id: int, company_id: int, token=Depends(JWTBearer())):
     audit(event_id, token, "company.revoke", {"company_id": company_id})
     db.session.commit()
     return {"success": True}
+
+
+class PresentationAction(Input):
+    action: Literal["start", "extend", "finish"]
+    version: int = Field(ge=0)
+    operation_id: UUID
+
+
+@router.post("/events/{event_id}/presentations/{presentation_id}/action")
+def presentation_action(
+    event_id: int, presentation_id: int, body: PresentationAction, user=Depends(account)
+):
+    from src.impl.Operations import judging
+    from src.impl.Operations.realtime import broadcast_alerts
+    from src.impl.Operations.service import challenges_released, effective_phase
+
+    # Share the event lock with QR scans and organizer edits before locking grants.
+    _, row = state(event_id, lock=True)
+    grant = grant_for(event_id, user, lock=True)
+    p = (
+        db.session.query(Presentation)
+        .filter_by(event_id=event_id, id=presentation_id)
+        .first()
+    )
+    if not p or p.room not in grant.rooms:
+        raise HTTPException(404, "Presentation not found in assigned rooms")
+    fingerprint = digest(
+        json.dumps(
+            {
+                **body.model_dump(mode="json"),
+                "presentation_id": presentation_id,
+                "account_id": user.id,
+            },
+            sort_keys=True,
+        )
+    )
+    operation_id = "company-presentation:" + str(body.operation_id)
+    previous = (
+        db.session.query(OperationAudit)
+        .filter_by(event_id=event_id, operation_id=operation_id)
+        .first()
+    )
+    if previous:
+        if previous.details.get("fingerprint") != fingerprint:
+            raise HTTPException(409, "Presentation operation was already used")
+        return previous.result
+    if p.version != body.version:
+        raise HTTPException(409, "Presentation changed; refresh first")
+    if p.state != "presenting":
+        raise HTTPException(
+            409, "Scan the team into the room before controlling its presentation"
+        )
+    room = next((r for r in row.config.get("rooms", []) if r["id"] == p.room), None)
+    if not room:
+        raise HTTPException(409, "Presentation room is no longer configured")
+    if body.action != "finish" and (
+        room.get("paused")
+        or not challenges_released(row.config)
+        or effective_phase(row.config) != "judging"
+    ):
+        raise HTTPException(409, "Judging is not open or room is paused")
+    changes = []
+    next_team = None
+    if body.action == "start":
+        if p.started_at is not None:
+            raise HTTPException(409, "Presentation timer is already running")
+        p.started_at = now()
+        p.duration_seconds = 300
+        p.version += 1
+    elif body.action == "extend":
+        if p.started_at is None:
+            raise HTTPException(409, "Start the presentation timer first")
+        if p.duration_seconds >= 3600:
+            raise HTTPException(422, "Presentation duration cannot exceed one hour")
+        p.duration_seconds += 60
+        p.version += 1
+    else:
+        judging.transition(p, "done", changes)
+        p.completed_at = now()
+        next_team = judging.refresh_queue(
+            event_id, p.room, row.config, judging.room_turns(event_id), changes
+        )
+        judging.announce_called(row, changes)
+    row.version += 1
+    result = {
+        "id": p.id,
+        "state": p.state,
+        "version": p.version,
+        "started_at": p.started_at.isoformat() if p.started_at else None,
+        "duration_seconds": p.duration_seconds,
+        "next_team": next_team,
+    }
+    db.session.add(
+        OperationAudit(
+            event_id=event_id,
+            actor_id=None,
+            action="company.presentation." + body.action,
+            outcome="success",
+            operation_id=operation_id,
+            details={
+                "fingerprint": fingerprint,
+                "company_id": user.company_id,
+                "presentation_id": p.id,
+                "transitions": changes,
+            },
+            result=result,
+        )
+    )
+    db.session.commit()
+    if body.action == "finish":
+        broadcast_alerts(event_id)
+    return result
+
+
+class FinalizeInput(Input):
+    version: int = Field(ge=0)
+    group_id: int = Field(gt=0)
+    operation_id: UUID
+
+
+@router.post("/events/{event_id}/finalize")
+def finalize(event_id: int, body: FinalizeInput, user=Depends(account)):
+    state(event_id, lock=True)
+    grant = grant_for(event_id, user, lock=True)
+    details = {**body.model_dump(mode="json"), "company_id": user.company_id}
+    operation_id = "company-finalize:" + str(body.operation_id)
+    previous = (
+        db.session.query(OperationAudit)
+        .filter_by(event_id=event_id, operation_id=operation_id)
+        .first()
+    )
+    if previous:
+        if previous.details != details:
+            raise HTTPException(409, "Company finalization operation was already used")
+        return previous.result
+    if grant.finalized_at or grant.version != body.version:
+        raise HTTPException(409, "Company selection changed; refresh first")
+    ensure_project(grant, body.group_id)
+    if grant.winner_id != body.group_id:
+        raise HTTPException(409, "Select the winner before confirming the decision")
+    if (
+        db.session.query(Presentation)
+        .filter(
+            Presentation.event_id == event_id,
+            Presentation.room.in_(grant.rooms),
+            Presentation.state.notin_(["done", "absent"]),
+        )
+        .first()
+    ):
+        raise HTTPException(409, "Finish all presentations before closing evaluations")
+    grant.finalized_at = now()
+    grant.version += 1
+    result = {
+        "version": grant.version,
+        "winner_id": grant.winner_id,
+        "finalized_at": grant.finalized_at.isoformat(),
+    }
+    db.session.add(
+        OperationAudit(
+            event_id=event_id,
+            actor_id=None,
+            action="company.finalize",
+            outcome="success",
+            operation_id=operation_id,
+            details=details,
+            result=result,
+        )
+    )
+    db.session.commit()
+    return result
+
+
+class ReopenInput(Input):
+    version: int = Field(ge=0)
+    reason: str = Field(min_length=3, max_length=500)
+
+
+@router.post("/manage/{event_id}/{company_id}/reopen")
+def reopen(
+    event_id: int, company_id: int, body: ReopenInput, token=Depends(JWTBearer())
+):
+    require_management(token)
+    state(event_id, lock=True)
+    user = db.session.query(PortalAccount).filter_by(company_id=company_id).first()
+    grant = (
+        db.session.query(PortalGrant)
+        .filter_by(event_id=event_id, account_id=user.id)
+        .with_for_update()
+        .first()
+        if user
+        else None
+    )
+    if not grant:
+        raise HTTPException(404, "Company access not found")
+    if grant.version != body.version or not grant.finalized_at:
+        raise HTTPException(409, "Company selection changed; refresh first")
+    grant.finalized_at = None
+    grant.version += 1
+    audit(
+        event_id,
+        token,
+        "company.reopen",
+        {"company_id": company_id, "reason": body.reason},
+    )
+    db.session.commit()
+    return {"ok": True}
