@@ -25,9 +25,10 @@ python3 deploy/health_probe.py https://backend.main.lleidahack.dev
 Exit zero means healthy; nonzero means unavailable. Integrate this with the
 existing monitoring system. The example `deploy/systemd/llh-readiness.*` units
 run it every minute and record failures in the journal. Install the scripts under
-`/opt/lleidahack` or adapt the unit path. The units are templates and have not been
-installed on the VPS. Notification destinations must be configured in the chosen
-monitoring system; no email or chat alert has been sent by this work.
+`/opt/lleidahack` or adapt the unit path. The checked-in units are templates; verify their installation and active state
+on the target host with `systemctl status llh-readiness.timer` and inspect
+`journalctl -u llh-readiness.service`. Notification destinations require separate
+configuration in the chosen monitoring system.
 
 ## Restore rehearsal
 

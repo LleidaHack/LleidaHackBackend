@@ -1,108 +1,104 @@
 # LleidaHack Backend
 
-API backend de LleidaHack construida con FastAPI, SQLAlchemy y Alembic.
+FastAPI API for LleidaHack and HackEPS: registration, teams, physical badge
+assignment, check-in, meals, LleidaCoins, Live event operations and company judging.
+HackEPS, Gestió and Live are separate frontend repositories.
 
-## Requisitos
+## Start locally
 
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/)
-- PostgreSQL (local o remoto)
-- Redis compartido para limitar peticiones (ver [configuración](docs/request-protection.md))
-
-## 1) Configuración inicial
-
-Desde la raíz del proyecto:
+Requirements: Python 3.12+, [uv](https://docs.astral.sh/uv/), and Docker running.
+Install the locked dependencies from the repository root:
 
 ```bash
 uv sync --frozen
+```
+
+Choose one environment; both launch the API on port 8000 and cannot run together.
+
+| Environment | Command | Purpose |
+| --- | --- | --- |
+| Event operations | `bash scripts/local-operations.sh` | PostgreSQL on 55439, Redis on 56379, seeded event and role accounts; no mail delivery service |
+| Registration and mail | `uv run python install/local.py` | Isolated database on 55440 and capture-only mail on 8001; see [local launcher](install/LOCAL.md) |
+
+The event launcher stores its settings in ignored `.env.operations.local` and
+uses database `llh_operations_dev`. It applies migrations and runs the demo seeds;
+use it to initialize a demo, not to reset an ongoing rehearsal. To restart only
+the API with existing rehearsal data:
+
+```bash
+uv run --env-file .env.operations.local uvicorn main:app --host 127.0.0.1 --port 8000
+```
+
+Frontend processes start separately: HackEPS on 3001 (`/organitzacio` for scanning),
+Live on 3000 and Gestió on 5175. Point them at this API. Keep real credentials and
+external delivery workers out of a local rehearsal.
+
+## Configure an existing environment
+
+See [configuration](README-config.md) for secrets, mail, Redis and browser origins.
+For a manually configured database and services:
+
+```bash
 cp .env.example .env
-```
-
-Edita `.env` y configura al menos:
-
-```env
-DATABASE__URL=postgresql://usuario:password@host:5432/base_de_datos
-SECURITY__SECRET_KEY=tu-secret-key
-SECURITY__SERVICE_TOKEN=tu-service-token
-CLIENTS__MAIL_CLIENT__URL=http://mail:8000/
-RATE_LIMIT__REDIS_URL=redis://127.0.0.1:6379/0
-```
-
-Notas:
-- Sustituye los secretos de ejemplo por valores aleatorios independientes de al menos 32 caracteres.
-- Redis debe estar disponible: sin él, el backend rechaza temporalmente las peticiones con 503.
-- `DATABASE__URL` es obligatorio en entorno `ENV=main`.
-- Para integración usa `ENV=integration` y configura también `DATABASE__URL`.
-
-## 2) Preparar base de datos
-
-Aplica todas las migraciones:
-
-```bash
+# Edit .env before running the following commands.
+export PYTHONPATH=backend:.
 uv run --env-file .env alembic upgrade head
-```
-
-## 3) Ejecutar el backend en local
-
-Para el entorno de pruebas aislado con PostgreSQL, Redis y correo capturado (requiere Docker):
-
-```bash
-uv run python install/local.py
-```
-
-Modo desarrollo (autoreload), con los servicios ya configurados:
-
-```bash
 uv run --env-file .env uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Modo similar a producción (Gunicorn + Uvicorn workers):
+The generated mail client is versioned under `backend/generated_src`. When using
+an existing environment, set `PYTHONPATH=backend:.` so imports resolve; the local
+launchers and Docker image configure their import paths themselves.
+
+## Verify and develop
+
+- [Swagger](http://localhost:8000/docs), [ReDoc](http://localhost:8000/redoc),
+  [OpenAPI](http://localhost:8000/openapi.json).
+- `GET /health/live`: process liveness.
+- `GET /health/ready`: database and Redis readiness; returns 503 when unavailable.
+- Sign in using HTTP Basic at `GET /v1/auth/login`, then use the returned access
+  token as a Bearer token. Company accounts use the separate company portal API.
 
 ```bash
-uv run --env-file .env gunicorn main:app -c gunicorn_conf.py
+uv run --frozen ruff check .
+uv run --frozen ruff format --check .
+# Requires disposable PostgreSQL and Redis; read tests/README.md first.
+uv run --frozen pytest -q
 ```
 
-## 4) Verificar que funciona
+[Tests](tests/README.md) reset the configured test database schema. Never use the
+rehearsal or production database for the test suite.
 
-- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-- ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-- OpenAPI: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
+Create migrations with `uv run --env-file .env alembic revision --autogenerate -m
+"describe_change"`, review the generated SQL and rehearse preservation before a
+production migration. Retain the complete Alembic history.
 
-## 5) Ejecución con Docker
+## Deployment
 
-El `Dockerfile` ya instala dependencias, ejecuta migraciones y levanta Gunicorn.
+The supported production path is Docker Compose with immutable release images,
+backups and explicit activation. Follow the [deployment runbook](docs/production-deploy.md).
+GitHub Actions validates releases; merging a PR does not activate the backend.
+The manual preparation workflow builds a candidate, not a production cutover.
 
-```bash
-docker build -t lleidahack-backend .
-docker run --rm -p 127.0.0.1:8000:8000 --env-file .env lleidahack-backend
-```
+The Dockerfile's default command applies migrations before starting Gunicorn.
+Production Compose overrides that command to keep migrations a separate release
+step. Do not substitute a bare `docker run` for the production runbook.
 
-Asegúrate de que la `DATABASE__URL` del `.env` sea accesible desde el contenedor.
+## Repository map
 
-## 6) Comandos útiles
+| Path | Responsibility |
+| --- | --- |
+| `main.py`, `App.py` | Application entry point and initialization |
+| `src/impl/` | Domain models, schemas, services and routes |
+| `src/configuration/Settings.py` | Environment settings and validation |
+| `src/utils/` | Shared authentication, request protection and infrastructure helpers |
+| `backend/generated_src/` | Required generated mail client; regenerate rather than hand-edit |
+| `alembic/` | Versioned database migrations |
+| `scripts/` | Local fixtures, administration and badge printing tools |
+| `install/` | Isolated local API and captured mail launcher |
+| `deploy/` | Release, backup/restore, monitoring and worker tooling |
+| `tests/` | Regression suite against disposable services |
+| `docs/` | [Documentation index](docs/README.md) |
 
-Crear nueva migración:
-
-```bash
-uv run --env-file .env alembic revision --autogenerate -m "descripcion_del_cambio"
-```
-
-Aplicar migraciones pendientes:
-
-```bash
-uv run --env-file .env alembic upgrade head
-```
-
-Revertir última migración:
-
-```bash
-uv run --env-file .env alembic downgrade -1
-```
-
-## Problemas comunes
-
-- Error de `DATABASE__URL` faltante: revisa `.env` y que estés ejecutando en la raíz del repo.
-- Error de conexión a BD: valida host, puerto, usuario, password y permisos.
-- Fallo con `uv`: instala `uv` o usa Python 3.12 con entorno virtual y pip (no recomendado en este repo porque existe `uv.lock`).
-
-La imagen empaqueta este checkout, se ejecuta sin root y no incluye archivos de secretos. Configura `CORS_ORIGINS` con los orígenes exactos del frontend. Ver [revisión de seguridad](docs/public-repository-security.md).
+See the [documentation index](docs/README.md) for event operations, integrations,
+security and historical release notes.
