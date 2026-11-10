@@ -50,8 +50,6 @@ def root():
     return RedirectResponse(url="/docs")
 
 
-# app.add_middleware(MaintenanceModeMiddleware, is_maintenance_mode=True)
-# Configuration()
 App(app).setup_all(logger)
 from src.utils.health import router as health_router
 

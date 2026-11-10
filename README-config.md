@@ -8,6 +8,7 @@ password. Never commit runtime `.env` files or private keys.
 Pass the environment explicitly when using the CLI:
 
 ```sh
+export PYTHONPATH=backend:.
 uv run --env-file .env alembic upgrade head
 uv run --env-file .env gunicorn main:app -c gunicorn_conf.py
 ```
