@@ -863,6 +863,14 @@ class EventService(BaseService):
             .join(HackerRegistration, HackerRegistration.user_id == User.id)
             .filter(HackerRegistration.event_id == event_id)
         )
+        from src.impl.Operations.model import CoinMovement
+
+        balances = dict(
+            db.session.query(CoinMovement.user_id, func.sum(CoinMovement.amount))
+            .filter(CoinMovement.event_id == event_id)
+            .group_by(CoinMovement.user_id)
+            .all()
+        )
         participants_list = []
         for row in rows:
             participant = {attr: getattr(row, attr) for attr in attribute_hacker_list}
@@ -877,6 +885,7 @@ class EventService(BaseService):
             participant["study_center"] = row.study_center
             # A flag, not the base64 PDF: the CV is fetched on demand.
             participant["has_cv"] = bool(row.has_cv)
+            participant["lleidacoins"] = balances.get(row.id, 0)
             participant["notes_count"] = notes[row.id]
             participant["confirmed_assistance"] = bool(row.confirmed_assistance)
             participants_list.append(participant)

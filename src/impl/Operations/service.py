@@ -103,6 +103,15 @@ def audit(
     return row
 
 
+def meal_people(event_id, meal_id):
+    """Unique recipients across legacy deliveries and current scans, including mentors."""
+    legacy = db.session.query(HackerMeal.user_id).filter_by(meal_id=meal_id)
+    scanned = db.session.query(ScanRecord.user_id).filter_by(
+        event_id=event_id, kind="meal", target=str(meal_id), voided=False
+    )
+    return legacy.union(scanned).count()
+
+
 def balance(event_id, user_id):
     return (
         db.session.query(func.coalesce(func.sum(CoinMovement.amount), 0))
@@ -425,7 +434,7 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                     if prize:
                         prize["stock"] += 1
                         row.config = config
-            if body.kind in {"meal", "checkin"}:
+            if body.kind == "meal":
                 registration = (
                     db.session.query(HackerRegistration)
                     .filter_by(event_id=event_id, user_id=user.id)
@@ -653,9 +662,7 @@ def snapshot(event_id, private=False):
         data["meal_counts"] = [
             {
                 "meal_id": m.id,
-                "unique_participants": db.session.query(HackerMeal)
-                .filter_by(meal_id=m.id)
-                .count(),
+                "unique_participants": meal_people(event_id, m.id),
                 "rounds": [
                     {
                         "round": n,

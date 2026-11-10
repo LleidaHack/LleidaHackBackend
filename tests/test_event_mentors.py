@@ -71,6 +71,13 @@ def test_mentor_roster_badges_meals_rounds_and_restrictions(
         )
 
     assert scan().status_code == 200
+    counts = client.get(base + "/manage", headers=admin.headers).json()["meal_counts"]
+    assert counts[0]["unique_participants"] == 1
+    assert counts[0]["rounds"] == [{"round": 1, "count": 1}]
+    assert (
+        client.get(base + "/status", headers=admin.headers).json()["meals"][0]["served"]
+        == 1
+    )
     assert scan().status_code == 409
     for kind in ("activity", "redeem", "judging_start", "checkin"):
         assert scan(kind).status_code == 403
@@ -98,6 +105,12 @@ def test_mentor_roster_badges_meals_rounds_and_restrictions(
         == 200
     )
     assert scan(badge=replacement, round=2).status_code == 200
+    assert (
+        client.get(base + "/manage", headers=admin.headers).json()["meal_counts"][0][
+            "unique_participants"
+        ]
+        == 1
+    )
     assert client.get(base + "/public").json()["leaderboard"] == []
     assert (
         client.patch(

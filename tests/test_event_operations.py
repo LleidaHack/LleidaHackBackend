@@ -689,3 +689,60 @@ def test_challenge_company_is_preserved_and_public_only_when_visible():
     config["challenges_released"] = True
     assert visible_challenges(config)[0]["company"] == "Rodi"
     assert Challenge(id="legacy", title="Legacy challenge").company == ""
+
+
+def test_disabled_meals_hidden_and_rejected_until_reenabled(
+    client, create_user, create_event, accept, engine
+):
+    admin, _user, event, badge, meal = prepare(
+        client, create_user, create_event, accept, engine
+    )
+    base = f"/v1/operations/{event}"
+    for action in ("close", "open"):
+        response = client.post(
+            base + f"/meals/{meal}/round",
+            headers=admin.headers,
+            json={
+                "expected_round": 1,
+                "action": action,
+                "reason": "Meal service toggle",
+            },
+        )
+        assert response.status_code == 200
+        meals = client.get(base + "/scanner", headers=admin.headers).json()["meals"]
+        assert (meal in [m["id"] for m in meals]) == (action == "open")
+        scan = client.post(
+            base + "/scan",
+            headers=admin.headers,
+            json={
+                "operation_id": str(uuid4()),
+                "kind": "meal",
+                "code": badge,
+                "target": str(meal),
+            },
+        )
+        assert scan.status_code == (200 if action == "open" else 409)
+
+
+def test_participant_list_reports_event_coin_balance(
+    client, create_user, create_event, accept, engine
+):
+    admin, user, event, badge, _meal = prepare(
+        client, create_user, create_event, accept, engine
+    )
+    response = client.post(
+        f"/v1/operations/{event}/scan",
+        headers=admin.headers,
+        json={
+            "operation_id": str(uuid4()),
+            "kind": "award",
+            "code": badge,
+            "amount": 25,
+            "reason": "Test credit",
+        },
+    )
+    assert response.status_code == 200, response.text
+    rows = client.get(
+        f"/v1/event/{event}/hackers_participants_list", headers=admin.headers
+    ).json()["participants"]
+    assert next(p for p in rows if p["id"] == user.id)["lleidacoins"] == 25
