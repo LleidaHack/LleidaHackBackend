@@ -1,0 +1,14 @@
+[Unit]
+Description=LleidaHack public dependency readiness probe
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+DynamicUser=yes
+ExecStart=/usr/bin/python3 /opt/lleidahack/deploy/health_probe.py https://backend.main.lleidahack.dev
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+TimeoutStartSec=15

@@ -238,11 +238,15 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                 "operation_id": operation_id,
             }
             if body.kind == "judging_start":
-                from src.impl.Operations.judging import start_presentation
+                from src.impl.Operations.judging import (
+                    announce_called,
+                    start_presentation,
+                )
 
                 result.update(
                     start_presentation(event_id, user.id, body.target, config, log)
                 )
+                announce_called(row, log.details.get("transitions", []))
             elif body.kind in {"meal", "activity", "checkin"}:
                 if body.kind == "meal":
                     meal = (
@@ -437,6 +441,10 @@ def perform(event_id, body, token, allow_ticket_meal=False):
             row.version += 1
             db.session.flush()
         db.session.commit()
+        if body.kind == "judging_start":
+            from src.impl.Operations.realtime import broadcast_alerts
+
+            broadcast_alerts(event_id)
         return result
     except HTTPException as exc:
         # A rejected attempt survives the savepoint rollback, without a partial award.

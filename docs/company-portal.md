@@ -30,3 +30,11 @@ This release requires migration `20261109_company_portal` plus the Management an
 The worker stores a durable mail ID before sending. It never automatically retries ambiguous creation/send outcomes. `uncertain` needs operator review. A process crash can leave `creating` or `sending`; inspect mail service state before issuing a new invitation. Reissuing invalidates the old link, but cannot recall a previously delivered email. Completed/expired deliveries clear the queued URL; database and mail service access must remain restricted. No delivery tokens are returned by management endpoints or logged by the worker.
 
 For rollback, stop the new mail worker and return to compatible application images while keeping the additive schema and all new company data. Do not downgrade/drop portal tables or restore a stale backup over writes made after release. Schema downgrade exists for isolated rehearsals only.
+
+## Company-controlled presentation timing
+
+A badge scan admits the team into the room (`presenting`) with no `started_at`. It never closes another presenting team. The company then starts the five-minute clock, can add one minute at a time (up to one hour total), and explicitly finishes the presentation. Expiry is informational; the backend never finishes a team automatically. Finishing records completion, refreshes eligible room queues and publishes newly called teams on Live. The called team still requires an organization badge scan before its timer can start. Travel buffers and reservations in other rooms remain enforced.
+
+Timer commands require the presentation version and a unique operation UUID. Retries return the original result; stale commands from another device return 409. Event locks serialize scans, manual edits and company commands. Company actions are audited with the company ID and no forged staff identity.
+
+Deploy additive migration `20261109_company_timer` and this backend before publishing the paired Live and scanner updates. Reuse the backup/restore and row-preservation procedure above. Existing running presentation timestamps remain unchanged; new admissions wait for the company. Older backend images can run with the added column for application rollback; do not drop the column or restore stale production data.
