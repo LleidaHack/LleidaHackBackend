@@ -2,7 +2,7 @@ import logging
 import threading
 import time
 from collections import Counter
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import ClassVar
 
 from fastapi_sqlalchemy import db
@@ -16,6 +16,7 @@ from src.configuration.Settings import settings
 # from services.mail import send_event_accepted_email
 from src.error.AuthenticationException import AuthenticationException
 from src.error.InvalidDataException import InvalidDataException
+from src.error.MailClientException import MailClientException
 from src.error.NotFoundException import NotFoundException
 from src.impl.Company.service import CompanyService
 from src.impl.Event.model import (
@@ -755,9 +756,17 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         # Extract hacker IDs from registered_hackers
         event = self.get_by_id(event_id)
+        cancelled_ids = {
+            user_id
+            for (user_id,) in db.session.query(HackerRegistration.user_id).filter(
+                HackerRegistration.event_id == event_id,
+                HackerRegistration.cancelled_at.is_not(None),
+            )
+        }
         pending_hackers_ids = [
             h.id
             for h in subtract_lists(event.registered_hackers, event.accepted_hackers)
+            if h.id not in cancelled_ids
         ]
         # Retrieve pending hacker groups
 
@@ -798,6 +807,7 @@ class EventService(BaseService):
                         "approved": hacker in event.accepted_hackers,
                     }
                     for hacker in group.members
+                    if hacker.id not in cancelled_ids
                 ],
             }
             output_data.append(group_data)
@@ -816,7 +826,7 @@ class EventService(BaseService):
             for hacker in subtract_lists(
                 event.registered_hackers, event.accepted_hackers
             )
-            if hacker.id not in group_users
+            if hacker.id not in group_users and hacker.id not in cancelled_ids
         ]
 
         # Combine group and nogroup data into a dictionary
@@ -859,6 +869,8 @@ class EventService(BaseService):
                     func.length(HackerRegistration.cv) > 0,
                 ).label("has_cv"),
                 HackerRegistration.confirmed_assistance,
+                HackerRegistration.cancelled_at,
+                HackerRegistration.release_reminder_sent_at,
             )
             .join(HackerRegistration, HackerRegistration.user_id == User.id)
             .filter(HackerRegistration.event_id == event_id)
@@ -875,12 +887,15 @@ class EventService(BaseService):
         for row in rows:
             participant = {attr: getattr(row, attr) for attr in attribute_hacker_list}
             participant["status"] = (
-                "accepted"
+                "cancelled"
+                if row.cancelled_at is not None
+                else "accepted"
                 if row.id in accepted
                 else "rejected"
                 if row.id in rejected
                 else "pending"
             )
+            participant["release_reminder_sent_at"] = row.release_reminder_sent_at
             participant["registered_at"] = row.registered_at
             participant["study_center"] = row.study_center
             # A flag, not the base64 PDF: the CV is fetched on demand.
@@ -899,6 +914,13 @@ class EventService(BaseService):
             raise AuthenticationException("Not authorized")
         # Extract hacker IDs from registered_hackers
         event = self.get_by_id(event_id)
+        cancelled_ids = {
+            user_id
+            for (user_id,) in db.session.query(HackerRegistration.user_id).filter(
+                HackerRegistration.event_id == event_id,
+                HackerRegistration.cancelled_at.is_not(None),
+            )
+        }
         pending_hackers_ids = [
             h.id
             for h in subtract_lists(
@@ -955,6 +977,11 @@ class EventService(BaseService):
             output_data.append(group_data)
         # Retrieve pending hacker groups
         # Combine group and nogroup data into a dictionary
+        for participant in non_group_hackers_participants + [
+            member for group in output_data for member in group["members"]
+        ]:
+            if participant["id"] in cancelled_ids:
+                participant["status"] = "cancelled"
         return {"groups": output_data, "nogroup": non_group_hackers_participants}
 
     @BaseService.needs_service(HackerService)
@@ -979,6 +1006,8 @@ class EventService(BaseService):
         )
         if user_registration is None:
             raise InvalidDataException("User not registered")
+        if user_registration.cancelled_at is not None:
+            raise InvalidDataException("Place cancelled")
         if user not in event.accepted_hackers:
             raise InvalidDataException("User not accepted")
         if user_registration.confirmed_assistance:
@@ -990,6 +1019,110 @@ class EventService(BaseService):
         db.session.commit()
         db.session.refresh(user_registration)
         return user_registration
+
+    @BaseClient.needs_client(MailClient)
+    @BaseService.needs_service(HackerService)
+    def send_release_reminder(self, event_id: int, hacker_id: int, data: BaseToken):
+        self._require_organizer(data)
+        event = self.get_by_id(event_id)
+        if event.archived:
+            raise InvalidDataException("Event is archived")
+
+        def locked_registration():
+            return (
+                db.session.query(HackerRegistration)
+                .filter_by(user_id=hacker_id, event_id=event_id)
+                .populate_existing()
+                .with_for_update()
+                .first()
+            )
+
+        def validate(registration):
+            if registration is None:
+                raise InvalidDataException("Hacker not registered")
+            if (
+                registration.cancelled_at is not None
+                or not registration.confirmed_assistance
+            ):
+                raise InvalidDataException(
+                    "Release reminder requires confirmed attendance"
+                )
+            if db.session.get(HackerAccepted, (hacker_id, event_id)) is None:
+                raise InvalidDataException("Hacker not accepted")
+
+        registration = locked_registration()
+        validate(registration)
+        if registration.release_reminder_sent_at is not None:
+            return {
+                "sent_at": registration.release_reminder_sent_at,
+                "already_sent": True,
+            }
+        if registration.release_reminder_mail_id is None:
+            hacker = self.hacker_service.get_by_id(hacker_id)
+            token = AssistenceToken(hacker, event_id).to_token()
+            registration.confirm_assistance_token = token
+            mail = self.mail_client.create_mail(
+                MailCreate(
+                    template_id=self.mail_client.get_internall_template_id(
+                        InternalTemplate.EVENT_HACKER_RELEASE_REMINDER
+                    ),
+                    receiver_id=str(hacker.id),
+                    receiver_mail=str(hacker.email),
+                    subject=f"{event.name} · No podràs venir? Allibera la teva plaça",
+                    fields=f"{hacker.name},{event.name},{token}",
+                )
+            )
+            registration.release_reminder_mail_id = mail.id
+            # Persist the token and mail ID before delivery, so retries use the same mail.
+            db.session.commit()
+            registration = locked_registration()
+            validate(registration)
+            if registration.release_reminder_sent_at is not None:
+                return {
+                    "sent_at": registration.release_reminder_sent_at,
+                    "already_sent": True,
+                }
+        mail_id = registration.release_reminder_mail_id
+        if not self.mail_client.is_mail_sent(mail_id):
+            self.mail_client.send_mail_by_id(mail_id)
+            if not self.mail_client.is_mail_sent(mail_id):
+                raise MailClientException("Unable to verify mail delivery")
+        registration.release_reminder_sent_at = datetime.now(UTC).replace(tzinfo=None)
+        self._audit(event_id, data, "release_reminder_sent", hacker_id)
+        db.session.commit()
+        return {"sent_at": registration.release_reminder_sent_at, "already_sent": False}
+
+    @BaseService.needs_service(HackerService)
+    def cancel_assistance(self, data: AssistenceToken):
+        event = self.get_by_id(data.event_id)
+        if event.archived:
+            raise InvalidDataException(
+                "Unable to operate with an archived event, unarchive it first"
+            )
+        registration = (
+            db.session.query(HackerRegistration)
+            .filter_by(user_id=data.user_id, event_id=data.event_id)
+            .populate_existing()
+            .with_for_update()
+            .first()
+        )
+        if registration is None:
+            raise InvalidDataException("User not registered")
+        if registration.cancelled_at is not None:
+            return registration
+        hacker = self.hacker_service.get_by_id(data.user_id)
+        if hacker in event.participants:
+            raise InvalidDataException("Cannot cancel after check-in")
+        if hacker not in event.accepted_hackers:
+            raise InvalidDataException("User not accepted")
+        # Retain the registration and token so retries remain idempotent.
+        registration.cancelled_at = datetime.now(UTC).replace(tzinfo=None)
+        registration.confirmed_assistance = False
+        registration.confirm_assistance_token = data.to_token()
+        event.accepted_hackers.remove(hacker)
+        self._audit(event.id, data, "cancel_assistance", hacker.id)
+        db.session.commit()
+        return registration
 
     @BaseService.needs_service(HackerService)
     def force_confirm_assistance(self, user_id: int, event_id: int, data: BaseToken):
@@ -1007,6 +1140,8 @@ class EventService(BaseService):
         )
         if user_registration is None:
             raise InvalidDataException("User not registered")
+        if user_registration.cancelled_at is not None:
+            raise InvalidDataException("Place cancelled")
         if user not in event.accepted_hackers:
             raise InvalidDataException("User not accepted")
         if user_registration.confirmed_assistance:
@@ -1041,6 +1176,8 @@ class EventService(BaseService):
         )
         if user_registration is None:
             raise InvalidDataException("User not registered")
+        if user_registration.cancelled_at is not None:
+            raise InvalidDataException("Place cancelled")
         if not user_registration.confirmed_assistance:
             user_registration.confirmed_assistance = True
             message = "user haven't confirmed so we forced confirmation"
@@ -1112,6 +1249,8 @@ class EventService(BaseService):
         )
         if hacker_registration is None:
             raise InvalidDataException("Hacker not registered")
+        if hacker_registration.cancelled_at is not None:
+            raise InvalidDataException("Place cancelled")
         token = AssistenceToken(hacker, event.id).to_token()
         hacker_registration.confirm_assistance_token = token
         event.accepted_hackers.append(hacker)
