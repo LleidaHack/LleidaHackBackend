@@ -282,18 +282,24 @@ def test_separate_company_cannot_see_another_room_or_notes(
 def test_invitation_delivery_success_is_not_replayed(
     client, engine, create_user, create_event, create_group
 ):
-    _, _, _, _, _, invite, _ = prepare(
+    _, _, _, _, body, invite, token = prepare(
         client, engine, create_user, create_event, create_group
     )
+    with Session(engine) as session:
+        session.get(Company, body["company_id"]).name = "Company, A & <B>"
+        session.commit()
     calls = []
 
     class Mail:
         def get_template_by_name(self, name):
-            assert name == "company_portal_invitation"
+            assert name == "company_account_invite"
             return SimpleNamespace(id=10)
 
         def create_mail(self, body):
-            assert "#invite=" in body.fields
+            company_name, url = body.fields.split(",")
+            assert company_name == "Company&#44; A &amp; &lt;B&gt;"
+            assert url.split("#invite=")[1] == token
+            assert url.startswith("https://live.hackeps.dev/companies#invite=")
             calls.append("create")
             return SimpleNamespace(id=20)
 
@@ -309,6 +315,7 @@ def test_invitation_delivery_success_is_not_replayed(
     with Session(engine) as session:
         row = session.get(PortalInvitation, invite["id"])
         assert row.delivery_state == "sent" and row.delivery_url is None
+    assert activate(client, token)
 
 
 def test_portal_migration_round_trip_preserves_existing_events(engine, create_event):
