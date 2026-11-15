@@ -2,6 +2,7 @@
 
 import logging
 import time
+from html import escape
 
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 from sqlalchemy import create_engine
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from src import imports  # noqa: F401
 from src.configuration.Settings import settings
+from src.impl.Company.model import Company
 from src.impl.CompanyPortal.model import PortalAccount, PortalInvitation
 from src.impl.CompanyPortal.router import now
 from src.impl.Mail.client import MailClient
@@ -33,6 +35,8 @@ def deliver_one(engine, client):
             session.commit()
             return True
         account = session.get(PortalAccount, row.account_id)
+        company = session.get(Company, account.company_id)
+        company_name = escape(company.name or "la vostra empresa").replace(",", "&#44;")
         invitation_id, email, url, mail_id = (
             row.id,
             account.email,
@@ -43,14 +47,14 @@ def deliver_one(engine, client):
         session.commit()
     try:
         if mail_id is None:
-            template = client.get_template_by_name("company_portal_invitation")
+            template = client.get_template_by_name("company_account_invite")
             if not template or not getattr(template, "id", None):
                 raise RuntimeError("Company invitation template is missing")
             mail = client.create_mail(
                 MailCreate(
                     template_id=template.id,
                     subject="HackEPS · Accés al portal d’empreses",
-                    fields=url,
+                    fields=f"{company_name},{escape(url, quote=True)}",
                     receiver_mail=email,
                 )
             )

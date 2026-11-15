@@ -261,6 +261,16 @@ def confirm_assistance(
     return {"success": True}
 
 
+@router.post("/cancel_assistance/")
+def cancel_assistance(
+    token: AssistenceToken = Depends(
+        JWTBearer(expected_type=TokenType.ASSISTENCE, allow_service=False)
+    ),
+):
+    event_service.cancel_assistance(token)
+    return {"success": True}
+
+
 @router.get(
     "/force/confirm_assistance/{event_id}/{user_id}",
     response_model=RegistrationConfirmationGet,
@@ -481,6 +491,14 @@ def get_send_progress(event_id: int, token: BaseToken = Depends(JWTBearer())):
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
     return event_service.get_send_progress(event_id)
+
+
+@router.post("/{event_id}/release-reminder/{hacker_id}")
+def send_release_reminder(
+    event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
+):
+    """Send once to an accepted, confirmed participant; retain delivery state."""
+    return event_service.send_release_reminder(event_id, hacker_id, token)
 
 
 @router.post("/{event_id}/tickets/send")

@@ -47,6 +47,11 @@ class HackerRegistration(BaseModel):
     how_did_you_meet_us: Mapped[str] = mapped_column(String, default="")
     update_user: Mapped[bool] = mapped_column(Boolean, default=True)
     confirmed_assistance: Mapped[bool] = mapped_column(Boolean, default=False)
+    release_reminder_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+    release_reminder_mail_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     confirm_assistance_token: Mapped[str] = mapped_column(String, default="")
     wants_credit: Mapped[bool] = mapped_column(Boolean, default=False)
     # when the check-in ticket mail (QR) was sent; None until generated

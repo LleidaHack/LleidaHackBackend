@@ -7,6 +7,7 @@ from typing import Any
 from generated_src.lleida_hack_mail_api_client.api.health import health_check
 from generated_src.lleida_hack_mail_api_client.api.mail import (
     mail_create,
+    mail_get,
     mail_send_by_id,
 )
 from generated_src.lleida_hack_mail_api_client.api.template import template_get_by_name
@@ -103,6 +104,14 @@ class MailClient(BaseClient):
         except Exception:  # noqa: BLE001
             logger.debug("Mail send completed id=%s", id)
         return r
+
+    @initialized
+    def is_mail_sent(self, mail_id: int) -> bool:
+        response = mail_get.sync_detailed(mail_id, client=self.client)
+        sent = getattr(response.parsed, "sent", None)
+        if response.status_code != HTTPStatus.OK or type(sent) is not bool:
+            raise MailClientException("Unable to verify mail delivery")
+        return sent
 
     def get_template_by_name(self, name):
         return template_get_by_name.sync(name, client=self.client)
