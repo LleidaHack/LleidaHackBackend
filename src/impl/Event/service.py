@@ -828,7 +828,7 @@ class EventService(BaseService):
     ):  ##Servei per obtindre la llista de participants amb status acceptat, rechazat o pending.
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
-        self.get_by_id(event_id)
+        event = self.get_by_id(event_id)
         # Column queries only: loading the User/registration rows would pull
         # every profile picture and CV (base64) just to build this list.
         accepted = {
@@ -881,6 +881,18 @@ class EventService(BaseService):
                 if row.id in rejected
                 else "pending"
             )
+            age = None
+            if row.birthdate and event.start_date:
+                birth = row.birthdate.date()
+                start = event.start_date.date()
+                if birth <= start:
+                    age = (
+                        start.year
+                        - birth.year
+                        - ((start.month, start.day) < (birth.month, birth.day))
+                    )
+            participant["age_at_event"] = age
+            participant["is_minor"] = age < 18 if age is not None else None
             participant["registered_at"] = row.registered_at
             participant["study_center"] = row.study_center
             # A flag, not the base64 PDF: the CV is fetched on demand.
