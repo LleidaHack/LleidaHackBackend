@@ -125,7 +125,7 @@ def test_ticket_mail_goes_only_to_accepted_and_confirmed(
     )
     assert qr_url.endswith(f"/v1/event/{event_id}/ticket/{code}/qr.png")
     assert role == "Hacker"
-    assert ticket_url.endswith(f"/v1/event/{event_id}/ticket/{code}/view")
+    assert ticket_url.endswith(f"/entrada/{event_id}/{code}")
     with Session(engine) as session:
         assert (
             session.get(HackerRegistration, (confirmed.id, event_id)).ticket_sent_at
@@ -484,7 +484,19 @@ def test_invitation_groups_include_staff_and_active_mentors_without_login(
     assert sent_mails[0].fields.split(",")[0] == "Mentor &lt;Test&gt;"
     assert sent_mails[0].fields.split(",")[2] == "Mentor"
     view_url = sent_mails[0].fields.split(",")[-1]
-    page = client.get(view_url)
+    code = sent_mails[0].fields.split(",")[3]
+    assert view_url.endswith(f"/entrada/{event}/{code}")
+    redirect = client.get(
+        f"/v1/event/{event}/ticket/{code}/view", follow_redirects=False
+    )
+    assert redirect.status_code == 307
+    assert redirect.headers["location"] == view_url
+    assert redirect.headers["cache-control"] == "private, no-store"
+    page = client.get(f"/v1/event/{event}/ticket/{code}/page")
+    assert f"<code>{code}</code>" not in page.text
+    assert "backend.main.lleidahack.dev" not in page.text
+    assert f"{view_url}/qr.png" in page.text
+    assert "ticket/hackeps-logo.png" in page.text
     assert page.status_code == 200 and "Mentor &lt;Test&gt;" in page.text
     assert page.headers["cache-control"] == "private, no-store"
     EventService().send_ticket_mails_background(event, audience="mentor")
