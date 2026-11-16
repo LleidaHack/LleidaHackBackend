@@ -545,6 +545,25 @@ def get_ticket(event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBear
 
 
 @router.get("/{event_id}/ticket/{code}/view")
+def redirect_ticket(event_id: int, code: str):
+    from fastapi.responses import RedirectResponse
+
+    from src.configuration.Settings import settings
+    from src.utils.ticket_links import public_ticket_url
+
+    event_service._ticket_holder(event_id, code)
+    return RedirectResponse(
+        public_ticket_url(settings, event_id, code),
+        status_code=307,
+        headers={
+            "Cache-Control": "private, no-store",
+            "Referrer-Policy": "no-referrer",
+            "X-Robots-Tag": "noindex, nofollow",
+        },
+    )
+
+
+@router.get("/{event_id}/ticket/{code}/page")
 def view_ticket(event_id: int, code: str):
     from fastapi.responses import HTMLResponse
 

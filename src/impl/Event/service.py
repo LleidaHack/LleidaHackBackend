@@ -58,6 +58,7 @@ from src.utils.service_utils import (
     set_existing_data,
     subtract_lists,
 )
+from src.utils.ticket_links import public_ticket_url
 from src.utils.Token import AssistenceToken, BaseToken
 from src.utils.UserType import UserType
 
@@ -1799,7 +1800,7 @@ class EventService(BaseService):
                                     ticket_role(session, event, hacker),
                                     hacker.code,
                                     ticket_qr_url(event.id, hacker.code),
-                                    f"{settings.back_url.rstrip('/')}/v1/event/{event.id}/ticket/{hacker.code}/view",
+                                    public_ticket_url(settings, event.id, hacker.code),
                                 )
                             ),
                         )
