@@ -210,6 +210,7 @@ class EventTicketGet(BaseSchema):
     code: str | None = None
     qr_url: str | None = None
     apple_wallet_url: str | None = None
+    google_wallet_url: str | None = None
     ticket_sent_at: datetime | None = None
     checked_in: bool
     voucher_code: str | None = None

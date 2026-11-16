@@ -130,6 +130,10 @@ class Settings(BaseSettings):
 
     # General settings
     # Mounted secret files; leave blank to disable Apple Wallet.
+    google_wallet_enabled: bool = False
+    google_wallet_issuer_id: str = ""
+    google_wallet_credentials_path: str = ""
+
     apple_wallet_p12_path: str = ""
     apple_wallet_password_file: str = ""
     apple_wallet_wwdr_path: str = ""
