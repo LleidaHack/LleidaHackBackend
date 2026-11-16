@@ -1,0 +1,14 @@
+# Apply to the production Compose configuration only AFTER Google grants
+# publishing access. This file is deliberately not loaded by CI/deployment.
+# Keep the existing issuer ID, credential path and read-only secret mounts.
+# See docs/google-wallet.md for activation, verification and rollback.
+services:
+  backend-main:
+    environment:
+      GOOGLE_WALLET_ENABLED: "true"
+  backend-push-worker-main:
+    environment:
+      GOOGLE_WALLET_ENABLED: "true"
+  backend-company-mail-worker-main:
+    environment:
+      GOOGLE_WALLET_ENABLED: "true"
