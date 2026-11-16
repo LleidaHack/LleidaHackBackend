@@ -66,6 +66,17 @@ def management_snapshot(event_id: int, token: BaseToken = Depends(JWTBearer())):
     return {**ops.snapshot(event_id, True), "access_role": access_role(token)}
 
 
+@router.get("/{event_id}/activities/{activity_id}/ranking")
+def activity_ranking(
+    event_id: int, activity_id: str, token: BaseToken = Depends(JWTBearer())
+):
+    ops.require_organizer(token)
+    from src.impl.Operations.activity_times import ranking
+
+    _, row = ops.state(event_id)
+    return ranking(event_id, activity_id, row.config)
+
+
 @router.get("/{event_id}/credits")
 def credits_export(event_id: int, token: BaseToken = Depends(JWTBearer())):
     ops.require_organizer(token)
@@ -98,6 +109,15 @@ def update_config(
     if not used_rooms.issubset({r["id"] for r in config["rooms"]}):
         raise HTTPException(409, "Move presentations before removing a room")
     before = deepcopy(row.config)
+    # Older management clients must not silently turn off an activity timer.
+    previous_activities = {a["id"]: a for a in before.get("activities", [])}
+    for activity, parsed in zip(
+        config["activities"], body.config.activities, strict=True
+    ):
+        if "timed" not in parsed.model_fields_set:
+            activity["timed"] = previous_activities.get(activity["id"], {}).get(
+                "timed", False
+            )
     from src.utils.access import require_superadmin
 
     critical_changed = any(config.get(key) != before.get(key) for key in ("deadline",))

@@ -161,7 +161,12 @@ def perform(event_id, body, token, allow_ticket_meal=False):
     # they must not take the event lock that serializes real scans.
     event, row = state(event_id, lock=organizer(token))
     operation_id = str(body.operation_id)
-    fingerprint = hashlib.sha256(body.model_dump_json().encode()).hexdigest()
+    # Preserve fingerprints of scans queued before duration support was deployed.
+    fingerprint = hashlib.sha256(
+        body.model_dump_json(
+            exclude={"duration_ms"} if body.duration_ms is None else set()
+        ).encode()
+    ).hexdigest()
     previous = (
         db.session.query(OperationAudit)
         .filter_by(event_id=event_id, operation_id=operation_id)
@@ -192,6 +197,8 @@ def perform(event_id, body, token, allow_ticket_meal=False):
         "reason": body.reason,
         "code_fingerprint": hashlib.sha256(body.code.encode()).hexdigest(),
     }
+    if body.duration_ms is not None:
+        details["duration_ms"] = body.duration_ms
     user = None
     try:
         with db.session.begin_nested():
@@ -294,6 +301,13 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                     )
                     if not activity:
                         raise HTTPException(404, "Activity not found")
+                    if activity.get("timed", False) != (body.duration_ms is not None):
+                        raise HTTPException(
+                            422,
+                            "Timed activities require a duration; other activities do not accept one",
+                        )
+                    if body.duration_ms is not None:
+                        result["duration_ms"] = body.duration_ms
                 else:
                     if in_event_table("hacker_event_participation", event_id, user.id):
                         raise HTTPException(409, "Participant already checked in")
@@ -311,23 +325,28 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                     )
                     .first()
                 )
-                if existing:
+                if existing and body.duration_ms is None:
                     raise HTTPException(409, "Already registered in this round")
-                db.session.add(
-                    ScanRecord(
-                        event_id=event_id,
-                        user_id=user.id,
-                        kind=body.kind,
-                        target=target,
-                        round=round_number,
-                        audit_id=log.id,
+                if not existing:
+                    db.session.add(
+                        ScanRecord(
+                            event_id=event_id,
+                            user_id=user.id,
+                            kind=body.kind,
+                            target=target,
+                            round=round_number,
+                            audit_id=log.id,
+                        )
                     )
-                )
                 if body.kind == "meal" and not legacy and not is_mentor:
                     db.session.add(HackerMeal(user_id=user.id, meal_id=meal.id))
                 if body.kind == "checkin":
                     event.participants.append(user)
-                if body.kind == "activity" and activity.get("points", 0):
+                if (
+                    body.kind == "activity"
+                    and not existing
+                    and activity.get("points", 0)
+                ):
                     movement(
                         event_id,
                         user.id,
