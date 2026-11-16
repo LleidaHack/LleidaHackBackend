@@ -50,6 +50,11 @@ from src.utils.apple_wallet import build_pass, wallet_enabled, wallet_url
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
 from src.utils.event_tickets import eligible_tickets, ticket_email, ticket_role
+from src.utils.google_wallet import (
+    build_save_url,
+    google_wallet_enabled,
+    google_wallet_url,
+)
 from src.utils.qr import qr_png, ticket_qr_url
 from src.utils.service_utils import (
     attribute_hacker_list,
@@ -1701,13 +1706,18 @@ class EventService(BaseService):
 
     @staticmethod
     def _ticket_recipients(
-        session, event: Event, force: bool = False, audience: str = "all"
+        session,
+        event: Event,
+        force: bool = False,
+        audience: str = "all",
+        user_id: int | None = None,
     ):
         """(hacker, registration) pairs that should receive the ticket mail."""
         return [
             (user, delivery)
             for user, delivery, role in eligible_tickets(session, event)
             if (audience == "all" or role.lower() == audience)
+            and (user_id is None or user.id == user_id)
             and ticket_email(session, event, user)
             and (force or delivery is None or delivery.ticket_sent_at is None)
         ]
@@ -1764,6 +1774,7 @@ class EventService(BaseService):
         force: bool = False,
         delay: float = 0.0,
         audience: str = "all",
+        user_id: int | None = None,
     ):
         """
         Background-safe sender for confirmed participants, active mentors and staff.
@@ -1776,7 +1787,9 @@ class EventService(BaseService):
             event = session.query(Event).filter(Event.id == event_id).first()
             if event is None or event.archived:
                 return
-            recipients = self._ticket_recipients(session, event, force, audience)
+            recipients = self._ticket_recipients(
+                session, event, force, audience, user_id
+            )
             try:
                 self._start_job(event_id, "ticket", len(recipients))
             # Preserve the documented service-boundary fallback.
@@ -1787,7 +1800,9 @@ class EventService(BaseService):
                     mail = self.mail_client.create_mail(
                         MailCreate(
                             template_id=self.mail_client.get_internall_template_id(
-                                InternalTemplate.EVENT_ATTENDEE_TICKET
+                                InternalTemplate.EVENT_ATTENDEE_TICKET_WALLETS
+                                if google_wallet_enabled(settings)
+                                else InternalTemplate.EVENT_ATTENDEE_TICKET
                             ),
                             subject=f"{event.name} - El teu tiquet de check-in",
                             receiver_id=str(hacker.id),
@@ -1858,6 +1873,25 @@ class EventService(BaseService):
         _, hacker = self._ticket_holder(event_id, code)
         return qr_png(hacker.code)
 
+    def get_google_wallet_link(self, event_id: int, code: str) -> str:
+        from urllib.error import URLError
+
+        import jwt
+        from fastapi import HTTPException
+
+        event, user = self._ticket_holder(event_id, code)
+        if not google_wallet_enabled(settings):
+            raise HTTPException(
+                status_code=503, detail="Google Wallet is not configured"
+            )
+        try:
+            return build_save_url(settings, event, user)
+        except (OSError, ValueError, KeyError, TypeError, URLError, jwt.PyJWTError):
+            logger.error("Google Wallet issuance failed for event %s", event_id)
+            raise HTTPException(
+                status_code=503, detail="Google Wallet is temporarily unavailable"
+            ) from None
+
     def get_apple_wallet_pass(self, event_id: int, code: str) -> bytes:
         from fastapi import HTTPException
 
@@ -1915,6 +1949,9 @@ class EventService(BaseService):
             "code": hacker.code if has_ticket else None,
             "qr_url": ticket_qr_url(event.id, hacker.code) if has_ticket else None,
             "apple_wallet_url": wallet_url(settings, event.id, hacker.code)
+            if has_ticket
+            else None,
+            "google_wallet_url": google_wallet_url(settings, event.id, hacker.code)
             if has_ticket
             else None,
             "ticket_sent_at": registration.ticket_sent_at if registration else None,

@@ -508,6 +508,7 @@ def send_ticket_mails(
     background_tasks: BackgroundTasks,
     force: bool = False,
     audience: Literal["all", "hacker", "mentor", "staff"] = "all",
+    user_id: int | None = None,
     delay: float = 0.0,
     token: BaseToken = Depends(JWTBearer()),
 ):
@@ -525,9 +526,34 @@ def send_ticket_mails(
     event = event_service.get_by_id(event_id)
     if event.archived:
         raise HTTPException(status_code=400, detail="Event is archived")
+    if user_id is not None:
+        recipient = next(
+            (
+                row
+                for row in event_service.get_tickets_status(event_id, token)[
+                    "recipients"
+                ]
+                if row["id"] == user_id
+                and (audience == "all" or row["role"].lower() == audience)
+            ),
+            None,
+        )
+        if recipient is None or not recipient["email"]:
+            raise HTTPException(
+                status_code=400, detail="Recipient is not eligible or has no email"
+            )
+        if recipient["sent"] and not force:
+            raise HTTPException(
+                status_code=409, detail="Ticket already sent; use force to resend"
+            )
     event_service.check_mail_available()
     background_tasks.add_task(
-        event_service.send_ticket_mails_background, event_id, force, delay, audience
+        event_service.send_ticket_mails_background,
+        event_id,
+        force,
+        delay,
+        audience,
+        user_id,
     )
     return {"success": True, "scheduled": True}
 
@@ -583,6 +609,23 @@ def view_ticket(event_id: int, code: str):
     )
 
 
+@router.get("/{event_id}/ticket/{code}/google-wallet")
+def get_google_wallet_pass(event_id: int, code: str):
+    from fastapi.responses import RedirectResponse
+
+    return RedirectResponse(
+        event_service.get_google_wallet_link(event_id, code),
+        status_code=303,
+        headers={
+            "Cache-Control": "private, no-store",
+            "Referrer-Policy": "no-referrer",
+            "X-Robots-Tag": "noindex, nofollow",
+        },
+    )
+
+
+# Older queued emails contain the former /view URL as their base.
+@router.get("/{event_id}/ticket/{code}/view/apple.pkpass", include_in_schema=False)
 @router.get("/{event_id}/ticket/{code}/apple.pkpass")
 def get_apple_wallet_pass(event_id: int, code: str):
     """Bearer-code download, with the same eligibility rules as the ticket QR."""

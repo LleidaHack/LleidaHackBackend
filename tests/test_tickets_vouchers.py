@@ -418,6 +418,8 @@ def test_wallet_download_uses_profile_code_and_eligibility(
     assert response.headers["content-type"] == "application/vnd.apple.pkpass"
     assert response.headers["cache-control"] == "private, no-store"
     assert seen == [code]
+    legacy = client.get(path.replace("/apple.pkpass", "/view/apple.pkpass"))
+    assert legacy.status_code == 200 and legacy.content == b"signed-pass"
     state = client.get(
         f"/v1/event/{event_id}/ticket/{confirmed.id}", headers=confirmed.headers
     ).json()
@@ -622,3 +624,82 @@ def test_staff_invitation_audience_tracks_delivery_and_rechecks_roles(
         user.access_role = "hacker"
         session.commit()
     assert client.get(f"/v1/event/{event}/ticket/{code}/view").status_code == 404
+
+
+def test_google_wallet_eligibility_and_direct_redirect(
+    client, engine, create_user, create_event, accept, monkeypatch
+):
+    from src.configuration.Settings import settings
+    from src.impl.Event import service
+
+    organizer, confirmed, pending = (
+        create_user(role="organizer"),
+        create_user(),
+        create_user(),
+    )
+    event = create_event([confirmed, pending])
+    accept(organizer, event, confirmed)
+    code = user_code(engine, confirmed)
+    path = f"/v1/event/{event}/ticket/{code}/google-wallet"
+    assert client.get(path).status_code == 503
+    monkeypatch.setattr(settings, "google_wallet_enabled", True)
+    monkeypatch.setattr(settings, "google_wallet_issuer_id", "12345")
+    monkeypatch.setattr(settings, "google_wallet_credentials_path", "test.json")
+    seen = []
+
+    def save(config, event, user):
+        seen.append(user.code)
+        return "https://pay.google.com/gp/v/save/test-signed-token"
+
+    monkeypatch.setattr(service, "build_save_url", save)
+    result = client.get(path, follow_redirects=False)
+    assert result.status_code == 303
+    assert (
+        result.headers["location"]
+        == "https://pay.google.com/gp/v/save/test-signed-token"
+    )
+    assert result.headers["cache-control"] == "private, no-store"
+    assert (
+        client.get(
+            f"/v1/event/{event}/ticket/{user_code(engine, pending)}/google-wallet"
+        ).status_code
+        == 404
+    )
+    assert seen == [code]
+
+
+@pytest.mark.parametrize("target_role", ["hacker", "staff"])
+def test_send_one_ticket_never_sends_to_the_other_recipients(
+    client, create_user, create_event, accept, sent_mails, target_role
+):
+    organizer = create_user(role="organizer")
+    first, second, pending = create_user(), create_user(), create_user()
+    event = create_event([first, second, pending])
+    accept(organizer, event, first)
+    accept(organizer, event, second)
+    selected = first if target_role == "hacker" else organizer
+    sent_mails.clear()
+    path = f"/v1/event/{event}/tickets/send?user_id={selected.id}"
+    assert client.post(path, headers=first.headers).status_code in (401, 403)
+    assert client.post(path, headers=organizer.headers).status_code == 200
+    assert [mail.receiver_mail for mail in sent_mails] == [selected.email]
+    assert client.post(path, headers=organizer.headers).status_code == 409
+    assert (
+        client.post(path + "&force=true", headers=organizer.headers).status_code == 200
+    )
+    assert [mail.receiver_mail for mail in sent_mails] == [selected.email] * 2
+    assert (
+        client.post(
+            f"/v1/event/{event}/tickets/send?user_id={pending.id}&force=true",
+            headers=organizer.headers,
+        ).status_code
+        == 400
+    )
+    assert (
+        client.post(
+            f"/v1/event/{event}/tickets/send?user_id=999999&force=true",
+            headers=organizer.headers,
+        ).status_code
+        == 400
+    )
+    assert len(sent_mails) == 2
