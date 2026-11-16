@@ -1,15 +1,17 @@
-"""Small event mentor roster; mentors receive meals via a physical badge only."""
+"""Event mentor roster, invitation contacts and physical meal badges."""
 
 from datetime import UTC, datetime
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from sqlalchemy import func
 
 from src.impl.Mentor.model import Mentor
 from src.impl.Operations.model import EventMentor
 from src.impl.User.model import User
+from src.impl.User.schema import UserCreate
 from src.impl.UserConfig.model import UserConfig
 from src.impl.Voucher.model import Voucher
 from src.utils.access import require_management
@@ -22,6 +24,12 @@ class CreateMentor(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     name: str = Field(min_length=2, max_length=150)
     user_id: int | None = None
+    email: str | None = Field(default=None, max_length=254)
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, value):
+        return UserCreate.email_validation(value).lower() if value else None
 
 
 class BadgeInput(BaseModel):
@@ -31,11 +39,17 @@ class BadgeInput(BaseModel):
 
 
 class MentorStatus(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    active: bool
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    active: bool | None = None
+    email: str | None = Field(default=None, max_length=254)
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, value):
+        return UserCreate.email_validation(value).lower() if value else None
 
 
-def roster(event_id):
+def roster(event_id, include_email=False):
     rows = (
         db.session.query(EventMentor, User)
         .join(User, User.id == EventMentor.user_id)
@@ -52,6 +66,15 @@ def roster(event_id):
         {
             "id": u.id,
             "name": u.name,
+            **(
+                {
+                    "email": entry.invitation_email
+                    if entry.invitation_email is not None
+                    else u.email
+                }
+                if include_email
+                else {}
+            ),
             "active": entry.active,
             "has_badge": u.id in badges,
         }
@@ -62,7 +85,7 @@ def roster(event_id):
 @router.get("")
 def list_mentors(event_id: int, token=Depends(JWTBearer())):
     require_management(token)
-    return roster(event_id)
+    return roster(event_id, include_email=True)
 
 
 @router.get("/candidates")
@@ -92,12 +115,27 @@ def create_mentor(event_id: int, body: CreateMentor, token=Depends(JWTBearer()))
         if not user or user.access_role != "mentor" or user.is_deleted:
             raise HTTPException(422, "Select an existing user with the mentor role")
     else:
+        existing = (
+            db.session.query(User).filter(func.lower(User.email) == body.email).first()
+            if body.email
+            else None
+        )
+        if existing:
+            if existing.access_role != "mentor" or existing.is_deleted:
+                raise HTTPException(
+                    409, "Email belongs to an existing account; select a mentor account"
+                )
+            user = existing
+        else:
+            user = None
+    if not body.user_id and user is None:
         config = UserConfig()
         db.session.add(config)
         db.session.flush()
-        # No login credentials or ticket are issued for a roster-only mentor.
+        # Roster-only identities can receive tickets, but have no login credentials.
         user = Mentor(
             name=body.name,
+            email=body.email,
             nickname=f"mentor-{uuid4().hex}",
             access_role="mentor",
             password="!",
@@ -109,10 +147,12 @@ def create_mentor(event_id: int, body: CreateMentor, token=Depends(JWTBearer()))
         db.session.flush()
     if db.session.get(EventMentor, (event_id, user.id)):
         raise HTTPException(409, "Mentor already registered for this event")
-    db.session.add(EventMentor(event_id=event_id, user_id=user.id))
+    db.session.add(
+        EventMentor(event_id=event_id, user_id=user.id, invitation_email=body.email)
+    )
     audit(event_id, token, "mentor.create", {"name": user.name}, user.id)
     db.session.commit()
-    return {"id": user.id, "name": user.name}
+    return {"id": user.id, "name": user.name, "email": user.email}
 
 
 @router.patch("/{user_id}")
@@ -126,8 +166,26 @@ def change_status(
     entry = db.session.get(EventMentor, (event_id, user_id))
     if not entry:
         raise HTTPException(404, "Mentor not found")
-    entry.active = body.active
-    audit(event_id, token, "mentor.status", {"active": body.active}, user_id)
+    if body.active is not None:
+        entry.active = body.active
+    if "email" in body.model_fields_set:
+        from src.impl.Event.model import EventTicketDelivery
+
+        user = db.session.get(User, user_id)
+        previous = (
+            entry.invitation_email if entry.invitation_email is not None else user.email
+        )
+        entry.invitation_email = body.email or ""
+        delivery = db.session.get(EventTicketDelivery, (event_id, user_id))
+        if delivery and (previous or "") != entry.invitation_email:
+            delivery.ticket_sent_at = None
+    audit(
+        event_id,
+        token,
+        "mentor.update",
+        {"fields": sorted(body.model_fields_set)},
+        user_id,
+    )
     db.session.commit()
     return {"ok": True}
 

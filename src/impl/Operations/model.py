@@ -220,6 +220,7 @@ class NicknameRequest(BaseModel):
 
 class EventMentor(BaseModel):
     __tablename__ = "event_mentor"
+    invitation_email: Mapped[str | None] = mapped_column(String(254), nullable=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"), primary_key=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")

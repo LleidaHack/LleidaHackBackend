@@ -13,8 +13,10 @@ from src.error.NotFoundException import NotFoundException
 from src.impl.Event.model import Event, HackerRegistration
 from src.impl.Event.service import EventService
 from src.impl.Hacker.service import HackerService
+from src.impl.User.model import User
 from src.impl.Voucher.model import Voucher
 from src.utils.Base.BaseService import BaseService
+from src.utils.event_tickets import ticket_role
 from src.utils.Token import BaseToken
 from src.utils.UserType import UserType
 
@@ -175,7 +177,10 @@ class VoucherService(BaseService):
             )
         if not self.is_voucher_code(voucher_code):
             raise InvalidDataException("Invalid voucher code")
-        hacker = self.hacker_service.get_by_code(hacker_code)
+        hacker = db.session.query(User).filter_by(code=hacker_code).first()
+        if hacker is None or hacker.is_deleted:
+            raise NotFoundException("User not found")
+        non_participant = ticket_role(db.session, event, hacker) in {"Mentor", "Staff"}
         voucher = (
             db.session.query(Voucher)
             .filter(Voucher.code == voucher_code, Voucher.event_id == event.id)
@@ -190,7 +195,7 @@ class VoucherService(BaseService):
             if voucher.hacker_id == hacker.id:
                 raise InvalidDataException("Voucher already assigned to this hacker")
             raise InvalidDataException("Voucher already assigned to another hacker")
-        if hacker not in event.accepted_hackers:
+        if not non_participant and hacker not in event.accepted_hackers:
             raise InvalidDataException("Hacker not accepted")
         registration = (
             db.session.query(HackerRegistration)
@@ -200,7 +205,7 @@ class VoucherService(BaseService):
             )
             .first()
         )
-        if registration is None:
+        if registration is None and not non_participant:
             raise InvalidDataException("User not registered")
         current = (
             db.session.query(Voucher)
@@ -219,10 +224,10 @@ class VoucherService(BaseService):
             current.hacker_id = None
             db.session.flush()
         message = ""
-        if not registration.confirmed_assistance:
+        if not non_participant and not registration.confirmed_assistance:
             registration.confirmed_assistance = True
             message = "user haven't confirmed so we forced confirmation"
-        if hacker not in event.participants:
+        if not non_participant and hacker not in event.participants:
             event.participants.append(hacker)
         voucher.hacker_id = hacker.id
         # Keep the existing timezone-naive database/local-calendar contract.
@@ -252,8 +257,10 @@ class VoucherService(BaseService):
             "voucher_code": voucher.code,
             "hacker_id": hacker.id,
             "hacker_name": hacker.name,
-            "hacker_shirt_size": registration.shirt_size,
-            "food_restrictions": registration.food_restrictions,
+            "hacker_shirt_size": registration.shirt_size if registration else None,
+            "food_restrictions": registration.food_restrictions
+            if registration
+            else None,
             "message": message,
         }
 

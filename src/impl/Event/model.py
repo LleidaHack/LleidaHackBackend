@@ -209,3 +209,10 @@ class EventAuditLog(BaseModel):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )
+
+
+class EventTicketDelivery(BaseModel):
+    __tablename__ = "event_ticket_delivery"
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"), primary_key=True)
+    ticket_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

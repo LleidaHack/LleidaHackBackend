@@ -129,6 +129,13 @@ class Settings(BaseSettings):
         return values
 
     # General settings
+    # Mounted secret files; leave blank to disable Apple Wallet.
+    apple_wallet_p12_path: str = ""
+    apple_wallet_password_file: str = ""
+    apple_wallet_wwdr_path: str = ""
+    apple_wallet_team_id: str = ""
+    apple_wallet_pass_type_id: str = ""
+
     front_url: str = Field(
         default="https://frontend.integration.lleidahack.dev/hackeps",
         description="Frontend URL",
