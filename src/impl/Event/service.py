@@ -1804,7 +1804,7 @@ class EventService(BaseService):
                                 if google_wallet_enabled(settings)
                                 else InternalTemplate.EVENT_ATTENDEE_TICKET
                             ),
-                            subject=f"{event.name} - El teu tiquet de check-in",
+                            subject=f"{event.name} - La teva entrada",
                             receiver_id=str(hacker.id),
                             receiver_mail=str(ticket_email(session, event, hacker)),
                             fields=",".join(
