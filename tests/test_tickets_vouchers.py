@@ -436,7 +436,7 @@ def test_wallet_download_uses_profile_code_and_eligibility(
         client.get(f"/v1/event/{event_id}/ticket/unknown/apple.pkpass").status_code
         == 404
     )
-    assert seen == [code]
+    assert seen == [code, code]
 
 
 def test_invitation_groups_include_staff_and_active_mentors_without_login(
