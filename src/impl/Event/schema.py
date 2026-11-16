@@ -209,12 +209,16 @@ class EventTicketGet(BaseSchema):
     has_ticket: bool
     code: str | None = None
     qr_url: str | None = None
+    apple_wallet_url: str | None = None
     ticket_sent_at: datetime | None = None
     checked_in: bool
     voucher_code: str | None = None
 
 
 class EventTicketsStatus(BaseSchema):
+    missing_email: int = 0
+    groups: dict = Field(default_factory=dict)
+    recipients: list[dict] = Field(default_factory=list)
     eligible: int
     sent: int
     pending: int

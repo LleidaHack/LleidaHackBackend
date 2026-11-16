@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 
@@ -506,12 +507,13 @@ def send_ticket_mails(
     event_id: int,
     background_tasks: BackgroundTasks,
     force: bool = False,
+    audience: Literal["all", "hacker", "mentor", "staff"] = "all",
     delay: float = 0.0,
     token: BaseToken = Depends(JWTBearer()),
 ):
     """
-    Mail the check-in ticket (QR) to every accepted and confirmed hacker that
-    has not received it yet. `force=true` resends it to all of them. Runs in
+    Mail tickets to eligible confirmed participants, active mentors and staff.
+    Filter with audience; `force=true` resends to that audience. Runs in
     background; poll `/tickets/status` for progress.
     """
     if not token.check([UserType.LLEIDAHACKER]):
@@ -525,7 +527,7 @@ def send_ticket_mails(
         raise HTTPException(status_code=400, detail="Event is archived")
     event_service.check_mail_available()
     background_tasks.add_task(
-        event_service.send_ticket_mails_background, event_id, force, delay
+        event_service.send_ticket_mails_background, event_id, force, delay, audience
     )
     return {"success": True, "scheduled": True}
 
@@ -542,13 +544,47 @@ def get_ticket(event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBear
     return event_service.get_ticket(event_id, hacker_id, token)
 
 
+@router.get("/{event_id}/ticket/{code}/view")
+def view_ticket(event_id: int, code: str):
+    from fastapi.responses import HTMLResponse
+
+    from src.configuration.Settings import settings
+    from src.utils.ticket_page import ticket_page
+
+    event, user = event_service._ticket_holder(event_id, code)
+    return HTMLResponse(
+        ticket_page(settings, event, user),
+        headers={
+            "Cache-Control": "private, no-store",
+            "Referrer-Policy": "no-referrer",
+            "X-Robots-Tag": "noindex, nofollow",
+            "X-Content-Type-Options": "nosniff",
+            "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'",
+        },
+    )
+
+
+@router.get("/{event_id}/ticket/{code}/apple.pkpass")
+def get_apple_wallet_pass(event_id: int, code: str):
+    """Bearer-code download, with the same eligibility rules as the ticket QR."""
+    return Response(
+        content=event_service.get_apple_wallet_pass(event_id, code),
+        media_type="application/vnd.apple.pkpass",
+        headers={
+            "Content-Disposition": 'attachment; filename="lleidahack.pkpass"',
+            "Cache-Control": "private, no-store",
+            "Referrer-Policy": "no-referrer",
+        },
+    )
+
+
 @router.get("/{event_id}/ticket/{code}/qr.png")
 def get_ticket_qr(event_id: int, code: str):
     """Public PNG of a ticket QR, embedded in the ticket mail."""
     return Response(
         content=event_service.get_ticket_qr(event_id, code),
         media_type="image/png",
-        headers={"Cache-Control": "private, max-age=86400"},
+        headers={"Cache-Control": "private, no-store"},
     )
 
 

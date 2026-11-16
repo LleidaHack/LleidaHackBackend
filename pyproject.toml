@@ -15,6 +15,7 @@ dependencies = [
     "SQLAlchemy>=2.0.30",
     "FastAPI-SQLAlchemy>=0.2.1",
     "pyjwt[crypto]>=2.13.0",
+    "cryptography>=43",
     "python-dateutil>=2.9.0.post0",
     "pyyaml>=6.0.1",
     "passlib>=1.7.4",

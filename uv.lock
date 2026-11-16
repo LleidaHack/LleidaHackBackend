@@ -787,6 +787,7 @@ source = { editable = "." }
 dependencies = [
     { name = "alembic" },
     { name = "configparser" },
+    { name = "cryptography" },
     { name = "fastapi" },
     { name = "fastapi-sqlalchemy" },
     { name = "gunicorn" },
@@ -819,6 +820,7 @@ dev = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.13.1" },
     { name = "configparser", specifier = ">=7.0.0" },
+    { name = "cryptography", specifier = ">=43" },
     { name = "fastapi", specifier = ">=0.111.0" },
     { name = "fastapi-sqlalchemy", specifier = ">=0.2.1" },
     { name = "gunicorn", specifier = ">=22.0.0" },

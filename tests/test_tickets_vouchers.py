@@ -105,9 +105,9 @@ def test_ticket_mail_goes_only_to_accepted_and_confirmed(
     ).json()
     assert status == {
         **status,
-        "eligible": 1,
+        "eligible": 2,
         "sent": 0,
-        "pending": 1,
+        "pending": 2,
         "running": False,
     }
 
@@ -115,15 +115,17 @@ def test_ticket_mail_goes_only_to_accepted_and_confirmed(
         f"/v1/event/{event_id}/tickets/send", headers=confirmed.headers
     ).status_code in (401, 403)
     # run the background job synchronously to assert on its effects
-    EventService().send_ticket_mails_background(event_id)
+    EventService().send_ticket_mails_background(event_id, audience="hacker")
     assert [m.receiver_mail for m in sent_mails] == [confirmed.email]
-    name, event_name, code, qr_url = sent_mails[0].fields.split(",")
+    name, event_name, role, code, qr_url, ticket_url = sent_mails[0].fields.split(",")
     assert (name, event_name, code) == (
         "Test User",
         "HackEPS Test",
         user_code(engine, confirmed),
     )
     assert qr_url.endswith(f"/v1/event/{event_id}/ticket/{code}/qr.png")
+    assert role == "Hacker"
+    assert ticket_url.endswith(f"/v1/event/{event_id}/ticket/{code}/view")
     with Session(engine) as session:
         assert (
             session.get(HackerRegistration, (confirmed.id, event_id)).ticket_sent_at
@@ -137,12 +139,12 @@ def test_ticket_mail_goes_only_to_accepted_and_confirmed(
     status = client.get(
         f"/v1/event/{event_id}/tickets/status", headers=organizer.headers
     ).json()
-    assert (status["eligible"], status["sent"], status["pending"]) == (1, 1, 0)
+    assert (status["eligible"], status["sent"], status["pending"]) == (2, 1, 1)
 
     # idempotent: a second run sends nothing unless forced
-    EventService().send_ticket_mails_background(event_id)
+    EventService().send_ticket_mails_background(event_id, audience="hacker")
     assert len(sent_mails) == 1
-    EventService().send_ticket_mails_background(event_id, force=True)
+    EventService().send_ticket_mails_background(event_id, force=True, audience="hacker")
     assert len(sent_mails) == 2
 
     response = client.post(
@@ -380,3 +382,231 @@ def test_voucher_is_scoped_to_its_event_and_needs_accepted_hacker(
         ).status_code
         == 404
     )
+
+
+def test_wallet_download_uses_profile_code_and_eligibility(
+    client, create_user, create_event, accept, engine, monkeypatch
+):
+    import src.impl.Event.service as service_module
+    from src.configuration.Settings import settings
+
+    organizer = create_user(role="organizer")
+    confirmed, pending = create_user(), create_user()
+    event_id = create_event([confirmed, pending])
+    accept(organizer, event_id, confirmed)
+    code = user_code(engine, confirmed)
+    path = f"/v1/event/{event_id}/ticket/{code}/apple.pkpass"
+    monkeypatch.setattr(settings, "apple_wallet_p12_path", "")
+    assert client.get(path).status_code == 503
+    for name, value in {
+        "apple_wallet_p12_path": "/private/pass.p12",
+        "apple_wallet_password_file": "/private/password",
+        "apple_wallet_wwdr_path": "/private/wwdr.pem",
+        "apple_wallet_team_id": "5F659SC689",
+        "apple_wallet_pass_type_id": "pass.cat.lleidahack.tickets",
+    }.items():
+        monkeypatch.setattr(settings, name, value)
+    seen = []
+
+    def sign(config, event, hacker):
+        seen.append(hacker.code)
+        return b"signed-pass"
+
+    monkeypatch.setattr(service_module, "build_pass", sign)
+    response = client.get(path)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/vnd.apple.pkpass"
+    assert response.headers["cache-control"] == "private, no-store"
+    assert seen == [code]
+    state = client.get(
+        f"/v1/event/{event_id}/ticket/{confirmed.id}", headers=confirmed.headers
+    ).json()
+    assert state["code"] == code
+    assert state["apple_wallet_url"].endswith(path)
+    pending_code = user_code(engine, pending)
+    assert (
+        client.get(
+            f"/v1/event/{event_id}/ticket/{pending_code}/apple.pkpass"
+        ).status_code
+        == 404
+    )
+    assert (
+        client.get(f"/v1/event/{event_id}/ticket/unknown/apple.pkpass").status_code
+        == 404
+    )
+    assert seen == [code]
+
+
+def test_invitation_groups_include_staff_and_active_mentors_without_login(
+    client, create_user, create_event, accept, engine, sent_mails, monkeypatch
+):
+    import src.impl.Event.service as service_module
+    from src.configuration.Settings import settings
+    from src.impl.Event.service import EventService
+    from src.impl.User.model import User
+
+    admin = create_user(role="admin")
+    staff = create_user(role="lleidahacker")
+    confirmed, unconfirmed = create_user(), create_user()
+    event = create_event([confirmed, unconfirmed])
+    accept(admin, event, confirmed)
+    accept(admin, event, unconfirmed, confirmed=False)
+    base = f"/v1/operations/{event}/mentors"
+    created = client.post(
+        base,
+        headers=admin.headers,
+        json={"name": "Mentor <Test>", "email": "MENTOR@example.test"},
+    )
+    assert created.status_code == 200, created.text
+    mentor = created.json()["id"]
+    missing = client.post(
+        base, headers=admin.headers, json={"name": "No email"}
+    ).json()["id"]
+    assert (
+        client.post(
+            base, headers=admin.headers, json={"name": "Invalid", "email": "bad"}
+        ).status_code
+        == 422
+    )
+    status_path = f"/v1/event/{event}/tickets/status"
+    status = client.get(status_path, headers=admin.headers).json()
+    assert status["groups"]["Staff"]["eligible"] == 2
+    assert status["groups"]["Mentor"] == {"eligible": 1, "sent": 0, "missing_email": 1}
+    assert status["groups"]["Hacker"]["eligible"] == 1
+    assert client.get(status_path, headers=staff.headers).status_code == 403
+    scanner = client.get(
+        f"/v1/operations/{event}/scanner", headers=staff.headers
+    ).json()
+    assert all("email" not in row for row in scanner["mentors"])
+    sent_mails.clear()
+    EventService().send_ticket_mails_background(event, audience="mentor")
+    assert [m.receiver_mail for m in sent_mails] == ["mentor@example.test"]
+    assert sent_mails[0].fields.split(",")[0] == "Mentor &lt;Test&gt;"
+    assert sent_mails[0].fields.split(",")[2] == "Mentor"
+    view_url = sent_mails[0].fields.split(",")[-1]
+    page = client.get(view_url)
+    assert page.status_code == 200 and "Mentor &lt;Test&gt;" in page.text
+    assert page.headers["cache-control"] == "private, no-store"
+    EventService().send_ticket_mails_background(event, audience="mentor")
+    assert len(sent_mails) == 1
+    # Editing invitation contact never changes login identity, and queues a new delivery.
+    assert (
+        client.patch(
+            base + f"/{mentor}",
+            headers=admin.headers,
+            json={"email": "new@example.test"},
+        ).status_code
+        == 200
+    )
+    with Session(engine) as session:
+        assert session.get(User, mentor).email == "mentor@example.test"
+        mentor_code = session.get(User, mentor).code
+    EventService().send_ticket_mails_background(event, audience="mentor")
+    assert sent_mails[-1].receiver_mail == "new@example.test"
+    # The same code can bind a physical badge, without a hacker registration.
+    badges = client.post(
+        f"/v1/event/{event}/vouchers/generate", headers=admin.headers, json={"count": 2}
+    ).json()["vouchers"]
+    for user_id, code, badge in (
+        (mentor, mentor_code, badges[0]),
+        (staff.id, user_code(engine, staff), badges[1]),
+    ):
+        assigned = client.put(
+            f"/v1/event/{event}/vouchers/{badge['code']}/assign/{code}",
+            headers=admin.headers,
+        )
+        assert assigned.status_code == 200, assigned.text
+        assert assigned.json()["hacker_id"] == user_id
+    # Wallet endpoint accepts both groups and still checks current eligibility.
+    for field in (
+        "apple_wallet_p12_path",
+        "apple_wallet_password_file",
+        "apple_wallet_wwdr_path",
+        "apple_wallet_team_id",
+        "apple_wallet_pass_type_id",
+    ):
+        monkeypatch.setattr(settings, field, "configured")
+    seen = []
+    monkeypatch.setattr(
+        service_module,
+        "build_pass",
+        lambda config, event, user: seen.append(user.access_role) or b"pass",
+    )
+    assert (
+        client.get(f"/v1/event/{event}/ticket/{mentor_code}/apple.pkpass").status_code
+        == 200
+    )
+    assert (
+        client.get(
+            f"/v1/event/{event}/ticket/{user_code(engine, staff)}/apple.pkpass"
+        ).status_code
+        == 200
+    )
+    assert seen == ["mentor", "lleidahacker"]
+    assert (
+        client.patch(
+            base + f"/{mentor}", headers=admin.headers, json={"active": False}
+        ).status_code
+        == 200
+    )
+    assert client.get(view_url).status_code == 404
+    other = create_event()
+    assert (
+        client.get(f"/v1/event/{other}/ticket/{mentor_code}/qr.png").status_code == 404
+    )
+    assert (
+        client.patch(
+            base + f"/{missing}",
+            headers=admin.headers,
+            json={"email": "last@example.test"},
+        ).status_code
+        == 200
+    )
+    with Session(engine) as session:
+        session.get(User, staff.id).is_deleted = True
+        session.commit()
+    assert (
+        client.get(
+            f"/v1/event/{event}/ticket/{user_code(engine, staff)}/qr.png"
+        ).status_code
+        == 404
+    )
+
+
+def test_staff_invitation_audience_tracks_delivery_and_rechecks_roles(
+    client, create_user, create_event, sent_mails, engine
+):
+    from src.impl.Event.service import EventService
+    from src.impl.User.model import User
+
+    admin = create_user(role="admin")
+    staff = create_user(role="lleidahacker")
+    superadmin = create_user(role="superadmin")
+    create_user()  # Not accepted/confirmed; must not receive an invitation.
+    event = create_event()
+    sent_mails.clear()
+    EventService().send_ticket_mails_background(event, audience="staff")
+    assert {m.receiver_mail for m in sent_mails} == {
+        admin.email,
+        staff.email,
+        superadmin.email,
+    }
+    assert all(m.fields.split(",")[2] == "Staff" for m in sent_mails)
+    EventService().send_ticket_mails_background(event, audience="staff")
+    assert len(sent_mails) == 3
+    status = client.get(
+        f"/v1/event/{event}/tickets/status", headers=admin.headers
+    ).json()
+    assert status["groups"]["Staff"] == {"eligible": 3, "sent": 3, "missing_email": 0}
+    assert (
+        client.post(
+            f"/v1/event/{event}/tickets/send?audience=unknown", headers=admin.headers
+        ).status_code
+        == 422
+    )
+    with Session(engine) as session:
+        user = session.get(User, staff.id)
+        code = user.code
+        user.access_role = "hacker"
+        session.commit()
+    assert client.get(f"/v1/event/{event}/ticket/{code}/view").status_code == 404

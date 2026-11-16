@@ -3,8 +3,10 @@ import threading
 import time
 from collections import Counter
 from datetime import UTC, datetime
+from html import escape
 from typing import ClassVar
 
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from fastapi_sqlalchemy import db
 from generated_src.lleida_hack_mail_api_client.models.mail_create import MailCreate
 from sqlalchemy import and_, case, create_engine, desc, func
@@ -24,6 +26,7 @@ from src.impl.Event.model import (
     Event,
     EventAuditLog,
     EventParticipantNote,
+    EventTicketDelivery,
     HackerAccepted,
     HackerRegistration,
     HackerRejected,
@@ -43,8 +46,10 @@ from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.impl.User.model import User
 from src.impl.Voucher.model import Voucher
+from src.utils.apple_wallet import build_pass, wallet_enabled, wallet_url
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
+from src.utils.event_tickets import eligible_tickets, ticket_email, ticket_role
 from src.utils.qr import qr_png, ticket_qr_url
 from src.utils.service_utils import (
     attribute_hacker_list,
@@ -1694,54 +1699,53 @@ class EventService(BaseService):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _ticket_recipients(session, event: Event, force: bool = False):
+    def _ticket_recipients(
+        session, event: Event, force: bool = False, audience: str = "all"
+    ):
         """(hacker, registration) pairs that should receive the ticket mail."""
-        recipients = []
-        for hacker in event.accepted_hackers:
-            if hacker.access_role == "mentor":
-                continue
-            registration = (
-                session.query(HackerRegistration)
-                .filter(
-                    HackerRegistration.user_id == hacker.id,
-                    HackerRegistration.event_id == event.id,
-                )
-                .first()
-            )
-            if registration is None or not registration.confirmed_assistance:
-                continue
-            if registration.ticket_sent_at is not None and not force:
-                continue
-            recipients.append((hacker, registration))
-        return recipients
+        return [
+            (user, delivery)
+            for user, delivery, role in eligible_tickets(session, event)
+            if (audience == "all" or role.lower() == audience)
+            and ticket_email(session, event, user)
+            and (force or delivery is None or delivery.ticket_sent_at is None)
+        ]
 
     def get_tickets_status(self, event_id: int, data: BaseToken):
-        """Worker-safe progress: counts come from the DB, `running` is best-effort."""
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
-        eligible = sent = 0
-        for hacker in event.accepted_hackers:
-            if hacker.access_role == "mentor":
-                continue
-            registration = (
-                db.session.query(HackerRegistration)
-                .filter(
-                    HackerRegistration.user_id == hacker.id,
-                    HackerRegistration.event_id == event.id,
-                )
-                .first()
+        rows = list(eligible_tickets(db.session, event))
+        recipients = []
+        groups = {
+            role: {"eligible": 0, "sent": 0, "missing_email": 0}
+            for role in ("Hacker", "Mentor", "Staff")
+        }
+        for user, delivery, role in rows:
+            email = ticket_email(db.session, event, user)
+            sent_at = delivery.ticket_sent_at if delivery else None
+            groups[role]["eligible" if email else "missing_email"] += 1
+            if email and sent_at:
+                groups[role]["sent"] += 1
+            recipients.append(
+                {
+                    "id": user.id,
+                    "name": user.name,
+                    "email": email,
+                    "role": role,
+                    "sent": bool(sent_at),
+                }
             )
-            if registration is None or not registration.confirmed_assistance:
-                continue
-            eligible += 1
-            if registration.ticket_sent_at is not None:
-                sent += 1
+        eligible = sum(group["eligible"] for group in groups.values())
+        sent = sum(group["sent"] for group in groups.values())
         progress = self.get_send_progress(event_id)
         return {
             "eligible": eligible,
             "sent": sent,
             "pending": eligible - sent,
+            "missing_email": sum(group["missing_email"] for group in groups.values()),
+            "groups": groups,
+            "recipients": recipients,
             "running": bool(progress.get("running"))
             and self._job_type(event_id) == "ticket",
             "progress": progress,
@@ -1754,11 +1758,15 @@ class EventService(BaseService):
 
     @BaseService.needs_service(MailClient)
     def send_ticket_mails_background(
-        self, event_id: int, force: bool = False, delay: float = 0.0
+        self,
+        event_id: int,
+        force: bool = False,
+        delay: float = 0.0,
+        audience: str = "all",
     ):
         """
-        Background-safe sender: mails the check-in QR to every accepted+confirmed
-        hacker that has not received it yet (`force` resends to all of them).
+        Background-safe sender for confirmed participants, active mentors and staff.
+        Audience filters delivery; force resends previously delivered tickets.
         """
         engine = create_engine(settings.database.url)
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -1767,7 +1775,7 @@ class EventService(BaseService):
             event = session.query(Event).filter(Event.id == event_id).first()
             if event is None or event.archived:
                 return
-            recipients = self._ticket_recipients(session, event, force)
+            recipients = self._ticket_recipients(session, event, force, audience)
             try:
                 self._start_job(event_id, "ticket", len(recipients))
             # Preserve the documented service-boundary fallback.
@@ -1778,17 +1786,31 @@ class EventService(BaseService):
                     mail = self.mail_client.create_mail(
                         MailCreate(
                             template_id=self.mail_client.get_internall_template_id(
-                                InternalTemplate.EVENT_HACKER_TICKET
+                                InternalTemplate.EVENT_ATTENDEE_TICKET
                             ),
                             subject=f"{event.name} - El teu tiquet de check-in",
                             receiver_id=str(hacker.id),
-                            receiver_mail=str(hacker.email),
-                            # qr_url goes last: the template joins any extra commas into it
-                            fields=f"{hacker.name},{event.name},{hacker.code},{ticket_qr_url(event.id, hacker.code)}",
+                            receiver_mail=str(ticket_email(session, event, hacker)),
+                            fields=",".join(
+                                escape(str(value), quote=True).replace(",", "&#44;")
+                                for value in (
+                                    hacker.name,
+                                    event.name,
+                                    ticket_role(session, event, hacker),
+                                    hacker.code,
+                                    ticket_qr_url(event.id, hacker.code),
+                                    f"{settings.back_url.rstrip('/')}/v1/event/{event.id}/ticket/{hacker.code}/view",
+                                )
+                            ),
                         )
                     )
                     self.mail_client.send_mail_by_id(mail.id)
                     # Keep the existing timezone-naive database/local-calendar contract.
+                    if registration is None:
+                        registration = EventTicketDelivery(
+                            event_id=event.id, user_id=hacker.id
+                        )
+                        session.add(registration)
                     registration.ticket_sent_at = datetime.now()  # noqa: DTZ005
                     session.commit()
                     try:
@@ -1820,30 +1842,43 @@ class EventService(BaseService):
         """Fail fast (503) instead of scheduling a job that cannot send anything."""
         self.mail_client.ensure_initialized()
 
-    def get_ticket_qr(self, event_id: int, code: str) -> bytes:
-        """PNG of a ticket QR; only for hackers accepted and confirmed for the event.
+    def _ticket_holder(self, event_id: int, code: str):
+        """Resolve a currently eligible participant, active mentor or staff member.
 
         Public (mail clients can't authenticate) but the code is unguessable.
         """
         event = self.get_by_id(event_id)
-        hacker = db.session.query(Hacker).filter(Hacker.code == code).first()
-        if (
-            hacker is None
-            or hacker.access_role == "mentor"
-            or hacker not in event.accepted_hackers
-        ):
+        user = db.session.query(User).filter(User.code == code).first()
+        if ticket_role(db.session, event, user) is None:
             raise NotFoundException("Ticket not found")
-        registration = (
-            db.session.query(HackerRegistration)
-            .filter(
-                HackerRegistration.user_id == hacker.id,
-                HackerRegistration.event_id == event.id,
-            )
-            .first()
-        )
-        if registration is None or not registration.confirmed_assistance:
-            raise NotFoundException("Ticket not found")
+        return event, user
+
+    def get_ticket_qr(self, event_id: int, code: str) -> bytes:
+        _, hacker = self._ticket_holder(event_id, code)
         return qr_png(hacker.code)
+
+    def get_apple_wallet_pass(self, event_id: int, code: str) -> bytes:
+        from fastapi import HTTPException
+
+        event, hacker = self._ticket_holder(event_id, code)
+        if not wallet_enabled(settings):
+            raise HTTPException(
+                status_code=503, detail="Apple Wallet is not configured"
+            )
+        try:
+            return build_pass(settings, event, hacker)
+        except (
+            OSError,
+            ValueError,
+            IndexError,
+            TypeError,
+            InvalidSignature,
+            UnsupportedAlgorithm,
+        ):
+            logger.error("Apple Wallet signing failed for event %s", event_id)
+            raise HTTPException(
+                status_code=503, detail="Apple Wallet is temporarily unavailable"
+            ) from None
 
     @BaseService.needs_service(HackerService)
     def get_ticket(self, event_id: int, hacker_id: int, data: BaseToken):
@@ -1878,6 +1913,9 @@ class EventService(BaseService):
             "has_ticket": has_ticket,
             "code": hacker.code if has_ticket else None,
             "qr_url": ticket_qr_url(event.id, hacker.code) if has_ticket else None,
+            "apple_wallet_url": wallet_url(settings, event.id, hacker.code)
+            if has_ticket
+            else None,
             "ticket_sent_at": registration.ticket_sent_at if registration else None,
             "checked_in": hacker in event.participants,
             "voucher_code": voucher.code if voucher else None,
