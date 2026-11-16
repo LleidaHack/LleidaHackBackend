@@ -66,6 +66,17 @@ def management_snapshot(event_id: int, token: BaseToken = Depends(JWTBearer())):
     return {**ops.snapshot(event_id, True), "access_role": access_role(token)}
 
 
+@router.get("/{event_id}/credits")
+def credits_export(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    ops.require_organizer(token)
+    from src.impl.Event.model import Event
+    from src.impl.Operations.credits import credit_participants
+
+    if db.session.get(Event, event_id) is None:
+        raise HTTPException(404, "Event not found")
+    return credit_participants(db.session, event_id)
+
+
 @router.put("/{event_id}/config")
 def update_config(
     event_id: int, body: ConfigUpdate, token: BaseToken = Depends(JWTBearer())
