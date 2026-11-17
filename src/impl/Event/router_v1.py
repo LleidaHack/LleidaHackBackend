@@ -2,9 +2,11 @@ from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
+from fastapi_sqlalchemy import db
 
 from src.error.AuthenticationException import AuthenticationException
 from src.impl.Company.schema import CompanyGet
+from src.impl.Event.release_queue import enqueue, queue_status
 from src.impl.Event.schema import (
     EventAuditLogGet,
     EventCreate,
@@ -492,6 +494,21 @@ def get_send_progress(event_id: int, token: BaseToken = Depends(JWTBearer())):
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
     return event_service.get_send_progress(event_id)
+
+
+@router.post("/{event_id}/release-reminders", status_code=202)
+def queue_release_reminders(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    event_service._require_organizer(token)
+    if event_service.get_by_id(event_id).archived:
+        raise HTTPException(status_code=409, detail="Event is archived")
+    return enqueue(db.session, event_id, token.user_id)
+
+
+@router.get("/{event_id}/release-reminders")
+def release_reminder_status(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    event_service._require_organizer(token)
+    event_service.get_by_id(event_id)
+    return queue_status(db.session, event_id)
 
 
 @router.post("/{event_id}/release-reminder/{hacker_id}")

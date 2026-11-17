@@ -1044,16 +1044,25 @@ class EventService(BaseService):
         return user_registration
 
     @BaseClient.needs_client(MailClient)
-    @BaseService.needs_service(HackerService)
     def send_release_reminder(self, event_id: int, hacker_id: int, data: BaseToken):
         self._require_organizer(data)
-        event = self.get_by_id(event_id)
+        return self.deliver_release_reminder(
+            db.session, event_id, hacker_id, data.user_id, self.mail_client
+        )
+
+    @staticmethod
+    def deliver_release_reminder(
+        session, event_id, hacker_id, actor_id, mail_client, *, verify_only=False
+    ):
+        event = session.get(Event, event_id)
+        if event is None:
+            raise NotFoundException("Event not found")
         if event.archived:
             raise InvalidDataException("Event is archived")
 
         def locked_registration():
             return (
-                db.session.query(HackerRegistration)
+                session.query(HackerRegistration)
                 .filter_by(user_id=hacker_id, event_id=event_id)
                 .populate_existing()
                 .with_for_update()
@@ -1070,7 +1079,7 @@ class EventService(BaseService):
                 raise InvalidDataException(
                     "Release reminder requires confirmed attendance"
                 )
-            if db.session.get(HackerAccepted, (hacker_id, event_id)) is None:
+            if session.get(HackerAccepted, (hacker_id, event_id)) is None:
                 raise InvalidDataException("Hacker not accepted")
 
         registration = locked_registration()
@@ -1081,12 +1090,14 @@ class EventService(BaseService):
                 "already_sent": True,
             }
         if registration.release_reminder_mail_id is None:
-            hacker = self.hacker_service.get_by_id(hacker_id)
+            if verify_only:
+                raise MailClientException("Missing mail reference for verification")
+            hacker = session.get(Hacker, hacker_id)
             token = AssistenceToken(hacker, event_id).to_token()
             registration.confirm_assistance_token = token
-            mail = self.mail_client.create_mail(
+            mail = mail_client.create_mail(
                 MailCreate(
-                    template_id=self.mail_client.get_internall_template_id(
+                    template_id=mail_client.get_internall_template_id(
                         InternalTemplate.EVENT_HACKER_RELEASE_REMINDER
                     ),
                     receiver_id=str(hacker.id),
@@ -1097,7 +1108,7 @@ class EventService(BaseService):
             )
             registration.release_reminder_mail_id = mail.id
             # Persist the token and mail ID before delivery, so retries use the same mail.
-            db.session.commit()
+            session.commit()
             registration = locked_registration()
             validate(registration)
             if registration.release_reminder_sent_at is not None:
@@ -1106,13 +1117,28 @@ class EventService(BaseService):
                     "already_sent": True,
                 }
         mail_id = registration.release_reminder_mail_id
-        if not self.mail_client.is_mail_sent(mail_id):
-            self.mail_client.send_mail_by_id(mail_id)
-            if not self.mail_client.is_mail_sent(mail_id):
-                raise MailClientException("Unable to verify mail delivery")
+        if not mail_client.is_mail_sent(mail_id):
+            if verify_only:
+                raise MailClientException("Previous delivery not confirmed")
+            try:
+                mail_client.send_mail_by_id(mail_id)
+            except Exception:
+                if not mail_client.is_mail_sent(mail_id):
+                    raise
+            else:
+                if not mail_client.is_mail_sent(mail_id):
+                    raise MailClientException("Unable to verify mail delivery")
         registration.release_reminder_sent_at = datetime.now(UTC).replace(tzinfo=None)
-        self._audit(event_id, data, "release_reminder_sent", hacker_id)
-        db.session.commit()
+        session.add(
+            EventAuditLog(
+                event_id=event_id,
+                actor_id=actor_id or None,
+                action="release_reminder_sent",
+                target_id=hacker_id,
+            )
+        )
+        registration.release_queue_state = None
+        session.commit()
         return {"sent_at": registration.release_reminder_sent_at, "already_sent": False}
 
     @BaseService.needs_service(HackerService)
