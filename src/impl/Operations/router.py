@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.impl.HackerGroup.model import HackerGroup
 from src.impl.Meal.model import Meal
+from src.impl.Operations import ribo
 from src.impl.Operations import service as ops
 from src.impl.Operations.access_router import RoleUpdate, assign_role
 from src.impl.Operations.model import (
@@ -28,6 +29,7 @@ from src.impl.Operations.schema import (
     Operation,
     PresentationUpdate,
     RoundUpdate,
+    ScheduledAlert,
 )
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -154,6 +156,11 @@ def update_config(
         raise HTTPException(
             422, "Publish at least one challenge before opening choices"
         )
+    config["company_demo"] = before.get("company_demo", False)
+    config["company_demo_phase"] = before.get("company_demo_phase")
+    if ops.effective_phase(config) != ops.effective_phase(before):
+        config["company_demo_phase"] = None
+        config["company_demo"] = False
     for key in ("meal_rounds", "alerts"):
         config[key] = before.get(key, {} if key == "meal_rounds" else [])
     row.config = config
@@ -295,10 +302,25 @@ def wallet(event_id: int, token: BaseToken = Depends(JWTBearer())):
 
 @router.post("/{event_id}/alerts")
 def publish_alert(event_id: int, body: Alert, token: BaseToken = Depends(JWTBearer())):
+    return save_alert(event_id, body, token)
+
+
+@router.post("/{event_id}/scheduled-alerts")
+def schedule_alert(
+    event_id: int, body: ScheduledAlert, token: BaseToken = Depends(JWTBearer())
+):
+    return save_alert(event_id, body, token)
+
+
+def save_alert(event_id, body, token):
     ops.require_organizer(token)
     _, row = ops.state(event_id, True)
-    if not body.expires_at.tzinfo or body.expires_at <= datetime.now(UTC):
-        raise HTTPException(422, "Future expiry with timezone required")
+    created_at = datetime.now(UTC)
+    starts_at = body.scheduled_at if isinstance(body, ScheduledAlert) else created_at
+    if isinstance(body, ScheduledAlert) and (
+        not starts_at.tzinfo or starts_at <= created_at
+    ):
+        raise HTTPException(422, "Schedule a future time with timezone")
     if not (body.live or body.push or body.discord):
         raise HTTPException(422, "Select at least one alert destination")
     if body.push and not os.getenv("VAPID_PRIVATE_KEY"):
@@ -307,7 +329,8 @@ def publish_alert(event_id: int, body: Alert, token: BaseToken = Depends(JWTBear
         **body.model_dump(mode="json"),
         "id": str(uuid4()),
         "event_id": event_id,
-        "created_at": datetime.now(UTC).isoformat(),
+        "created_at": created_at.isoformat(),
+        "expires_at": (starts_at + timedelta(hours=1)).isoformat(),
     }
     config = deepcopy(row.config)
     config.setdefault("alerts", []).append(alert)
@@ -330,7 +353,12 @@ def publish_alert(event_id: int, body: Alert, token: BaseToken = Depends(JWTBear
         db.session.add(
             DiscordDelivery(event_id=event_id, alert_id=alert["id"], payload=alert)
         )
-    ops.audit(event_id, token, "alert.publish", alert)
+    ops.audit(
+        event_id,
+        token,
+        "alert.schedule" if isinstance(body, ScheduledAlert) else "alert.publish",
+        alert,
+    )
     db.session.commit()
     from src.impl.Operations.realtime import broadcast_alerts
 
@@ -385,7 +413,8 @@ def enroll_team(
     }
     rooms = {r["id"] for r in row.config.get("rooms", [])}
     if (
-        body.challenge not in challenges
+        body.challenge == ribo.ROOM_ID
+        or body.challenge not in challenges
         or body.challenge not in rooms
         or (body.mlh and "mlh" not in rooms)
     ):
@@ -400,7 +429,11 @@ def enroll_team(
     for p in existing:
         db.session.delete(p)
     db.session.flush()
-    for track in [body.challenge] + (["mlh"] if body.mlh else []):
+    tracks = [body.challenge] + (["mlh"] if body.mlh else [])
+    if group_id in ops.ribo_teams(event_id):
+        ribo.ensure_room(row)
+        tracks.append(ribo.ROOM_ID)
+    for track in tracks:
         db.session.add(
             Presentation(event_id=event_id, group_id=group_id, room=track, track=track)
         )

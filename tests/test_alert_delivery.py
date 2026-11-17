@@ -209,3 +209,123 @@ def test_push_payload_is_compact(
     assert "discord_card" not in payload
     assert len(payload["message"]) == 1000 and payload["message"].endswith("…")
     assert payload["event_id"] == event and payload["id"] == response.json()["id"]
+
+
+def test_scheduled_live_and_discord(client, create_user, create_event, monkeypatch):
+    admin = create_user(role="admin")
+    event = create_event([])
+    base = f"/v1/operations/{event}"
+    monkeypatch.setenv("DISCORD_BOT_SHARED_SECRET", "test-bot-key-only")
+    monkeypatch.setenv("DISCORD_BOT_EVENT_ID", str(event))
+    monkeypatch.setenv("DISCORD_CHANNEL_ID", "123456789")
+    headers = {"X-Discord-Bot-Key": "test-bot-key-only"}
+
+    with client.websocket_connect(base + "/ws") as websocket:
+        assert websocket.receive_json()["alerts"] == []
+        start = datetime.now(UTC) + timedelta(seconds=3)
+        response = client.post(
+            base + "/scheduled-alerts",
+            headers=admin.headers,
+            json=alert_body(scheduled_at=start.isoformat(), discord=True),
+        )
+        assert response.status_code == 200, response.text
+        alert_id = response.json()["id"]
+        assert (
+            client.get(base + "/manage", headers=admin.headers).json()["alerts"][0][
+                "id"
+            ]
+            == alert_id
+        )
+        assert client.get(base + "/public").json()["alerts"] == []
+        assert client.post(base + "/discord/claim", headers=headers).json() == []
+        for _ in range(5):
+            update = websocket.receive_json()
+            if update.get("alerts"):
+                assert datetime.now(UTC) >= start
+                assert update["alerts"][0]["id"] == alert_id
+                break
+        else:
+            raise AssertionError(
+                "Scheduled alert never reached the connected Live client"
+            )
+        assert client.get(base + "/public").json()["alerts"][0]["id"] == alert_id
+        assert (
+            client.post(base + "/discord/claim", headers=headers).json()[0]["alert_id"]
+            == alert_id
+        )
+
+
+def test_schedule_validation(client, create_user, create_event):
+    admin = create_user(role="admin")
+    base = f"/v1/operations/{create_event([])}/scheduled-alerts"
+    for when in (
+        datetime.now(UTC) - timedelta(minutes=1),
+        (datetime.now(UTC) + timedelta(minutes=1)).replace(tzinfo=None),
+    ):
+        assert (
+            client.post(
+                base,
+                headers=admin.headers,
+                json=alert_body(scheduled_at=when.isoformat()),
+            ).status_code
+            == 422
+        )
+
+    start = datetime.now(UTC) + timedelta(days=1)
+    response = client.post(
+        base, headers=admin.headers, json=alert_body(scheduled_at=start.isoformat())
+    )
+    assert response.status_code == 200
+    assert datetime.fromisoformat(response.json()["expires_at"]) == start + timedelta(
+        hours=1
+    )
+
+
+def test_scheduled_workers_wait_and_cancel(
+    client, create_user, create_event, engine, monkeypatch
+):
+    from unittest.mock import Mock
+
+    from src.impl.Operations import discord_worker, push_worker
+
+    admin = create_user(role="admin")
+    event = create_event([])
+    base = f"/v1/operations/{event}"
+    monkeypatch.setenv("VAPID_PRIVATE_KEY", "test-only")
+    monkeypatch.setenv("DISCORD_WEBHOOK_EVENT_ID", str(event))
+    monkeypatch.setenv(
+        "DISCORD_WEBHOOK_URL", "https://discord.com/api/webhooks/123/test"
+    )
+    post = Mock()
+    push = Mock()
+    monkeypatch.setattr(push_worker, "webpush", push)
+    subscription = {
+        "endpoint": "https://fcm.googleapis.com/fcm/send/test",
+        "keys": {"p256dh": "key", "auth": "auth"},
+    }
+    assert client.post(base + "/subscribe", json=subscription).status_code == 200
+    response = client.post(
+        base + "/scheduled-alerts",
+        headers=admin.headers,
+        json=alert_body(
+            scheduled_at=(datetime.now(UTC) + timedelta(minutes=20)).isoformat(),
+            live=False,
+            discord=True,
+            push=True,
+        ),
+    )
+    assert response.status_code == 200, response.text
+    assert not discord_worker.deliver_one(engine, event, post)
+    assert not push_worker.deliver_one(engine)
+    assert (
+        client.delete(
+            base + "/alerts/" + response.json()["id"], headers=admin.headers
+        ).status_code
+        == 200
+    )
+    deliveries = client.get(base + "/discord-deliveries", headers=admin.headers).json()[
+        "deliveries"
+    ]
+    assert deliveries[0]["state"] == "cancelled"
+    post.assert_not_called()
+    push.assert_not_called()

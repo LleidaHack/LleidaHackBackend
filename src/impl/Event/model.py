@@ -51,6 +51,8 @@ class HackerRegistration(BaseModel):
         DateTime, nullable=True
     )
     release_reminder_mail_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    release_queue_state: Mapped[str | None] = mapped_column(String(16), index=True)
+    release_queue_actor: Mapped[int | None] = mapped_column(Integer)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     confirm_assistance_token: Mapped[str] = mapped_column(String, default="")
     wants_credit: Mapped[bool] = mapped_column(Boolean, default=False)

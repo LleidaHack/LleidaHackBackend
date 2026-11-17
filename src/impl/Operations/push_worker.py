@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from src import imports  # noqa: F401
 from src.configuration.Settings import settings
-from src.impl.Operations.model import PushDelivery, PushSubscription
+from src.impl.Operations.model import PushDelivery, PushSubscription, delivery_due
 from src.impl.Operations.push_payload import compact_push_payload
 
 logger = logging.getLogger("push_worker")
@@ -29,6 +29,7 @@ def deliver_one(engine):
         delivery = (
             session.query(PushDelivery)
             .filter_by(state="pending")
+            .filter(delivery_due(PushDelivery, datetime.now(UTC)))
             .order_by(PushDelivery.id)
             .with_for_update(skip_locked=True)
             .limit(1)

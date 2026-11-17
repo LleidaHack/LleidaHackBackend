@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from src import imports  # noqa: F401
 from src.configuration.Settings import settings
 from src.impl.Operations.discord_messages import discord_message, webhook_url
-from src.impl.Operations.model import DiscordDelivery
+from src.impl.Operations.model import DiscordDelivery, delivery_due
 
 logger = logging.getLogger(__name__)
 # HTTP client debug/info logs include token-bearing webhook URLs.
@@ -36,6 +36,7 @@ def deliver_one(engine, event_id, post=httpx.post):
             session.query(DiscordDelivery)
             .filter(
                 DiscordDelivery.event_id == event_id,
+                delivery_due(DiscordDelivery, now),
                 DiscordDelivery.state == "pending",
                 or_(
                     DiscordDelivery.lease_until.is_(None),

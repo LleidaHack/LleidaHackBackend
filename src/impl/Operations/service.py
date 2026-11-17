@@ -15,6 +15,7 @@ from src.impl.Hacker.model import Hacker
 from src.impl.HackerGroup.model import HackerGroup
 from src.impl.Meal.model import HackerMeal, Meal
 from src.impl.Operations.model import (
+    ChallengeVote,
     CoinMovement,
     EventMentor,
     EventOperations,
@@ -71,6 +72,10 @@ def state(event_id, lock=False):
                 version=0,
                 config=EventConfig(title=event.name).model_dump(mode="json"),
             )
+            if "hackeps" in event.name.casefold():
+                from src.impl.Operations.ribo import ensure_room
+
+                ensure_room(row)
             db.session.add(row)
             db.session.flush()
     return event, row
@@ -598,15 +603,33 @@ def effective_phase(config, now=None):
     return "judging" if deadline <= (now or datetime.now(UTC)) else phase
 
 
-def live_alerts(event_id):
-    """Public, unexpired Live alerts only (cheap; used by WebSocket fan-out)."""
-    _event, row = state(event_id)
+def visible_live_alert(alert, now):
+    return (
+        alert.get("live", True)
+        and datetime.fromisoformat(alert["expires_at"]) > now
+        and (
+            not alert.get("scheduled_at")
+            or datetime.fromisoformat(alert["scheduled_at"]) <= now
+        )
+    )
+
+
+def live_alert_window(event_id):
+    _, row = state(event_id)
     now = datetime.now(UTC)
-    return [
-        deepcopy(a)
-        for a in (row.config or {}).get("alerts", [])
-        if datetime.fromisoformat(a["expires_at"]) > now and a.get("live", True)
-    ]
+    alerts = (row.config or {}).get("alerts", [])
+    visible = [a for a in alerts if visible_live_alert(a, now)]
+    next_start = min(
+        (
+            start
+            for a in alerts
+            if a.get("live", True)
+            and a.get("scheduled_at")
+            and (start := datetime.fromisoformat(a["scheduled_at"])) > now
+        ),
+        default=None,
+    )
+    return visible, next_start
 
 
 def snapshot(event_id, private=False):
@@ -628,7 +651,7 @@ def snapshot(event_id, private=False):
         a
         for a in data["alerts"]
         if datetime.fromisoformat(a["expires_at"]) > now
-        and (private or a.get("live", True))
+        and (private or visible_live_alert(a, now))
     ]
     if not private:
         data["phase"] = effective_phase(row.config, now)
@@ -710,6 +733,15 @@ def snapshot(event_id, private=False):
     return data
 
 
+def ribo_teams(event_id):
+    return {
+        gid
+        for (gid,) in db.session.query(ChallengeVote.group_id).filter_by(
+            event_id=event_id, ribo_prize=True
+        )
+    }
+
+
 def schedule(event_id, token):
     require_organizer(token)
     _, row = state(event_id, True)
@@ -733,7 +765,9 @@ def schedule(event_id, token):
     if start >= end:
         raise HTTPException(422, "Judging end must be after its start")
     try:
-        plan = plan_schedule(presentations, start, end, duration, travel)
+        plan = plan_schedule(
+            presentations, start, end, duration, travel, ribo_teams(event_id)
+        )
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
     if plan is None:

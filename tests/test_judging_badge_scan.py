@@ -2,18 +2,25 @@
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+import pytest
 from sqlalchemy.orm import Session
 
 from src.impl.Company.model import Company
 from src.impl.CompanyPortal.model import PortalAccount, PortalGrant
 from src.impl.HackerGroup.model import HackerGroup
-from src.impl.Operations.model import EventOperations, OperationAudit, Presentation
+from src.impl.Operations.model import (
+    ChallengeVote,
+    EventOperations,
+    OperationAudit,
+    Presentation,
+)
 from src.utils.security import get_password_hash
 from tests.test_tickets_vouchers import accept, user_code  # noqa: F401
 
 
+@pytest.mark.parametrize("check_priority", [False, True])
 def test_one_member_starts_team_calls_next_and_mlh_does_not_overlap(
-    client, create_user, create_event, create_group, accept, engine
+    client, create_user, create_event, create_group, accept, engine, check_priority
 ):
     admin, staff = create_user(role="organizer"), create_user(role="lleidahacker")
     members = [create_user() for _ in range(4)]
@@ -59,6 +66,11 @@ def test_one_member_starts_team_calls_next_and_mlh_does_not_overlap(
         == 200
     )
     with Session(engine) as session:
+        session.add(
+            ChallengeVote(
+                event_id=event, group_id=groups[0].id, challenge="one", ribo_prize=True
+            )
+        )
         names = [session.get(HackerGroup, g.id).name for g in groups]
         for i, group in enumerate(groups):
             session.add(
@@ -95,6 +107,11 @@ def test_one_member_starts_team_calls_next_and_mlh_does_not_overlap(
 
     assert scan(badges[0], actor=members[0]).status_code == 403
     assert scan(user_code(engine, members[0])).status_code == 422
+    if check_priority:
+        result = scan(badges[2])
+        assert result.status_code == 409
+        assert "Josep Maria Ribó" in result.json()["detail"]
+        return
     op = str(uuid4())
     first = scan(badges[0], operation_id=op)
     assert first.status_code == 200, first.text

@@ -190,7 +190,6 @@ class Alert(BaseModel):
     title: str = Field(min_length=1, max_length=150)
     message: str = Field(min_length=1, max_length=2000)
     level: Literal["info", "warning", "danger"] = "info"
-    expires_at: datetime
     push: bool = False
     live: bool = True
     discord: bool = False
@@ -208,6 +207,10 @@ class Alert(BaseModel):
                 "Plain Discord messages including title must not exceed 2000 characters"
             )
         return self
+
+
+class ScheduledAlert(Alert):
+    scheduled_at: datetime
 
 
 class Enroll(BaseModel):
