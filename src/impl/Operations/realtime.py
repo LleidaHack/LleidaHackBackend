@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import time
 
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi_sqlalchemy import db
@@ -22,7 +23,12 @@ def channel(event_id):
 
 
 def public_alerts(event_id):
-    return {"type": "alerts", "alerts": ops.live_alerts(event_id)}
+    alerts, next_start = ops.live_alert_window(event_id)
+    return {
+        "type": "alerts",
+        "alerts": alerts,
+        "_next_start": next_start.timestamp() if next_start else None,
+    }
 
 
 def broadcast_alerts(event_id):
@@ -81,15 +87,27 @@ async def alert_socket(websocket: WebSocket, event_id: int):
     try:
         async with redis.pubsub() as subscription:
             await subscription.subscribe(channel(event_id))
-            await websocket.send_json(await run_in_threadpool(initial_alerts, event_id))
+            update = await run_in_threadpool(initial_alerts, event_id)
+            next_start = update.pop("_next_start", None)
+            await websocket.send_json(update)
             while True:
+                timeout = (
+                    15
+                    if next_start is None
+                    else min(15, max(0, next_start - time.time()))
+                )
                 message = await subscription.get_message(
-                    ignore_subscribe_messages=True, timeout=15
+                    ignore_subscribe_messages=True, timeout=timeout
                 )
                 if message and message["type"] == "message":
-                    await websocket.send_text(message["data"])
+                    update = json.loads(message["data"])
+                elif next_start is not None and next_start <= time.time():
+                    update = await run_in_threadpool(initial_alerts, event_id)
                 else:
                     await websocket.send_json({"type": "heartbeat"})
+                    continue
+                next_start = update.pop("_next_start", None)
+                await websocket.send_json(update)
     except (WebSocketDisconnect, RedisError, RuntimeError):
         pass
     finally:

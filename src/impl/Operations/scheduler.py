@@ -7,7 +7,7 @@ This is a bounded heuristic, not a proof of a globally optimal schedule.
 from collections import Counter, defaultdict
 
 
-def plan_schedule(presentations, start, end, duration, travel):
+def plan_schedule(presentations, start, end, duration, travel, ribo_teams=frozenset()):
     # Absent teams neither occupy a room nor need a start time.
     presentations = [p for p in presentations if p.state != "absent"]
     fixed = [
@@ -19,6 +19,10 @@ def plan_schedule(presentations, start, end, duration, travel):
     }
     if any(value is None for value in fixed_times.values()):
         raise ValueError("Fixed or active presentations need a start time")
+
+    def is_priority(p):
+        return p.track != "mlh" and p.group_id in ribo_teams
+
     best = None
     best_score = None
     for strategy in ("primary", "mlh", "load", "earliest_load", "earliest_team"):
@@ -30,15 +34,29 @@ def plan_schedule(presentations, start, end, duration, travel):
             room_slots[p.room].append((when, finish))
             team_slots[p.group_id].append((when - travel, finish + travel))
 
+        priority_end = {}
         for p in fixed:
             book(p, times[p.id])
+            if is_priority(p):
+                priority_end[p.room] = max(
+                    priority_end.get(p.room, start), times[p.id] + duration
+                )
         remaining = list(pending)
         while remaining:
             room_load = Counter(p.room for p in remaining)
             team_load = Counter(p.group_id for p in remaining)
 
-            def earliest(p, room_slots=room_slots, team_slots=team_slots):
-                candidate = start
+            def earliest(
+                p,
+                room_slots=room_slots,
+                team_slots=team_slots,
+                priority_end=priority_end,
+            ):
+                candidate = (
+                    priority_end.get(p.room, start)
+                    if p.track != "mlh" and not is_priority(p)
+                    else start
+                )
                 for left, right in sorted(room_slots[p.room] + team_slots[p.group_id]):
                     if candidate + duration <= left:
                         break
@@ -68,12 +86,22 @@ def plan_schedule(presentations, start, end, duration, travel):
                     )
                 return (earliest(p), -team_load[p.group_id], -room_load[p.room], *tie)
 
-            chosen = min(remaining, key=priority)
+            priority_rooms = {p.room for p in remaining if is_priority(p)}
+            eligible = (
+                p
+                for p in remaining
+                if p.room not in priority_rooms or is_priority(p) or p.track == "mlh"
+            )
+            chosen = min(eligible, key=priority)
             candidate = earliest(chosen)
             if candidate + duration > end:
                 break
             times[chosen.id] = candidate
             book(chosen, candidate)
+            if is_priority(chosen):
+                priority_end[chosen.room] = max(
+                    priority_end.get(chosen.room, start), candidate + duration
+                )
             remaining.remove(chosen)
         if remaining:
             continue

@@ -22,7 +22,11 @@ def prepare(client, engine, create_user, create_event, create_group):
         company_id = company.id
         session.add(
             EventOperations(
-                event_id=event, config={"rooms": [{"id": "room-a", "title": "Room A"}]}
+                event_id=event,
+                config={
+                    "phase": "judging",
+                    "rooms": [{"id": "room-a", "title": "Room A"}],
+                },
             )
         )
         session.add(
@@ -447,3 +451,52 @@ def test_company_controls_timer_extension_completion_and_replays(
         ).status_code
         == 409
     )
+
+
+def test_company_demo_visibility(
+    client, engine, create_user, create_event, create_group
+):
+    admin, hacker, event, group, _, _, invitation = prepare(
+        client, engine, create_user, create_event, create_group
+    )
+    company = activate(client, invitation)
+    path = f"/v1/company-portal/events/{event}"
+    switch = f"/v1/company-portal/manage/{event}/demo"
+
+    def phase(value):
+        with Session(engine) as session:
+            row = session.get(EventOperations, event)
+            row.config = {**row.config, "phase": value}
+            session.commit()
+
+    phase("hacking")
+    assert (
+        client.put(switch, headers=hacker.headers, json={"enabled": True}).status_code
+        == 403
+    )
+    for enabled in (False, True, False, True):
+        assert (
+            client.put(
+                switch, headers=admin.headers, json={"enabled": enabled}
+            ).status_code
+            == 200
+        )
+        view = client.get(path, headers=company).json()
+        assert view["mode"] == ("demo" if enabled else "waiting")
+        assert view["projects"] == view["presentations"] == []
+        assert (
+            client.put(
+                path + f"/notes/{group}",
+                headers=company,
+                json={"text": "Demo", "version": 0},
+            ).status_code
+            == 409
+        )
+    phase("judging")
+    view = client.get(path, headers=company).json()
+    assert view["mode"] == "real"
+    assert view["projects"][0]["id"] == group
+    for enabled, mode in [(True, "demo"), (False, "real")]:
+        response = client.put(switch, headers=admin.headers, json={"enabled": enabled})
+        assert response.is_success
+        assert client.get(path, headers=company).json()["mode"] == mode

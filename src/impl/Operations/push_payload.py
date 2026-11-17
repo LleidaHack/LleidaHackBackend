@@ -10,6 +10,7 @@ FIELDS = (
     "level",
     "category",
     "expires_at",
+    "scheduled_at",
     "created_at",
     "event_id",
     "live",

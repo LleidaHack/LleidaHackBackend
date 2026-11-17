@@ -10,6 +10,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Text,
     UniqueConstraint,
     func,
     text,
@@ -116,6 +117,13 @@ class PushSubscription(BaseModel):
     subscription: Mapped[dict] = mapped_column(JSON)
 
 
+def delivery_due(model, now):
+    from sqlalchemy import or_
+
+    scheduled = model.payload["scheduled_at"].as_string()
+    return or_(scheduled.is_(None), scheduled.cast(DateTime(timezone=True)) <= now)
+
+
 class PushDelivery(BaseModel):
     __tablename__ = "event_push_delivery"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -161,9 +169,8 @@ class DiscordDelivery(BaseModel):
 
 
 class DevpostProject(BaseModel):
-    description: Mapped[str] = mapped_column(
-        String(10000), default="", server_default=""
-    )
+    materials: Mapped[dict] = mapped_column(JSON, default=dict, server_default="{}")
+    description: Mapped[str] = mapped_column(Text, default="", server_default="")
     repository_url: Mapped[str] = mapped_column(
         String(500), default="", server_default=""
     )
@@ -171,7 +178,10 @@ class DevpostProject(BaseModel):
     __tablename__ = "event_devpost_project"
     id: Mapped[int] = mapped_column(primary_key=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), index=True)
-    group_id: Mapped[int] = mapped_column(
+    submitted_team_code: Mapped[str] = mapped_column(
+        String(100), default="", server_default=""
+    )
+    group_id: Mapped[int | None] = mapped_column(
         ForeignKey("hacker_group.id", ondelete="CASCADE")
     )
     url: Mapped[str] = mapped_column(String(500))
@@ -192,6 +202,9 @@ class ChallengeVote(BaseModel):
         ForeignKey("hacker_group.id", ondelete="CASCADE")
     )
     challenge: Mapped[str] = mapped_column(String(80))
+    ribo_prize: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
     version: Mapped[int] = mapped_column(Integer, default=1)
     __table_args__ = (UniqueConstraint("event_id", "group_id"),)
 

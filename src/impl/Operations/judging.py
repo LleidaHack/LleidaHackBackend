@@ -46,6 +46,12 @@ def available(p, turns, config, for_start=False):
 
 def refresh_queue(event_id, room_id, config, turns, changes):
     """Keep one called team per unpaused room, without admitting it automatically."""
+    from src.impl.Operations.service import ribo_teams
+
+    priority_groups = ribo_teams(event_id)
+    turns = sorted(
+        turns, key=lambda p: p.track != "mlh" and p.group_id not in priority_groups
+    )
     next_team = None
     rooms = sorted(config.get("rooms", []), key=lambda r: r["id"] != room_id)
     for room in rooms:
@@ -146,6 +152,21 @@ def start_presentation(event_id, user_id, room_id, config, log):
         )
     if not available(current, turns, config, for_start=True):
         raise HTTPException(409, "Team is busy in another room or still travelling")
+    if current.track != "mlh" and current.state != "called":
+        from src.impl.Operations.service import ribo_teams
+
+        entrants = ribo_teams(event_id)
+        if current.group_id not in entrants and any(
+            q.room == room_id
+            and q.track != "mlh"
+            and q.group_id in entrants
+            and q.state in {"waiting", "called"}
+            and available(q, turns, config, for_start=True)
+            for q in turns
+        ):
+            raise HTTPException(
+                409, "A Josep Maria Ribó prize team is waiting in this room"
+            )
     changes = []
     transition(current, "presenting", changes)
     current.started_at = None

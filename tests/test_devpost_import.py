@@ -136,15 +136,13 @@ def test_import_preview_replay_reimport_and_audit(client, setup_import, engine):
 
 @pytest.mark.parametrize(
     "change",
-    ["duplicate", "unknown", "challenge", "url", "mlh", "status", "missing_status"],
+    ["duplicate", "challenge", "url", "mlh", "status", "missing_status"],
 )
 def test_invalid_rows_block_atomic_import(client, setup_import, change):
     o, _, _, group, base = setup_import
     body = payload(group.code)
     if change == "duplicate":
         body["csv_text"] += body["csv_text"].splitlines()[1] + "\n"
-    elif change == "unknown":
-        body = payload("foreign-team")
     elif change == "challenge":
         body["challenges"] = {"Challenge": "unconfigured"}
     elif change == "url":
@@ -286,3 +284,164 @@ def test_optional_project_details_preserved_and_unsafe_links_rejected(
         )
         assert preview.status_code == 200
         assert not preview.json()["ready"]
+
+
+def test_devpost_export_and_team_prize_in_company_portal(client, setup_import, engine):
+    from sqlalchemy.orm import Session
+
+    from src.impl.Company.model import Company
+    from src.impl.CompanyPortal.model import PortalInvitation
+    from src.impl.Operations.model import EventOperations
+
+    admin, hacker, event, group, base = setup_import
+    config = client.get(base + "/manage", headers=admin.headers).json()
+    controls = client.put(
+        base + "/challenge-controls",
+        headers=admin.headers,
+        json={
+            "version": config["version"],
+            "challenges_released": True,
+            "challenge_votes_open": True,
+            "reason": "Enable team choices",
+        },
+    )
+    assert controls.status_code == 200
+    choice = base + f"/teams/{group.id}/challenge-vote"
+    for version, prize in enumerate([False, True, False, True]):
+        saved = client.put(
+            choice,
+            headers=hacker.headers,
+            json={"challenge": "c1", "ribo_prize": prize, "version": version},
+        )
+        assert saved.status_code == 200 and saved.json()["ribo_prize"] == prize
+    repo = "https://github.com/example/project"
+    site = "https://example.org/demo"
+    gallery = "https://example.org/photo.jpg"
+    video = "https://example.org/video"
+    description = "Project overview\n" * 800
+    stream = io.StringIO()
+    writer = csv.writer(stream)
+    writer.writerow(
+        [
+            "Project Title",
+            "Submission Url",
+            "Project Status",
+            "About The Project",
+            '"Try it out" Links',
+            "Video Demo Link",
+            "Image Gallery URLs",
+            "Built With",
+            "Additional Team Member Count",
+            "Team Member 1 First Name",
+            "Team Member 1 Last Name",
+            "Team Member 1 Email",
+            "...",
+            "TeamID",
+        ]
+    )
+    writer.writerow(
+        [
+            "Project",
+            "https://hackeps-test.devpost.com/submissions/123-project",
+            "Submitted (Gallery/Visible)",
+            description,
+            f"{repo}, {site}",
+            video,
+            gallery,
+            "Python",
+            2,
+            *(["First", "Last", "private@example.test"] * 2),
+            group.code,
+        ]
+    )
+    writer.writerow(["Draft", "", "Draft", "", "", "", "", "", 0, ""])
+    response, _, plan = commit(client, admin, base, {"csv_text": stream.getvalue()})
+    assert response.status_code == 200 and plan["count"] == 1
+    assert response.json()["created_turns"] == 2
+    assert (
+        commit(client, admin, base, {"csv_text": stream.getvalue()})[0].json()[
+            "created_turns"
+        ]
+        == 0
+    )
+    schedule = client.post(base + "/schedule", headers=admin.headers).json()
+    assert {p["room"] for p in schedule["presentations"]} == {"c1", "josep-maria-ribo"}
+    assert len({p["scheduled_at"] for p in schedule["presentations"]}) == 2
+    with Session(engine) as session:
+        company = Company(name="Test company")
+        session.add(company)
+        session.flush()
+        company_id = company.id
+        state = session.get(EventOperations, event)
+        state.config = {**state.config, "phase": "judging"}
+        session.commit()
+    invite = client.post(
+        f"/v1/company-portal/manage/{event}/invite",
+        headers=admin.headers,
+        json={
+            "company_id": company_id,
+            "email": "judges@example.test",
+            "rooms": ["c1"],
+            "operation_id": str(uuid4()),
+        },
+    )
+    assert invite.status_code == 200
+    with Session(engine) as session:
+        token = session.get(PortalInvitation, invite.json()["id"]).delivery_url.split(
+            "#invite="
+        )[1]
+    login = client.post(
+        "/v1/company-portal/setup",
+        json={"token": token, "password": "CompanyTest2026!"},
+    )
+    snapshot = client.get(
+        f"/v1/company-portal/events/{event}",
+        headers={"Authorization": "Bearer " + login.json()["access_token"]},
+    )
+    (project,) = snapshot.json()["projects"]
+    assert project["id"] == group.id and project["ribo_prize"] is True
+    assert project["materials"] == {
+        "try_links": [repo, site],
+        "gallery": [gallery],
+        "technologies": "Python",
+    }
+    assert (
+        project["demo_url"] == video and project["description"] == description.strip()
+    )
+    assert "private@example.test" not in snapshot.text
+
+
+@pytest.mark.parametrize("prefix", ["", "#"])
+def test_team_code_with_or_without_hash(client, setup_import, prefix):
+    admin, _, _, group, base = setup_import
+    response, _, plan = commit(
+        client, admin, base, payload(prefix + group.code.removeprefix("#"))
+    )
+    assert response.status_code == 200
+    assert plan["rows"][0]["group_id"] == group.id
+
+
+@pytest.mark.parametrize("code", ["", "wrongcode"])
+def test_unmatched_import_and_manual_assignment(client, setup_import, code):
+    admin, member, _, group, base = setup_import
+    body = payload(code)
+    response, _, plan = commit(client, admin, base, body)
+    assert response.status_code == 200 and response.json()["pending"] == 1
+    assert (
+        plan["rows"][0]["action"] == "pending" and response.json()["created_turns"] == 0
+    )
+    assert commit(client, admin, base, body)[0].status_code == 200
+    (project,) = client.get(base + "/devpost/projects", headers=admin.headers).json()
+    assert project["group_id"] is None
+    url = base + f"/devpost/projects/{project['id']}/team"
+    assignment = {"group_id": group.id, "challenge": "c1"}
+    assert client.put(url, headers=member.headers, json=assignment).status_code == 403
+    for _ in range(2):
+        assert (
+            client.put(url, headers=admin.headers, json=assignment).status_code == 200
+        )
+    assert commit(client, admin, base, body)[0].json()["pending"] == 0
+    assert (
+        len(client.get(base + "/manage", headers=admin.headers).json()["presentations"])
+        == 2
+    )

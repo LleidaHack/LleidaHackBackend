@@ -29,7 +29,7 @@ from src.impl.Operations.model import (
     OperationAudit,
     Presentation,
 )
-from src.impl.Operations.service import audit, state
+from src.impl.Operations.service import audit, effective_phase, state
 from src.utils.access import require_management
 from src.utils.JWTBearer import JWTBearer
 from src.utils.security import get_password_hash, validate_password, verify_password
@@ -216,11 +216,60 @@ def events(user=Depends(account)):
     ]
 
 
+def portal_mode(config):
+    phase = effective_phase(config)
+    if config.get("company_demo") and phase == config.get("company_demo_phase"):
+        return "demo"
+    if phase in ("judging", "finished"):
+        return "real"
+    return "demo" if config.get("company_demo") else "waiting"
+
+
+def require_real_portal(event_id):
+    _, row = state(event_id, lock=True)
+    if portal_mode(row.config) != "real":
+        raise HTTPException(409, "Judging is not open")
+
+
+class DemoSettings(BaseModel):
+    enabled: bool
+
+
+@router.put("/manage/{event_id}/demo")
+def set_demo(event_id: int, body: DemoSettings, token=Depends(JWTBearer())):
+    require_management(token)
+    _, row = state(event_id, lock=True)
+    row.config = {
+        **row.config,
+        "company_demo": body.enabled,
+        "company_demo_phase": effective_phase(row.config) if body.enabled else None,
+    }
+    row.version += 1
+    audit(event_id, token, "company.demo", {"enabled": body.enabled})
+    db.session.commit()
+    return {"enabled": body.enabled}
+
+
 @router.get("/events/{event_id}")
 def snapshot(event_id: int, user=Depends(account)):
     grant = grant_for(event_id, user)
     operations = db.session.get(EventOperations, event_id)
     config = operations.config if operations else {}
+    mode = portal_mode(config)
+    if mode != "real":
+        return {
+            "mode": mode,
+            "company": db.session.get(Company, user.company_id).name,
+            "server_time": now(),
+            "duration_seconds": 300,
+            "version": grant.version,
+            "winner_id": None,
+            "finalized_at": None,
+            "rooms": [],
+            "room_labels": {},
+            "projects": [],
+            "presentations": [],
+        }
     room_labels = {
         r["id"]: r.get("title", r["id"])
         for r in config.get("rooms", [])
@@ -234,6 +283,9 @@ def snapshot(event_id: int, user=Depends(account)):
         .filter(HackerGroup.id.in_(authorized_groups(grant)))
         .all()
     )
+    from src.impl.Operations.service import ribo_teams
+
+    priority_groups = ribo_teams(event_id)
     projects = {
         p.group_id: p
         for p in db.session.query(DevpostProject).filter_by(event_id=event_id)
@@ -248,6 +300,7 @@ def snapshot(event_id: int, user=Depends(account)):
         .all()
     )
     return {
+        "mode": mode,
         "company": db.session.get(Company, user.company_id).name,
         "server_time": now(),
         "duration_seconds": 300,
@@ -267,6 +320,8 @@ def snapshot(event_id: int, user=Depends(account)):
                 "repository_url": projects[g.id].repository_url
                 if g.id in projects
                 else None,
+                "ribo_prize": g.id in priority_groups,
+                "materials": projects[g.id].materials if g.id in projects else {},
                 "demo_url": projects[g.id].demo_url if g.id in projects else None,
                 "members": [m.name for m in g.members],
                 "url": projects[g.id].url if g.id in projects else None,
@@ -307,6 +362,7 @@ def note_view(note):
 
 @router.put("/events/{event_id}/notes/{group_id}")
 def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(account)):
+    require_real_portal(event_id)
     grant = grant_for(event_id, user, lock=True)
     if grant.finalized_at:
         raise HTTPException(
@@ -336,6 +392,7 @@ def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(accoun
 
 @router.put("/events/{event_id}/winner")
 def winner(event_id: int, body: WinnerInput, user=Depends(account)):
+    require_real_portal(event_id)
     grant = grant_for(event_id, user, lock=True)
     if grant.finalized_at:
         raise HTTPException(
@@ -512,6 +569,8 @@ def presentation_action(
 
     # Share the event lock with QR scans and organizer edits before locking grants.
     _, row = state(event_id, lock=True)
+    if portal_mode(row.config) != "real":
+        raise HTTPException(409, "Judging is not open")
     grant = grant_for(event_id, user, lock=True)
     p = (
         db.session.query(Presentation)
@@ -616,7 +675,7 @@ class FinalizeInput(Input):
 
 @router.post("/events/{event_id}/finalize")
 def finalize(event_id: int, body: FinalizeInput, user=Depends(account)):
-    state(event_id, lock=True)
+    require_real_portal(event_id)
     grant = grant_for(event_id, user, lock=True)
     details = {**body.model_dump(mode="json"), "company_id": user.company_id}
     operation_id = "company-finalize:" + str(body.operation_id)

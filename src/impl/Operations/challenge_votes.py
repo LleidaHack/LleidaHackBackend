@@ -7,6 +7,7 @@ from fastapi_sqlalchemy import db
 from pydantic import BaseModel, Field
 
 from src.impl.HackerGroup.model import HackerGroup, HackerGroupUser
+from src.impl.Operations import ribo
 from src.impl.Operations import service as ops
 from src.impl.Operations.model import ChallengeVote
 from src.utils.JWTBearer import JWTBearer
@@ -23,6 +24,7 @@ class ChallengeControls(BaseModel):
 
 
 class TeamChoice(BaseModel):
+    ribo_prize: bool | None = None
     challenge: str = Field(min_length=1, max_length=80)
     version: int = Field(ge=0)
 
@@ -48,7 +50,7 @@ def choices(config):
     return [
         {"id": c["id"], "title": c["title"], "description": c.get("description", "")}
         for c in config.get("challenges", [])
-        if c.get("published") and c["id"] != "mlh"
+        if c.get("published") and c["id"] not in {"mlh", ribo.ROOM_ID}
     ]
 
 
@@ -68,6 +70,7 @@ def team_snapshot(event_id, group_id, state):
         "choice": vote.challenge
         if vote and ops.challenges_released(state.config)
         else None,
+        "ribo_prize": bool(vote and vote.ribo_prize),
         "version": vote.version if vote else 0,
     }
 
@@ -140,21 +143,34 @@ def choose(
     if body.version != (vote.version if vote else 0):
         raise HTTPException(409, "Your team choice changed; refresh before saving")
     before = vote.challenge if vote else None
-    if vote and before == body.challenge:
+    previous_prize = bool(vote and vote.ribo_prize)
+    prize = previous_prize if body.ribo_prize is None else body.ribo_prize
+    if vote and before == body.challenge and prize == previous_prize:
         return team_snapshot(event_id, group_id, state)
+    ribo.sync_choice(state, group_id, prize)
     if vote:
+        vote.ribo_prize = prize
         vote.challenge = body.challenge
         vote.version += 1
     else:
         vote = ChallengeVote(
-            event_id=event_id, group_id=group_id, challenge=body.challenge
+            event_id=event_id,
+            group_id=group_id,
+            challenge=body.challenge,
+            ribo_prize=prize,
         )
         db.session.add(vote)
     ops.audit(
         event_id,
         token,
         "challenge.vote",
-        {"group_id": group_id, "before": before, "after": body.challenge},
+        {
+            "group_id": group_id,
+            "before": before,
+            "after": body.challenge,
+            "ribo_prize": prize,
+            "previous_ribo_prize": previous_prize,
+        },
     )
     db.session.flush()
     result = team_snapshot(event_id, group_id, state)

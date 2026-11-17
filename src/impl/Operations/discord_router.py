@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import or_
 
 from src.impl.Operations.discord_messages import discord_message, webhook_url
-from src.impl.Operations.model import DiscordDelivery
+from src.impl.Operations.model import DiscordDelivery, delivery_due
 from src.utils.access import require_management
 from src.utils.JWTBearer import JWTBearer
 from src.utils.Token import BaseToken
@@ -78,6 +78,7 @@ def claim(event_id: int):
         db.session.query(DiscordDelivery)
         .filter(
             DiscordDelivery.event_id == event_id,
+            delivery_due(DiscordDelivery, now),
             or_(
                 DiscordDelivery.state == "pending",
                 (DiscordDelivery.state == "leased")

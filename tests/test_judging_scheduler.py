@@ -70,3 +70,19 @@ def test_only_opted_in_teams_receive_mlh_and_plan_is_deterministic():
     assert plan == plan_schedule(
         turns, START, START + timedelta(hours=4), DURATION, TRAVEL
     )
+
+
+def test_prize_teams_lead_each_challenge_but_do_not_get_mlh_priority():
+    turns = [
+        turn(1, "a", 1),
+        turn(2, "a", 2),
+        turn(3, "b", 3),
+        turn(4, "b", 4),
+        turn(5, "mlh", 5),
+        turn(6, "mlh", 6),
+    ]
+    plan = plan_schedule(
+        turns, START, START + timedelta(hours=2), DURATION, TRAVEL, {2, 4, 6}
+    )
+    assert_valid(turns, plan)
+    assert plan[2] < plan[1] and plan[4] < plan[3] and plan[5] < plan[6]
