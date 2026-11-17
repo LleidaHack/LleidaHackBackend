@@ -13,6 +13,15 @@
 #   in the env file. A worker without its settings exits immediately; leave the
 #   service out until it is configured.
 services:
+  backend-release-reminder-worker-main:
+    image: lleidahack/backend-release:<same as backend-main>
+    command: ["python", "-m", "src.impl.Event.release_queue"]
+    env_file:
+      - <same absolute path(s) as backend-main>
+    restart: unless-stopped
+    profiles: ["main"]
+    depends_on: [db-main]
+
   backend-push-worker-main:
     image: lleidahack/backend-release:<same as backend-main>
     command: ["python", "-m", "src.impl.Operations.push_worker"]

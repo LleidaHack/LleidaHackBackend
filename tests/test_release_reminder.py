@@ -27,6 +27,40 @@ def confirmed(engine, user, event_id):
         session.commit()
 
 
+def test_persistent_release_queue(
+    client, create_user, create_event, engine, mail_delivery
+):
+    from src.impl.Event.release_queue import deliver_one
+    from src.impl.Mail.client import MailClient
+
+    actor, first, second, other = (
+        create_user(role="organizer"),
+        create_user(),
+        create_user(),
+        create_user(),
+    )
+    event_id = create_event([first, second, other])
+    confirmed(engine, first, event_id)
+    confirmed(engine, second, event_id)
+    path = f"/v1/event/{event_id}/release-reminders"
+    assert client.post(path, headers=other.headers).status_code >= 400
+    assert client.post(path, headers=actor.headers).json() == {"registered": 2}
+    assert client.post(path, headers=actor.headers).json() == {"registered": 0}
+    state, _, send = mail_delivery
+    send.side_effect = TimeoutError()
+    assert deliver_one(engine, MailClient())
+    send.side_effect = lambda _: state.update(sent=True)
+    assert deliver_one(engine, MailClient())
+    assert not deliver_one(engine, MailClient())
+    assert client.get(path, headers=actor.headers).json() == {
+        "pending": 0,
+        "queued": 0,
+        "checking": [first.id],
+    }
+    assert client.post(path, headers=actor.headers).json() == {"registered": 0}
+    assert send.call_count == 2
+
+
 def test_reminder_is_tracked_once_and_link_cancels(
     client, create_user, create_event, engine, mail_delivery
 ):
@@ -68,6 +102,35 @@ def test_reminder_is_tracked_once_and_link_cancels(
 
 
 @pytest.mark.parametrize("delivered", [False, True])
+def test_queue_only_checks_previous_mail(
+    client, create_user, create_event, engine, mail_delivery, delivered
+):
+    from src.impl.Event.model import HackerRegistration
+    from src.impl.Event.release_queue import deliver_one
+    from src.impl.Mail.client import MailClient
+
+    organizer, user = create_user(role="organizer"), create_user()
+    event_id = create_event([user])
+    confirmed(engine, user, event_id)
+    with Session(engine) as session:
+        session.get(
+            HackerRegistration, (user.id, event_id)
+        ).release_reminder_mail_id = 51
+        session.commit()
+    state, create, send = mail_delivery
+    state["sent"] = delivered
+    path = f"/v1/event/{event_id}/release-reminders"
+    assert client.post(path, headers=organizer.headers).status_code == 202
+    assert deliver_one(engine, MailClient())
+    assert not deliver_one(engine, MailClient())
+    assert client.get(path, headers=organizer.headers).json()["checking"] == (
+        [] if delivered else [user.id]
+    )
+    create.assert_not_called()
+    send.assert_not_called()
+
+
+@pytest.mark.parametrize("delivered", [False, True])
 def test_retry_reuses_mail_and_reconciles_ambiguous_delivery(
     client, create_user, create_event, engine, mail_delivery, delivered
 ):
@@ -84,10 +147,11 @@ def test_retry_reuses_mail_and_reconciles_ambiguous_delivery(
 
     send.side_effect = timeout
     path = f"/v1/event/{event_id}/release-reminder/{user.id}"
-    assert client.post(path, headers=organizer.headers).status_code >= 400
+    response = client.post(path, headers=organizer.headers)
+    assert response.status_code == 200 if delivered else response.status_code >= 400
     with Session(engine) as session:
         registration = session.get(HackerRegistration, (user.id, event_id))
-        assert registration.release_reminder_sent_at is None
+        assert (registration.release_reminder_sent_at is not None) == delivered
         assert registration.release_reminder_mail_id == 51
         token = registration.confirm_assistance_token
     send.side_effect = lambda mail_id: state.update(sent=True)
