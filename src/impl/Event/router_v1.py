@@ -325,12 +325,17 @@ def accept_hacker(
 
 @router.put("/{event_id}/unaccept/{hacker_id}", response_model=EventGet)
 def unaccept_hacker(
-    event_id: int, hacker_id: int, token: BaseToken = Depends(JWTBearer())
+    event_id: int,
+    hacker_id: int,
+    background_tasks: BackgroundTasks,
+    token: BaseToken = Depends(JWTBearer()),
 ):
     """
     Unaccept a hacker from an event
     """
-    return event_service.unaccept_hacker(event_id, hacker_id, token)
+    return event_service.unaccept_hacker(
+        event_id, hacker_id, token, background_tasks.add_task
+    )
 
 
 @router.put("/{event_id}/reject/{hacker_id}", response_model=EventGet)
