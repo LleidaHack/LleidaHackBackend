@@ -106,3 +106,15 @@ mentor → Mentor, and lleidahacker/admin/superadmin → Staff (legacy lleida_ha
 also maps to Staff). Unknown roles fail signing rather than receiving a guessed
 label. Download eligibility is always checked independently against current
 account role and event membership. Never use the printed role as authorization.
+
+## Application rejection emails
+
+The admin's individual, bulk and group rejection actions use
+`event_hacker_rejected` with `name,event_name` (HTML-escaped, including commas).
+Delivery is requested after committing the rejection. Individual repeat
+rejections are rejected; group requests skip accepted and already-rejected
+members, so repeating the action does not create another notification.
+
+Deploy MailBackend with migration `20261120_hacker_rejected` before this backend:
+its mail client loads all registered internal templates during initialization.
+The mail subject is `Sobre la teva inscripció · HackEPS`.
