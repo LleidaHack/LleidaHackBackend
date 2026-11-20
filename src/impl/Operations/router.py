@@ -90,6 +90,16 @@ def credits_export(event_id: int, token: BaseToken = Depends(JWTBearer())):
     return credit_participants(db.session, event_id)
 
 
+@router.get("/{event_id}/participants-export")
+def export_participants(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    ops.require_organizer(token)
+    from src.impl.Event.service import EventService
+    from src.impl.Operations.participant_export import participant_export
+
+    participants = EventService().get_hackers_participants_list(event_id, token)
+    return participant_export(db.session, event_id, participants["participants"])
+
+
 @router.put("/{event_id}/config")
 def update_config(
     event_id: int, body: ConfigUpdate, token: BaseToken = Depends(JWTBearer())
