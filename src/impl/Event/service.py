@@ -1344,46 +1344,79 @@ class EventService(BaseService):
         db.session.refresh(hacker)
         return event
 
-    @BaseService.needs_service("HackerGroupService")
-    def reject_group(self, event_id: int, group_id, data: BaseToken):
+    def _create_rejection_mail(self, event, hacker):
+        return self.mail_client.create_mail(
+            MailCreate(
+                template_id=self.mail_client.get_internall_template_id(
+                    InternalTemplate.EVENT_HACKER_REJECTED
+                ),
+                subject="Sobre la teva inscripció · HackEPS",
+                receiver_id=str(hacker.id),
+                receiver_mail=str(hacker.email),
+                fields=",".join(
+                    escape(str(value), quote=True).replace(",", "&#44;")
+                    for value in (hacker.name, event.name)
+                ),
+            )
+        )
+
+    def _lock_rejection_event(self, event_id, data):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
+        # Serialize individual and group rejections to avoid duplicate emails.
+        db.session.query(Event).filter(Event.id == event_id).with_for_update().first()
         event = self.get_by_id(event_id)
         if event.archived:
             raise InvalidDataException(
                 "Unable to operate with an archived event, unarchive it first"
             )
-        group = self.hackergroup_service.get_by_id(group_id)
-        for hacker in group.members:
-            if hacker not in event.accepted_hackers:
-                if hacker not in event.registered_hackers:
-                    raise InvalidDataException("Hacker not registered")
-                if hacker in event.accepted_hackers:
-                    raise InvalidDataException("Hacker already accepted")
-                event.rejected_hackers.append(hacker)
-        self._audit(event.id, data, f"reject_group:{group_id}", None)
-        db.session.commit()
-        db.session.refresh(event)
-        db.session.refresh(group)
         return event
 
+    @BaseClient.needs_client(MailClient)
+    @BaseService.needs_service("HackerGroupService")
+    def reject_group(self, event_id: int, group_id, data: BaseToken, defer=None):
+        event = self._lock_rejection_event(event_id, data)
+        group = self.hackergroup_service.get_by_id(group_id)
+        if group.event_id != event.id:
+            raise InvalidDataException("Group does not belong to this event")
+        candidates = [
+            hacker
+            for hacker in group.members
+            if hacker not in event.accepted_hackers
+            and hacker not in event.rejected_hackers
+        ]
+        # Validate the whole group before creating any mail.
+        for hacker in candidates:
+            if hacker not in event.registered_hackers:
+                raise InvalidDataException("Hacker not registered")
+        mails = []
+        for hacker in candidates:
+            mails.append(self._create_rejection_mail(event, hacker))
+            event.rejected_hackers.append(hacker)
+        if candidates:
+            self._audit(event.id, data, f"reject_group:{group_id}", None)
+        db.session.commit()
+        for mail in mails:
+            (defer or (lambda f, *a: f(*a)))(self.mail_client.send_mail_by_id, mail.id)
+        db.session.refresh(event)
+        return event
+
+    @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(HackerService)
-    def reject_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("Not authorized")
-        event = self.get_by_id(event_id)
-        if event.archived:
-            raise InvalidDataException(
-                "Unable to operate with an archived event, unarchive it first"
-            )
+    def reject_hacker(self, event_id: int, hacker_id: int, data: BaseToken, defer=None):
+        event = self._lock_rejection_event(event_id, data)
         hacker = self.hacker_service.get_by_id(hacker_id)
         if hacker not in event.registered_hackers:
             raise InvalidDataException("Hacker not registered")
         if hacker in event.accepted_hackers:
             raise InvalidDataException("Hacker already accepted")
+        if hacker in event.rejected_hackers:
+            raise InvalidDataException("Hacker already rejected")
+        mail = self._create_rejection_mail(event, hacker)
         event.rejected_hackers.append(hacker)
         self._audit(event.id, data, "reject", hacker.id)
         db.session.commit()
+        (defer or (lambda f, *a: f(*a)))(self.mail_client.send_mail_by_id, mail.id)
         db.session.refresh(event)
         db.session.refresh(hacker)
         return event
