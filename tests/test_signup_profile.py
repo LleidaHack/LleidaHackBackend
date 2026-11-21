@@ -18,6 +18,7 @@ def test_signup_without_optional_fields_can_read_profile(client, engine):
                 "recive_notifications": False,
                 "comercial_notifications": False,
                 "terms_and_conditions": True,
+                "mlh_code_of_conduct": True,
             },
         },
     )

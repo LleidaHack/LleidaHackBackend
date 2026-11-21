@@ -1,3 +1,5 @@
+from pydantic import field_validator
+
 from src.impl.User.schema import UserCreate, UserGet, UserGetAll, UserUpdate
 from src.utils.uploads import Curriculum
 
@@ -9,6 +11,13 @@ class HackerCreate(UserCreate):
     location: str | None = None
     how_did_you_meet_us: str | None = None
     cv: Curriculum | None = None
+
+    @field_validator("config")
+    @classmethod
+    def require_mlh_code_of_conduct(cls, value):
+        if not value.mlh_code_of_conduct:
+            raise ValueError("You must accept the MLH code of conduct")
+        return value
 
 
 class HackerGet(UserGet):

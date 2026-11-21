@@ -84,6 +84,17 @@ The Dockerfile's default command applies migrations before starting Gunicorn.
 Production Compose overrides that command to keep migrations a separate release
 step. Do not substitute a bare `docker run` for the production runbook.
 
+## MLH consent at participant signup
+
+Participant signup requires `config.mlh_code_of_conduct` to be the JSON boolean
+`true`. Missing, false, null and non-boolean values are rejected. The acceptance
+is persisted in `user_config` and returned with the user's full configuration.
+Existing accounts default to `false`; no past acceptance is inferred.
+
+Apply `alembic upgrade head` (migration `20261121_mlh_consent`) before starting
+the updated backend. Deploy the frontend checkbox before enabling the stricter
+backend validation to avoid rejecting registrations from the old form.
+
 ## Repository map
 
 | Path | Responsibility |
