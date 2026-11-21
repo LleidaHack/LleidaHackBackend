@@ -1,4 +1,4 @@
-from pydantic import field_validator
+from pydantic import StrictBool, field_validator
 
 from src.utils.Base.BaseSchema import BaseSchema
 
@@ -8,6 +8,7 @@ class UserConfigCreate(BaseSchema):
     default_lang: str
     comercial_notifications: bool
     terms_and_conditions: bool
+    mlh_code_of_conduct: StrictBool = False
 
 
 class UserConfigGet(BaseSchema):
@@ -19,6 +20,7 @@ class UserConfigGetAll(UserConfigGet):
     comercial_notifications: bool
     recive_notifications: bool
     terms_and_conditions: bool
+    mlh_code_of_conduct: bool
 
 
 class UserConfigUpdate(BaseSchema):

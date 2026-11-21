@@ -146,6 +146,7 @@ def signup_payload():
             "default_lang": "en",
             "comercial_notifications": False,
             "terms_and_conditions": True,
+            "mlh_code_of_conduct": True,
         },
     }
 
