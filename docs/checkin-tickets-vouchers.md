@@ -118,3 +118,8 @@ members, so repeating the action does not create another notification.
 Deploy MailBackend with migration `20261120_hacker_rejected` before this backend:
 its mail client loads all registered internal templates during initialization.
 The mail subject is `Sobre la teva inscripció · HackEPS`.
+
+Withdrawing acceptance (`PUT /v1/event/{event_id}/unaccept/{hacker_id}`) also
+marks the applicant rejected and sends the same rejection email after commit.
+It clears attendance confirmation and its token, so the old confirmation link
+and ticket are no longer eligible. Repeated withdrawal does not send another mail.

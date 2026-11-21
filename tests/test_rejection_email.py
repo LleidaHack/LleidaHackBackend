@@ -134,3 +134,78 @@ def test_mail_creation_failure_preserves_pending_status(
             == 0
         )
     assert rejection_mail[1] == []
+
+
+@pytest.mark.parametrize("confirmed", [False, True])
+def test_withdraw_acceptance_rejects_and_revokes_ticket(
+    client, create_user, create_event, engine, rejection_mail, confirmed
+):
+    from src.impl.Event.model import HackerAccepted, HackerRegistration
+    from src.impl.User.model import User
+    from src.utils.Token import AssistenceToken
+
+    organizer, hacker = create_user(role="organizer"), create_user()
+    event_id = create_event([hacker])
+    with Session(engine) as session:
+        user = session.get(User, hacker.id)
+        token = AssistenceToken(user, event_id).to_token()
+        code = user.code
+        registration = session.get(HackerRegistration, (hacker.id, event_id))
+        registration.confirmed_assistance = confirmed
+        registration.confirm_assistance_token = token
+        session.add(HackerAccepted(user_id=hacker.id, event_id=event_id))
+        session.commit()
+    path = f"/v1/event/{event_id}/unaccept/{hacker.id}"
+    response = client.put(path, headers=organizer.headers)
+    assert response.status_code == 200, response.text
+    with Session(engine) as session:
+        assert session.get(HackerAccepted, (hacker.id, event_id)) is None
+        assert session.get(HackerRejected, (hacker.id, event_id)) is not None
+        registration = session.get(HackerRegistration, (hacker.id, event_id))
+        assert not registration.confirmed_assistance
+        assert registration.confirm_assistance_token == ""
+    created, sent, templates = rejection_mail
+    assert sent == [1]
+    assert templates == [InternalTemplate.EVENT_HACKER_REJECTED]
+    assert created[0].receiver_mail == hacker.email
+    assert client.put(path, headers=organizer.headers).status_code >= 400
+    assert len(created) == 1
+    assert (
+        client.get(
+            "/v1/event/confirm_assistance/",
+            headers={"Authorization": f"Bearer {token}"},
+        ).status_code
+        >= 400
+    )
+    assert client.get(f"/v1/event/{event_id}/ticket/{code}/qr.png").status_code == 404
+
+
+def test_withdraw_mail_failure_preserves_acceptance(
+    client, create_user, create_event, engine, rejection_mail, monkeypatch
+):
+    from src.error.MailClientException import MailClientException
+    from src.impl.Event.model import HackerAccepted, HackerRegistration
+
+    organizer, hacker = create_user(role="organizer"), create_user()
+    event_id = create_event([hacker])
+    with Session(engine) as session:
+        session.add(HackerAccepted(user_id=hacker.id, event_id=event_id))
+        registration = session.get(HackerRegistration, (hacker.id, event_id))
+        registration.confirmed_assistance = True
+        registration.confirm_assistance_token = "original-token"
+        session.commit()
+
+    def fail(self, mail):
+        raise MailClientException("Mail service unavailable")
+
+    monkeypatch.setattr(MailClient, "create_mail", fail)
+    path = f"/v1/event/{event_id}/unaccept/{hacker.id}"
+    assert client.put(path, headers=hacker.headers).status_code >= 400
+    assert client.put(path, headers=organizer.headers).status_code >= 400
+    with Session(engine) as session:
+        assert session.get(HackerAccepted, (hacker.id, event_id)) is not None
+        assert session.get(HackerRejected, (hacker.id, event_id)) is None
+        registration = session.get(HackerRegistration, (hacker.id, event_id))
+        assert registration.confirmed_assistance
+        assert registration.confirm_assistance_token == "original-token"
+    assert rejection_mail[1] == []

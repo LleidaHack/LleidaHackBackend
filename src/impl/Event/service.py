@@ -1325,21 +1325,33 @@ class EventService(BaseService):
         db.session.refresh(hacker)
         return event
 
+    @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(HackerService)
-    def unaccept_hacker(self, event_id: int, hacker_id: int, data: BaseToken):
-        if not data.check([UserType.LLEIDAHACKER]):
-            raise AuthenticationException("Not authorized")
-        event = self.get_by_id(event_id)
-        if event.archived:
-            raise InvalidDataException(
-                "Unable to operate with an archived event, unarchive it first"
-            )
+    def unaccept_hacker(
+        self, event_id: int, hacker_id: int, data: BaseToken, defer=None
+    ):
+        event = self._lock_rejection_event(event_id, data)
         hacker = self.hacker_service.get_by_id(hacker_id)
         if hacker not in event.accepted_hackers:
             raise InvalidDataException("Hacker not accepted")
+        registration = (
+            db.session.query(HackerRegistration)
+            .filter_by(user_id=hacker_id, event_id=event_id)
+            .populate_existing()
+            .with_for_update()
+            .first()
+        )
+        if registration is None:
+            raise InvalidDataException("Hacker not registered")
+        mail = self._create_rejection_mail(event, hacker)
         event.accepted_hackers.remove(hacker)
+        if hacker not in event.rejected_hackers:
+            event.rejected_hackers.append(hacker)
+        registration.confirmed_assistance = False
+        registration.confirm_assistance_token = ""
         self._audit(event.id, data, "unaccept", hacker.id)
         db.session.commit()
+        (defer or (lambda f, *a: f(*a)))(self.mail_client.send_mail_by_id, mail.id)
         db.session.refresh(event)
         db.session.refresh(hacker)
         return event
