@@ -4,6 +4,7 @@ from http import HTTPStatus
 from threading import RLock
 from typing import Any
 
+import httpx
 from generated_src.lleida_hack_mail_api_client.api.health import health_check
 from generated_src.lleida_hack_mail_api_client.api.mail import (
     mail_create,
@@ -19,6 +20,31 @@ from src.impl.Mail.internall_templates import InternalTemplate
 from src.utils.Base.BaseClient import BaseClient
 
 logger = logging.getLogger(__name__)
+
+
+def _call_mail_backend(operation, call):
+    """Run a Mail Backend request, surviving one stale keep-alive socket.
+
+    httpx does not retry when a pooled connection was closed by the server
+    while idle; that surfaces as RemoteProtocolError before the request is
+    processed. Retrying once is safe: creates are unsent rows and the Mail
+    Backend refuses to send an already-sent mail. Any remaining transport
+    failure becomes a MailClientException (503) instead of an opaque 500.
+    """
+    try:
+        return call()
+    except httpx.RemoteProtocolError:
+        logger.warning(
+            "Mail Backend dropped a pooled connection; retrying %s", operation
+        )
+    except httpx.TransportError as exc:
+        logger.warning("Mail Backend %s failed: %r", operation, exc)
+        raise MailClientException("Mail Backend is not reachable") from exc
+    try:
+        return call()
+    except httpx.TransportError as exc:
+        logger.warning("Mail Backend %s failed after retry: %r", operation, exc)
+        raise MailClientException("Mail Backend is not reachable") from exc
 
 
 def initialized(func):
@@ -77,7 +103,9 @@ class MailClient(BaseClient):
 
     @initialized
     def create_mail(self, mail: MailCreate):
-        r = mail_create.sync(client=self.client, body=mail)
+        r = _call_mail_backend(
+            "create", lambda: mail_create.sync(client=self.client, body=mail)
+        )
         if r is None:
             raise MailClientException(f"error creating {mail}")
         try:
@@ -96,7 +124,10 @@ class MailClient(BaseClient):
     @initialized
     def send_mail_by_id(self, id: int):
         logger.info("Sending mail id=%s", id)
-        r = mail_send_by_id.sync_detailed(id, client=self.client)
+        r = _call_mail_backend(
+            "send",
+            lambda: mail_send_by_id.sync_detailed(id, client=self.client),
+        )
         status = getattr(r, "status_code", None)
         try:
             logger.info("Mail send result id=%s status=%s", id, status)
