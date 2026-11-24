@@ -7,6 +7,7 @@ class InternalTemplate(Enum):
     RESET_PASSWORD = "reset_password"
 
     EVENT_SLACK_INVITE = "event_slack_invite"
+    EVENT_DISCORD_INVITE = "event_discord_invite"
     EVENT_REGISTRATION_REMINDER = "event_registration_reminder"
 
     EVENT_HACKER_REGISTERED = "event_hacker_registered"
