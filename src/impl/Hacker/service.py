@@ -142,11 +142,79 @@ class HackerService(BaseService):
         db.session.query(HackerAccepted).filter(
             HackerAccepted.user_id == hackerId
         ).delete()
+        self._release_account_references(hackerId)
         db.session.delete(hacker)
 
         # db.session.delete(hacker_group_user)
         db.session.commit()
         return hacker
+
+    @staticmethod
+    def _release_account_references(user_id: int):
+        """Remove or detach every row that would block deleting the account.
+
+        Ledgers (LleidaCoins, scans, role changes, articles) cannot lose their
+        subject, so accounts with that history are refused instead of deleted.
+        """
+        from src.impl.Article.model import Article
+        from src.impl.Event.model import (
+            EventAuditLog,
+            EventParticipantNote,
+            EventTicketDelivery,
+            HackerRejected,
+        )
+        from src.impl.Notification.model import Notification
+        from src.impl.Operations.model import (
+            AccessRoleAudit,
+            CoinMovement,
+            EventGuest,
+            EventMentor,
+            NicknameRequest,
+            OperationAudit,
+            ScanRecord,
+        )
+
+        for model, column in (
+            (CoinMovement, CoinMovement.user_id),
+            (ScanRecord, ScanRecord.user_id),
+            (AccessRoleAudit, AccessRoleAudit.user_id),
+            (Article, Article.owner_id),
+        ):
+            if db.session.query(model).filter(column == user_id).first():
+                raise InvalidDataException(
+                    "Account has event history (LleidaCoins, scans, role changes "
+                    "or articles) and cannot be deleted; ban it instead"
+                )
+        for model, column in (
+            (HackerRejected, HackerRejected.user_id),
+            (EventParticipantNote, EventParticipantNote.hacker_id),
+            (EventTicketDelivery, EventTicketDelivery.user_id),
+            (NicknameRequest, NicknameRequest.user_id),
+            (EventMentor, EventMentor.user_id),
+            (EventGuest, EventGuest.user_id),
+        ):
+            db.session.query(model).filter(column == user_id).delete(
+                synchronize_session=False
+            )
+        # Keep audit trails, but without a link to the deleted account.
+        for model, column in (
+            (EventAuditLog, EventAuditLog.target_id),
+            (EventAuditLog, EventAuditLog.actor_id),
+            (OperationAudit, OperationAudit.user_id),
+            (OperationAudit, OperationAudit.actor_id),
+            (EventParticipantNote, EventParticipantNote.author_id),
+            (AccessRoleAudit, AccessRoleAudit.actor_id),
+            (NicknameRequest, NicknameRequest.actor_id),
+            (Notification, Notification.user_id),
+        ):
+            db.session.query(model).filter(column == user_id).update(
+                {column: None}, synchronize_session=False
+            )
+        db.session.query(Voucher).filter(Voucher.hacker_id == user_id).update(
+            {Voucher.hacker_id: None, Voucher.revoked: True},
+            synchronize_session=False,
+        )
+        db.session.flush()
 
     def update_hacker(self, hackerId: int, payload: HackerUpdate, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]) and not data.check(
