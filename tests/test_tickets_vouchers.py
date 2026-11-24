@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
 from sqlalchemy.orm import Session
@@ -703,3 +704,147 @@ def test_send_one_ticket_never_sends_to_the_other_recipients(
         == 400
     )
     assert len(sent_mails) == 2
+
+
+def test_guest_ticket_lifecycle(
+    client, create_user, create_event, engine, sent_mails, monkeypatch
+):
+    import src.impl.Event.service as service_module
+    from src.configuration.Settings import settings
+    from src.impl.Event.service import EventService
+    from src.impl.User.model import User
+
+    admin, staff, hacker = (
+        create_user(role="admin"),
+        create_user(role="lleidahacker"),
+        create_user(),
+    )
+    event = create_event()
+    base = f"/v1/operations/{event}/guests"
+    body = {"name": "Guest <Test>", "email": "GUEST@example.test"}
+    for actor in (staff, hacker):
+        assert client.post(base, headers=actor.headers, json=body).status_code == 403
+        assert client.get(base, headers=actor.headers).status_code == 403
+    assert (
+        client.post(base, headers=admin.headers, json={"name": "No email"}).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            base, headers=admin.headers, json={"name": "Bad", "email": "bad"}
+        ).status_code
+        == 422
+    )
+    # Existing non-guest accounts cannot be turned into guests by email.
+    with Session(engine) as session:
+        hacker_email = session.get(User, hacker.id).email
+    assert (
+        client.post(
+            base, headers=admin.headers, json={"name": "Hacker", "email": hacker_email}
+        ).status_code
+        == 409
+    )
+    created = client.post(base, headers=admin.headers, json=body)
+    assert created.status_code == 200, created.text
+    guest = created.json()["id"]
+    assert created.json()["email"] == "guest@example.test"
+    assert client.post(base, headers=admin.headers, json=body).status_code == 409
+    with Session(engine) as session:
+        user = session.get(User, guest)
+        assert user.access_role == "guest" and user.password == "!"
+        code = user.code
+
+    status = client.get(f"/v1/event/{event}/tickets/status", headers=admin.headers)
+    assert status.json()["groups"]["Convidat"] == {
+        "eligible": 1,
+        "sent": 0,
+        "missing_email": 0,
+    }
+    sent = client.post(
+        f"/v1/event/{event}/tickets/send?user_id={guest}", headers=admin.headers
+    )
+    assert sent.status_code == 200, sent.text
+    assert [m.receiver_mail for m in sent_mails] == ["guest@example.test"]
+    fields = sent_mails[0].fields.split(",")
+    assert fields[0] == "Guest &lt;Test&gt;" and fields[2] == "Convidat"
+    listed = client.get(base, headers=admin.headers).json()
+    assert listed[0]["ticket_sent_at"] is not None and listed[0]["active"]
+
+    page = client.get(f"/v1/event/{event}/ticket/{code}/page")
+    assert page.status_code == 200 and "Convidat" in page.text
+
+    # Wallet passes (Apple and Google) show the Convidat role.
+    from src.utils.apple_wallet import participant_role
+
+    with Session(engine) as session:
+        assert participant_role(session.get(User, guest)) == "Convidat"
+    for field in (
+        "apple_wallet_p12_path",
+        "apple_wallet_password_file",
+        "apple_wallet_wwdr_path",
+        "apple_wallet_team_id",
+        "apple_wallet_pass_type_id",
+    ):
+        monkeypatch.setattr(settings, field, "configured")
+    monkeypatch.setattr(service_module, "build_pass", lambda *_: b"pass")
+    assert (
+        client.get(f"/v1/event/{event}/ticket/{code}/apple.pkpass").status_code == 200
+    )
+
+    # Changing the email queues a new delivery to the new address.
+    assert (
+        client.patch(
+            base + f"/{guest}",
+            headers=admin.headers,
+            json={"email": "new-guest@example.test"},
+        ).status_code
+        == 200
+    )
+    EventService().send_ticket_mails_background(event, audience="convidat")
+    assert sent_mails[-1].receiver_mail == "new-guest@example.test"
+
+    # Guests can bind a badge at check-in and use it only for meals.
+    badge = client.post(
+        f"/v1/event/{event}/vouchers/generate", headers=admin.headers, json={"count": 1}
+    ).json()["vouchers"][0]["code"]
+    assigned = client.put(
+        f"/v1/event/{event}/vouchers/{badge}/assign/{code}", headers=admin.headers
+    )
+    assert assigned.status_code == 200, assigned.text
+    meal = client.post(
+        "/v1/meal/",
+        headers=admin.headers,
+        json={"name": "Dinner", "description": "", "event_id": event},
+    ).json()["id"]
+
+    def scan(kind):
+        return client.post(
+            f"/v1/operations/{event}/scan",
+            headers=staff.headers,
+            json={
+                "operation_id": str(uuid4()),
+                "kind": kind,
+                "code": badge,
+                "target": str(meal),
+                "round": 1,
+            },
+        )
+
+    assert scan("meal").status_code == 200
+    assert scan("activity").status_code == 403
+
+    # Deactivated guests lose their ticket.
+    assert (
+        client.patch(
+            base + f"/{guest}", headers=admin.headers, json={"active": False}
+        ).status_code
+        == 200
+    )
+    assert client.get(f"/v1/event/{event}/ticket/{code}/page").status_code == 404
+    # Re-inviting reactivates the same identity.
+    again = client.post(
+        base,
+        headers=admin.headers,
+        json={"name": "Guest Again", "email": "new-guest@example.test"},
+    )
+    assert again.status_code == 200 and again.json()["id"] == guest

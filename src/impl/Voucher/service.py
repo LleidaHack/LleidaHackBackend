@@ -180,7 +180,11 @@ class VoucherService(BaseService):
         hacker = db.session.query(User).filter_by(code=hacker_code).first()
         if hacker is None or hacker.is_deleted:
             raise NotFoundException("User not found")
-        non_participant = ticket_role(db.session, event, hacker) in {"Mentor", "Staff"}
+        non_participant = ticket_role(db.session, event, hacker) in {
+            "Mentor",
+            "Staff",
+            "Convidat",
+        }
         voucher = (
             db.session.query(Voucher)
             .filter(Voucher.code == voucher_code, Voucher.event_id == event.id)

@@ -66,6 +66,7 @@ def participant_role(user):
     labels = {
         "hacker": "Hacker",
         "mentor": "Mentor",
+        "guest": "Convidat",
         "lleidahacker": "Staff",
         "lleida_hacker": "Staff",
         "admin": "Staff",

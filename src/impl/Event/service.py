@@ -1801,7 +1801,7 @@ class EventService(BaseService):
         recipients = []
         groups = {
             role: {"eligible": 0, "sent": 0, "missing_email": 0}
-            for role in ("Hacker", "Mentor", "Staff")
+            for role in ("Hacker", "Mentor", "Staff", "Convidat")
         }
         for user, delivery, role in rows:
             email = ticket_email(db.session, event, user)
@@ -2008,7 +2008,9 @@ class EventService(BaseService):
             .filter(Voucher.event_id == event.id, Voucher.hacker_id == hacker.id)
             .first()
         )
-        has_ticket = accepted and confirmed and hacker.access_role != "mentor"
+        has_ticket = (
+            accepted and confirmed and hacker.access_role not in {"mentor", "guest"}
+        )
         return {
             "event_id": event.id,
             "event_name": event.name,
