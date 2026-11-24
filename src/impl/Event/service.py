@@ -1801,7 +1801,7 @@ class EventService(BaseService):
         recipients = []
         groups = {
             role: {"eligible": 0, "sent": 0, "missing_email": 0}
-            for role in ("Hacker", "Mentor", "Staff", "Convidat")
+            for role in ("Hacker", "Mentor", "Staff", "Convidat", "Empresa")
         }
         for user, delivery, role in rows:
             email = ticket_email(db.session, event, user)
@@ -1936,8 +1936,11 @@ class EventService(BaseService):
         """
         event = self.get_by_id(event_id)
         user = db.session.query(User).filter(User.code == code).first()
-        if ticket_role(db.session, event, user) is None:
+        role = ticket_role(db.session, event, user)
+        if role is None:
             raise NotFoundException("Ticket not found")
+        # Wallet passes and the ticket page print the event-specific role.
+        user.event_ticket_role = role
         return event, user
 
     def get_ticket_qr(self, event_id: int, code: str) -> bytes:

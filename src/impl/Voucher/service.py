@@ -184,6 +184,7 @@ class VoucherService(BaseService):
             "Mentor",
             "Staff",
             "Convidat",
+            "Empresa",
         }
         voucher = (
             db.session.query(Voucher)

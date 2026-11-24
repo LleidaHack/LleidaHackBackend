@@ -541,7 +541,9 @@ def send_ticket_mails(
     event_id: int,
     background_tasks: BackgroundTasks,
     force: bool = False,
-    audience: Literal["all", "hacker", "mentor", "staff", "convidat"] = "all",
+    audience: Literal[
+        "all", "hacker", "mentor", "staff", "convidat", "empresa"
+    ] = "all",
     user_id: int | None = None,
     delay: float = 0.0,
     token: BaseToken = Depends(JWTBearer()),

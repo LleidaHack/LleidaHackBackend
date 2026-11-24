@@ -17,7 +17,9 @@ def ticket_role(session, event, user):
         return "Mentor" if entry and entry.active else None
     if user.access_role == "guest":
         entry = session.get(EventGuest, (event.id, user.id))
-        return "Convidat" if entry and entry.active else None
+        if not entry or not entry.active:
+            return None
+        return "Empresa" if entry.kind == "empresa" else "Convidat"
     if user.access_role == "hacker" and user in event.accepted_hackers:
         registration = session.get(HackerRegistration, (user.id, event.id))
         if registration and registration.confirmed_assistance:
