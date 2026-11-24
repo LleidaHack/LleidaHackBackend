@@ -62,6 +62,10 @@ def branded_images():
 
 def participant_role(user):
     """Display trusted account roles; this does not grant ticket eligibility."""
+    # Set by the ticket lookup when the role depends on the event (guest kinds).
+    event_role = getattr(user, "event_ticket_role", None)
+    if event_role:
+        return event_role
     role = getattr(user, "access_role", None) or getattr(user, "type", None)
     labels = {
         "hacker": "Hacker",

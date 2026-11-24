@@ -848,3 +848,78 @@ def test_guest_ticket_lifecycle(
         json={"name": "Guest Again", "email": "new-guest@example.test"},
     )
     assert again.status_code == 200 and again.json()["id"] == guest
+
+
+def test_company_ticket_uses_empresa_role(
+    client, create_user, create_event, engine, sent_mails, monkeypatch
+):
+    import src.impl.Event.service as service_module
+    from src.configuration.Settings import settings
+    from src.impl.User.model import User
+
+    admin = create_user(role="admin")
+    event = create_event()
+    base = f"/v1/operations/{event}/guests"
+    assert (
+        client.post(
+            base,
+            headers=admin.headers,
+            json={"name": "Acme", "email": "a@example.test", "kind": "sponsor"},
+        ).status_code
+        == 422
+    )
+    created = client.post(
+        base,
+        headers=admin.headers,
+        json={"name": "Acme Rep", "email": "rep@example.test", "kind": "empresa"},
+    )
+    assert created.status_code == 200, created.text
+    company = created.json()["id"]
+    guest = client.post(
+        base,
+        headers=admin.headers,
+        json={"name": "Guest", "email": "guest2@example.test"},
+    ).json()["id"]
+    assert [
+        g["id"]
+        for g in client.get(base + "?kind=empresa", headers=admin.headers).json()
+    ] == [company]
+    assert [
+        g["id"]
+        for g in client.get(base + "?kind=convidat", headers=admin.headers).json()
+    ] == [guest]
+    status = client.get(
+        f"/v1/event/{event}/tickets/status", headers=admin.headers
+    ).json()
+    assert status["groups"]["Empresa"]["eligible"] == 1
+    assert status["groups"]["Convidat"]["eligible"] == 1
+    sent = client.post(
+        f"/v1/event/{event}/tickets/send?audience=empresa", headers=admin.headers
+    )
+    assert sent.status_code == 200, sent.text
+    assert [m.receiver_mail for m in sent_mails] == ["rep@example.test"]
+    assert sent_mails[0].fields.split(",")[2] == "Empresa"
+    with Session(engine) as session:
+        code = session.get(User, company).code
+    page = client.get(f"/v1/event/{event}/ticket/{code}/page")
+    assert page.status_code == 200 and "Empresa ·" in page.text
+    for field in (
+        "apple_wallet_p12_path",
+        "apple_wallet_password_file",
+        "apple_wallet_wwdr_path",
+        "apple_wallet_team_id",
+        "apple_wallet_pass_type_id",
+    ):
+        monkeypatch.setattr(settings, field, "configured")
+    from src.utils.apple_wallet import participant_role
+
+    roles = []
+    monkeypatch.setattr(
+        service_module,
+        "build_pass",
+        lambda config, event, user: roles.append(participant_role(user)) or b"pass",
+    )
+    assert (
+        client.get(f"/v1/event/{event}/ticket/{code}/apple.pkpass").status_code == 200
+    )
+    assert roles == ["Empresa"]

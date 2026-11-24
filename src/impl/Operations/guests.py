@@ -1,5 +1,6 @@
-"""Event guests: name + email identities that receive a "Convidat" ticket."""
+"""Event guests: name + email identities with a "Convidat" or "Empresa" ticket."""
 
+from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -27,6 +28,7 @@ class CreateGuest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     name: str = Field(min_length=2, max_length=150)
     email: str = Field(min_length=3, max_length=254)
+    kind: Literal["convidat", "empresa"] = "convidat"
 
     @field_validator("email")
     @classmethod
@@ -54,15 +56,20 @@ def _find_by_email(email, exclude_id=None):
 
 
 @router.get("")
-def list_guests(event_id: int, token=Depends(JWTBearer())):
+def list_guests(
+    event_id: int,
+    kind: Literal["convidat", "empresa"] | None = None,
+    token=Depends(JWTBearer()),
+):
     require_management(token)
-    rows = (
+    query = (
         db.session.query(EventGuest, User)
         .join(User, User.id == EventGuest.user_id)
         .filter(EventGuest.event_id == event_id)
-        .order_by(User.name, User.id)
-        .all()
     )
+    if kind:
+        query = query.filter(EventGuest.kind == kind)
+    rows = query.order_by(User.name, User.id).all()
     deliveries = {
         d.user_id: d.ticket_sent_at
         for d in db.session.query(EventTicketDelivery).filter_by(event_id=event_id)
@@ -77,6 +84,7 @@ def list_guests(event_id: int, token=Depends(JWTBearer())):
             "id": user.id,
             "name": user.name,
             "email": user.email,
+            "kind": entry.kind,
             "active": entry.active,
             "ticket_sent_at": deliveries.get(user.id),
             "has_badge": user.id in badges,
@@ -120,12 +128,19 @@ def create_guest(event_id: int, body: CreateGuest, token=Depends(JWTBearer())):
     if entry is not None and entry.active:
         raise HTTPException(409, "Guest already invited to this event")
     if entry is None:
-        db.session.add(EventGuest(event_id=event_id, user_id=user.id))
+        db.session.add(EventGuest(event_id=event_id, user_id=user.id, kind=body.kind))
     else:
         entry.active = True
-    audit(event_id, token, "guest.create", {"name": user.name}, user.id)
+        entry.kind = body.kind
+    audit(
+        event_id,
+        token,
+        "guest.create",
+        {"name": user.name, "kind": body.kind},
+        user.id,
+    )
     db.session.commit()
-    return {"id": user.id, "name": user.name, "email": user.email}
+    return {"id": user.id, "name": user.name, "email": user.email, "kind": body.kind}
 
 
 @router.patch("/{user_id}")

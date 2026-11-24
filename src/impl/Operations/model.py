@@ -243,6 +243,10 @@ class EventGuest(BaseModel):
     __tablename__ = "event_guest"
     event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"), primary_key=True)
+    # "convidat" or "empresa": the role printed on the ticket and Wallet passes.
+    kind: Mapped[str] = mapped_column(
+        String(20), default="convidat", server_default="convidat"
+    )
     active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
