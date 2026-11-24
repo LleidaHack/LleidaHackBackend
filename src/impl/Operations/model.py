@@ -239,6 +239,16 @@ class EventMentor(BaseModel):
     active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
 
 
+class EventGuest(BaseModel):
+    __tablename__ = "event_guest"
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("my_user.id"), primary_key=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 class EventIncident(BaseModel):
     __tablename__ = "event_incident"
     id: Mapped[int] = mapped_column(primary_key=True)

@@ -541,13 +541,13 @@ def send_ticket_mails(
     event_id: int,
     background_tasks: BackgroundTasks,
     force: bool = False,
-    audience: Literal["all", "hacker", "mentor", "staff"] = "all",
+    audience: Literal["all", "hacker", "mentor", "staff", "convidat"] = "all",
     user_id: int | None = None,
     delay: float = 0.0,
     token: BaseToken = Depends(JWTBearer()),
 ):
     """
-    Mail tickets to eligible confirmed participants, active mentors and staff.
+    Mail tickets to eligible confirmed participants, active mentors, guests and staff.
     Filter with audience; `force=true` resends to that audience. Runs in
     background; poll `/tickets/status` for progress.
     """

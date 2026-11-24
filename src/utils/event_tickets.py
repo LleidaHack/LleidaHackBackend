@@ -1,7 +1,7 @@
 """One eligibility policy for ticket recipients, downloads and Wallet passes."""
 
 from src.impl.Event.model import EventTicketDelivery, HackerRegistration
-from src.impl.Operations.model import EventMentor
+from src.impl.Operations.model import EventGuest, EventMentor
 from src.impl.User.model import User
 
 STAFF_ROLES = frozenset({"lleidahacker", "admin", "superadmin"})
@@ -15,6 +15,9 @@ def ticket_role(session, event, user):
     if user.access_role == "mentor":
         entry = session.get(EventMentor, (event.id, user.id))
         return "Mentor" if entry and entry.active else None
+    if user.access_role == "guest":
+        entry = session.get(EventGuest, (event.id, user.id))
+        return "Convidat" if entry and entry.active else None
     if user.access_role == "hacker" and user in event.accepted_hackers:
         registration = session.get(HackerRegistration, (user.id, event.id))
         if registration and registration.confirmed_assistance:
@@ -27,9 +30,12 @@ def eligible_tickets(session, event):
     mentors = session.query(EventMentor.user_id).filter_by(
         event_id=event.id, active=True
     )
+    guests = session.query(EventGuest.user_id).filter_by(event_id=event.id, active=True)
     candidates = {user.id: user for user in event.accepted_hackers}
     for user in session.query(User).filter(
-        (User.access_role.in_(STAFF_ROLES)) | (User.id.in_(mentors))
+        (User.access_role.in_(STAFF_ROLES))
+        | (User.id.in_(mentors))
+        | (User.id.in_(guests))
     ):
         candidates[user.id] = user
     for user in candidates.values():

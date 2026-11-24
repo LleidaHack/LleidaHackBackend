@@ -17,6 +17,7 @@ from src.impl.Meal.model import HackerMeal, Meal
 from src.impl.Operations.model import (
     ChallengeVote,
     CoinMovement,
+    EventGuest,
     EventMentor,
     EventOperations,
     OperationAudit,
@@ -232,6 +233,14 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                     raise HTTPException(403, "Mentor is not active for this event")
                 if body.kind not in {"meal", "void_scan"}:
                     raise HTTPException(403, "Mentor badges can only be used for meals")
+            if user.access_role == "guest":
+                guest = db.session.get(EventGuest, (event_id, user.id))
+                if not guest or not guest.active or user.is_deleted:
+                    raise HTTPException(403, "Guest is not active for this event")
+                if body.kind not in {"meal", "void_scan"}:
+                    raise HTTPException(403, "Guest badges can only be used for meals")
+                # Guests follow the same meal-only rules as mentors from here on.
+                is_mentor = True
             if not is_mentor and not in_event_table(
                 "hacker_event_accepted", event_id, user.id
             ):
