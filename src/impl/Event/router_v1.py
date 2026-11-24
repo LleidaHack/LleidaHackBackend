@@ -505,6 +505,44 @@ def send_slack_mail(
     return {"success": True, "scheduled": True}
 
 
+@router.get("/{event_id}/discord-invite")
+def discord_invite_status(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    """Configured Discord link, how many confirmed hackers would receive it and progress."""
+    return event_service.get_discord_invite_status(event_id, token)
+
+
+@router.post("/{event_id}/discord-invite")
+def send_discord_invite(
+    event_id: int,
+    background_tasks: BackgroundTasks,
+    delay: float = 0.2,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    """
+    Mail the official Discord link (operations `slack_url`) to every confirmed
+    hacker. Staff, mentors and guests are excluded. Runs in background.
+    """
+    if not token.check([UserType.LLEIDAHACKER]):
+        raise AuthenticationException("Not authorized")
+    event = event_service.get_by_id(event_id)
+    if event.archived:
+        raise HTTPException(status_code=400, detail="Event is archived")
+    discord_url = event_service.discord_url(db.session, event_id)
+    if not discord_url:
+        raise HTTPException(
+            status_code=400, detail="Configure the Discord invitation link first"
+        )
+    if event_service.is_sending(event_id):
+        raise HTTPException(
+            status_code=409, detail="Sending already in progress for this event"
+        )
+    event_service.check_mail_available()
+    background_tasks.add_task(
+        event_service.send_discord_mails_background, event_id, discord_url, delay
+    )
+    return {"success": True, "scheduled": True}
+
+
 @router.get("/{event_id}/send_progress")
 def get_send_progress(event_id: int, token: BaseToken = Depends(JWTBearer())):
     """Return send progress for background jobs for an event."""

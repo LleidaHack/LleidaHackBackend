@@ -44,6 +44,7 @@ from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup, HackerGroupUser
 from src.impl.Mail.client import MailClient
 from src.impl.Mail.internall_templates import InternalTemplate
+from src.impl.Operations.model import EventOperations
 from src.impl.User.model import User
 from src.impl.Voucher.model import Voucher
 from src.utils.apple_wallet import build_pass, wallet_enabled, wallet_url
@@ -1605,6 +1606,96 @@ class EventService(BaseService):
                     session.rollback()
                     continue
             # finish tracking
+            try:
+                self._finish_job(event_id)
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
+                logger.warning("Background mail progress update failed")
+        finally:
+            session.close()
+
+    # ------------------------------------------------------------------
+    # Official Discord invitation: confirmed hackers only (no staff, mentors
+    # or guests), using the link configured in the event operations.
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def discord_url(session, event_id: int) -> str | None:
+        row = session.get(EventOperations, event_id)
+        return ((row.config or {}).get("slack_url") or None) if row else None
+
+    @staticmethod
+    def _discord_recipients(session, event: Event):
+        return [
+            user
+            for user, _, role in eligible_tickets(session, event)
+            if role == "Hacker" and user.email
+        ]
+
+    def get_discord_invite_status(self, event_id: int, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        event = self.get_by_id(event_id)
+        running = self.is_sending(event_id) and self._job_type(event_id) == "discord"
+        return {
+            "discord_url": self.discord_url(db.session, event_id),
+            "recipients": len(self._discord_recipients(db.session, event)),
+            "running": running,
+            "progress": self.get_send_progress(event_id)
+            if self._job_type(event_id) == "discord"
+            else {"running": False},
+        }
+
+    @BaseService.needs_service(MailClient)
+    def send_discord_mails_background(
+        self, event_id: int, discord_url: str, delay: float = 0.2
+    ):
+        """Mail the official Discord link to every confirmed hacker of the event."""
+        engine = create_engine(settings.database.url)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        session = SessionLocal()
+        try:
+            event = session.query(Event).filter(Event.id == event_id).first()
+            if event is None or event.archived:
+                return
+            recipients = self._discord_recipients(session, event)
+            try:
+                self._start_job(event_id, "discord", len(recipients))
+            # Preserve the documented service-boundary fallback.
+            except Exception:  # noqa: BLE001
+                logger.warning("Background mail progress update failed")
+            template_id = self.mail_client.get_internall_template_id(
+                InternalTemplate.EVENT_DISCORD_INVITE
+            )
+            for hacker in recipients:
+                try:
+                    mail = self.mail_client.create_mail(
+                        MailCreate(
+                            template_id=template_id,
+                            subject="Uneix-te al Discord de la HackEPS",
+                            receiver_id=str(hacker.id),
+                            receiver_mail=str(hacker.email),
+                            fields=",".join(
+                                escape(str(value), quote=True).replace(",", "&#44;")
+                                for value in (hacker.name, event.name, discord_url)
+                            ),
+                        )
+                    )
+                    self.mail_client.send_mail_by_id(mail.id)
+                    try:
+                        self._increment_sent(event_id)
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
+                        logger.warning("Background mail progress update failed")
+                    if delay and delay > 0:
+                        time.sleep(delay)
+                except Exception:
+                    logger.exception("Discord mail failed for hacker %s", hacker.id)
+                    try:
+                        self._increment_failed(event_id)
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
+                        logger.warning("Background mail progress update failed")
             try:
                 self._finish_job(event_id)
             # Preserve the documented service-boundary fallback.
