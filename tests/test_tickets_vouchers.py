@@ -267,8 +267,12 @@ def test_checkin_binds_voucher_and_voucher_works_for_meals(
         is True
     )
 
-    # the same voucher can't be given twice, nor a second voucher to the same hacker
-    assert client.put(assign, headers=organizer.headers).status_code == 400
+    # a double scan or a retried request is idempotent for the same hacker
+    retry = client.put(assign, headers=organizer.headers)
+    assert retry.status_code == 200, retry.text
+    assert retry.json()["voucher_code"] == v1 and retry.json()["hacker_id"] == hacker.id
+    # the same voucher can't be given to someone else, nor a second voucher to
+    # the same hacker
     assert (
         client.put(
             f"/v1/event/{event_id}/vouchers/{v1}/assign/{user_code(engine, other)}",
