@@ -42,7 +42,7 @@ from src.impl.Event.schema import (
 from src.impl.Hacker.model import Hacker
 from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup, HackerGroupUser
-from src.impl.Mail.client import MailClient
+from src.impl.Mail.client import MailClient, ensure_mail_sent
 from src.impl.Mail.internall_templates import InternalTemplate
 from src.impl.Operations.model import EventOperations
 from src.impl.User.model import User
@@ -1591,7 +1591,7 @@ class EventService(BaseService):
                             fields=slackUrl,
                         )
                     )
-                    self.mail_client.send_mail_by_id(mail.id)
+                    ensure_mail_sent(self.mail_client.send_mail_by_id(mail.id), mail.id)
                     # increment progress
                     try:
                         self._increment_sent(event_id)
@@ -1601,9 +1601,14 @@ class EventService(BaseService):
                     session.commit()
                     if delay and delay > 0:
                         time.sleep(delay)
-                # Preserve the documented service-boundary fallback.
-                except Exception:  # noqa: BLE001
+                except Exception:
                     session.rollback()
+                    logger.exception("Slack mail failed for hacker %s", hacker.id)
+                    try:
+                        self._increment_failed(event_id)
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
+                        logger.warning("Background mail progress update failed")
                     continue
             # finish tracking
             try:
@@ -1681,7 +1686,7 @@ class EventService(BaseService):
                             ),
                         )
                     )
-                    self.mail_client.send_mail_by_id(mail.id)
+                    ensure_mail_sent(self.mail_client.send_mail_by_id(mail.id), mail.id)
                     try:
                         self._increment_sent(event_id)
                     # Preserve the documented service-boundary fallback.
@@ -1840,7 +1845,7 @@ class EventService(BaseService):
                         )
                     )
 
-                    self.mail_client.send_mail_by_id(mail.id)
+                    ensure_mail_sent(self.mail_client.send_mail_by_id(mail.id), mail.id)
                     try:
                         self._increment_sent(event_id)
                     # Preserve the documented service-boundary fallback.
@@ -1849,9 +1854,14 @@ class EventService(BaseService):
                     session.commit()
                     if delay and delay > 0:
                         time.sleep(delay)
-                # Preserve the documented service-boundary fallback.
-                except Exception:  # noqa: BLE001
+                except Exception:
                     session.rollback()
+                    logger.exception("Reminder mail failed for hacker %s", hacker.id)
+                    try:
+                        self._increment_failed(event_id)
+                    # Preserve the documented service-boundary fallback.
+                    except Exception:  # noqa: BLE001
+                        logger.warning("Background mail progress update failed")
                     continue
             try:
                 self._finish_job(event_id)
@@ -1982,7 +1992,8 @@ class EventService(BaseService):
                             ),
                         )
                     )
-                    self.mail_client.send_mail_by_id(mail.id)
+                    # Only record delivery once the Mail Backend confirms it.
+                    ensure_mail_sent(self.mail_client.send_mail_by_id(mail.id), mail.id)
                     # Keep the existing timezone-naive database/local-calendar contract.
                     if registration is None:
                         registration = EventTicketDelivery(

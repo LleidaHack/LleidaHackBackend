@@ -47,6 +47,17 @@ def _call_mail_backend(operation, call):
         raise MailClientException("Mail Backend is not reachable") from exc
 
 
+def ensure_mail_sent(response, mail_id):
+    """Raise unless the Mail Backend confirmed it sent the mail.
+
+    send_mail_by_id returns the raw response: a failed SMTP send comes back
+    as a non-2xx status and the mail stays unsent in the Mail Backend.
+    """
+    status = getattr(response, "status_code", None)
+    if status is not None and not 200 <= int(status) < 300:
+        raise MailClientException(f"Mail {mail_id} was not sent (status {int(status)})")
+
+
 def initialized(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
