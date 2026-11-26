@@ -8,6 +8,7 @@ from src.error.InvalidDataException import InvalidDataException
 from src.impl.Event.model import HackerAccepted, HackerRegistration
 from src.impl.Event.service import EventService
 from src.impl.Mail.client import MailClient
+from src.utils.bulk_mail import pace_bulk_mail
 
 logger = logging.getLogger(__name__)
 
@@ -95,16 +96,20 @@ def deliver_one(engine, client):
         return True
 
 
-if __name__ == "__main__":
-    from src import imports  # noqa: F401
-    from src.configuration.Settings import settings
-
-    engine = create_engine(settings.database.url, pool_pre_ping=True)
-    client = MailClient()
-    while True:
+def run(engine, client, keep_running=lambda: True):
+    while keep_running():
         try:
             if deliver_one(engine, client):
+                # The Mail Backend logs into Gmail SMTP per mail; space them out.
+                pace_bulk_mail()
                 continue
         except Exception:
             logger.exception("Release reminder worker unavailable")
         time.sleep(2)
+
+
+if __name__ == "__main__":
+    from src import imports  # noqa: F401
+    from src.configuration.Settings import settings
+
+    run(create_engine(settings.database.url, pool_pre_ping=True), MailClient())

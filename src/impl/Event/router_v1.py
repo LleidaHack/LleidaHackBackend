@@ -493,7 +493,7 @@ def send_slack_mail(
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
     # guard: don't schedule if there's already a sending job for this event
-    if event_service.is_sending(event_id):
+    if event_service.bulk_job_running(event_id, "slack"):
         raise HTTPException(
             status_code=409, detail="Sending already in progress for this event"
         )
@@ -532,7 +532,7 @@ def send_discord_invite(
         raise HTTPException(
             status_code=400, detail="Configure the Discord invitation link first"
         )
-    if event_service.is_sending(event_id):
+    if event_service.bulk_job_running(event_id, "discord"):
         raise HTTPException(
             status_code=409, detail="Sending already in progress for this event"
         )
@@ -593,7 +593,7 @@ def send_ticket_mails(
     """
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
-    if event_service.is_sending(event_id):
+    if event_service.bulk_job_running(event_id, "ticket"):
         raise HTTPException(
             status_code=409, detail="Sending already in progress for this event"
         )
@@ -738,6 +738,10 @@ def send_reminder_mails(
     """
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
+    if event_service.bulk_job_running(event_id, "reminder"):
+        raise HTTPException(
+            status_code=409, detail="Sending already in progress for this event"
+        )
 
     # schedule background task to avoid request timeout
     background_tasks.add_task(

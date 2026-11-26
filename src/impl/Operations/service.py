@@ -27,6 +27,7 @@ from src.impl.Operations.model import (
 from src.impl.Operations.schema import EventConfig
 from src.impl.User.model import User
 from src.impl.Voucher.model import Voucher
+from src.utils.event_tickets import STAFF_ROLES
 from src.utils.UserType import UserType
 
 _EVENT_TABLES = {"hacker_event_accepted", "hacker_event_participation"}
@@ -240,6 +241,13 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                 if body.kind not in {"meal", "void_scan"}:
                     raise HTTPException(403, "Guest badges can only be used for meals")
                 # Guests follow the same meal-only rules as mentors from here on.
+                is_mentor = True
+            if user.access_role in STAFF_ROLES:
+                # Staff eat by scanning their own badge, like mentors.
+                if user.is_deleted:
+                    raise HTTPException(403, "Staff member is not active")
+                if body.kind not in {"meal", "void_scan"}:
+                    raise HTTPException(403, "Staff badges can only be used for meals")
                 is_mentor = True
             if not is_mentor and not in_event_table(
                 "hacker_event_accepted", event_id, user.id

@@ -196,9 +196,7 @@ class VoucherService(BaseService):
             raise NotFoundException("Voucher not found for this event")
         if voucher.revoked:
             raise InvalidDataException("Badge has been revoked")
-        if voucher.hacker_id is not None:
-            if voucher.hacker_id == hacker.id:
-                raise InvalidDataException("Voucher already assigned to this hacker")
+        if voucher.hacker_id is not None and voucher.hacker_id != hacker.id:
             raise InvalidDataException("Voucher already assigned to another hacker")
         if not non_participant and hacker not in event.accepted_hackers:
             raise InvalidDataException("Hacker not accepted")
@@ -212,6 +210,10 @@ class VoucherService(BaseService):
         )
         if registration is None and not non_participant:
             raise InvalidDataException("User not registered")
+        if voucher.hacker_id == hacker.id:
+            # A double scan or a network retry of a check-in that already
+            # happened: report the binding again instead of failing the desk.
+            return self._assign_result(event, voucher, hacker, registration, "")
         current = (
             db.session.query(Voucher)
             .filter(Voucher.event_id == event.id, Voucher.hacker_id == hacker.id)
@@ -256,6 +258,10 @@ class VoucherService(BaseService):
             db.session.rollback()
             raise InvalidDataException("Hacker already has a voucher for this event")
         db.session.refresh(voucher)
+        return self._assign_result(event, voucher, hacker, registration, message)
+
+    @staticmethod
+    def _assign_result(event, voucher, hacker, registration, message):
         return {
             "success": True,
             "event_id": event.id,
