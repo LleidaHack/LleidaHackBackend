@@ -71,6 +71,8 @@ class EventConfig(BaseModel):
     judging_end: datetime | None = None
     phase: Literal["preparation", "hacking", "judging", "finished"] = "preparation"
     slack_url: HttpUrl | None = None
+    # Private: joining with it grants the mentor role on Discord.
+    mentor_discord_url: HttpUrl | None = None
     stream_url: HttpUrl | None = None
     stream_enabled: bool = False
     wifi_name: str = Field(default="", max_length=200)
