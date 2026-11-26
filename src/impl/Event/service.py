@@ -1660,58 +1660,79 @@ class EventService(BaseService):
                 logger.warning("Background mail progress update failed")
 
     # ------------------------------------------------------------------
-    # Official Discord invitation: confirmed hackers only (no staff, mentors
-    # or guests), using the link configured in the event operations.
+    # Official Discord invitation, configured in the event operations:
+    # confirmed hackers get the public link (`slack_url`); active mentors get
+    # a private link (`mentor_discord_url`) that grants the mentor role.
+    # Staff and guests are never included.
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def discord_url(session, event_id: int) -> str | None:
-        row = session.get(EventOperations, event_id)
-        return ((row.config or {}).get("slack_url") or None) if row else None
+    DISCORD_AUDIENCES: ClassVar[dict] = {
+        "hacker": ("Hacker", "slack_url", InternalTemplate.EVENT_DISCORD_INVITE),
+        "mentor": (
+            "Mentor",
+            "mentor_discord_url",
+            InternalTemplate.EVENT_DISCORD_INVITE_MENTOR,
+        ),
+    }
 
-    @staticmethod
-    def _discord_recipients(session, event: Event):
-        return [
-            user
-            for user, _, role in eligible_tickets(session, event)
-            if role == "Hacker" and user.email
-        ]
+    @classmethod
+    def discord_url(cls, session, event_id: int, audience: str = "hacker"):
+        row = session.get(EventOperations, event_id)
+        key = cls.DISCORD_AUDIENCES[audience][1]
+        return ((row.config or {}).get(key) or None) if row else None
+
+    @classmethod
+    def _discord_recipients(cls, session, event: Event, audience: str = "hacker"):
+        role_name = cls.DISCORD_AUDIENCES[audience][0]
+        recipients = []
+        for user, _, role in eligible_tickets(session, event):
+            email = ticket_email(session, event, user) if role == role_name else None
+            if email:
+                recipients.append((user, email))
+        return recipients
 
     def get_discord_invite_status(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
-        running = self.is_sending(event_id) and self._job_type(event_id) == "discord"
+        is_discord_job = self._job_type(event_id) == "discord"
         return {
-            "discord_url": self.discord_url(db.session, event_id),
-            "recipients": len(self._discord_recipients(db.session, event)),
-            "running": running,
+            "discord_url": self.discord_url(db.session, event_id, "hacker"),
+            "recipients": len(self._discord_recipients(db.session, event, "hacker")),
+            "mentor_discord_url": self.discord_url(db.session, event_id, "mentor"),
+            "mentor_recipients": len(
+                self._discord_recipients(db.session, event, "mentor")
+            ),
+            "running": self.is_sending(event_id) and is_discord_job,
             "progress": self.get_send_progress(event_id)
-            if self._job_type(event_id) == "discord"
+            if is_discord_job
             else {"running": False},
         }
 
     @BaseService.needs_service(MailClient)
     def send_discord_mails_background(
-        self, event_id: int, discord_url: str, delay: float = 0.2
+        self,
+        event_id: int,
+        discord_url: str,
+        delay: float = 0.2,
+        audience: str = "hacker",
     ):
-        """Mail the official Discord link to every confirmed hacker of the event."""
+        """Mail a Discord invitation link to one audience of the event."""
+        _, _, template = self.DISCORD_AUDIENCES[audience]
         with self._bulk_job_session(event_id, "discord") as session:
             if session is None:
                 return
             event = session.query(Event).filter(Event.id == event_id).first()
             if event is None or event.archived:
                 return
-            recipients = self._discord_recipients(session, event)
+            recipients = self._discord_recipients(session, event, audience)
             try:
                 self._start_job(event_id, "discord", len(recipients))
             # Preserve the documented service-boundary fallback.
             except Exception:  # noqa: BLE001
                 logger.warning("Background mail progress update failed")
-            template_id = self.mail_client.get_internall_template_id(
-                InternalTemplate.EVENT_DISCORD_INVITE
-            )
-            for index, hacker in enumerate(recipients):
+            template_id = self.mail_client.get_internall_template_id(template)
+            for index, (user, email) in enumerate(recipients):
                 if index:
                     pace_bulk_mail(delay)
                 try:
@@ -1719,11 +1740,11 @@ class EventService(BaseService):
                         MailCreate(
                             template_id=template_id,
                             subject="Uneix-te al Discord de la HackEPS",
-                            receiver_id=str(hacker.id),
-                            receiver_mail=str(hacker.email),
+                            receiver_id=str(user.id),
+                            receiver_mail=str(email),
                             fields=",".join(
                                 escape(str(value), quote=True).replace(",", "&#44;")
-                                for value in (hacker.name, event.name, discord_url)
+                                for value in (user.name, event.name, discord_url)
                             ),
                         )
                     )
@@ -1734,7 +1755,7 @@ class EventService(BaseService):
                     except Exception:  # noqa: BLE001
                         logger.warning("Background mail progress update failed")
                 except Exception:
-                    logger.exception("Discord mail failed for hacker %s", hacker.id)
+                    logger.exception("Discord mail failed for user %s", user.id)
                     try:
                         self._increment_failed(event_id)
                     # Preserve the documented service-boundary fallback.

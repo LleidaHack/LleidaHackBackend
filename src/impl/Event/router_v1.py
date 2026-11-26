@@ -515,19 +515,21 @@ def discord_invite_status(event_id: int, token: BaseToken = Depends(JWTBearer())
 def send_discord_invite(
     event_id: int,
     background_tasks: BackgroundTasks,
+    audience: Literal["hacker", "mentor"] = "hacker",
     delay: float = 0.2,
     token: BaseToken = Depends(JWTBearer()),
 ):
     """
-    Mail the official Discord link (operations `slack_url`) to every confirmed
-    hacker. Staff, mentors and guests are excluded. Runs in background.
+    Mail a Discord invitation in background. `hacker`: confirmed hackers get the
+    public link (`slack_url`). `mentor`: active mentors get the private
+    `mentor_discord_url`. Staff and guests are never included.
     """
     if not token.check([UserType.LLEIDAHACKER]):
         raise AuthenticationException("Not authorized")
     event = event_service.get_by_id(event_id)
     if event.archived:
         raise HTTPException(status_code=400, detail="Event is archived")
-    discord_url = event_service.discord_url(db.session, event_id)
+    discord_url = event_service.discord_url(db.session, event_id, audience)
     if not discord_url:
         raise HTTPException(
             status_code=400, detail="Configure the Discord invitation link first"
@@ -538,7 +540,11 @@ def send_discord_invite(
         )
     event_service.check_mail_available()
     background_tasks.add_task(
-        event_service.send_discord_mails_background, event_id, discord_url, delay
+        event_service.send_discord_mails_background,
+        event_id,
+        discord_url,
+        delay,
+        audience,
     )
     return {"success": True, "scheduled": True}
 
