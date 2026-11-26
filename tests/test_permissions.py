@@ -197,3 +197,45 @@ def test_company_signup_requires_organizer_and_cannot_self_transfer(
         user = session.get(User, credentials["user_id"])
         assert user.company_id == second
         assert user.token == ""
+
+
+def test_teams_can_change_after_registration_closes(
+    client, create_user, create_event, create_group
+):
+    leader, joiner, founder = create_user(), create_user(), create_user()
+    event_id = create_event([leader, joiner, founder], is_open=False)
+    group = create_group(event_id, [leader])
+
+    joined = client.post(
+        f"/v1/hacker/group/{group.code}/members_by_code/{joiner.id}",
+        headers=joiner.headers,
+    )
+    assert joined.status_code == 200
+    left = client.delete(
+        f"/v1/hacker/group/{group.id}/members/{joiner.id}", headers=joiner.headers
+    )
+    assert left.status_code == 200
+    created = client.post(
+        "/v1/hacker/group/",
+        json={
+            "name": "Late Team",
+            "description": "",
+            "leader_id": founder.id,
+            "event_id": event_id,
+        },
+        headers=founder.headers,
+    )
+    assert created.status_code == 200
+
+
+def test_teams_are_frozen_once_the_event_is_archived(
+    client, create_user, create_event, create_group
+):
+    leader, joiner = create_user(), create_user()
+    event_id = create_event([leader, joiner], archived=True)
+    group = create_group(event_id, [leader])
+    response = client.post(
+        f"/v1/hacker/group/{group.code}/members_by_code/{joiner.id}",
+        headers=joiner.headers,
+    )
+    assert response.status_code == 400

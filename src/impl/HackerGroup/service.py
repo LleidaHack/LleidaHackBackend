@@ -108,8 +108,9 @@ class HackerGroupService(BaseService):
             raise AuthorizationException("Not authorized")
         leader = self.lock_hacker(payload.leader_id)
         event = self.event_service.get_by_id(payload.event_id)
-        if event.archived or not event.is_open:
-            raise InvalidDataException("Event is not open for group registration")
+        # Teams keep changing during the hackathon, after registration closes.
+        if event.archived:
+            raise InvalidDataException("Event is archived")
         if leader not in event.registered_hackers:
             raise InvalidDataException("Hacker not registered to event")
         if any(group.event_id == event.id for group in leader.groups):
@@ -150,8 +151,8 @@ class HackerGroupService(BaseService):
         return hacker_group
 
     def _add_hacker_to_group(self, group, hacker, event):
-        if event.archived or not event.is_open:
-            raise InvalidDataException("Event is not open for group registration")
+        if event.archived:
+            raise InvalidDataException("Event is archived")
         if hacker in group.members:
             raise InvalidDataException("Hacker already in group")
         if hacker not in event.registered_hackers:
