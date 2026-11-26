@@ -113,6 +113,21 @@ def announce_called(row, changes):
     row.config = config
 
 
+def finish_presentation(event_id, p, row, changes):
+    """Close a presenting turn, call the next team and queue its Live alert.
+
+    Shared by the company portal and the organizer recovery action; callers
+    commit and then broadcast the alerts.
+    """
+    transition(p, "done", changes)
+    p.completed_at = datetime.now(UTC)
+    next_team = refresh_queue(
+        event_id, p.room, row.config, room_turns(event_id), changes
+    )
+    announce_called(row, changes)
+    return next_team
+
+
 def start_presentation(event_id, user_id, room_id, config, log):
     from src.impl.Operations.service import challenges_released, effective_phase
 

@@ -389,10 +389,12 @@ def preview(event_id, body, state):
         "count": len(eligible),
     }
     # Includes queue state and existing links to detect edits after preview.
+    # The event state version is excluded: unrelated changes (a paused room, a
+    # new alert) must not invalidate a preview whose imported content is unchanged.
     result["digest"] = digest(
         {
             "input": body.model_dump(include=set(ImportInput.model_fields)),
-            "preview": result,
+            "preview": {k: v for k, v in result.items() if k != "version"},
             "links": sorted(
                 (
                     p.url,

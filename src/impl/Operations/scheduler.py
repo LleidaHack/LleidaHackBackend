@@ -14,11 +14,18 @@ def plan_schedule(presentations, start, end, duration, travel, ribo_teams=frozen
         p for p in presentations if p.pinned or p.state not in {"waiting", "postponed"}
     ]
     pending = [p for p in presentations if p not in fixed]
-    fixed_times = {
-        p.id: getattr(p, "started_at", None) or p.scheduled_at for p in fixed
-    }
-    if any(value is None for value in fixed_times.values()):
-        raise ValueError("Fixed or active presentations need a start time")
+
+    def fixed_time(p):
+        when = getattr(p, "started_at", None) or p.scheduled_at
+        if when is not None:
+            return when
+        # Teams called or scanned in before their timer starts, or pinned
+        # without a time, have no start yet: they hold the room from the
+        # planning start. Finished turns end at their recorded completion.
+        completed = getattr(p, "completed_at", None)
+        return completed - duration if completed is not None else start
+
+    fixed_times = {p.id: fixed_time(p) for p in fixed}
 
     def is_priority(p):
         return p.track != "mlh" and p.group_id in ribo_teams

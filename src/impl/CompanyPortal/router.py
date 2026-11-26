@@ -387,7 +387,8 @@ def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(accoun
     note.updated_at = now()
     grant.version += 1
     db.session.commit()
-    return note_view(note)
+    # The winner and finalize actions check the grant version, so return it.
+    return {**note_view(note), "grant_version": grant.version}
 
 
 @router.put("/events/{event_id}/winner")
@@ -630,12 +631,7 @@ def presentation_action(
         p.duration_seconds += 60
         p.version += 1
     else:
-        judging.transition(p, "done", changes)
-        p.completed_at = now()
-        next_team = judging.refresh_queue(
-            event_id, p.room, row.config, judging.room_turns(event_id), changes
-        )
-        judging.announce_called(row, changes)
+        next_team = judging.finish_presentation(event_id, p, row, changes)
     row.version += 1
     result = {
         "id": p.id,

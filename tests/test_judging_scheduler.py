@@ -86,3 +86,24 @@ def test_prize_teams_lead_each_challenge_but_do_not_get_mlh_priority():
     )
     assert_valid(turns, plan)
     assert plan[2] < plan[1] and plan[4] < plan[3] and plan[5] < plan[6]
+
+
+def test_active_turns_without_start_time_hold_the_room_from_planning_start():
+    # A team scanned in before the company starts its timer has no start time.
+    presenting = turn(1, "one", 1, started_at=None, completed_at=None)
+    presenting.state = "presenting"
+    called = turn(2, "two", 2, started_at=None, completed_at=None)
+    called.state = "called"
+    done = turn(3, "one", 3, started_at=None, completed_at=START)
+    done.state = "done"
+    pinned = turn(4, "two", 4)
+    pinned.pinned = True
+    waiting = [turn(5, "one", 5), turn(6, "two", 6), turn(7, "mlh", 1)]
+    turns = [presenting, called, done, pinned, *waiting]
+    plan = plan_schedule(turns, START, START + timedelta(hours=1), DURATION, TRAVEL)
+    assert plan is not None
+    assert plan[1] == plan[2] == plan[4] == START
+    assert plan[3] == START - DURATION
+    # Pending turns queue behind the active ones instead of overlapping them.
+    assert plan[5] >= START + DURATION and plan[6] >= START + DURATION
+    assert plan[7] >= START + DURATION + TRAVEL

@@ -127,11 +127,20 @@ def test_company_sessions_notes_isolation_and_revocation(
         client.put(url + "/notes/999999", headers=first, json=note).status_code == 404
     )
     snapshot = client.get(url, headers=first)
+    assert saved.json()["grant_version"] == snapshot.json()["version"]
+    # The grant version from the note response is enough for the next write.
+    edited = client.put(
+        url + f"/notes/{group}",
+        headers=first,
+        json={**note, "version": saved.json()["version"], "text": "Great"},
+    )
+    assert edited.status_code == 200, edited.text
+    assert edited.json()["grant_version"] == saved.json()["grant_version"] + 1
     assert (
         client.put(
             url + "/winner",
             headers=first,
-            json={"version": snapshot.json()["version"], "group_id": group},
+            json={"version": edited.json()["grant_version"], "group_id": group},
         ).status_code
         == 200
     )

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from src.impl.Company.model import Company
 from src.impl.CompanyPortal.model import PortalAccount, PortalGrant
 from src.impl.Event.model import HackerRegistration
+from src.impl.HackerGroup.model import HackerGroup
 from src.impl.Operations.model import EventOperations, OperationAudit, Presentation
 from src.utils.security import get_password_hash
 from tests.test_event_operations import prepare
@@ -252,11 +253,12 @@ def test_judging_recovery_is_versioned_and_preserves_active_teams(
         ).status_code
         == 200
     )
+    # A second organizer clicking with the same stale version is a no-op.
     assert (
         client.post(
             base + "/rooms/a/pause", headers=admin.headers, json=pause
         ).status_code
-        == 409
+        == 200
     )
     result = client.post(
         url,
@@ -289,3 +291,133 @@ def test_judging_recovery_is_versioned_and_preserves_active_teams(
         ).status_code
         == 409
     )
+
+
+def test_pause_and_resume_are_idempotent_toggles(
+    client, engine, create_user, create_event
+):
+    admin = create_user(role="organizer")
+    event = create_event()
+    with Session(engine) as session:
+        session.add(
+            EventOperations(
+                event_id=event,
+                version=7,
+                config={"rooms": [{"id": "a", "title": "A", "paused": False}]},
+            )
+        )
+        session.commit()
+    url = f"/v1/operations/{event}/rooms/a/pause"
+    for paused in (True, True, False, False):
+        # Organizers may send a stale version, or none at all.
+        body = {"version": 0, "paused": paused, "reason": "Projector swap"}
+        response = client.post(url, headers=admin.headers, json=body)
+        assert response.status_code == 200, response.text
+    assert (
+        client.post(
+            url, headers=admin.headers, json={"paused": True, "reason": "Break"}
+        ).status_code
+        == 200
+    )
+    with Session(engine) as session:
+        row = session.get(EventOperations, event)
+        assert row.config["rooms"][0]["paused"] is True
+        # Only real toggles bump the version: pause, resume, pause.
+        assert row.version == 10
+        assert (
+            session.query(OperationAudit)
+            .filter_by(event_id=event, action="judging.room_pause")
+            .count()
+            == 3
+        )
+    assert (
+        client.post(
+            f"/v1/operations/{event}/rooms/missing/pause",
+            headers=admin.headers,
+            json={"paused": True, "reason": "Break"},
+        ).status_code
+        == 404
+    )
+
+
+def test_organizer_finishes_presentation_in_room_without_company(
+    client, engine, create_user, create_event, create_group
+):
+    admin, hacker = create_user(role="organizer"), create_user()
+    event = create_event([hacker])
+    current = create_group(event, [hacker])
+    following = create_group(event, [create_user()])
+    with Session(engine) as session:
+        session.get(HackerGroup, following.id).name = "Next Team"
+        session.add(
+            EventOperations(
+                event_id=event,
+                config={
+                    "phase": "judging",
+                    "challenges_released": True,
+                    "rooms": [{"id": "a", "title": "Room A", "paused": False}],
+                },
+            )
+        )
+        turn = Presentation(
+            event_id=event,
+            group_id=current.id,
+            room="a",
+            track="a",
+            state="presenting",
+            position=0,
+        )
+        next_turn = Presentation(
+            event_id=event, group_id=following.id, room="a", track="a", position=1
+        )
+        session.add_all([turn, next_turn])
+        session.flush()
+        turn_id, next_id = turn.id, next_turn.id
+        session.commit()
+    url = f"/v1/operations/{event}/rooms/a/finish"
+    body = {
+        "presentation_id": turn_id,
+        "reason": "No company in this room",
+        "operation_id": str(uuid4()),
+    }
+    assert client.post(url, headers=hacker.headers, json=body).status_code == 403
+    assert (
+        client.post(
+            url,
+            headers=admin.headers,
+            json={**body, "presentation_id": next_id, "operation_id": str(uuid4())},
+        ).status_code
+        == 409
+    )
+    finished = client.post(url, headers=admin.headers, json=body)
+    assert finished.status_code == 200, finished.text
+    assert finished.json()["presentation_id"] == turn_id
+    assert finished.json()["next_team"] == "Next Team"
+    # Replays return the stored result; a new click finds nothing to finish.
+    assert client.post(url, headers=admin.headers, json=body).json() == finished.json()
+    assert (
+        client.post(
+            url, headers=admin.headers, json={**body, "operation_id": str(uuid4())}
+        ).status_code
+        == 409
+    )
+    assert (
+        client.post(
+            url,
+            headers=admin.headers,
+            json={**body, "reason": "Different request"},
+        ).status_code
+        == 409
+    )
+    with Session(engine) as session:
+        done = session.get(Presentation, turn_id)
+        assert done.state == "done" and done.completed_at is not None
+        assert session.get(Presentation, next_id).state == "called"
+        alerts = session.get(EventOperations, event).config["alerts"]
+        assert len(alerts) == 1 and "Next Team" in alerts[0]["message"]
+        log = (
+            session.query(OperationAudit)
+            .filter_by(event_id=event, action="judging.finish")
+            .one()
+        )
+        assert log.actor_id == admin.id and log.details["room"] == "a"
