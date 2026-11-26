@@ -923,3 +923,70 @@ def test_company_ticket_uses_empresa_role(
         client.get(f"/v1/event/{event}/ticket/{code}/apple.pkpass").status_code == 200
     )
     assert roles == ["Empresa"]
+
+
+def test_failed_ticket_send_is_not_recorded_as_delivered(
+    client, create_user, create_event, accept, engine, sent_mails, monkeypatch
+):
+    from src.impl.Event.model import HackerRegistration
+    from src.impl.Event.service import EventService
+    from src.impl.Mail.client import MailClient
+
+    organizer = create_user(role="organizer")
+    delivered, refused = create_user(), create_user()
+    event_id = create_event([delivered, refused], name="HackEPS Test")
+    accept(organizer, event_id, delivered)
+    accept(organizer, event_id, refused)
+    sent_mails.clear()
+    refused_mail_ids = set()
+
+    def create_mail(self, mail):
+        sent_mails.append(mail)
+        if mail.receiver_mail == refused.email:
+            refused_mail_ids.add(len(sent_mails))
+        return SimpleNamespace(id=len(sent_mails))
+
+    def send_mail_by_id(self, mail_id):
+        # The Mail Backend answers 500 when the SMTP send fails.
+        return SimpleNamespace(status_code=500 if mail_id in refused_mail_ids else 200)
+
+    monkeypatch.setattr(MailClient, "create_mail", create_mail)
+    monkeypatch.setattr(MailClient, "send_mail_by_id", send_mail_by_id)
+    EventService().send_ticket_mails_background(event_id, audience="hacker")
+
+    with Session(engine) as session:
+        assert session.get(HackerRegistration, (delivered.id, event_id)).ticket_sent_at
+        assert (
+            session.get(HackerRegistration, (refused.id, event_id)).ticket_sent_at
+            is None
+        )
+    status = client.get(
+        f"/v1/event/{event_id}/tickets/status", headers=organizer.headers
+    ).json()
+    sent = {r["id"]: r["sent"] for r in status["recipients"]}
+    assert (sent[delivered.id], sent[refused.id]) == (True, False)
+
+
+def test_failed_discord_invite_is_counted_as_failed(
+    create_user, create_event, accept, sent_mails, monkeypatch
+):
+    from src.impl.Event.service import EventService
+    from src.impl.Mail.client import MailClient
+
+    organizer = create_user(role="organizer")
+    delivered, refused = create_user(), create_user()
+    event_id = create_event([delivered, refused], name="HackEPS Test")
+    accept(organizer, event_id, delivered)
+    accept(organizer, event_id, refused)
+    sent_mails.clear()
+
+    def send_mail_by_id(self, mail_id):
+        refused_mail = sent_mails[mail_id - 1].receiver_mail == refused.email
+        return SimpleNamespace(status_code=500 if refused_mail else 200)
+
+    monkeypatch.setattr(MailClient, "send_mail_by_id", send_mail_by_id)
+    service = EventService()
+    service.send_discord_mails_background(event_id, "https://discord.gg/x", delay=0)
+
+    progress = service.get_send_progress(event_id)
+    assert (progress["sent"], progress["failed"]) == (1, 1)
