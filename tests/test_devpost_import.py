@@ -5,6 +5,9 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from src.impl.Operations.model import EventOperations, Presentation
 
 
 @pytest.fixture
@@ -162,15 +165,49 @@ def test_invalid_rows_block_atomic_import(client, setup_import, change):
     assert client.get(base + "/manage", headers=o.headers).json()["presentations"] == []
 
 
-def test_preview_detects_stale_config_and_team_state(client, setup_import, engine):
+def test_unrelated_state_version_bump_keeps_preview_valid(client, setup_import, engine):
     o, _, event, group, base = setup_import
     body = payload(group.code)
-    plan = client.post(base + "/devpost/preview", headers=o.headers, json=body).json()
+    first = client.post(base + "/devpost/preview", headers=o.headers, json=body).json()
     with engine.begin() as conn:
         conn.execute(
             text("UPDATE event_operations SET version=version+1 WHERE event_id=:id"),
             {"id": event},
         )
+    second = client.post(base + "/devpost/preview", headers=o.headers, json=body)
+    assert second.json()["digest"] == first["digest"]
+    assert second.json()["version"] == first["version"] + 1
+    response = client.post(
+        base + "/devpost/import",
+        headers=o.headers,
+        json={
+            **body,
+            "preview_digest": first["digest"],
+            "operation_id": str(uuid4()),
+            "reason": "Final export",
+        },
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["imported"] == 1
+
+
+@pytest.mark.parametrize("change", ["config", "team"])
+def test_preview_detects_stale_config_and_team_state(
+    client, setup_import, engine, change
+):
+    o, _, event, group, base = setup_import
+    body = payload(group.code)
+    plan = client.post(base + "/devpost/preview", headers=o.headers, json=body).json()
+    with Session(engine) as session:
+        if change == "config":
+            row = session.get(EventOperations, event)
+            challenges = [{**c, "published": False} for c in row.config["challenges"]]
+            row.config = {**row.config, "challenges": challenges}
+        else:
+            session.add(
+                Presentation(event_id=event, group_id=group.id, room="c1", track="c1")
+            )
+        session.commit()
     response = client.post(
         base + "/devpost/import",
         headers=o.headers,
