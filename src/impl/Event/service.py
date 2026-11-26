@@ -1,7 +1,7 @@
 import logging
 import threading
-import time
 from collections import Counter
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from html import escape
 from typing import ClassVar
@@ -50,6 +50,7 @@ from src.impl.Voucher.model import Voucher
 from src.utils.apple_wallet import build_pass, wallet_enabled, wallet_url
 from src.utils.Base.BaseClient import BaseClient
 from src.utils.Base.BaseService import BaseService
+from src.utils.bulk_mail import bulk_job_lock, bulk_job_running, pace_bulk_mail
 from src.utils.event_tickets import eligible_tickets, ticket_email, ticket_role
 from src.utils.google_wallet import (
     build_save_url,
@@ -105,6 +106,45 @@ class EventService(BaseService):
             job = self._sending_jobs.get(event_id)
             if job and job.get("status") == "running":
                 job["failed"] = job.get("failed", 0) + 1
+
+    def _skip_recipient(self, event_id: int):
+        with self._sending_jobs_lock:
+            job = self._sending_jobs.get(event_id)
+            if job and job.get("status") == "running":
+                job["total"] = max(0, job.get("total", 0) - 1)
+
+    @contextmanager
+    def _bulk_job_session(self, event_id: int, job_type: str):
+        """A private DB session for a bulk mail job, or None when another
+        worker already runs the same job for this event."""
+        engine = create_engine(settings.database.url)
+        try:
+            with bulk_job_lock(engine, event_id, job_type) as acquired:
+                if not acquired:
+                    logger.warning(
+                        "Skipping %s mail job for event %s: already running",
+                        job_type,
+                        event_id,
+                    )
+                    yield None
+                    return
+                session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
+                try:
+                    yield session
+                finally:
+                    session.close()
+                    # A job that crashed must not keep this worker refusing
+                    # new sends once the lock is gone.
+                    if self._job_type(event_id) == job_type:
+                        self._finish_job(event_id)
+        finally:
+            engine.dispose()
+
+    def bulk_job_running(self, event_id: int, job_type: str) -> bool:
+        """Whether this worker or any other is running the (event, type) job."""
+        return self.is_sending(event_id) or bulk_job_running(
+            db.session, event_id, job_type
+        )
 
     def _finish_job(self, event_id: int):
         with self._sending_jobs_lock:
@@ -1560,10 +1600,9 @@ class EventService(BaseService):
         Background-safe sender: creates its own DB session and sends slack invite mails
         to accepted hackers with an optional `delay` between sends to avoid throttling.
         """
-        engine = create_engine(settings.database.url)
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        session = SessionLocal()
-        try:
+        with self._bulk_job_session(event_id, "slack") as session:
+            if session is None:
+                return
             event = session.query(Event).filter(Event.id == event_id).first()
             if event is None or event.archived:
                 return
@@ -1578,7 +1617,9 @@ class EventService(BaseService):
                 # Best-effort tracking must not abort the delivery job.
                 logger.warning("Background mail progress update failed")
 
-            for hacker in hackers:
+            for index, hacker in enumerate(hackers):
+                if index:
+                    pace_bulk_mail(delay)
                 try:
                     mail = self.mail_client.create_mail(
                         MailCreate(
@@ -1599,8 +1640,6 @@ class EventService(BaseService):
                     except Exception:  # noqa: BLE001
                         logger.warning("Background mail progress update failed")
                     session.commit()
-                    if delay and delay > 0:
-                        time.sleep(delay)
                 except Exception:
                     session.rollback()
                     logger.exception("Slack mail failed for hacker %s", hacker.id)
@@ -1616,8 +1655,6 @@ class EventService(BaseService):
             # Preserve the documented service-boundary fallback.
             except Exception:  # noqa: BLE001
                 logger.warning("Background mail progress update failed")
-        finally:
-            session.close()
 
     # ------------------------------------------------------------------
     # Official Discord invitation: confirmed hackers only (no staff, mentors
@@ -1656,10 +1693,9 @@ class EventService(BaseService):
         self, event_id: int, discord_url: str, delay: float = 0.2
     ):
         """Mail the official Discord link to every confirmed hacker of the event."""
-        engine = create_engine(settings.database.url)
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        session = SessionLocal()
-        try:
+        with self._bulk_job_session(event_id, "discord") as session:
+            if session is None:
+                return
             event = session.query(Event).filter(Event.id == event_id).first()
             if event is None or event.archived:
                 return
@@ -1672,7 +1708,9 @@ class EventService(BaseService):
             template_id = self.mail_client.get_internall_template_id(
                 InternalTemplate.EVENT_DISCORD_INVITE
             )
-            for hacker in recipients:
+            for index, hacker in enumerate(recipients):
+                if index:
+                    pace_bulk_mail(delay)
                 try:
                     mail = self.mail_client.create_mail(
                         MailCreate(
@@ -1692,8 +1730,6 @@ class EventService(BaseService):
                     # Preserve the documented service-boundary fallback.
                     except Exception:  # noqa: BLE001
                         logger.warning("Background mail progress update failed")
-                    if delay and delay > 0:
-                        time.sleep(delay)
                 except Exception:
                     logger.exception("Discord mail failed for hacker %s", hacker.id)
                     try:
@@ -1706,8 +1742,6 @@ class EventService(BaseService):
             # Preserve the documented service-boundary fallback.
             except Exception:  # noqa: BLE001
                 logger.warning("Background mail progress update failed")
-        finally:
-            session.close()
 
     @BaseService.needs_service(MailClient)
     def send_reminder_mails(
@@ -1784,10 +1818,9 @@ class EventService(BaseService):
         Background-safe sender: creates its own DB session and sends reminder mails
         to accepted hackers. Optional `delay` between sends to avoid throttling.
         """
-        engine = create_engine(settings.database.url)
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        session = SessionLocal()
-        try:
+        with self._bulk_job_session(event_id, "reminder") as session:
+            if session is None:
+                return
             event = session.query(Event).filter(Event.id == event_id).first()
             if event is None or event.archived:
                 return
@@ -1815,7 +1848,9 @@ class EventService(BaseService):
             except Exception:  # noqa: BLE001
                 logger.warning("Background mail progress update failed")
 
-            for hacker, reg in eligible:
+            for index, (hacker, reg) in enumerate(eligible):
+                if index:
+                    pace_bulk_mail(delay)
                 try:
                     # ensure there is a confirmation token for this registration
                     if not reg.confirm_assistance_token:
@@ -1852,8 +1887,6 @@ class EventService(BaseService):
                     except Exception:  # noqa: BLE001
                         logger.warning("Background mail progress update failed")
                     session.commit()
-                    if delay and delay > 0:
-                        time.sleep(delay)
                 except Exception:
                     session.rollback()
                     logger.exception("Reminder mail failed for hacker %s", hacker.id)
@@ -1868,8 +1901,6 @@ class EventService(BaseService):
             # Preserve the documented service-boundary fallback.
             except Exception:  # noqa: BLE001
                 logger.warning("Background mail progress update failed")
-        finally:
-            session.close()
 
     # ------------------------------------------------------------------
     # Check-in tickets: the hacker's QR (their user code) mailed once they are
@@ -1952,10 +1983,9 @@ class EventService(BaseService):
         Background-safe sender for confirmed participants, active mentors and staff.
         Audience filters delivery; force resends previously delivered tickets.
         """
-        engine = create_engine(settings.database.url)
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        session = SessionLocal()
-        try:
+        with self._bulk_job_session(event_id, "ticket") as session:
+            if session is None:
+                return
             event = session.query(Event).filter(Event.id == event_id).first()
             if event is None or event.archived:
                 return
@@ -1967,7 +1997,18 @@ class EventService(BaseService):
             # Preserve the documented service-boundary fallback.
             except Exception:  # noqa: BLE001
                 logger.warning("Background mail progress update failed")
+            attempted = False
             for hacker, registration in recipients:
+                if not force:
+                    # A resumed or duplicate job must not mail anyone whose
+                    # ticket went out after the recipient list was built.
+                    registration = self._fresh_ticket_delivery(session, event, hacker)
+                    if registration is not None and registration.ticket_sent_at:
+                        self._skip_recipient(event_id)
+                        continue
+                if attempted:
+                    pace_bulk_mail(delay)
+                attempted = True
                 try:
                     mail = self.mail_client.create_mail(
                         MailCreate(
@@ -2007,8 +2048,6 @@ class EventService(BaseService):
                     # Preserve the documented service-boundary fallback.
                     except Exception:  # noqa: BLE001
                         logger.warning("Background mail progress update failed")
-                    if delay and delay > 0:
-                        time.sleep(delay)
                 except Exception:
                     session.rollback()
                     logger.exception("Ticket mail failed for hacker %s", hacker.id)
@@ -2023,8 +2062,18 @@ class EventService(BaseService):
             # Preserve the documented service-boundary fallback.
             except Exception:  # noqa: BLE001
                 logger.warning("Background mail progress update failed")
-        finally:
-            session.close()
+
+    @staticmethod
+    def _fresh_ticket_delivery(session, event, user):
+        """The user's ticket delivery row, re-read from the database."""
+        delivery = session.get(
+            EventTicketDelivery, (event.id, user.id), populate_existing=True
+        )
+        if delivery is None and ticket_role(session, event, user) == "Hacker":
+            delivery = session.get(
+                HackerRegistration, (user.id, event.id), populate_existing=True
+            )
+        return delivery
 
     @BaseService.needs_service(MailClient)
     def check_mail_available(self):

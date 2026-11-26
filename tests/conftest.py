@@ -86,6 +86,14 @@ def clean_database(engine, database):
             connection.execute(text(f"TRUNCATE {quoted} RESTART IDENTITY CASCADE"))
 
 
+@pytest.fixture(autouse=True)
+def no_bulk_mail_pacing(monkeypatch):
+    """Bulk mail jobs wait between mails in production; keep tests fast."""
+    from src.utils import bulk_mail
+
+    monkeypatch.setattr(bulk_mail, "BULK_MAIL_MIN_INTERVAL", 0.0)
+
+
 @pytest.fixture
 def client(app, monkeypatch):
     from src.impl.Mail.client import MailClient
