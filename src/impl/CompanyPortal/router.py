@@ -387,7 +387,8 @@ def save_note(event_id: int, group_id: int, body: NoteInput, user=Depends(accoun
     note.updated_at = now()
     grant.version += 1
     db.session.commit()
-    return note_view(note)
+    # The winner and finalize actions check the grant version, so return it.
+    return {**note_view(note), "grant_version": grant.version}
 
 
 @router.put("/events/{event_id}/winner")
