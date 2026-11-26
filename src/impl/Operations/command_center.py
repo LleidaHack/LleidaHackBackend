@@ -264,8 +264,70 @@ def recover(
     return log.result
 
 
+class FinishInput(BaseModel):
+    # Optional guard so a late click cannot close the next team's presentation.
+    presentation_id: int | None = None
+    reason: str = Field(min_length=3, max_length=500)
+    operation_id: UUID
+
+
+@router.post("/{event_id}/rooms/{room_id}/finish")
+def finish_room_presentation(
+    event_id: int, room_id: str, body: FinishInput, token=Depends(JWTBearer())
+):
+    """Organizer fallback for rooms where no company closes the presentation."""
+    ops.require_organizer(token)
+    _, row = ops.state(event_id, True)
+    details = {**body.model_dump(mode="json"), "room": room_id}
+    previous = (
+        db.session.query(OperationAudit)
+        .filter_by(event_id=event_id, operation_id=str(body.operation_id))
+        .first()
+    )
+    if previous:
+        if previous.action != "judging.finish" or previous.details != details:
+            raise HTTPException(
+                409, "Operation identifier already used for a different request"
+            )
+        return previous.result
+    if room_id not in {r["id"] for r in row.config.get("rooms", [])}:
+        raise HTTPException(404, "Room not found")
+    current = next(
+        (
+            p
+            for p in judging.room_turns(event_id)
+            if p.room == room_id and p.state == "presenting"
+        ),
+        None,
+    )
+    if current is None:
+        raise HTTPException(409, "No presentation in progress in this room")
+    if body.presentation_id is not None and current.id != body.presentation_id:
+        raise HTTPException(409, "Another presentation is in progress; refresh first")
+    changes = []
+    next_team = judging.finish_presentation(event_id, current, row, changes)
+    row.version += 1
+    log = ops.audit(
+        event_id,
+        token,
+        "judging.finish",
+        details,
+        operation_id=str(body.operation_id),
+    )
+    log.result = {
+        "ok": True,
+        "presentation_id": current.id,
+        "next_team": next_team,
+        "transitions": changes,
+    }
+    db.session.commit()
+    broadcast_alerts(event_id)
+    return log.result
+
+
 class RoomInput(BaseModel):
-    version: int = Field(ge=0)
+    # Accepted for older clients but not enforced: pausing is an idempotent toggle.
+    version: int | None = Field(default=None, ge=0)
     paused: bool
     reason: str = Field(min_length=3, max_length=500)
 
@@ -276,12 +338,14 @@ def pause_room(
 ):
     ops.require_organizer(token)
     _, row = ops.state(event_id, True)
-    if row.version != body.version:
-        raise HTTPException(409, "Configuration changed; refresh before saving")
     config = deepcopy(row.config)
     room = next((r for r in config.get("rooms", []) if r["id"] == room_id), None)
     if room is None:
         raise HTTPException(404, "Room not found")
+    if bool(room.get("paused")) == body.paused:
+        # Another organizer already applied this toggle; nothing to change.
+        db.session.commit()
+        return {"ok": True}
     room["paused"] = body.paused
     row.config = config
     row.version += 1

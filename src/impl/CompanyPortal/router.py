@@ -630,12 +630,7 @@ def presentation_action(
         p.duration_seconds += 60
         p.version += 1
     else:
-        judging.transition(p, "done", changes)
-        p.completed_at = now()
-        next_team = judging.refresh_queue(
-            event_id, p.room, row.config, judging.room_turns(event_id), changes
-        )
-        judging.announce_called(row, changes)
+        next_team = judging.finish_presentation(event_id, p, row, changes)
     row.version += 1
     result = {
         "id": p.id,
