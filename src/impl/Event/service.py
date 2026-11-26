@@ -1344,6 +1344,9 @@ class EventService(BaseService):
         token = AssistenceToken(hacker, event.id).to_token()
         hacker_registration.confirm_assistance_token = token
         event.accepted_hackers.append(hacker)
+        # A hacker is either accepted or rejected, never both.
+        if hacker in event.rejected_hackers:
+            event.rejected_hackers.remove(hacker)
 
         mail = self.mail_client.create_mail(
             MailCreate(
