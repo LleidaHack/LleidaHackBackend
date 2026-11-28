@@ -46,6 +46,28 @@ def user_code(engine, user):
         return session.get(User, user.id).code
 
 
+def add_activity(client, admin, event_id, activity_id="talk", points=5):
+    """Publish one untimed activity that awards LleidaCoins to hackers."""
+    base = f"/v1/operations/{event_id}"
+    config = client.get(base + "/manage", headers=admin.headers).json()
+    config["activities"] = [
+        {
+            "id": activity_id,
+            "title": activity_id,
+            "start": "2026-11-20T12:00:00Z",
+            "end": "2026-11-20T14:00:00Z",
+            "points": points,
+        }
+    ]
+    response = client.put(
+        base + "/config",
+        headers=admin.headers,
+        json={"config": config, "version": config["version"], "reason": "Activity"},
+    )
+    assert response.status_code == 200, response.text
+    return activity_id
+
+
 def test_vouchers_are_generated_per_event_with_unique_codes(
     client, create_user, create_event
 ):
@@ -807,7 +829,7 @@ def test_guest_ticket_lifecycle(
     EventService().send_ticket_mails_background(event, audience="convidat")
     assert sent_mails[-1].receiver_mail == "new-guest@example.test"
 
-    # Guests can bind a badge at check-in and use it only for meals.
+    # Guests can bind a badge at check-in and use it for meals and activities.
     badge = client.post(
         f"/v1/event/{event}/vouchers/generate", headers=admin.headers, json={"count": 1}
     ).json()["vouchers"][0]["code"]
@@ -821,7 +843,9 @@ def test_guest_ticket_lifecycle(
         json={"name": "Dinner", "description": "", "event_id": event},
     ).json()["id"]
 
-    def scan(kind):
+    activity = add_activity(client, create_user(role="organizer"), event)
+
+    def scan(kind, target=str(meal)):
         return client.post(
             f"/v1/operations/{event}/scan",
             headers=staff.headers,
@@ -829,13 +853,17 @@ def test_guest_ticket_lifecycle(
                 "operation_id": str(uuid4()),
                 "kind": kind,
                 "code": badge,
-                "target": str(meal),
+                "target": target,
                 "round": 1,
             },
         )
 
     assert scan("meal").status_code == 200
-    assert scan("activity").status_code == 403
+    attended = scan("activity", activity)
+    assert attended.status_code == 200, attended.text
+    assert "points" not in attended.json() and attended.json()["balance"] == 0
+    for kind in ("redeem", "judging_start", "checkin"):
+        assert scan(kind).status_code == 403
 
     # Deactivated guests lose their ticket.
     assert (

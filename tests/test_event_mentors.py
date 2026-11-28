@@ -1,6 +1,8 @@
 from time import sleep
 from uuid import uuid4
 
+from tests.test_tickets_vouchers import add_activity
+
 
 def test_mentor_roster_badges_meals_rounds_and_restrictions(
     client, create_user, create_event
@@ -80,7 +82,21 @@ def test_mentor_roster_badges_meals_rounds_and_restrictions(
         == 1
     )
     assert scan().status_code == 409
-    for kind in ("activity", "redeem", "judging_start", "checkin"):
+    activity = add_activity(client, admin, event)
+    attended = client.post(
+        base + "/scan",
+        headers=staff.headers,
+        json={
+            "operation_id": str(uuid4()),
+            "kind": "activity",
+            "code": code,
+            "target": activity,
+        },
+    )
+    assert attended.status_code == 200, attended.text
+    # Mentors attend activities but never earn LleidaCoins.
+    assert "points" not in attended.json() and attended.json()["balance"] == 0
+    for kind in ("redeem", "judging_start", "checkin"):
         assert scan(kind).status_code == 403
     assert scan("award", actor=admin).status_code == 403
     assert (

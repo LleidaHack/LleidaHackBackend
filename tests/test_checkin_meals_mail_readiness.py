@@ -6,6 +6,8 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from tests.test_tickets_vouchers import add_activity
+
 
 @pytest.fixture
 def mails(client, monkeypatch):
@@ -52,7 +54,7 @@ def user_code(engine, user):
         return session.get(User, user.id).code
 
 
-def test_staff_can_scan_their_badge_for_meals_only(
+def test_staff_can_scan_their_badge_for_meals_and_activities(
     client, create_user, create_event, engine
 ):
     admin, staff = create_user(role="organizer"), create_user(role="lleidahacker")
@@ -90,8 +92,20 @@ def test_staff_can_scan_their_badge_for_meals_only(
     assert first.status_code == 200, first.text
     assert first.json()["user_id"] == staff.id
     assert scan().status_code == 409  # one meal per round, like everyone else
-    for kind in ("activity", "checkin"):
-        assert scan(kind).status_code == 403
+    assert scan("checkin").status_code == 403
+    activity = add_activity(client, admin, event_id)
+    attended = client.post(
+        f"/v1/operations/{event_id}/scan",
+        headers=staff.headers,
+        json={
+            "operation_id": str(uuid4()),
+            "kind": "activity",
+            "code": badge,
+            "target": activity,
+        },
+    )
+    assert attended.status_code == 200, attended.text
+    assert attended.json()["balance"] == 0
 
 
 def test_accepting_a_rejected_hacker_clears_the_rejection(
