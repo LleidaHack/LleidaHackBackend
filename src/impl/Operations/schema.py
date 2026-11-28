@@ -37,6 +37,8 @@ class Activity(BaseModel):
     points: int = Field(default=0, ge=0, le=10000)
     published: bool = True
     timed: bool = False
+    # «Compta LleidaCoins»: each scan notes the amount the person said.
+    coin_guess: bool = False
 
     @field_validator("start", "end")
     @classmethod
@@ -44,6 +46,12 @@ class Activity(BaseModel):
         if not value.tzinfo:
             raise ValueError("Timezone required")
         return value
+
+    @model_validator(mode="after")
+    def single_scan_input(self):
+        if self.timed and self.coin_guess:
+            raise ValueError("An activity cannot record both times and guesses")
+        return self
 
 
 class FAQ(BaseModel):
@@ -145,11 +153,14 @@ class Operation(BaseModel):
     amount: int = Field(default=0, ge=0, le=1000000, strict=True)
     reason: str = Field(default="", max_length=500)
     duration_ms: int | None = Field(default=None, ge=1, le=3600000, strict=True)
+    guess: int | None = Field(default=None, ge=0, le=1000000, strict=True)
 
     @model_validator(mode="after")
     def server_owned_rewards(self):
         if self.kind != "activity" and self.duration_ms is not None:
             raise ValueError("Only timed activities accept a duration")
+        if self.kind != "activity" and self.guess is not None:
+            raise ValueError("Only LleidaCoins counting activities accept a guess")
         if self.kind != "award" and self.amount != 0:
             raise ValueError("Only manual awards accept a client-supplied amount")
         if self.kind != "meal" and self.round != 1:

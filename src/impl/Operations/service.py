@@ -171,10 +171,15 @@ def perform(event_id, body, token, allow_ticket_meal=False):
     # they must not take the event lock that serializes real scans.
     event, row = state(event_id, lock=organizer(token))
     operation_id = str(body.operation_id)
-    # Preserve fingerprints of scans queued before duration support was deployed.
+    # Preserve fingerprints of scans queued before duration/guess support was
+    # deployed: optional inputs that were not sent stay out of the hash.
     fingerprint = hashlib.sha256(
         body.model_dump_json(
-            exclude={"duration_ms"} if body.duration_ms is None else set()
+            exclude={
+                field
+                for field in ("duration_ms", "guess")
+                if getattr(body, field) is None
+            }
         ).encode()
     ).hexdigest()
     previous = (
@@ -209,6 +214,8 @@ def perform(event_id, body, token, allow_ticket_meal=False):
     }
     if body.duration_ms is not None:
         details["duration_ms"] = body.duration_ms
+    if body.guess is not None:
+        details["guess"] = body.guess
     user = None
     try:
         with db.session.begin_nested():
@@ -331,6 +338,13 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                         )
                     if body.duration_ms is not None:
                         result["duration_ms"] = body.duration_ms
+                    if activity.get("coin_guess", False) != (body.guess is not None):
+                        raise HTTPException(
+                            422,
+                            "LleidaCoins counting activities require a guess; other activities do not accept one",
+                        )
+                    if body.guess is not None:
+                        result["guess"] = body.guess
                 else:
                     if in_event_table("hacker_event_participation", event_id, user.id):
                         raise HTTPException(409, "Participant already checked in")
@@ -348,7 +362,9 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                     )
                     .first()
                 )
-                if existing and body.duration_ms is None:
+                # Timed attempts and guesses may be scanned again (a new attempt,
+                # or a corrected guess); everything else counts once per round.
+                if existing and body.duration_ms is None and body.guess is None:
                     raise HTTPException(409, "Already registered in this round")
                 if not existing:
                     db.session.add(

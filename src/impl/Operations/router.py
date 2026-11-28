@@ -79,6 +79,17 @@ def activity_ranking(
     return ranking(event_id, activity_id, row.config)
 
 
+@router.get("/{event_id}/activities/{activity_id}/guesses")
+def activity_guesses(
+    event_id: int, activity_id: str, token: BaseToken = Depends(JWTBearer())
+):
+    ops.require_organizer(token)
+    from src.impl.Operations.activity_times import guesses
+
+    _, row = ops.state(event_id)
+    return guesses(event_id, activity_id, row.config)
+
+
 @router.get("/{event_id}/credits")
 def credits_export(event_id: int, token: BaseToken = Depends(JWTBearer())):
     ops.require_organizer(token)
@@ -126,10 +137,11 @@ def update_config(
     for activity, parsed in zip(
         config["activities"], body.config.activities, strict=True
     ):
-        if "timed" not in parsed.model_fields_set:
-            activity["timed"] = previous_activities.get(activity["id"], {}).get(
-                "timed", False
-            )
+        for flag in ("timed", "coin_guess"):
+            if flag not in parsed.model_fields_set:
+                activity[flag] = previous_activities.get(activity["id"], {}).get(
+                    flag, False
+                )
     from src.utils.access import require_superadmin
 
     critical_changed = any(config.get(key) != before.get(key) for key in ("deadline",))

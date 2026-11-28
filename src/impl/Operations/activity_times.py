@@ -1,4 +1,4 @@
-"""Internal activity rankings derived from immutable, idempotent scan attempts."""
+"""Internal activity results derived from immutable, idempotent scan attempts."""
 
 from fastapi import HTTPException
 from fastapi_sqlalchemy import db
@@ -47,3 +47,47 @@ def ranking(event_id, activity_id, config):
             }
         )
     return {"activity": activity["title"], "participants": result}
+
+
+def guesses(event_id, activity_id, config):
+    """Latest amount each person said in a «Compta LleidaCoins» activity."""
+    activity = next(
+        (a for a in config.get("activities", []) if a["id"] == activity_id), None
+    )
+    if not activity:
+        raise HTTPException(404, "Activity not found")
+    rows = (
+        db.session.query(
+            User.id,
+            User.name,
+            OperationAudit.details["guess"].as_integer().label("guess"),
+            OperationAudit.created_at,
+        )
+        .join(OperationAudit, OperationAudit.user_id == User.id)
+        .filter(
+            OperationAudit.event_id == event_id,
+            OperationAudit.action == "activity",
+            OperationAudit.outcome == "success",
+            OperationAudit.details["target"].as_string() == activity_id,
+            OperationAudit.details["guess"].as_integer().isnot(None),
+        )
+        .order_by(OperationAudit.id)
+        .all()
+    )
+    # A later scan of the same person corrects the earlier guess.
+    latest = {}
+    for row in rows:
+        previous = latest.get(row.id)
+        latest[row.id] = {
+            "user_id": row.id,
+            "name": row.name,
+            "guess": row.guess,
+            "scanned_at": row.created_at.isoformat(),
+            "scans": (previous["scans"] if previous else 0) + 1,
+        }
+    return {
+        "activity": activity["title"],
+        "participants": sorted(
+            latest.values(), key=lambda p: (-p["guess"], p["scanned_at"])
+        ),
+    }
