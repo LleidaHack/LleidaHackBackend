@@ -160,3 +160,63 @@ def test_releasing_place_allows_another_registration(
     )
     after = client.put(path, json=payload, headers=newcomer.headers)
     assert after.status_code == 200, after.text
+
+
+def test_organizer_can_reaccept_cancelled_place(
+    client, create_user, create_event, engine
+):
+    from src.impl.Event.model import (
+        EventAuditLog,
+        HackerAccepted,
+        HackerRegistration,
+    )
+
+    user, pending = create_user(), create_user()
+    organizer = create_user(role="organizer")
+    event_id = create_event([user, pending])
+    headers = invitation(engine, user, event_id, confirmed=True)
+    with Session(engine) as session:
+        registration = session.get(HackerRegistration, (user.id, event_id))
+        registration.release_reminder_sent_at = registration.registered_at
+        registration.release_reminder_mail_id = 7
+        session.commit()
+    assert (
+        client.post("/v1/event/cancel_assistance/", headers=headers).status_code == 200
+    )
+    reaccept = f"/v1/event/{event_id}/reaccept/{user.id}"
+    # Only organizers, and only for cancelled places.
+    assert client.put(reaccept, headers=user.headers).status_code in (401, 403)
+    assert (
+        client.put(
+            f"/v1/event/{event_id}/reaccept/{pending.id}", headers=organizer.headers
+        ).status_code
+        == 400
+    )
+    response = client.put(reaccept, headers=organizer.headers)
+    assert response.status_code == 200, response.text
+    with Session(engine) as session:
+        registration = session.get(HackerRegistration, (user.id, event_id))
+        assert registration.cancelled_at is None
+        assert registration.confirmed_assistance is False
+        assert registration.release_reminder_sent_at is None
+        assert registration.release_reminder_mail_id is None
+        assert session.get(HackerAccepted, (user.id, event_id)) is not None
+        assert session.query(EventAuditLog).filter_by(action="reaccept").count() == 1
+        new_token = registration.confirm_assistance_token
+    participants = {
+        p["id"]: p
+        for p in client.get(
+            f"/v1/event/{event_id}/hackers_participants_list",
+            headers=organizer.headers,
+        ).json()["participants"]
+    }
+    assert participants[user.id]["status"] == "accepted"
+    # The new acceptance mail's token confirms attendance again.
+    confirmed = client.get(
+        "/v1/event/confirm_assistance/",
+        headers={"Authorization": f"Bearer {new_token}"},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert client.put(reaccept, headers=organizer.headers).status_code == 400, (
+        "an accepted place cannot be re-accepted"
+    )

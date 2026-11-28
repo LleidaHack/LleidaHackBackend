@@ -994,3 +994,84 @@ def test_failed_discord_invite_is_counted_as_failed(
 
     progress = service.get_send_progress(event_id)
     assert (progress["sent"], progress["failed"]) == (1, 1)
+
+
+def test_guest_can_be_promoted_to_hacker(
+    client, create_user, create_event, engine, sent_mails
+):
+    from src.impl.Event.model import HackerRegistration
+    from src.impl.Hacker.model import Hacker
+    from src.impl.Operations.model import EventGuest
+    from src.impl.User.model import User
+
+    admin, staff = create_user(role="admin"), create_user(role="lleidahacker")
+    create_user(nickname="marti-sole")
+    event = create_event(max_participants=10)
+    other_event = create_event()
+    base = f"/v1/operations/{event}/guests"
+    body = {"name": "Martí Solé", "email": "marti@example.test"}
+    guest = client.post(base, headers=admin.headers, json=body).json()["id"]
+    assert (
+        client.post(
+            f"/v1/operations/{other_event}/guests", headers=admin.headers, json=body
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(base + f"/{guest}/promote", headers=staff.headers).status_code
+        == 403
+    )
+    promoted = client.post(base + f"/{guest}/promote", headers=admin.headers)
+    assert promoted.status_code == 200, promoted.text
+    assert promoted.json() == {
+        "id": guest,
+        "email": "marti@example.test",
+        "password_mail": True,
+    }
+    # The reset mail lets them choose a password.
+    assert [m.receiver_mail for m in sent_mails] == ["marti@example.test"]
+    with Session(engine) as session:
+        hacker = session.get(User, guest)
+        assert isinstance(hacker, Hacker)
+        assert hacker.access_role == "hacker" and hacker.type == "hacker"
+        assert hacker.nickname == "marti-sole-2"
+        assert hacker.is_verified and hacker.password != "!"
+        assert hacker.rest_password_token
+        assert not any(
+            g.active for g in session.query(EventGuest).filter_by(user_id=guest)
+        )
+        reset = hacker.rest_password_token
+    # Not a guest any more: no Convidat ticket and it cannot be promoted twice.
+    assert client.get(base, headers=admin.headers).json()[0]["active"] is False
+    assert (
+        client.post(base + f"/{guest}/promote", headers=admin.headers).status_code
+        == 404
+    )
+    # They can set a password, log in and register as a hacker.
+    assert (
+        client.post(
+            "/v1/auth/confirm-reset-password",
+            json={"token": reset, "password": "NewPassword123"},
+        ).status_code
+        == 200
+    )
+    login = client.get("/v1/auth/login", auth=("marti@example.test", "NewPassword123"))
+    assert login.status_code == 200, login.text
+    access = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    registered = client.put(
+        f"/v1/event/{event}/register/{guest}",
+        headers=access,
+        json={
+            "shirt_size": "M",
+            "food_restrictions": "",
+            "studies": "Computing",
+            "study_center": "UdL",
+            "location": "Lleida",
+            "how_did_you_meet_us": "Friends",
+            "wants_credit": False,
+            "update_user": False,
+        },
+    )
+    assert registered.status_code == 200, registered.text
+    with Session(engine) as session:
+        assert session.get(HackerRegistration, (guest, event)) is not None

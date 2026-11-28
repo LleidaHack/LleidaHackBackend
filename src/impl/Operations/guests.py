@@ -1,14 +1,18 @@
 """Event guests: name + email identities with a "Convidat" or "Empresa" ticket."""
 
+import logging
+import re
+import unicodedata
 from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import func
+from sqlalchemy import func, insert
 
 from src.impl.Event.model import EventTicketDelivery
+from src.impl.Hacker.model import Hacker
 from src.impl.Operations.model import EventGuest
 from src.impl.User.model import User
 from src.impl.User.schema import UserCreate
@@ -16,6 +20,9 @@ from src.impl.UserConfig.model import UserConfig
 from src.impl.Voucher.model import Voucher
 from src.utils.access import require_management
 from src.utils.JWTBearer import JWTBearer
+from src.utils.security import get_password_hash
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/operations/{event_id}/guests", tags=["Event guests"])
 
@@ -177,3 +184,61 @@ def update_guest(
     )
     db.session.commit()
     return {"ok": True}
+
+
+def _hacker_nickname(name):
+    """A readable, unique nickname instead of the internal guest-<uuid> one."""
+    ascii_name = (
+        unicodedata.normalize("NFKD", name or "").encode("ascii", "ignore").decode()
+    )
+    base = re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-")[:40] or "hacker"
+    nickname, n = base, 1
+    while db.session.query(User.id).filter(User.nickname == nickname).first():
+        n += 1
+        nickname = f"{base}-{n}"
+    return nickname
+
+
+@router.post("/{user_id}/promote")
+def promote_guest(event_id: int, user_id: int, token=Depends(JWTBearer())):
+    """Turn a guest into a hacker account, keeping the same identity.
+
+    The guest ticket is withdrawn everywhere and a password reset mail lets the
+    person sign in and register to the event like any other participant.
+    """
+    from src.impl.Authentication.service import AuthenticationService
+    from src.impl.Operations.service import audit, state
+
+    require_management(token)
+    state(event_id, lock=True)
+    entry = db.session.get(EventGuest, (event_id, user_id))
+    user = db.session.get(User, user_id, with_for_update=True)
+    if not entry or not user or user.access_role != "guest":
+        raise HTTPException(404, "Guest not found")
+    if user.is_deleted:
+        raise HTTPException(409, "Account is not available")
+    if not user.email:
+        raise HTTPException(409, "Guest has no email")
+    email, name = user.email, user.name
+    # Joined-table inheritance: add the hacker row, then switch the discriminator.
+    db.session.execute(insert(Hacker.__table__).values(user_id=user.id))
+    user.type = "hacker"
+    user.access_role = "hacker"
+    user.nickname = _hacker_nickname(user.name)
+    # Unusable until the reset mail sets a real one ("!" is not a valid hash).
+    user.password = get_password_hash(uuid4().hex)
+    # Organizers typed this address; the reset mail still proves ownership.
+    user.is_verified = True
+    for guest in db.session.query(EventGuest).filter_by(user_id=user.id):
+        guest.active = False
+    audit(event_id, token, "guest.promote", {"name": name}, user.id)
+    db.session.commit()
+    # The cached User instance has the old polymorphic class; reload as Hacker.
+    db.session.expunge_all()
+    try:
+        AuthenticationService().reset_password(email)
+        password_mail = True
+    except Exception:  # the promotion is already committed
+        logger.exception("Password mail failed for promoted guest %s", user_id)
+        password_mail = False
+    return {"id": user_id, "email": email, "password_mail": password_mail}
