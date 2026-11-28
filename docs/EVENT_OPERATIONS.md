@@ -85,7 +85,7 @@ PNG/JPEG artwork takes positions in image pixels; `--width-mm` sets the printed 
 
 ## Public LleidaCoins leaderboard
 
-The public event snapshot includes `leaderboard`, the top 50 participants with ledger activity ordered by current event balance. Redemptions reduce that balance and reversals restore it. Ties share competition ranks (1, 1, 3), with a stable alias/ID ordering. Only rank, public nickname and balance are exposed; deleted or banned participants are omitted. Events are isolated. Live shows the top 10 on its home page and the top 50 at `/leaderboard`, refreshing every three seconds.
+The public event snapshot includes `leaderboard`, the top 50 participants with ledger activity ordered by LleidaCoins earned in the event (exposed as `balance` for Live clients). Prize redemptions do not lower a position, and reversing a redemption does not raise it; reversing an award does lower it. Organizers see what each person has left to spend (earned, spent on prizes and remaining balance) at `GET /v1/operations/{event_id}/balances` and in the admin panel. Ties share competition ranks (1, 1, 3), with a stable alias/ID ordering. Only rank, public nickname and balance are exposed; deleted or banned participants are omitted. Events are isolated. Live shows the top 10 on its home page and the top 50 at `/leaderboard`, refreshing every three seconds.
 
 Live home-page metadata includes `stream_url`, `wifi_name`, `wifi_instructions` and `wifi_guide_url` in event configuration/public snapshots. These fields are public and must not contain organizer-only credentials. Alerts carry their `event_id` so the service worker can forward foreground pushes to the matching Live page and deduplicate them with WebSocket messages.
 

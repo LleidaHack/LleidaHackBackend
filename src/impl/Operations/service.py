@@ -8,7 +8,8 @@ from uuid import uuid4
 
 from fastapi import HTTPException
 from fastapi_sqlalchemy import db
-from sqlalchemy import case, func, text
+from sqlalchemy import case, func, or_, text
+from sqlalchemy.orm import aliased
 
 from src.impl.Event.model import Event, HackerRegistration
 from src.impl.Hacker.model import Hacker
@@ -538,12 +539,41 @@ def perform(event_id, body, token, allow_ticket_meal=False):
         return result
 
 
+def coin_totals(query):
+    """Join a CoinMovement query with its sources and build per-person totals.
+
+    ``earned`` ignores prize redemptions (and reversals of redemptions), so
+    spending LleidaCoins never lowers it; ``balance`` is what is left to spend.
+    Returns the joined query and the ``(earned, spent, balance)`` columns.
+    """
+    # Aliases are built per call: aliasing at import time would configure the
+    # mappers before every model module has been imported.
+    original = aliased(CoinMovement)
+    original_audit = aliased(OperationAudit)
+    prize = or_(OperationAudit.action == "redeem", original_audit.action == "redeem")
+    query = (
+        query.join(OperationAudit, OperationAudit.id == CoinMovement.audit_id)
+        .outerjoin(original, original.id == CoinMovement.reversal_of)
+        .outerjoin(original_audit, original_audit.id == original.audit_id)
+    )
+    return query, (
+        func.sum(case((prize, 0), else_=CoinMovement.amount)).label("earned"),
+        (-func.sum(case((prize, CoinMovement.amount), else_=0))).label("spent"),
+        func.sum(CoinMovement.amount).label("balance"),
+    )
+
+
 def leaderboard(event_id):
-    """Rank public aliases by current event balance, including ledger corrections."""
-    total = func.sum(CoinMovement.amount).label("balance")
+    """Rank public aliases by LleidaCoins earned in the event.
+
+    Redeeming prizes does not lower a position; other corrections (reversed
+    awards) do. The value is still exposed as ``balance`` for Live clients.
+    """
+    query, (earned, _spent, _balance) = coin_totals(
+        db.session.query(Hacker).join(CoinMovement, CoinMovement.user_id == Hacker.id)
+    )
     rows = (
-        db.session.query(Hacker.nickname, total)
-        .join(CoinMovement, CoinMovement.user_id == Hacker.id)
+        query.with_entities(Hacker.id, Hacker.nickname, earned)
         .filter(
             CoinMovement.event_id == event_id,
             Hacker.is_deleted.is_(False),
@@ -551,7 +581,7 @@ def leaderboard(event_id):
             Hacker.access_role != "mentor",
         )
         .group_by(Hacker.id, Hacker.nickname)
-        .order_by(total.desc(), Hacker.nickname.asc(), Hacker.id.asc())
+        .order_by(earned.desc(), Hacker.nickname.asc(), Hacker.id.asc())
         .limit(50)
         .all()
     )
@@ -559,17 +589,42 @@ def leaderboard(event_id):
     previous = None
     rank = 0
     for position, row in enumerate(rows, start=1):
-        if row.balance != previous:
+        if row.earned != previous:
             rank = position
         result.append(
             {
                 "rank": rank,
                 "nickname": row.nickname or "Hacker",
-                "balance": int(row.balance),
+                "balance": int(row.earned),
             }
         )
-        previous = row.balance
+        previous = row.earned
     return result
+
+
+def balances(event_id):
+    """Organizer view: earned, spent on prizes and remaining LleidaCoins."""
+    query, (earned, spent, balance) = coin_totals(
+        db.session.query(User).join(CoinMovement, CoinMovement.user_id == User.id)
+    )
+    rows = (
+        query.with_entities(User.id, User.name, User.nickname, earned, spent, balance)
+        .filter(CoinMovement.event_id == event_id)
+        .group_by(User.id, User.name, User.nickname)
+        .order_by(balance.desc(), User.name.asc(), User.id.asc())
+        .all()
+    )
+    return [
+        {
+            "user_id": row.id,
+            "name": row.name,
+            "nickname": row.nickname,
+            "earned": int(row.earned),
+            "spent": int(row.spent),
+            "balance": int(row.balance),
+        }
+        for row in rows
+    ]
 
 
 # Explicit projection: newly added management fields are private by default.

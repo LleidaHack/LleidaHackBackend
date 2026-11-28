@@ -90,6 +90,15 @@ def activity_guesses(
     return guesses(event_id, activity_id, row.config)
 
 
+@router.get("/{event_id}/balances")
+def coin_balances(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    ops.require_organizer(token)
+    ops.state(event_id)
+    result = ops.balances(event_id)
+    db.session.commit()
+    return result
+
+
 @router.get("/{event_id}/credits")
 def credits_export(event_id: int, token: BaseToken = Depends(JWTBearer())):
     ops.require_organizer(token)
