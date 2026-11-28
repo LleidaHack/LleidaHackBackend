@@ -331,6 +331,20 @@ def wallet(event_id: int, token: BaseToken = Depends(JWTBearer())):
     }
 
 
+@router.post("/{event_id}/bull-reveal")
+def launch_bull_reveal(event_id: int, token: BaseToken = Depends(JWTBearer())):
+    from redis.exceptions import RedisError
+    from src.impl.Operations.realtime import broadcast_bull_reveal
+
+    ops.require_organizer(token)
+    ops.state(event_id)
+    try:
+        listeners = broadcast_bull_reveal(event_id)
+    except RedisError as error:
+        raise HTTPException(503, "Live broadcast unavailable") from error
+    return {"listeners": listeners}
+
+
 @router.post("/{event_id}/alerts")
 def publish_alert(event_id: int, body: Alert, token: BaseToken = Depends(JWTBearer())):
     return save_alert(event_id, body, token)
