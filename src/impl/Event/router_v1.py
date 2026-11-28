@@ -212,9 +212,15 @@ def get_accepted_hackers(eventId: int, token: BaseToken = Depends(JWTBearer())):
 
 
 @router.get("/{event_id}/statistics_participants")
-def get_statistics_participants(event_id: int, token: BaseToken = Depends(JWTBearer())):
-    """Return accepted participant identities and categorical answers without assets."""
-    return event_service.get_statistics_participants(event_id, token)
+def get_statistics_participants(
+    event_id: int, by_role: bool = False, token: BaseToken = Depends(JWTBearer())
+):
+    """Return accepted participant identities and categorical answers without assets.
+
+    With ``by_role`` the active mentors, guests and companies are included too,
+    and every row carries its ``role`` plus check-in, meal and activity counts.
+    """
+    return event_service.get_statistics_participants(event_id, token, by_role)
 
 
 @router.get("/{eventId}/get_approved_hackers_mails", response_model=list[str])

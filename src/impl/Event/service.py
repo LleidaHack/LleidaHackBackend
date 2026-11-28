@@ -658,7 +658,9 @@ class EventService(BaseService):
             result.append(profile)
         return result
 
-    def get_statistics_participants(self, event_id: int, data: BaseToken):
+    def get_statistics_participants(
+        self, event_id: int, data: BaseToken, by_role: bool = False
+    ):
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         self.get_by_id(event_id)
@@ -696,7 +698,92 @@ class EventService(BaseService):
                 ),
             )
         )
-        return [dict(row._mapping) for row in rows]
+        result = [dict(row._mapping) for row in rows]
+        if not by_role:
+            return result
+        return self._statistics_by_role(event_id, result)
+
+    @staticmethod
+    def _statistics_by_role(event_id: int, hackers: list[dict]):
+        """Add active mentors/guests/companies and per-person event activity."""
+        from src.impl.Event.model import HackerParticipation
+        from src.impl.Meal.model import HackerMeal, Meal
+        from src.impl.Operations.model import EventGuest, EventMentor, ScanRecord
+
+        rows = [{**row, "role": "hacker"} for row in hackers]
+        seen = {row["id"] for row in rows}
+        empty = dict.fromkeys(
+            ("location", "studies", "study_center", "how_did_you_meet_us")
+        )
+        mentors = (
+            db.session.query(User, EventMentor.invitation_email)
+            .join(EventMentor, EventMentor.user_id == User.id)
+            .filter(EventMentor.event_id == event_id, EventMentor.active.is_(True))
+        )
+        guests = (
+            db.session.query(User, EventGuest.kind)
+            .join(EventGuest, EventGuest.user_id == User.id)
+            .filter(EventGuest.event_id == event_id, EventGuest.active.is_(True))
+        )
+        others = [(user, email, "mentor") for user, email in mentors] + [
+            (user, None, "empresa" if kind == "empresa" else "convidat")
+            for user, kind in guests
+        ]
+        for user, invitation_email, role in others:
+            if user.is_deleted or user.id in seen:
+                continue
+            seen.add(user.id)
+            rows.append(
+                {
+                    "id": user.id,
+                    "name": user.name,
+                    "nickname": user.nickname,
+                    "email": invitation_email or user.email,
+                    **empty,
+                    "food_restrictions": user.food_restrictions,
+                    # Invited people are attending by definition.
+                    "confirmed_assistance": True,
+                    "role": role,
+                }
+            )
+
+        badges = {
+            user_id
+            for (user_id,) in db.session.query(Voucher.hacker_id).filter(
+                Voucher.event_id == event_id,
+                Voucher.hacker_id.is_not(None),
+                Voucher.revoked.is_(False),
+            )
+        }
+        checked_in = badges | {
+            user_id
+            for (user_id,) in db.session.query(HackerParticipation.user_id).filter(
+                HackerParticipation.event_id == event_id
+            )
+        }
+        meals: dict[int, set[str]] = {}
+        activities: dict[int, set[str]] = {}
+        for user_id, kind, target in db.session.query(
+            ScanRecord.user_id, ScanRecord.kind, ScanRecord.target
+        ).filter(
+            ScanRecord.event_id == event_id,
+            ScanRecord.kind.in_(("meal", "activity")),
+            ScanRecord.voided.is_(False),
+        ):
+            (meals if kind == "meal" else activities).setdefault(user_id, set()).add(
+                target
+            )
+        for user_id, meal_id in (
+            db.session.query(HackerMeal.user_id, HackerMeal.meal_id)
+            .join(Meal, Meal.id == HackerMeal.meal_id)
+            .filter(Meal.event_id == event_id)
+        ):
+            meals.setdefault(user_id, set()).add(str(meal_id))
+        for row in rows:
+            row["checked_in"] = row["id"] in checked_in
+            row["meals"] = len(meals.get(row["id"], ()))
+            row["activities"] = len(activities.get(row["id"], ()))
+        return rows
 
     def get_accepted_hackers_mails(self, event_id: int, data: BaseToken):
         if not data.check([UserType.LLEIDAHACKER]):
