@@ -21,7 +21,7 @@ def count(token=Depends(JWTBearer())):
 
 @router.get("/all", response_model=list[UserGet])
 def get_all(token: BaseToken = Depends(JWTBearer())):
-    return user_service.get_all()
+    return user_service.list_users(token)
 
 
 @router.get("/{userId}", response_model=UserGetAll | UserGet)

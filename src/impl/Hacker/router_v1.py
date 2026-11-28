@@ -50,7 +50,7 @@ def signup(payload: HackerCreate):
 
 @router.get("/all", response_model=list[HackerGet])
 def get_all(token: BaseToken = Depends(JWTBearer())):
-    return hacker_service.get_all()
+    return hacker_service.list_hackers(token)
 
 
 @router.get("/{hackerId}", response_model=HackerGetAll | HackerGet)
@@ -97,12 +97,12 @@ def delete(userId: int, token: BaseToken = Depends(JWTBearer())):
 
 @router.get("/{userId}/events", response_model=list[EventGet])
 def get_events(userId: int, token: BaseToken = Depends(JWTBearer())):
-    return hacker_service.get_hacker_events(userId)
+    return hacker_service.get_hacker_events(userId, token)
 
 
 @router.get("/{userId}/groups", response_model=list[HackerGroupGet])
 def get_groups(userId: int, token: BaseToken = Depends(JWTBearer())):
-    return hacker_service.get_hacker_groups(userId)
+    return hacker_service.get_hacker_groups(userId, token)
 
 
 # @router.put("/{hacker_id}/register/{event_id}")

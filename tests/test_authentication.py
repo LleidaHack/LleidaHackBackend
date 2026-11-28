@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 def test_non_access_token_cannot_access_api(client, create_user, token_name):
     user = create_user()
     response = client.get(
-        "/v1/user/all", headers={"Authorization": f"Bearer {getattr(user, token_name)}"}
+        f"/v1/user/{user.id}",
+        headers={"Authorization": f"Bearer {getattr(user, token_name)}"},
     )
     assert response.status_code == 401
 
@@ -38,7 +39,7 @@ def test_current_account_state_blocks_access_and_refresh(
         for key, value in state.items():
             setattr(stored, key, value)
         session.commit()
-    assert client.get("/v1/user/all", headers=user.headers).status_code == 401
+    assert client.get(f"/v1/user/{user.id}", headers=user.headers).status_code == 401
     response = client.post(
         "/v1/auth/refresh-token", headers={"Authorization": f"Bearer {user.refresh}"}
     )
@@ -48,10 +49,10 @@ def test_current_account_state_blocks_access_and_refresh(
 def test_inactive_organizer_cannot_use_refresh_for_privileges(client, create_user):
     user = create_user(role="organizer", active=False)
     response = client.get(
-        "/v1/user/all", headers={"Authorization": f"Bearer {user.refresh}"}
+        f"/v1/user/{user.id}", headers={"Authorization": f"Bearer {user.refresh}"}
     )
     assert response.status_code == 401
-    assert client.get("/v1/user/all", headers=user.headers).status_code == 401
+    assert client.get(f"/v1/user/{user.id}", headers=user.headers).status_code == 401
     assert (
         client.get("/v1/auth/login", auth=(user.email, "TestPassword123")).status_code
         == 401
@@ -62,9 +63,9 @@ def test_login_replaces_old_tokens(client, create_user):
     user = create_user()
     response = client.get("/v1/auth/login", auth=(user.email, "TestPassword123"))
     assert response.status_code == 200, response.text
-    assert client.get("/v1/user/all", headers=user.headers).status_code == 401
+    assert client.get(f"/v1/user/{user.id}", headers=user.headers).status_code == 401
     new_headers = {"Authorization": f"Bearer {response.json()['access_token']}"}
-    assert client.get("/v1/user/all", headers=new_headers).status_code == 200
+    assert client.get(f"/v1/user/{user.id}", headers=new_headers).status_code == 200
 
 
 def test_concurrent_refresh_only_succeeds_once(client, create_user):
@@ -79,7 +80,7 @@ def test_concurrent_refresh_only_succeeds_once(client, create_user):
         )
     assert sum(response.status_code == 200 for response in results) == 1
     assert all(response.status_code in (200, 400, 401) for response in results)
-    assert client.get("/v1/user/all", headers=user.headers).status_code == 401
+    assert client.get(f"/v1/user/{user.id}", headers=user.headers).status_code == 401
 
 
 def test_ban_then_unban_does_not_restore_old_session(client, create_user):
@@ -90,7 +91,7 @@ def test_ban_then_unban_does_not_restore_old_session(client, create_user):
             f"/v1/hacker/{user.id}/{action}", headers=organizer.headers
         )
         assert response.status_code == 200, response.text
-    assert client.get("/v1/user/all", headers=user.headers).status_code == 401
+    assert client.get(f"/v1/user/{user.id}", headers=user.headers).status_code == 401
     assert (
         client.post(
             "/v1/auth/refresh-token",
@@ -118,7 +119,9 @@ def test_invalid_claims_return_authentication_error(client, create_user, change)
     claims = BaseToken.decode(user.access)
     claims.update(change)
     token = BaseToken.encode(claims)
-    response = client.get("/v1/user/all", headers={"Authorization": f"Bearer {token}"})
+    response = client.get(
+        f"/v1/user/{user.id}", headers={"Authorization": f"Bearer {token}"}
+    )
     assert response.status_code == 401
     assert token not in response.text
 
@@ -157,7 +160,7 @@ def test_assistance_token_retries_are_scoped_and_idempotent(
         session.add(HackerAccepted(user_id=user.id, event_id=event_id))
         session.commit()
     headers = {"Authorization": f"Bearer {token}"}
-    assert client.get("/v1/user/all", headers=headers).status_code == 401
+    assert client.get(f"/v1/user/{user.id}", headers=headers).status_code == 401
     assert client.post("/v1/auth/refresh-token", headers=headers).status_code == 401
     response = client.get("/v1/event/confirm_assistance/", headers=headers)
     assert response.status_code == 200, response.text
@@ -174,7 +177,7 @@ def test_assistance_token_retries_are_scoped_and_idempotent(
     assert (
         client.get("/v1/event/confirm_assistance/", headers=headers).status_code == 200
     )
-    assert client.get("/v1/user/all", headers=headers).status_code == 401
+    assert client.get(f"/v1/user/{user.id}", headers=headers).status_code == 401
 
 
 def test_deactivation_revokes_organizer_session(client, create_user):
@@ -185,7 +188,9 @@ def test_deactivation_revokes_organizer_session(client, create_user):
             f"/v1/lleidahacker/{target.id}/{action}", headers=administrator.headers
         )
         assert response.status_code == 200, response.text
-    assert client.get("/v1/user/all", headers=target.headers).status_code == 401
+    assert (
+        client.get(f"/v1/user/{target.id}", headers=target.headers).status_code == 401
+    )
     assert (
         client.post(
             "/v1/auth/refresh-token",

@@ -8,7 +8,7 @@ from src.error.InvalidDataException import InvalidDataException
 from src.error.NotFoundException import NotFoundException
 from src.impl.Event.model import HackerAccepted, HackerParticipation, HackerRegistration
 from src.impl.Hacker.model import Hacker
-from src.impl.Hacker.schema import HackerCreate, HackerGet, HackerGetAll, HackerUpdate
+from src.impl.Hacker.schema import HackerCreate, HackerGetAll, HackerUpdate
 from src.impl.HackerGroup.model import HackerGroupUser
 from src.impl.Meal.model import HackerMeal
 from src.impl.User.service import UserService
@@ -34,6 +34,17 @@ class HackerService(BaseService):
 
     def get_all(self):
         return db.session.query(Hacker).all()
+
+    @staticmethod
+    def require_self_or_organizer(data: BaseToken, hacker_id: int):
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER], hacker_id):
+            raise AuthenticationException("Not authorized")
+
+    def list_hackers(self, data: BaseToken):
+        """Directory of every hacker account: organizers only."""
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        return self.get_all()
 
     def get_by_id(self, hacker_id: int):
         user = db.session.query(Hacker).filter(Hacker.id == hacker_id).first()
@@ -62,9 +73,8 @@ class HackerService(BaseService):
 
     def get_hacker(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
-        if data.check([UserType.LLEIDAHACKER, UserType.HACKER], hackerId):
-            return HackerGetAll.model_validate(user)
-        return HackerGet.model_validate(user)
+        self.require_self_or_organizer(data, hackerId)
+        return HackerGetAll.model_validate(user)
 
     def get_cv(self, hackerId: int, data: BaseToken):
         user = self.get_by_id(hackerId)
@@ -258,14 +268,14 @@ class HackerService(BaseService):
         db.session.refresh(hacker)
         return hacker
 
-    # TODO: #34 Check if token validation is correct
-    def get_hacker_events(self, hackerId: int):
+    def get_hacker_events(self, hackerId: int, data: BaseToken):
         hacker = self.get_by_id(hackerId)
+        self.require_self_or_organizer(data, hackerId)
         return hacker.events
 
-    # TODO: #34 Check if token validation is correct
-    def get_hacker_groups(self, hackerId: int):
+    def get_hacker_groups(self, hackerId: int, data: BaseToken):
         hacker = self.get_by_id(hackerId)
+        self.require_self_or_organizer(data, hackerId)
         return hacker.groups
 
     # def register_hacker_to_event(self, payload: EventRegistration, hacker_id: int, event_id: int, data: BaseToken):
