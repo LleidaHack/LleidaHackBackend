@@ -109,7 +109,11 @@ def test_coins_cannot_double_spend_and_corrections_are_linked(
     assert scan(kind="redeem", target="mug").status_code == 409
     wallet = client.get(url + "/wallet", headers=h.headers).json()
     assert wallet["balance"] == 20
-    assert client.get(url + "/public").json()["leaderboard"][0]["balance"] == 20
+    # The public leaderboard shows what was earned; spending does not lower it.
+    assert client.get(url + "/public").json()["leaderboard"][0]["balance"] == 50
+    totals = client.get(url + "/balances", headers=o.headers).json()
+    assert [(t["earned"], t["spent"], t["balance"]) for t in totals] == [(50, 30, 20)]
+    assert client.get(url + "/balances", headers=h.headers).status_code == 403
     debit = wallet["movements"][0]["id"]
     assert (
         scan(kind="reverse", target=str(debit), reason="Prize return").json()["balance"]
@@ -121,6 +125,20 @@ def test_coins_cannot_double_spend_and_corrections_are_linked(
     )
     assert scan(kind="award", amount=0, reason="No amount").status_code == 422
     assert client.get(url + "/public").json()["leaderboard"][0]["balance"] == 50
+    totals = client.get(url + "/balances", headers=o.headers).json()
+    assert [(t["earned"], t["spent"], t["balance"]) for t in totals] == [(50, 0, 50)]
+    award = client.get(url + "/wallet", headers=h.headers).json()["movements"][-1]
+    assert award["amount"] == 50
+    assert (
+        scan(kind="reverse", target=str(award["id"]), reason="Wrong winner").json()[
+            "balance"
+        ]
+        == 0
+    )
+    # Reversing an award (not a prize) does lower the leaderboard.
+    assert client.get(url + "/public").json()["leaderboard"][0]["balance"] == 0
+    totals = client.get(url + "/balances", headers=o.headers).json()
+    assert [(t["earned"], t["spent"], t["balance"]) for t in totals] == [(0, 0, 0)]
 
 
 def test_private_content_hidden_and_config_conflicts(
