@@ -30,6 +30,9 @@ from src.impl.Voucher.model import Voucher
 from src.utils.event_tickets import STAFF_ROLES
 from src.utils.UserType import UserType
 
+# Scan kinds a non-hacker badge (mentor, guest, company, staff) may perform.
+BADGE_HOLDER_KINDS = frozenset({"meal", "activity", "void_scan"})
+
 _EVENT_TABLES = {"hacker_event_accepted", "hacker_event_participation"}
 
 
@@ -227,35 +230,33 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                 # The legacy /meal/{id}/eat/{code} route keeps accepting ticket codes.
                 and not (allow_ticket_meal and body.kind == "meal"),
             )
-            is_mentor = user.access_role == "mentor" or user.type == "mentor"
-            if is_mentor:
+            # Mentors, guests, companies and staff are not hackers, but once a
+            # physical badge is bound to them they use it for meals and activities.
+            badge_holder = user.access_role == "mentor" or user.type == "mentor"
+            if badge_holder:
                 mentor = db.session.get(EventMentor, (event_id, user.id))
                 if not mentor or not mentor.active or user.is_deleted:
                     raise HTTPException(403, "Mentor is not active for this event")
-                if body.kind not in {"meal", "void_scan"}:
-                    raise HTTPException(403, "Mentor badges can only be used for meals")
             if user.access_role == "guest":
                 guest = db.session.get(EventGuest, (event_id, user.id))
                 if not guest or not guest.active or user.is_deleted:
                     raise HTTPException(403, "Guest is not active for this event")
-                if body.kind not in {"meal", "void_scan"}:
-                    raise HTTPException(403, "Guest badges can only be used for meals")
-                # Guests follow the same meal-only rules as mentors from here on.
-                is_mentor = True
+                badge_holder = True
             if user.access_role in STAFF_ROLES:
-                # Staff eat by scanning their own badge, like mentors.
                 if user.is_deleted:
                     raise HTTPException(403, "Staff member is not active")
-                if body.kind not in {"meal", "void_scan"}:
-                    raise HTTPException(403, "Staff badges can only be used for meals")
-                is_mentor = True
-            if not is_mentor and not in_event_table(
+                badge_holder = True
+            if badge_holder and body.kind not in BADGE_HOLDER_KINDS:
+                raise HTTPException(
+                    403, "This badge can only be used for meals and activities"
+                )
+            if not badge_holder and not in_event_table(
                 "hacker_event_accepted", event_id, user.id
             ):
                 raise HTTPException(403, "Participant is not accepted for this event")
             config = deepcopy(row.config)
             if (
-                not is_mentor
+                not badge_holder
                 and body.kind != "checkin"
                 and not in_event_table("hacker_event_participation", event_id, user.id)
             ):
@@ -360,13 +361,14 @@ def perform(event_id, body, token, allow_ticket_meal=False):
                             audit_id=log.id,
                         )
                     )
-                if body.kind == "meal" and not legacy and not is_mentor:
+                if body.kind == "meal" and not legacy and not badge_holder:
                     db.session.add(HackerMeal(user_id=user.id, meal_id=meal.id))
                 if body.kind == "checkin":
                     event.participants.append(user)
                 if (
                     body.kind == "activity"
                     and not existing
+                    and not badge_holder  # LleidaCoins are for hackers only
                     and activity.get("points", 0)
                 ):
                     movement(
