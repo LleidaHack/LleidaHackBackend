@@ -99,10 +99,19 @@ class UserService(BaseService):
     def count_users(self):
         return db.session.query(User).count()
 
+    def list_users(self, data):
+        """Directory of every account, staff roles included: organizers only."""
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
+        return self.get_all()
+
     def get_user(self, userId: int, data):
         user = self.get_by_id(userId)
         if data.check([UserType.LLEIDAHACKER], userId):
             return UserGetAll.model_validate(user)
+        # Any account type may read its own basic profile, nobody else's.
+        if data.user_id != userId:
+            raise AuthenticationException("Not authorized")
         return UserGet.model_validate(user)
 
     def get_user_by_email(self, email: str, data):

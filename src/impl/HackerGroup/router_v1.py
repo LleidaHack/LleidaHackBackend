@@ -20,7 +20,7 @@ hackergroup_service = HackerGroupService()
 
 @router.get("/all", response_model=list[HackerGroupGet])
 def get_all(data: BaseToken = Depends(JWTBearer())):
-    return hackergroup_service.get_all()
+    return hackergroup_service.list_groups(data)
 
 
 @router.get("/{groupId}", response_model=HackerGroupGetAll | HackerGroupGet)

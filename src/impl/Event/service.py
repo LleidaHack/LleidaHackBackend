@@ -312,19 +312,28 @@ class EventService(BaseService):
         db.session.commit()
         return db_event
 
+    @staticmethod
+    def _require_self_or_organizer(data: BaseToken, hacker_id: int):
+        """A hacker may only query their own registration state."""
+        if not data.check([UserType.LLEIDAHACKER, UserType.HACKER], hacker_id):
+            raise AuthenticationException("Not authorized")
+
     @BaseService.needs_service(HackerService)
     def is_registered(self, id: int, hacker_id: int, data: BaseToken):
+        self._require_self_or_organizer(data, hacker_id)
         event = self.get_by_id(id)
         hacker = self.hacker_service.get_by_id(hacker_id)
         return hacker in event.registered_hackers
 
     @BaseService.needs_service(HackerService)
     def is_accepted(self, id: int, hacker_id: int, data: BaseToken):
+        self._require_self_or_organizer(data, hacker_id)
         event = self.get_by_id(id)
         hacker = self.hacker_service.get_by_id(hacker_id)
         return hacker in event.accepted_hackers
 
     def has_confirmed(self, id: int, hacker_id: int, data: BaseToken):
+        self._require_self_or_organizer(data, hacker_id)
         user_registration = (
             db.session.query(HackerRegistration)
             .filter(
@@ -357,6 +366,7 @@ class EventService(BaseService):
 
     @BaseService.needs_service(HackerService)
     def is_participant(self, id: int, hacker_id: int, data: BaseToken):
+        self._require_self_or_organizer(data, hacker_id)
         event = self.get_by_id(id)
         hacker = self.hacker_service.get_by_id(hacker_id)
         return hacker in event.participants
@@ -381,6 +391,8 @@ class EventService(BaseService):
         }
 
     def get_event_participants(self, id: int, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         return event.registered_hackers
 
@@ -423,6 +435,8 @@ class EventService(BaseService):
         return {"success": True}
 
     def get_event_groups(self, id: int, data: BaseToken):
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthenticationException("Not authorized")
         event = self.get_by_id(id)
         return event.groups
 

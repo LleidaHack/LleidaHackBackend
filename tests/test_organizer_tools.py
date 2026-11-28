@@ -160,14 +160,15 @@ def test_event_groups_can_omit_member_images(
     from src.impl.User.model import User
 
     member = create_user()
+    organizer = create_user(role="organizer")
     event_id = create_event([member])
     create_group(event_id, [member])
     with Session(engine) as session:
         session.get(User, member.id).image = "data:image/png;base64,AAAA"
         session.commit()
     path = f"/v1/event/{event_id}/groups"
-    full = client.get(path, headers=member.headers).json()
-    light = client.get(f"{path}?include_images=false", headers=member.headers).json()
+    full = client.get(path, headers=organizer.headers).json()
+    light = client.get(f"{path}?include_images=false", headers=organizer.headers).json()
     assert full["groups"][0]["members"][0]["image"]
     assert light["groups"][0]["members"][0]["image"] is None
 

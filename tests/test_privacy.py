@@ -135,9 +135,12 @@ def test_event_groups_do_not_expose_invitation_codes(
     client, create_user, create_event, create_group
 ):
     owner, outsider = create_user(), create_user()
+    organizer = create_user(role="organizer")
     event_id = create_event([owner, outsider])
     group = create_group(event_id, [owner])
-    response = client.get(f"/v1/event/{event_id}/groups", headers=outsider.headers)
+    path = f"/v1/event/{event_id}/groups"
+    assert client.get(path, headers=outsider.headers).status_code == 401
+    response = client.get(path, headers=organizer.headers)
     assert response.status_code == 200, response.text
     assert group.code not in response.text
     assert_no_credentials(response.json())

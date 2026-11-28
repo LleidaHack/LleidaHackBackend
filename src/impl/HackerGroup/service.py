@@ -9,7 +9,6 @@ from src.impl.Hacker.service import HackerService
 from src.impl.HackerGroup.model import HackerGroup, HackerGroupUser
 from src.impl.HackerGroup.schema import (
     HackerGroupCreate,
-    HackerGroupGet,
     HackerGroupGetAll,
     HackerGroupUpdate,
 )
@@ -26,6 +25,12 @@ class HackerGroupService(BaseService):
 
     def get_all(self):
         return db.session.query(HackerGroup).all()
+
+    def list_groups(self, data: BaseToken):
+        """Every team of every event with its members: organizers only."""
+        if not data.check([UserType.LLEIDAHACKER]):
+            raise AuthorizationException("Not authorized")
+        return self.get_all()
 
     def get_by_id(self, id: int):
         group = db.session.query(HackerGroup).filter(HackerGroup.id == id).first()
@@ -90,11 +95,10 @@ class HackerGroupService(BaseService):
             raise AuthorizationException("Not authorized")
         group = self.get_by_id(id)
         members_ids = [h.id for h in group.members]
-        if data.check([UserType.HACKER, UserType.LLEIDAHACKER]) and (
-            data.is_admin or data.user_id in members_ids
-        ):
-            return HackerGroupGetAll.model_validate(group)
-        return HackerGroupGet.model_validate(group)
+        # Only members and organizers may see a team and who is in it.
+        if not data.check([UserType.LLEIDAHACKER]) and data.user_id not in members_ids:
+            raise AuthorizationException("Not authorized")
+        return HackerGroupGetAll.model_validate(group)
 
     @BaseService.needs_service(EventService)
     @BaseService.needs_service(HackerService)
