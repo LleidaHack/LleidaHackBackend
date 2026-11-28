@@ -59,3 +59,7 @@ router.include_router(guest_router)
 from src.impl.CompanyPortal.router import router as company_portal_router
 
 router.include_router(company_portal_router)
+
+from src.impl.Operations.raffles import router as raffle_router
+
+router.include_router(raffle_router)
