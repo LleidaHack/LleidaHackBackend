@@ -34,3 +34,37 @@ def test_raffle_lifecycle(client, create_user):
     assert draw(1).status_code == 409
     assert client.post(raffle + "/entries", json=entry).status_code == 409
     assert client.get(path).json()[0].keys() == {"id", "name", "theme", "drawn_at"}
+
+
+def test_only_coffee_omits_city(client, engine):
+    from sqlalchemy import text
+
+    with engine.begin() as connection:
+        ids = dict(
+            connection.execute(
+                text(
+                    "INSERT INTO raffle (name, theme) VALUES ('Batalla', 'coffee'), ('JCA', 'cinema') RETURNING theme, id"
+                )
+            ).all()
+        )
+    entry = {
+        "name": "Prova Cafès",
+        "email": "prova@example.org",
+        "phone": "600000000",
+        "postal_code": "25001",
+    }
+    assert (
+        client.post(f"/v1/raffles/{ids['cinema']}/entries", json=entry).status_code
+        == 422
+    )
+    for extra in ({}, {"email": "antic@example.org", "city": "Valls"}):
+        assert (
+            client.post(
+                f"/v1/raffles/{ids['coffee']}/entries", json=entry | extra
+            ).status_code
+            == 201
+        )
+    with engine.connect() as connection:
+        assert connection.execute(
+            text("SELECT city FROM raffle_entry")
+        ).scalars().all() == ["", ""]

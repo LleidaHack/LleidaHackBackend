@@ -24,7 +24,7 @@ class Entry(BaseModel):
     email: str = Field(max_length=254, pattern=r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
     phone: str = Field(pattern=r"^\+?[0-9]{9,15}$")
     postal_code: str = Field(pattern=r"^[0-9]{5}$")
-    city: str = Field(min_length=1, max_length=100)
+    city: str | None = Field(default=None, min_length=1, max_length=100)
 
     @field_validator("phone", mode="before")
     @classmethod
@@ -42,12 +42,14 @@ def manager(token=Depends(JWTBearer())):
 
 def lock_open(raffle_id):
     row = db.session.execute(
-        text("SELECT drawn_at FROM raffle WHERE id=:id FOR UPDATE"), {"id": raffle_id}
+        text("SELECT drawn_at, theme FROM raffle WHERE id=:id FOR UPDATE"),
+        {"id": raffle_id},
     ).first()
     if row is None:
         raise HTTPException(404, "Sorteig inexistent.")
     if row.drawn_at:
         raise HTTPException(409, "Aquest sorteig ja s’ha tancat.")
+    return row
 
 
 @router.get("")
@@ -60,7 +62,10 @@ def catalogue():
 
 @router.post("/{raffle_id}/entries", status_code=201)
 def enter(raffle_id: int, entry: Entry):
-    lock_open(raffle_id)
+    raffle = lock_open(raffle_id)
+    city = "" if raffle.theme == "coffee" else entry.city
+    if city is None:
+        raise HTTPException(422, "Has de seleccionar una ciutat.")
     # Identical replies also avoid disclosing whether an email has registered.
     db.session.execute(
         text("""
@@ -68,7 +73,12 @@ def enter(raffle_id: int, entry: Entry):
         VALUES (:id, :name, :email, :phone, :postal_code, :city)
         ON CONFLICT (raffle_id, email) DO NOTHING
     """),
-        {**entry.model_dump(), "id": raffle_id, "email": entry.email.lower()},
+        {
+            **entry.model_dump(),
+            "city": city,
+            "id": raffle_id,
+            "email": entry.email.lower(),
+        },
     )
     db.session.commit()
     return {"registered": True}
