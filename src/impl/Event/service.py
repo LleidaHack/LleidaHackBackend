@@ -1316,7 +1316,15 @@ class EventService(BaseService):
 
     @BaseClient.needs_client(MailClient)
     @BaseService.needs_service(HackerService)
-    def accept_hacker(self, event_id: int, hacker_id: int, data: BaseToken, defer=None):
+    def accept_hacker(
+        self,
+        event_id: int,
+        hacker_id: int,
+        data: BaseToken,
+        defer=None,
+        reaccept: bool = False,
+    ):
+        """Accept a registration. `reaccept` explicitly revives a cancelled place."""
         if not data.check([UserType.LLEIDAHACKER]):
             raise AuthenticationException("Not authorized")
         event = self.get_by_id(event_id)
@@ -1339,7 +1347,18 @@ class EventService(BaseService):
         )
         if hacker_registration is None:
             raise InvalidDataException("Hacker not registered")
-        if hacker_registration.cancelled_at is not None:
+        if reaccept:
+            if hacker_registration.cancelled_at is None:
+                raise InvalidDataException("Place not cancelled")
+            # Start the attendance flow from scratch: a fresh confirmation and
+            # release reminder, as if the place had never been released.
+            hacker_registration.cancelled_at = None
+            hacker_registration.confirmed_assistance = False
+            hacker_registration.release_reminder_sent_at = None
+            hacker_registration.release_reminder_mail_id = None
+            hacker_registration.release_queue_state = None
+            hacker_registration.release_queue_actor = None
+        elif hacker_registration.cancelled_at is not None:
             raise InvalidDataException("Place cancelled")
         token = AssistenceToken(hacker, event.id).to_token()
         hacker_registration.confirm_assistance_token = token
@@ -1359,7 +1378,7 @@ class EventService(BaseService):
                 fields=f"{hacker.name},{event.name},5,{token}",
             )
         )
-        self._audit(event.id, data, "accept", hacker.id)
+        self._audit(event.id, data, "reaccept" if reaccept else "accept", hacker.id)
         db.session.commit()
         # Delivery talks to the mail service (and SMTP); run it after the
         # response when the router provides background tasks, and only once

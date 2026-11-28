@@ -323,6 +323,21 @@ def accept_hacker(
     )
 
 
+@router.put("/{event_id}/reaccept/{hacker_id}", response_model=EventGet)
+def reaccept_hacker(
+    event_id: int,
+    hacker_id: int,
+    background_tasks: BackgroundTasks,
+    token: BaseToken = Depends(JWTBearer()),
+):
+    """
+    Accept again a hacker who cancelled their place, sending a new acceptance mail
+    """
+    return event_service.accept_hacker(
+        event_id, hacker_id, token, background_tasks.add_task, reaccept=True
+    )
+
+
 @router.put("/{event_id}/unaccept/{hacker_id}", response_model=EventGet)
 def unaccept_hacker(
     event_id: int,
