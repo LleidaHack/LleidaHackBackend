@@ -40,6 +40,11 @@ def broadcast_alerts(event_id):
         logger.warning("Alert broadcast unavailable; HTTP fallback remains active")
 
 
+def broadcast_bull_reveal(event_id):
+    with Redis.from_url(settings.rate_limit.redis_url, socket_timeout=1) as redis:
+        return redis.publish(channel(event_id), json.dumps({"type": "bull_reveal"}))
+
+
 def initial_alerts(event_id):
     with db():
         return public_alerts(event_id)
@@ -106,7 +111,8 @@ async def alert_socket(websocket: WebSocket, event_id: int):
                 else:
                     await websocket.send_json({"type": "heartbeat"})
                     continue
-                next_start = update.pop("_next_start", None)
+                if update["type"] == "alerts":
+                    next_start = update.pop("_next_start", None)
                 await websocket.send_json(update)
     except (WebSocketDisconnect, RedisError, RuntimeError):
         pass
